@@ -96,11 +96,27 @@ Modelo Eloquent: `app/Models/CertificadoInspeccion.php`
 	- `protected $primaryKey = 'cin_id';` — clave primaria personalizada.
 	- `$fillable` contiene los campos que se permiten asignar en masa; se añadió una lista inicial con los campos más relevantes.
 
-Notas y siguientes pasos recomendados
------------------------------------
-- Revisar y ajustar `$casts` en el modelo para convertir fechas y booleanos automáticamente (por ejemplo `['cin_fecha' => 'date']`).
-- Añadir relaciones Eloquent (por ejemplo con `Tipoedificacion`, `User` o `Licencia`) si existen tablas relacionadas (`tie_id`, `usa_id`, `lic_id`).
-- Generar el Resource de Filament y adaptar los formularios/columnas para exponer sólo los campos necesarios en la UI.
-- Añadir validaciones en el Resource y políticas de acceso si es necesario.
+Comando ejecutado para la Generacion del Resource Filament de CertificadoInspeccions:
+
+```powershell
+php artisan make:filament-resource CertificadoInspeccion --model=App\\Models\\CertificadoInspeccion
+```
+
+Archivos creados en `app/Filament/Resources/CertificadoInspeccions/`:
+
+- `CertificadoInspeccionResource.php`: Archivo principal del Resource, define el modelo, navegación, formularios y tablas.
+
+- `Pages/`:
+  - `CreateCertificadoInspeccion.php`: Página para crear nuevos registros.
+  - `EditCertificadoInspeccion.php`: Página para editar registros existentes.
+  - `ListCertificadoInspeccions.php`: Página para listar registros.
+  - `ViewCertificadoInspeccion.php`: Página para ver detalles de un registro.
+
+- `Schemas/`:
+  - `CertificadoInspeccionForm.php`: Esquema del formulario para crear/editar.
+  - `CertificadoInspeccionInfolist.php`: Esquema para mostrar información en vista de detalles.
+
+- `Tables/`:
+  - `CertificadoInspeccionsTable.php`: Definición de la tabla para listar registros.
 
 
