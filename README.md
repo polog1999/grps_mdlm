@@ -9,6 +9,16 @@ Origen (sistema antiguo - devlocal):
 
 La migración de la base de datos completa se realizó desde PostgreSQL versión 12.22 a la versión 18.0.
 
+Base de datos anterior: observaciones
+------------------------------------
+
+Durante el análisis del esquema original se detectaron inconsistencias relevantes en el esquema `licencias.licencias` que conviene documentar:
+
+- Campos duplicados / repetidos: los valores de "número de licencia" y "número de expediente" aparecen repetidos en varias filas. Esto puede causar problemas al consultar registros por identificador (ambigüedad de claves o resultados inesperados) y requiere limpieza o reglas de normalización antes de depender de esos campos como identificadores únicos.
+
+- Dudas sobre `usa_id`: existe un campo `usa_id` en varias tablas cuya semántica no está completamente documentada. Una hipótesis es que podría tener relación con un identificador de usuario o incluso con un identificador de QR, pero esto no está confirmado. Es necesario revisar el sistema antiguo o consultar con el equipo que mantuvo la base de datos para confirmar su propósito y normalizar su uso en la nueva estructura.
+
+
 Descripción del nuevo sistema
 -----------------------------
 
