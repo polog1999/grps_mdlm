@@ -18,10 +18,7 @@ Durante el análisis del esquema original se detectaron inconsistencias relevant
 
 - Dudas sobre `usa_id`: existe un campo `usa_id` en varias tablas cuya semántica no está completamente documentada. Una hipótesis es que podría tener relación con un identificador de usuario o incluso con un identificador de QR, pero esto no está confirmado. Es necesario revisar el sistema antiguo o consultar con el equipo que mantuvo la base de datos para confirmar su propósito y normalizar su uso en la nueva estructura.
 
-Tablas y relaciones encontradas (observaciones adicionales)
----------------------------------------------------------
-
-- Relación entre `licencias.licencias` y tablas auxiliares: durante el análisis se identificó que la tabla `licencias.licencias` contiene un identificador de la persona solicitante que se relaciona con registros en una tabla llamada `lictotal` (o similar). En `lictotal` se encuentra información asociada, y el nombre de la persona solicitante aparece en registros relacionados con `personasolicitante`. Esto implica que las consultas para autocompletar datos (por ejemplo, nombre del solicitante) requieren unir estas tablas en la base de datos antigua.
+- Relación entre `licencias.licencias` y tablas auxiliares: durante el análisis se identificó que la tabla `licencias.licencias` contiene un identificador de la persona solicitante que se relaciona con registros en una tabla llamada `lictotal` . En `lictotal` se encuentra información asociada, y el nombre de la persona solicitante aparece en registros relacionados con `personasolicitante`. Esto implica que las consultas para autocompletar datos (por ejemplo, nombre del solicitante) requieren unir estas tablas en la base de datos antigua.
 - Campos repetidos/duplicados en `licencias.licencias` pueden provocar resultados múltiples al buscar por `número de expediente` o `número de licencia`. Tener reglas de deduplicación o comprobaciones en la aplicación es recomendable antes de aceptar una coincidencia como única.
 
 
@@ -136,8 +133,6 @@ Archivos creados en `app/Filament/Resources/CertificadoInspeccions/`:
   - `CertificadoInspeccionsTable.php`: Definición de la tabla para listar registros.
 
 
-Cambios recientes: formularios, autocompletado y conexión a BD de producción
---------------------------------------------------------------------------
 
 Se han realizado cambios en el formulario Filament asociado a `CertificadoInspeccion` para mejorar la entrada de datos y soportar autocompletado desde la base de datos histórica de licencias. Los cambios principales son:
 
@@ -149,65 +144,30 @@ Se han realizado cambios en el formulario Filament asociado a `CertificadoInspec
 	- `cin_resolucion_sigla` y otros campos de solo lectura se configuran con `->disabled()->dehydrated()` para que su valor se guarde pero no pueda editarse desde la UI.
 	- Búsqueda por expediente: `cin_establecimiento` incluye una `suffixAction` que abre un modal con un campo `search_expediente`. Al ejecutar la acción se consulta la base de datos de licencias y, si se encuentra una coincidencia, el formulario se autocompleta con datos como: número de licencia, giro, área, dirección, fecha de inicio y fin calculada, razón social y el expediente.
 
-Archivos añadidos para la UI/modal
-----------------------------------
-
-- `resources/js/filament/modals/DetalleEstablecimiento.tsx` — componente React que renderiza los detalles del establecimiento dentro del modal usado por la acción.
-- `resources/views/filament/modals/detalle-establecimiento.blade.php` — vista Blade que monta el componente TSX y pasa los datos desde el servidor.
-
 Servicio que consulta la BD de licencias
 ---------------------------------------
+Se implementó el servicio `app/Services/LicenciaService.php` con el propósito de encapsular las consultas a la base de datos legada de licencias (`pgsql_licencias`).  
+Este servicio centraliza la lógica de acceso a datos, promoviendo la separación de responsabilidades y facilitando el mantenimiento del sistema.
 
-Se creó `app/Services/LicenciaService.php` para encapsular las consultas a la base de datos antigua (`licencias`). El servicio expone métodos como `obtenerPrimerosDiez()` y `obtenerPorNumeroExpediente($expediente)`, que se usan para:
+El servicio expone métodos específicos para realizar búsquedas dentro del esquema `licencia.licencia`, tales como:
 
-- Probar y mostrar las 10 primeras licencias (endpoint de prueba y consola del navegador).
-- Buscar por número de expediente y devolver un único registro (o indicar duplicados/no-encontrado).
+- **`obtenerPorNumeroExpediente($expediente)`**  
+  Permite buscar registros según el número de expediente, devolviendo un único resultado si existe coincidencia o indicando si no se encontró o existen duplicados.
+
+- **`obtenerPorNumeroLicencia($licencia)`**  
+  Busca registros asociados a un número de licencia determinado.
+
+- **`obtenerPorNumeroLicenciaYExpediente($licencia, $expediente)`**  
+  Realiza una búsqueda combinada, verificando coincidencias tanto por número de licencia como por número de expediente.
+
+Cada método ejecuta la consulta mediante la conexión `pgsql_licencias` y gestiona los posibles escenarios de resultado (`ok`, `duplicado`, `no_encontrado` o `error`).  
+De esta forma, `LicenciaService` actúa como una capa de integración entre el sistema actual y la base de datos antigua, garantizando un acceso **controlado**, **seguro** y **reutilizable** a la información de licencias.
 
 Conexión a la base de datos de producción (licencias)
 ---------------------------------------------------
 
-Este proyecto incluye una conexión adicional a la base de datos histórica/prod para recuperar datos de `licencias`. Por seguridad, las credenciales no se incluyen en el repositorio: se debe configurar una conexión en `config/database.php` con un nombre como `pgsql_licencias` y añadir las variables al archivo `.env` (o usar un vault/secret manager). Ejemplo de variables de entorno (use valores reales en `.env` fuera del repositorio):
+Este proyecto incluye una conexión adicional a la base de datos histórica/prod para recuperar datos de `licencias`. Por seguridad, las credenciales no se incluyen en el repositorio: se debe configurar una conexión en `config/database.php` con un nombre como `pgsql_licencias` y añadir las variables al archivo `.env` (o usar un vault/secret manager). 
 
-```powershell
-LICENCIAS_DB_CONNECTION=pgsql
-LICENCIAS_DB_HOST=licencias-db-host.example
-LICENCIAS_DB_PORT=5432
-LICENCIAS_DB_DATABASE=licencias
-LICENCIAS_DB_USERNAME=usuario_lic
-LICENCIAS_DB_PASSWORD=supersecreto
-```
 
-Y en `config/database.php` añadir una conexión usando esas variables bajo la clave `pgsql_licencias`.
-
-Notas de seguridad: no almacene credenciales en el repositorio. Use `.env` local o mecanismos seguros para producción.
-
-Dónde revisar el código implicado
---------------------------------
-
-- Formulario Filament: `app/Filament/Resources/CertificadoInspeccions/Schemas/CertificadoInspeccionForm.php`
-- Servicio de licencias: `app/Services/LicenciaService.php`
-- Modal TSX: `resources/js/filament/modals/DetalleEstablecimiento.tsx`
-- Vista Blade del modal: `resources/views/filament/modals/detalle-establecimiento.blade.php`
-
-Cómo probar localmente
------------------------
-
-1. Asegúrese de configurar las variables de conexión a la base de licencias en su `.env` (ver sección anterior).
-2. Instalar dependencias y compilar assets (si no están instaladas):
-
-```powershell
-npm install
-npm run dev
-php artisan serve
-```
-
-3. Acceder al panel de Filament (por defecto `/admin`), abrir el recurso "CertificadoInspeccion" y crear un nuevo registro. Use la acción de búsqueda por expediente en `Establecimiento` para probar el autocompletado.
-
-4. Para pruebas rápidas en backend, hay endpoints y métodos en `LicenciaService` que permiten recuperar los primeros 10 registros o buscar por expediente; úselos para verificar la conexión y la normalización de datos.
-
-Observaciones finales
----------------------
-
-Las integraciones con la base de datos antigua requieren cuidado por la presencia de datos duplicados y la estructura de tablas auxiliares (por ejemplo `lictotal` y `personasolicitante`). Recomendamos documentar y normalizar las reglas de deduplicación y revisar las consultas usadas en `LicenciaService` antes de desplegar en producción.
 
 
