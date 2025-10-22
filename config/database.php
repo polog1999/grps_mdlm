@@ -54,7 +54,7 @@ return [
             'username' => env('DB_USERNAME_LICENCIAS', 'root'),
             'password' => env('DB_PASSWORD_LICENCIAS', ''),
             'charset' => env('DB_CHARSET_LICENCIAS', 'utf8'),
-            'schema' => 'itse',
+            'schema' => 'licencia',
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'itse',
