@@ -20,4 +20,15 @@ class LicenciaController extends Controller
         $items = $this->service->obtenerPrimerosDiez();
         return response()->json($items);
     }
+
+    public function obtenerPorNumeroExpediente($lic_numexp)
+    {
+        $items = $this->service->obtenerPorNumeroExpediente($lic_numexp);
+        return response()->json($items);
+    }
+    public function obtenerPorNumeroLicencia($lic_numlic)
+    {
+        $items = $this->service->obtenerPorNumeroLicencia($lic_numlic);
+        return response()->json($items);
+    }
 }

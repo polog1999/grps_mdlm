@@ -17,11 +17,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-/*
+
 Route::get('/test/licencias', function () {
     $service = new LicenciaService();
     return response()->json($service->obtenerPrimerosDiez());
 });
-*/
+
+Route::get('/test/licencias/expediente/{lic_expnum}', function ($lic_expnum) {
+    $service = new LicenciaService();
+    return response()->json($service->obtenerPorNumeroExpediente($lic_expnum));
+});
+//numero de licencia
+Route::get('/test/licencias/licencia/{lic_numlic}', function ($lic_numlic) {
+    $service = new LicenciaService();
+    return response()->json($service->obtenerPorNumeroLicencia($lic_numlic));
+});
+
 
 require __DIR__.'/settings.php';
