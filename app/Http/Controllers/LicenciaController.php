@@ -14,13 +14,6 @@ class LicenciaController extends Controller
         $this->service = $service;
     }
 
-    // Ruta que devuelve los 10 primeros en JSON
-    public function primerosDiez()
-    {
-        $items = $this->service->obtenerPrimerosDiez();
-        return response()->json($items);
-    }
-
     public function obtenerPorNumeroExpediente($lic_numexp)
     {
         $items = $this->service->obtenerPorNumeroExpediente($lic_numexp);
