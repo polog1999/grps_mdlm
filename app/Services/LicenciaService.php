@@ -17,6 +17,7 @@ class LicenciaService
         return $this->connection->table('licencia.licencia')->get();
     }
 
+    /*
     public function obtenerPrimerosDiez()
     {
         return $this->connection
@@ -25,64 +26,68 @@ class LicenciaService
             //->select('lic_id')
             ->get();
     }   
-
-    public function  contarResultados($count,$resultados,$numero)
-    {
-        if ($count === 0) {
-            logger()->info("No se encontró ningún registro con lic_expnum = {$numero}");
-            return [
-                'status' => 'no_encontrado',
-                'data' => collect(),
-            ];
-        } elseif ($count > 1) {
-            logger()->warning("Se encontraron {$count} registros duplicados con lic_expnum = {$numero}");
-            return [
-                'status' => 'duplicado',
-                'data' => $resultados,
-            ];
-        }
-        return [
-            'status' => 'ok',
-            'data' => $resultados->first(),
-        ];
-    }
-    public function obtenerPorNumeroExpediente($lic_numexp)
+*/
+    /**
+     * Método privado para buscar y contar registros según condiciones
+     */
+    private function buscarYContar(array $condiciones, string $descripcion)
     {
         try {
             $resultados = $this->connection
                 ->table('licencia.licencia')
-                ->where('lic_expnum', $lic_numexp)
+                ->where($condiciones)
                 ->get();
 
             $count = $resultados->count();
-            return $this->contarResultados($count, $resultados, $lic_numexp);
 
+            if ($count === 0) {
+                logger()->info("No se encontró ningún registro con {$descripcion}");
+                return ['status' => 'no_encontrado', 'data' => collect()];
+            } elseif ($count > 1) {
+                logger()->warning("Se encontraron {$count} registros duplicados con {$descripcion}");
+                return ['status' => 'duplicado', 'data' => $resultados];
+            }
+
+            return ['status' => 'ok', 'data' => $resultados->first()];
         } catch (\Throwable $e) {
             logger()->error('Error al consultar licencias: ' . $e->getMessage());
-            return [
-                'status' => 'error',
-                'data' => collect(),
-            ];
+            return ['status' => 'error', 'data' => collect()];
         }
     }
 
+    /**
+     * Buscar por número de expediente
+     */
+    public function obtenerPorNumeroExpediente($lic_expnum)
+    {
+        return $this->buscarYContar(
+            [['lic_expnum', '=', $lic_expnum]],
+            "lic_expnum = {$lic_expnum}"
+        );
+    }
+
+    /**
+     * Buscar por número de licencia
+     */
     public function obtenerPorNumeroLicencia($lic_numlic)
     {
-        try {
-            $resultados = $this->connection
-                ->table('licencia.licencia')
-                ->where('lic_numlic', $lic_numlic)
-                ->get();
+        return $this->buscarYContar(
+            [['lic_numlic', '=', $lic_numlic]],
+            "lic_numlic = {$lic_numlic}"
+        );
+    }
 
-            $count = $resultados->count();
-            return $this->contarResultados($count, $resultados, $lic_numlic);
-
-        } catch (\Throwable $e) {
-            logger()->error('Error al consultar licencias: ' . $e->getMessage());
-            return [
-                'status' => 'error',
-                'data' => collect(),
-            ];
-        }
+    /**
+     * Buscar por número de licencia y expediente (combinado)
+     */
+    public function obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum)
+    {
+        return $this->buscarYContar(
+            [
+                ['lic_numlic', '=', $lic_numlic],
+                ['lic_expnum', '=', $lic_expnum]
+            ],
+            "lic_numlic = {$lic_numlic} y lic_expnum = {$lic_expnum}"
+        );
     }
 }

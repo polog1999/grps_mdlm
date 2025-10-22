@@ -31,4 +31,9 @@ class LicenciaController extends Controller
         $items = $this->service->obtenerPorNumeroLicencia($lic_numlic);
         return response()->json($items);
     }
+    public function obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum)
+    {
+        $items = $this->service->obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum);
+        return response()->json($items);
+    }
 }
