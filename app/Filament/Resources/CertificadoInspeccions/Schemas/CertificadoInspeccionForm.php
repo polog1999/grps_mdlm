@@ -3,6 +3,13 @@
 namespace App\Filament\Resources\CertificadoInspeccions\Schemas;
 
 use App\Services\LicenciaService;
+use App\Services\PersonaSolicitante;
+use App\Services\TipoEdificacionService;
+
+use App\Http\Controllers\LicenciaController;
+use App\Http\Controllers\PersonaSolicitanteController;
+use App\Http\Controllers\TipoEdificacionController;
+
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Fieldset;
@@ -14,6 +21,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
 
 use App\Models\Post;
 use Filament\Actions\Action;
@@ -52,10 +60,19 @@ class CertificadoInspeccionForm
                 // 2. Ubicación y Tipo de Edificación
                 Section::make()
                     ->schema([
-                        TextInput::make('tie_id')
-                            ->label('Tipo de Edificación')
-                            ->numeric()
-                            ->required(),
+                        Select::make('tie_id')
+                        ->label('Tipo de Edificación')
+                        ->options(function () {
+                            $serviceTipoEdificacion = new TipoEdificacionService();
+                            $data = $serviceTipoEdificacion->getTipoEdificaciones();
+                            return collect($data)->pluck('tie_descripcion', 'tie_id');
+                        })
+                        ->required()
+                        ->searchable()
+                        ->preload()
+                        ->placeholder('Seleccione el tipo de edificación'),
+                            
+                    
                         TextInput::make('cin_establecimiento')
                             ->label('Establecimiento')
                             ->placeholder('Ej. Empresa XYZ')
@@ -71,12 +88,13 @@ class CertificadoInspeccionForm
                                             ->label('Nro. Expediente')
                                             ->placeholder('Ingrese el número de expediente')
                                             ->required()
-                                            ->live(onBlur: true)
+                                            ->live(onBlur: true),
                                     ])
                                     ->action(function (array $data, callable $set) {
                                         $expediente = $data['search_expediente'] ?? null;
 
-                                        if (!$expediente) {
+                                    try {
+                                        if (empty($expediente)) {
                                             Notification::make()
                                                 ->title('Campo requerido')
                                                 ->body('Debe ingresar un número de expediente.')
@@ -85,21 +103,47 @@ class CertificadoInspeccionForm
                                             return;
                                         }
 
-                                        $service = new LicenciaService();
-                                        $respuesta = $service->obtenerPorNumeroExpediente($expediente);
+                                        $serviceLicencia = new LicenciaService();
+                                        $respuestaLicencia = $serviceLicencia->obtenerPorNumeroExpediente($expediente);
 
-                                        switch ($respuesta['status']) {
+                                        if (!is_array($respuestaLicencia) || !isset($respuestaLicencia['status'])) {
+                                            throw new \Exception('Respuesta inválida del servicio de licencias.');
+                                        }
+
+                                        switch ($respuestaLicencia['status']) {
                                             case 'ok':
-                                                $licencia = $respuesta['data'];
+                                                $licencia = $respuestaLicencia['data'] ?? null;
+
+                                                if (!$licencia) {
+                                                    throw new \Exception('No se encontró información de la licencia.');
+                                                }
+
+                                                // Consultar datos del solicitante solo si existe ID válido
+                                                $personaSolicitante = null;
+                                                if (!empty($licencia->per_idsolicitante)) {
+                                                    $servicePersonaSolicitante = new PersonaSolicitante();
+                                                    $respuestaPersona = $servicePersonaSolicitante->obtenerPorIdSolicitante($licencia->per_idsolicitante);
+                                                    if (isset($respuestaPersona['status']) && $respuestaPersona['status'] === 'ok') {
+                                                        $personaSolicitante = $respuestaPersona['data'];
+                                                    }
+                                                }
+
+                                                // Seteo de valores seguros
                                                 $set('lic_id', $licencia->lic_id ?? null);
                                                 $set('cin_licencia', $licencia->lic_numlic ?? null);
                                                 $set('cin_giro', $licencia->lic_giro ?? null);
                                                 $set('cin_area', $licencia->lic_area ?? null);
                                                 $set('cin_ubicacion', $licencia->lic_direccion ?? null);
+                                                if (!empty($licencia->lic_fechaemision)) {
+                                                    $set('cin_indeterminado', false);
+                                                }
                                                 $set('cin_fec_inicio', $licencia->lic_fechaemision ?? null);
-                                                $set('cin_fec_fin', $licencia->lic_fechaemision ? \Carbon\Carbon::parse($licencia->lic_fechaemision)->addYears(2)->toDateString() : null);
+                                                $set('cin_fec_fin', !empty($licencia->lic_fechaemision)
+                                                    ? \Carbon\Carbon::parse($licencia->lic_fechaemision)->addYears(2)->toDateString()
+                                                    : null);
                                                 $set('cin_establecimiento', $licencia->lic_razonsocial ?? null);
                                                 $set('cin_expediente', $expediente);
+                                                $set('cin_solicitante', $personaSolicitante->personasolicitante ?? 'No disponible');
 
                                                 Notification::make()
                                                     ->title('Expediente encontrado')
@@ -128,14 +172,17 @@ class CertificadoInspeccionForm
                                                 break;
 
                                             default:
-                                                Notification::make()
-                                                    ->title('Error')
-                                                    ->body('Ocurrió un error al consultar la base de datos.')
-                                                    ->danger()
-                                                    ->send();
-                                                break;
+                                                throw new \Exception('Error desconocido al consultar la base de datos.');
                                         }
-                                    })
+                                    } catch (\Throwable $e) {
+                                        Notification::make()
+                                            ->title('Error inesperado')
+                                            ->body("Ha ocurrido un problema al buscar el expediente: <br><code>{$e->getMessage()}</code>")
+                                            ->danger()
+                                            ->persistent()
+                                            ->send();
+                                    }
+                                })
                             ),
                     TextInput::make('cin_ubicacion')
                         ->label('Ubicación')
@@ -239,13 +286,13 @@ class CertificadoInspeccionForm
                         Grid::make(2)
                             ->schema([
                                 TextInput::make('cin_resolucion')
-                                    ->label('Resolución')
+                                   ->label('Resolución')
                                     ->placeholder('Ej. 1942-2025')
                                     ->required()
-                                    ->mask('9999-9999')
-                                    ->maxLength(9)
-                                    ->helperText('Formato: 4 dígitos, guion, 4 dígitos (YYYY-YYYY)')
-                                    ->rules(['regex:/^\d{4}-\d{4}$/']),
+                                    //->mask('99999-9999') // permite hasta 5 dígitos iniciales
+                                    ->maxLength(10)
+                                    ->helperText('Formato: 1 a 5 dígitos, guion, 4 dígitos (#####-YYYY)')
+                                    ->rules(['regex:/^\d{1,5}-\d{4}$/']),
 
                                 TextInput::make('cin_resolucion_sigla')
                                     ->label('Resolución Sigla')

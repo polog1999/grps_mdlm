@@ -17,9 +17,11 @@ Durante el análisis del esquema original se detectaron inconsistencias relevant
 - Campos duplicados / repetidos: los valores de "número de licencia" y "número de expediente" aparecen repetidos en varias filas. Esto puede causar problemas al consultar registros por identificador (ambigüedad de claves o resultados inesperados) y requiere limpieza o reglas de normalización antes de depender de esos campos como identificadores únicos.
 
 - Dudas sobre `usa_id`: existe un campo `usa_id` en varias tablas cuya semántica no está completamente documentada. Una hipótesis es que podría tener relación con un identificador de usuario o incluso con un identificador de QR, pero esto no está confirmado. Es necesario revisar el sistema antiguo o consultar con el equipo que mantuvo la base de datos para confirmar su propósito y normalizar su uso en la nueva estructura.
-
 - Relación entre `licencias.licencias` y tablas auxiliares: durante el análisis se identificó que la tabla `licencias.licencias` contiene un identificador de la persona solicitante que se relaciona con registros en una tabla llamada `lictotal` . En `lictotal` se encuentra información asociada, y el nombre de la persona solicitante aparece en registros relacionados con `personasolicitante`. Esto implica que las consultas para autocompletar datos (por ejemplo, nombre del solicitante) requieren unir estas tablas en la base de datos antigua.
 - Campos repetidos/duplicados en `licencias.licencias` pueden provocar resultados múltiples al buscar por `número de expediente` o `número de licencia`. Tener reglas de deduplicación o comprobaciones en la aplicación es recomendable antes de aceptar una coincidencia como única.
+- Tabla `lictotal` y relación con solicitantes: se detectó una tabla llamada `lictotal` en el esquema `licencia` que actúa como punto de unión entre `per_idsolicitante` y los datos de la persona solicitante (campos de nombre/datos personales). En muchos casos ambos valores (el id y el detalle del solicitante) aparecen juntos en la misma fila de `lictotal`. No se encontró otra tabla separada que contenga exclusivamente los datos de la persona solicitante; por eso recomendamos crear una tabla dedicada para personas solicitantes (p. ej. `personasolicitante`) y normalizar las relaciones en lugar de mantener ambos conjuntos de datos en la misma tabla `lictotal`.
+
+
 
 
 Descripción del nuevo sistema
@@ -131,6 +133,11 @@ Archivos creados en `app/Filament/Resources/CertificadoInspeccions/`:
 
 - `Tables/`:
   - `CertificadoInspeccionsTable.php`: Definición de la tabla para listar registros.
+
+Rutas y uso para autocompletado (formularios)
+-------------------------------------------
+
+Las rutas definidas en `routes/web.php` bajo el prefijo `/test` están protegidas por middleware (`auth`, `verified`) y delegan la consulta en controladores (por ejemplo `LicenciaController` y `PersonaSolicitanteController`). Estos controladores retornan respuestas en formato JSON que se usan como fuente para autocompletar campos del formulario (por ejemplo al buscar por número de expediente o al cargar datos del solicitante). En el entorno de desarrollo es habitual autenticar una sesión en el panel para probar estas rutas; para integraciones programáticas se recomienda exponer endpoints API protegidos para recibir 401 en lugar de redirecciones a login.
 
 
 

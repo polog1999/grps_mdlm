@@ -51,7 +51,8 @@ class LicenciaService
             return ['status' => 'ok', 'data' => $resultados->first()];
         } catch (\Throwable $e) {
             logger()->error('Error al consultar licencias: ' . $e->getMessage());
-            return ['status' => 'error', 'data' => collect()];
+            return ['status' => 'error',        'message' => $e->getMessage(),  // 🔍 agrega este campo
+ 'data' => collect()];
         }
     }
 

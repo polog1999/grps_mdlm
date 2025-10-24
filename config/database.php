@@ -60,6 +60,21 @@ return [
             'search_path' => 'itse',
             'sslmode' => 'prefer',
         ],
+        'pgsql_itseanterior' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL_ITSEANTERIOR'),
+            'host' => env('DB_HOST_ITSEANTERIOR', '127.0.0.1'),
+            'port' => env('DB_PORT_ITSEANTERIOR', '5432'),
+            'database' => env('DB_DATABASE_ITSEANTERIOR', 'laravel'),
+            'username' => env('DB_USERNAME_ITSEANTERIOR', 'root'),
+            'password' => env('DB_PASSWORD_ITSEANTERIOR', ''),
+            'charset' => env('DB_CHARSET_ITSEANTERIOR', 'utf8'),
+            'schema' => 'sgdc',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'itse',
+            'sslmode' => 'prefer',
+        ],
     ],
 
     /*
