@@ -10,10 +10,15 @@ class ListCertificadoInspeccions extends ListRecords
 {
     protected static string $resource = CertificadoInspeccionResource::class;
 
+    // Título personalizado de la página List
+    protected static ?string $title = 'Listado de Certificados de Inspección';
+
     protected function getHeaderActions(): array
     {
         return [
             CreateAction::make(),
         ];
     }
+
+    
 }

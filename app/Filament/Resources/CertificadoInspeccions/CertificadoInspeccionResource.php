@@ -35,6 +35,10 @@ class CertificadoInspeccionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Certificado Inspeccion';
 
+    // Etiquetas personalizadas para Filament
+    protected static ?string $navigationLabel = 'Certificados de Inspección';
+    protected static ?string $pluralModelLabel = 'Certificados de Inspección';
+
     public static function form(Schema $schema): Schema
     {
         return CertificadoInspeccionForm::configure($schema);
@@ -60,7 +64,6 @@ class CertificadoInspeccionResource extends Resource
                                         ->badge()
                                         ->color('info')
                                         ->size(TextSize::Large)
-                                        ->copyable(true)
                                         ->weight(FontWeight::Bold),
                                     
                                     TextEntry::make('cin_anio')

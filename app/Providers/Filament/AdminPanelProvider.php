@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => Color::Amber,
+                'white'=>'rgba(255, 255, 255, 1)',
                 'danger-high' => 'rgba(231, 120, 120, 1)',
                 'danger-very-high' => 'rgba(110, 6, 6, 1)',
 

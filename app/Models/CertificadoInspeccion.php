@@ -46,4 +46,5 @@ class CertificadoInspeccion extends Model
     {
         return $this->belongsTo(TipoEdificacion::class, 'tie_id');
     }
+
 }

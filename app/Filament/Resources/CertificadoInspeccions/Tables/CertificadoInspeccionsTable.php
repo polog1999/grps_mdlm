@@ -11,7 +11,11 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Carbon\Carbon;
-
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
+use App\Models\CertificadoInspeccion;
+use App\Services\CertificadoInspeccionService;
 
 class CertificadoInspeccionsTable
 {
@@ -168,11 +172,89 @@ class CertificadoInspeccionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+                SelectFilter::make('tie_id')
+                    ->label('Tipo de Edificación')
+                    ->relationship('tipoEdificacion', 'tie_descripcion')
+                    ->searchable(),
+
+                SelectFilter::make('cin_anio')
+                    ->label('Año')
+                    ->options(fn () => CertificadoInspeccion::query()
+                        ->distinct()
+                        ->orderBy('cin_anio', 'desc')
+                        ->pluck('cin_anio', 'cin_anio')
+                        ->toArray())
+                    ->searchable(),
+
+                //Numero de certificado
+                SelectFilter::make('cin_numero')
+                    ->label('Número de Certificado')
+                    ->options(fn () => CertificadoInspeccion::query()
+                        ->distinct()
+                        ->orderBy('cin_numero', 'desc')
+                        ->pluck('cin_numero', 'cin_numero')
+                        ->toArray())
+                    ->searchable(),
+
+                //Solicitante
+                SelectFilter::make('cin_solicitante')
+                    ->label('Solicitante')
+                    ->options(fn () => CertificadoInspeccion::query()
+                        ->distinct()
+                        ->orderBy('cin_solicitante', 'asc')
+                        ->pluck('cin_solicitante', 'cin_solicitante')
+                        ->toArray())
+                    ->searchable(),
+                //Ubicacion, pero solo buscar por los primero 4 caracteres
+                SelectFilter::make('cin_ubicacion') 
+                    ->label('Ubicación') 
+                    ->searchable() 
+                    ->getSearchResultsUsing(function (string $search): array {
+                        $service = new CertificadoInspeccionService(); 
+                        $ubicaciones = $service->buscarUbicacion($search); 
+                        return array_combine($ubicaciones, $ubicaciones);
+                    })
+                    ->getOptionLabelUsing(fn ($value): string => $value),
+
+                SelectFilter::make('cin_giro')
+                    ->label('Giro')
+                    ->options(fn () => CertificadoInspeccion::query()
+                        ->distinct()
+                        ->orderBy('cin_giro', 'asc')
+                        ->pluck('cin_giro', 'cin_giro')
+                        ->toArray())
+                    ->searchable(),
+                SelectFilter::make('cin_fecha')
+                    ->label('Fecha Certificado')
+                    ->form([
+                        TextInput::make('from')
+                            ->label('Desde')
+                            ->type('date'),
+                        TextInput::make('to')
+                            ->label('Hasta')
+                            ->type('date'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        if ($data['from']) {
+                            $query->whereDate('cin_fecha', '>=', Carbon::parse($data['from']));
+                        }
+                        if ($data['to']) {
+                            $query->whereDate('cin_fecha', '<=', Carbon::parse($data['to']));
+                        }
+                    }),
+            ], layout: FiltersLayout::AboveContent)
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+               ViewAction::make()
+                    ->icon('heroicon-o-eye')
+                    ->iconButton()
+                    ->tooltip('Ver detalles del certificado')
+                    ->color('info'),
+
+                EditAction::make()
+                    ->icon('heroicon-o-pencil')
+                    ->iconButton()
+                    ->tooltip('Editar certificado')
+                    ->color('warning'),
             ])
             ->modifyQueryUsing(fn ($query) => $query->where('cin_filaeliminada', false))
             ->toolbarActions([
@@ -180,7 +262,5 @@ class CertificadoInspeccionsTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
-            
-            
+        }
     }
-}

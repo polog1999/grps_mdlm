@@ -10,7 +10,7 @@ use App\Services\TipoEdificacionService;
 use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\PersonaSolicitanteController;
 use App\Http\Controllers\TipoEdificacionController;
-
+use App\Http\Controllers\CertificadoInspeccionController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -43,7 +43,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/licencia/licencia_id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia'])
             ->name('licencia.obtenerPorIdLicencia');
-    });
+
+        Route::get('/certificado-inspeccion/buscar-ubicacion', [CertificadoInspeccionController::class, 'buscarUbicacion'])
+            ->name('certificadoInspeccion.buscarUbicacion');
+        });
 });
  
 
