@@ -79,6 +79,17 @@ class LicenciaService
     }
 
     /**
+     * Buscar por ID de licencia
+     */
+    public function obtenerPorIdLicencia($lic_id)
+    {
+        return $this->buscarYContar(
+            [['lic_id', '=', $lic_id]],
+            "lic_id = {$lic_id}"
+        );
+    }
+
+    /**
      * Buscar por número de licencia y expediente (combinado)
      */
     public function obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum)

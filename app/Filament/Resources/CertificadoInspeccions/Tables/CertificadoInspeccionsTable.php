@@ -12,8 +12,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Carbon\Carbon;
 
+
 class CertificadoInspeccionsTable
 {
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -21,14 +23,23 @@ class CertificadoInspeccionsTable
                 TextColumn::make('tipoEdificacion.tie_descripcion')
                     ->label('Edificación')
                     ->numeric()
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'RIESGO BAJO' => 'info',
+                        'RIESGO MEDIO' => 'warning',
+                        'RIESGO ALTO' => 'danger-high',
+                        'RIESGO MUY ALTO' => 'danger-very-high', 
+                        "EX POST" => 'info',
+                        "EX ANTE" => 'info',
+                        "DE PARTE" => 'info',
+                        "DE DETALLE" => 'info',
+                    })
                     ->sortable(),
                 TextColumn::make('cin_anio')
                     ->label('Año')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('cin_numero')
                     ->label('N° Certificado')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('cin_expediente')
                     ->label('Expediente')
@@ -79,23 +90,28 @@ class CertificadoInspeccionsTable
         
                 IconColumn::make('cin_indeterminado')
                     ->label('Indeterminado')
+                    ->hidden()
                     ->boolean(),
                 TextColumn::make('cin_filafecha')
                     ->label('Fecha de Fila')
                     ->dateTime()
+                    ->hidden()
                     ->sortable(),
                 IconColumn::make('cin_filaoriginal')
                     ->label('Fila Original')
+                    ->hidden()
                     ->boolean(),
                 IconColumn::make('cin_filaeliminada')
                     ->label('Fila Eliminada')
                     ->hidden()
                     ->boolean(),
                 TextColumn::make('usa_id')
-                    ->numeric(),
+                    ->numeric()
+                    ->hidden(),
 
                 IconColumn::make('cin_consello')
                     ->label('Consello')
+                    ->hidden()
                     ->boolean(),
                 TextColumn::make('lic_id')
                     ->label('Licencia ID')
@@ -103,41 +119,51 @@ class CertificadoInspeccionsTable
                     ->hidden(),
                 TextColumn::make('cin_departamento')
                     ->label('Departamento')
+                    ->hidden()
                     ->searchable(),
                 TextColumn::make('cin_provincia')
                     ->label('Provincia')
+                    ->hidden()
                     ->searchable(),
                 TextColumn::make('cin_distrito')
                     ->label('Distrito')
+                    ->hidden()
                     ->searchable(),
                 TextColumn::make('cin_licencia')
                     ->label('Licencia Número')
+                    ->hidden()
                     ->searchable(),
                 TextColumn::make('cin_procedimiento')
                     ->label('Procedimiento')
+                    ->hidden()
                     ->searchable(),
                 TextColumn::make('cin_expediente')
                     ->label('Expediente')
+                    ->hidden()
                     ->searchable(),
 
                 TextColumn::make('cin_nota')
                     ->label('Nota')
+                    ->hidden()
                     ->searchable(),
                 
    
 
                 TextColumn::make('cin_establecimiento')
                     ->label('Establecimiento')
+                    ->hidden()
                     ->searchable(),
 
                 TextColumn::make('created_at')
                     ->label('Fecha de Creación')
                     ->dateTime()
+                    ->hidden()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->label('Fecha de Actualización')
                     ->dateTime()
+                    ->hidden()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

@@ -40,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/persona-solicitante/{per_idsolicitante}', [PersonaSolicitanteController::class, 'obtenerPorIdSolicitante'])
             ->name('personaSolicitante.obtenerPorIdSolicitante');
+
+        Route::get('/licencia/licencia_id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia'])
+            ->name('licencia.obtenerPorIdLicencia');
     });
 });
  

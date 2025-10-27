@@ -67,4 +67,17 @@ class LicenciaController extends Controller
         $items = $this->service->obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum);
         return response()->json($items);
     }
+
+
+    /**
+     * Buscar por ID de licencia.
+     * 
+     * @param  string  $lic_id  ID de licencia
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function obtenerPorIdLicencia($lic_id)
+    {
+        $items = $this->service->obtenerPorIdLicencia($lic_id);
+        return response()->json($items);
+    }
 }

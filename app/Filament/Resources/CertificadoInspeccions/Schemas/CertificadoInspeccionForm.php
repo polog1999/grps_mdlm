@@ -386,7 +386,7 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Campos de Sistema
+     * Sección: Campos de Sistema 
      */
     private static function seccionSistema(): Fieldset
     {
@@ -430,6 +430,7 @@ class CertificadoInspeccionForm
                             ->helperText('Marca si el registro está inactivo'),
                     ]),
             ])
+            ->hidden(true)
             ->columnSpan('full');
             //->collapsed();
     }
