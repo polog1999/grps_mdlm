@@ -9,14 +9,19 @@ class TipoEdificacionService{
         
     public function __construct()
     {
-        $this->connection = DB::connection('pgsql_itseanterior');
+        $this->connection = DB::connection('pgsql');
     }
 
    public function getTipoEdificaciones()
     {
-        return $this->connection->table('sgdc.tipoedificacion')->select('tie_id', 'tie_descripcion')->get();
+        return $this->connection->table('itse.tipoedificacion')->select('tie_id', 'tie_descripcion')->get();
     }
 
-
-
+    public function getTipoEdificacionesActivos()
+    {
+        return $this->connection->table('itse.tipoedificacion')
+            ->select('tie_id', 'tie_descripcion')
+            ->where('tie_activo', true)
+            ->get();
+    }
 }

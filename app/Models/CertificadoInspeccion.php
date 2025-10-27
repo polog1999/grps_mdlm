@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\TipoEdificacion;
 class CertificadoInspeccion extends Model
 {
     protected $table = 'certificadoinspeccion';
     protected $primaryKey = 'cin_id';
     public $timestamps = true;
+
 
     protected $fillable = [
         'cin_anio',
@@ -40,4 +41,9 @@ class CertificadoInspeccion extends Model
         'cin_establecimiento',
         'cin_solicitante',
     ];
+
+    public function tipoEdificacion()
+    {
+        return $this->belongsTo(TipoEdificacion::class, 'tie_id');
+    }
 }

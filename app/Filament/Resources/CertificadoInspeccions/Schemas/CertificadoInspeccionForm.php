@@ -125,14 +125,6 @@ class CertificadoInspeccionForm
                             ->maxLength(255)
                             ->columnSpan(2)
                             ->suffixIcon('heroicon-o-building-office-2')
-                            ->live()
-                            ->disabled(fn(callable $get) => filled($get('lic_id')))
-                            ->dehydrated()
-                            ->extraInputAttributes(fn(callable $get) => 
-                                filled($get('lic_id')) 
-                                    ? ['class' => 'border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-950/20']
-                                    : []
-                            )
                             ->suffixAction(
                                 self::accionBuscarLicencia()
                             ),
@@ -198,14 +190,6 @@ class CertificadoInspeccionForm
                             ->suffix('m²')
                             ->placeholder('150.50')
                             ->required()
-                            ->live()
-                            ->disabled(fn(callable $get) => filled($get('lic_id')))
-                            ->dehydrated()
-                            ->extraInputAttributes(fn(callable $get) => 
-                                filled($get('lic_id')) 
-                                    ? ['class' => 'border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-950/20']
-                                    : []
-                            )
                             ->helperText('Área en metros cuadrados'),
 
                         TextInput::make('cin_capacidad')
@@ -391,6 +375,10 @@ class CertificadoInspeccionForm
                     ->maxLength(1000)
                     ->helperText('Información adicional sobre el certificado (máx. 1000 caracteres)')
                     ->columnSpanFull(),
+                Toggle::make('cin_consello')
+                    ->label('¿Tiene Sello?')
+                    ->default(false)
+                    ->inline(false),
             ])
             ->collapsible()
             //>collapsed()
@@ -408,21 +396,23 @@ class CertificadoInspeccionForm
                     ->schema([
                         DateTimePicker::make('cin_filafecha')
                             ->label('Fecha de Registro')
+                            ->default(now())
                             ->disabled()
                             ->dehydrated()
                             ->native(false)
-                            ->displayFormat('d/m/Y H:i'),
+                            ->seconds(true)
+                            ->displayFormat('d/m/Y H:i:s')
+                            ->helperText('Generado automáticamente al crear el registro'),
 
                         TextInput::make('usa_id')
                             ->label('Usuario ID')
                             ->numeric()
+                            ->default(0)
                             ->disabled()
-                            ->dehydrated(),
+                            ->dehydrated()
+                            ->helperText('ID del usuario del sistema'),
 
-                        Toggle::make('cin_consello')
-                            ->label('¿Tiene Sello?')
-                            ->default(false)
-                            ->inline(false),
+             
                     ]),
 
                 Grid::make(2)
@@ -725,13 +715,14 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Obtiene los tipos de edificación del servicio
+     * Obtiene los tipos de edificación del servicio y tambien los que en tie_activo sean tru
      */
     private static function obtenerTiposEdificacion(): array
     {
         try {
             $service = new TipoEdificacionService();
-            $data = $service->getTipoEdificaciones();
+            $data = $service->getTipoEdificacionesActivos();
+
             return collect($data)->pluck('tie_descripcion', 'tie_id')->toArray();
         } catch (\Throwable $e) {
             logger()->error('Error al cargar tipos de edificación', [
