@@ -16,6 +16,7 @@ use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use App\Models\CertificadoInspeccion;
 use App\Services\CertificadoInspeccionService;
+use Filament\Actions\Action;
 
 class CertificadoInspeccionsTable
 {
@@ -255,6 +256,16 @@ class CertificadoInspeccionsTable
                     ->iconButton()
                     ->tooltip('Editar certificado')
                     ->color('warning'),
+             Action::make('exportar')
+                    ->label('Exportar')
+                    ->icon('heroicon-o-document')
+                    ->tooltip('Exportar certificado (PDF)')
+                    ->iconButton()
+                    ->color('success')
+                    ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
+                    ->openUrlInNewTab()
+                
+
             ])
             ->modifyQueryUsing(fn ($query) => $query->where('cin_filaeliminada', false))
             ->toolbarActions([
