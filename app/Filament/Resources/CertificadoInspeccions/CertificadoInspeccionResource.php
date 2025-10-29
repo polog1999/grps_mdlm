@@ -29,18 +29,23 @@ use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use BackendEnum;
+use UnitEnum;
 
 class CertificadoInspeccionResource extends Resource
 {
     protected static ?string $model = CertificadoInspeccion::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'Certificado Inspeccion';
 
-    // Etiquetas personalizadas para Filament
+    // Etiquetas personalizadas para FilamentnavigationLabel
+    //navigation group
+    protected static string | UnitEnum | null $navigationGroup = 'SIL';
+    //ICON FOR NAVIGATIONGROUP
     protected static ?string $navigationLabel = 'Certificados de Inspección';
     protected static ?string $pluralModelLabel = 'Certificados de Inspección';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
 
     public static function form(Schema $schema): Schema
     {

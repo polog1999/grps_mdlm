@@ -6,6 +6,7 @@ use App\Models\CertificadoInspeccion;
 use Filament\Actions\Action;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Facades\Auth;
 
 class ExportCertificadoAction
 {
@@ -250,18 +251,29 @@ class ExportCertificadoAction
         $highestColumn = $sheet->getHighestColumn();
         $highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
         
-        $fechaConsulta = now('America/Lima')->format('d/m/y H:i');
+        $fechaConsulta = now()->format('d/m/y H:i');
+        $userName = Auth::check() ? Auth::user()->name : 'Usuario';
         
-        // Recorrer todas las celdas buscando {{fecha_consulta}}
+        // Recorrer todas las celdas buscando placeholders
         for ($r = 1; $r <= $highestRow; $r++) {
             for ($c = 1; $c <= $highestColumnIndex; $c++) {
                 $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($c);
                 $cell = $sheet->getCell($colLetter . $r);
                 $cellValue = (string) $cell->getValue();
                 
+                // Reemplazar {{fecha_consulta}}
                 if (strpos($cellValue, '{{fecha_consulta}}') !== false) {
-                    $newValue = str_replace('{{fecha_consulta}}', $fechaConsulta, $cellValue);
-                    $cell->setValue($newValue);
+                    $cellValue = str_replace('{{fecha_consulta}}', $fechaConsulta, $cellValue);
+                }
+                
+                // Reemplazar {{name}}
+                if (strpos($cellValue, '{{name}}') !== false) {
+                    $cellValue = str_replace('{{name}}', $userName, $cellValue);
+                }
+                
+                // Actualizar celda si hubo cambios
+                if ($cellValue !== (string) $cell->getValue()) {
+                    $cell->setValue($cellValue);
                 }
             }
         }
@@ -358,7 +370,7 @@ class ExportCertificadoAction
     protected static function generateDownload($spreadsheet)
     {
         $writer = new Xlsx($spreadsheet);
-        $fileName = 'certificados_consultados_' . now('America/Lima')->format('Y-m-d_His') . '.xlsx';
+        $fileName = 'certificados_consultados_' . now()->format('Y-m-d_His') . '.xlsx';
         
         $tempFile = tempnam(sys_get_temp_dir(), 'excel_');
         $writer->save($tempFile);

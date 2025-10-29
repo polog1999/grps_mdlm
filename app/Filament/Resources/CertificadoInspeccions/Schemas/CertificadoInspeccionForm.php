@@ -106,24 +106,24 @@ class CertificadoInspeccionForm
             ->description('Información del local o establecimiento a certificar')
             ->icon('heroicon-o-building-storefront')
             ->schema([
-                Select::make('tie_id')
-                    ->label('Tipo de Edificación')
-                    ->options(fn() => self::obtenerTiposEdificacion())
-                    ->required()
-                    ->searchable()
-                    ->preload()
-                    ->native(false)
-                    ->placeholder('Seleccione el tipo de edificación')
-                    ->helperText('Clasificación según uso del inmueble'),
+                
 
-                Grid::make(3)
+                Grid::make(2)
                     ->schema([
+                        Select::make('tie_id')
+                            ->label('Tipo de Edificación')
+                            ->options(fn() => self::obtenerTiposEdificacion())
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->placeholder('Seleccione el tipo de edificación')
+                            ->helperText('Clasificación según uso del inmueble'),
                         TextInput::make('cin_establecimiento')
                             ->label('Nombre del Establecimiento')
                             ->placeholder('Ej. Empresa XYZ S.A.C.')
                             ->required()
                             ->maxLength(255)
-                            ->columnSpan(2)
                             ->suffixIcon('heroicon-o-building-office-2')
                             ->suffixAction(
                                 self::accionBuscarLicencia()
@@ -135,6 +135,7 @@ class CertificadoInspeccionForm
                             ->disabled()
                             ->dehydrated()
                             ->placeholder('Auto')
+                            ->hidden(true)
                             ->helperText('Se completa automáticamente'),
                     ]),
 

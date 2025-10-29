@@ -14,6 +14,9 @@ use Carbon\Carbon;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\Indicator;
 use App\Models\CertificadoInspeccion;
 use App\Services\CertificadoInspeccionService;
 use Filament\Actions\Action;
@@ -25,6 +28,7 @@ class CertificadoInspeccionsTable
     {
         return $table
             ->defaultSort('cin_fecha', 'desc')
+            ->searchable(false)
             ->columns([
                 TextColumn::make('tipoEdificacion.tie_descripcion')
                     ->label('Edificación')
@@ -181,87 +185,138 @@ class CertificadoInspeccionsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                SelectFilter::make('tie_id')
-                    ->label('Tipo de Edificación')
-                    ->relationship('tipoEdificacion', 'tie_descripcion')
-                    ->searchable(),
+->filters([
+    SelectFilter::make('tie_id')
+        ->label('Tipo de Edificación')
+        ->relationship('tipoEdificacion', 'tie_descripcion')
+        ->searchable()
+        ->preload()
+        ->indicator('Tipo de Edificación')
+        ->placeholder('Todos los tipos'),
 
-                SelectFilter::make('cin_anio')
-                    ->label('Año')
-                    ->options(fn () => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->orderBy('cin_anio', 'desc')
-                        ->pluck('cin_anio', 'cin_anio')
-                        ->toArray())
-                    ->searchable(),
+    SelectFilter::make('cin_anio')
+        ->label('Año')
+        ->options(fn () => CertificadoInspeccion::query()
+            ->distinct()
+            ->orderBy('cin_anio', 'desc')
+            ->pluck('cin_anio', 'cin_anio')
+            ->toArray())
+        ->searchable()
+        ->indicator('Año')
+        ->placeholder('Todos los años')
+        ->native(false),
 
-                //Numero de certificado
-                SelectFilter::make('cin_numero')
-                    ->label('Número de Certificado')
-                    ->options(fn () => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->orderBy('cin_numero', 'desc')
-                        ->pluck('cin_numero', 'cin_numero')
-                        ->toArray())
-                    ->searchable(),
+    SelectFilter::make('cin_numero')
+        ->label('N° Certificado')
+        ->options(fn () => CertificadoInspeccion::query()
+            ->distinct()
+            ->orderBy('cin_numero', 'desc')
+            ->pluck('cin_numero', 'cin_numero')
+            ->toArray())
+        ->searchable()
+        ->indicator('N° Certificado')
+        ->placeholder('Buscar número...')
+        ->native(false),
 
-                //Solicitante
-                SelectFilter::make('cin_solicitante')
-                    ->label('Solicitante')
-                    ->options(fn () => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->orderBy('cin_solicitante', 'asc')
-                        ->pluck('cin_solicitante', 'cin_solicitante')
-                        ->toArray())
-                    ->searchable(),
-                //Ubicacion, pero solo buscar por los primero 4 caracteres
-                SelectFilter::make('cin_ubicacion') 
-                    ->label('Ubicación') 
-                    ->searchable() 
-                    ->getSearchResultsUsing(function (string $search): array {
-                        $service = new CertificadoInspeccionService(); 
-                        $ubicaciones = $service->buscarUbicacion($search); 
-                        return array_combine($ubicaciones, $ubicaciones);
-                    })
-                    ->getOptionLabelUsing(fn ($value): string => $value),
+    SelectFilter::make('cin_solicitante')
+        ->label('Solicitante')
+        ->options(fn () => CertificadoInspeccion::query()
+            ->distinct()
+            ->whereNotNull('cin_solicitante')
+            ->where('cin_solicitante', '!=', '')
+            ->orderBy('cin_solicitante', 'asc')
+            ->pluck('cin_solicitante', 'cin_solicitante')
+            ->toArray())
+        ->searchable()
+        ->indicator('Solicitante')
+        ->placeholder('Buscar solicitante...')
+        ->native(false),
 
-                SelectFilter::make('cin_giro')
-                    ->label('Giro')
-                    ->options(fn () => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->orderBy('cin_giro', 'asc')
-                        ->pluck('cin_giro', 'cin_giro')
-                        ->toArray())
-                    ->searchable(),
-                SelectFilter::make('cin_fecha')
-                    ->label('Fecha Certificado')
-                    ->form([
-                        TextInput::make('from')
-                            ->label('Desde')
-                            ->type('date'),
-                        TextInput::make('to')
-                            ->label('Hasta')
-                            ->type('date'),
-                    ])
-                    ->query(function ($query, array $data) {
-                        if ($data['from']) {
-                            $query->whereDate('cin_fecha', '>=', Carbon::parse($data['from']));
-                        }
-                        if ($data['to']) {
-                            $query->whereDate('cin_fecha', '<=', Carbon::parse($data['to']));
-                        }
-                    }),
-                SelectFilter::make('cin_expediente')
-                    ->label('Expediente')
-                    ->options(fn () => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->orderBy('cin_expediente', 'asc')
-                        ->pluck('cin_expediente', 'cin_expediente')
-                        ->toArray())
-                    ->searchable(),
+    SelectFilter::make('cin_ubicacion') 
+        ->label('Ubicación') 
+        ->searchable() 
+        ->getSearchResultsUsing(function (string $search): array {
+            $service = new CertificadoInspeccionService(); 
+            $ubicaciones = $service->buscarUbicacion($search); 
+            return array_combine($ubicaciones, $ubicaciones);
+        })
+        ->getOptionLabelUsing(fn ($value): string => $value)
+        ->indicator('Ubicación')
+        ->placeholder('Buscar ubicación...')
+        ->native(false),
 
-            ], layout: FiltersLayout::AboveContent)
+    SelectFilter::make('cin_giro')
+        ->label('Giro del Negocio')
+        ->options(fn () => CertificadoInspeccion::query()
+            ->distinct()
+            ->whereNotNull('cin_giro')
+            ->where('cin_giro', '!=', '')
+            ->orderBy('cin_giro', 'asc')
+            ->pluck('cin_giro', 'cin_giro')
+            ->toArray())
+        ->searchable()
+        ->indicator('Giro')
+        ->placeholder('Buscar giro...')
+        ->native(false),
+
+    Filter::make('cin_fecha')
+        ->label('Fecha del Certificado')
+        ->form([
+            DatePicker::make('from')
+                ->label('Desde')
+                ->placeholder('Seleccionar fecha inicial')
+                ->native(false)
+                ->displayFormat('d/m/Y')
+                ->maxDate(now()),
+            DatePicker::make('to')
+                ->label('Hasta')
+                ->placeholder('Seleccionar fecha final')
+                ->native(false)
+                ->displayFormat('d/m/Y')
+                ->maxDate(now()),
+        ])
+        ->query(function ($query, array $data) {
+            return $query
+                ->when($data['from'], fn ($query, $date) => 
+                    $query->whereDate('cin_fecha', '>=', Carbon::parse($date))
+                )
+                ->when($data['to'], fn ($query, $date) => 
+                    $query->whereDate('cin_fecha', '<=', Carbon::parse($date))
+                );
+        })
+        ->indicateUsing(function (array $data): array {
+            $indicators = [];
+            
+            if ($data['from'] ?? null) {
+                $indicators[] = Indicator::make('Desde: ' . Carbon::parse($data['from'])->format('d/m/Y'))
+                    ->removeField('from');
+            }
+            
+            if ($data['to'] ?? null) {
+                $indicators[] = Indicator::make('Hasta: ' . Carbon::parse($data['to'])->format('d/m/Y'))
+                    ->removeField('to');
+            }
+            
+            return $indicators;
+        }),
+
+    SelectFilter::make('cin_expediente')
+        ->label('N° Expediente')
+        ->options(fn () => CertificadoInspeccion::query()
+            ->distinct()
+            ->whereNotNull('cin_expediente')
+            ->where('cin_expediente', '!=', '')
+            ->orderBy('cin_expediente', 'desc')
+            ->pluck('cin_expediente', 'cin_expediente')
+            ->toArray())
+        ->searchable()
+        ->indicator('N° Expediente')
+        ->placeholder('Buscar expediente...')
+        ->native(false),
+
+], layout: FiltersLayout::AboveContent)
+->filtersFormColumns(4)
+->filtersFormMaxHeight('400px')
             ->recordActions([
                ViewAction::make()
                     ->icon('heroicon-o-eye')
