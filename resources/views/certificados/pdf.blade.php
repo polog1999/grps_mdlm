@@ -2,10 +2,17 @@
     use Carbon\Carbon;
     use NumberToWords\NumberToWords;
 
-    // Instancia el convertidor
+    $tipoEdificacion = $record->tie_id;
+    if($tipoEdificacion==5 || $tipoEdificacion==6){
+        $textoTipoEdificacion = "DE RIESGO BAJO O RIESGO MEDIO";
+        $numeroAnexo=13;
+    }else if($tipoEdificacion==7 || $tipoEdificacion==8){
+        $textoTipoEdificacion = "DE RIESGO ALTO O RIESGO MUY ALTO";
+        $numeroAnexo=14;
+    }
+    
     $numberToWords = new NumberToWords();
     $numberTransformer = $numberToWords->getNumberTransformer('es');
-    // Asegurarte de que cin_fec_fin sea una fecha válida
     $fechaCaducidad = Carbon::parse($record->cin_fec_fin);
     $fechaExpedicion = Carbon::parse($record->cin_fecha);
     $fechaRenovacion = $fechaCaducidad->copy()->subWeekdays(30)->format('d/m/Y');
@@ -273,7 +280,7 @@ table.fecha-table td.nota {
 <body>
     <!-- Anexo Encabezado arriba -->
     <div class="anexo">
-        {{ $record->cAnexo ?? 'ANEXO 14' }}
+        ANEXO {{$numeroAnexo}}
     </div>
     
     <div class="top-header">
@@ -288,9 +295,9 @@ table.fecha-table td.nota {
         <h1>
             CERTIFICADO DE INSPECCIÓN TÉCNICA DE SEGURIDAD EN EDIFICACIONES<br>
             PARA ESTABLECIMIENTOS OBJETO DE INSPECCIÓN CLASIFICADOS CON NIVEL<br>
-            DE RIESGO ALTO O RIESGO MUY ALTO SEGÚN LA MATRIZ DE RIESGOS
+            {{$textoTipoEdificacion}} SEGÚN LA MATRIZ DE RIESGOS
         </h1>
-        <div class="numero">N° {{$record->cin_resolucion ?? '6996-2025' }}</div>
+        <div class="numero">N° {{$record->cin_numero}}-{{$record->cin_anio}}</div>
     </div>
 
     <!-- Texto introductorio -->
@@ -335,7 +342,7 @@ table.fecha-table td.nota {
         <tr>
             <td class="label">Capacidad Máxima de la Edificación:</td>
             <td class="value numero">{{$record->cin_capacidad}}</td>
-            <td class="value texto">{{$capacidadTexto}}</td>
+            <td class="value texto">({{$capacidadTexto}})</td>
             <td class="value unidad">personas</td>
         </tr>
     </table>

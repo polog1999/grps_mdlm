@@ -36,6 +36,17 @@ class CertificadoInspeccionController extends Controller
     public function exportarPdf($certificadoId)
     {
     $record = CertificadoInspeccion::with('tipoEdificacion')->findOrFail($certificadoId);
+        $record = CertificadoInspeccion::with('tipoEdificacion')->findOrFail($certificadoId);
+
+        $tipo = $record->tie_id;
+        if (! in_array($tipo, [5, 6, 7, 8], true)) {
+            $base = config('certificado.redirect_url'); 
+            if ($base) {
+                $url = rtrim($base, '?&') . (str_contains($base, '?') ? '' : '?')  . urlencode($certificadoId);
+                return redirect()->away($url);
+            }
+            return redirect()->back()->with('error', 'Tipo de edificación no permitido para generar este certificado.');
+        }
 
         // Renderizar la vista Blade a HTML
         $html = view('certificados.pdf', compact('record'))->render();

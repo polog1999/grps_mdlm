@@ -24,6 +24,7 @@ class CertificadoInspeccionsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('cin_fecha', 'desc')
             ->columns([
                 TextColumn::make('tipoEdificacion.tie_descripcion')
                     ->label('Edificación')
