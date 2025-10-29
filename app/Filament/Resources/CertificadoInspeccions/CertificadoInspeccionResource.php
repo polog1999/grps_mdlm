@@ -25,7 +25,10 @@ use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Group;
 use Filament\Support\Enums\IconSize;
 use Filament\Infolists\Components\CodeEntry;
-
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 
 class CertificadoInspeccionResource extends Resource
 {
@@ -226,7 +229,10 @@ class CertificadoInspeccionResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return CertificadoInspeccionsTable::configure($table);
+        return CertificadoInspeccionsTable::configure($table)
+            ->bulkActions([
+        
+            ]);
     }
 
     public static function getRelations(): array

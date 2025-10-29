@@ -6,6 +6,10 @@ use App\Services\CertificadoInspeccionService;
 use Illuminate\Http\Request;
 use Dompdf\Dompdf;
 use App\Models\CertificadoInspeccion;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CertificadosExport;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class CertificadoInspeccionController extends Controller
 {
@@ -33,44 +37,40 @@ class CertificadoInspeccionController extends Controller
         return response()->json($options);
     }
 
-    public function exportarPdf($certificadoId)
-    {
-    $record = CertificadoInspeccion::with('tipoEdificacion')->findOrFail($certificadoId);
+    public function exportarPdf($certificadoId) {
         $record = CertificadoInspeccion::with('tipoEdificacion')->findOrFail($certificadoId);
+            $record = CertificadoInspeccion::with('tipoEdificacion')->findOrFail($certificadoId);
 
-        $tipo = $record->tie_id;
-        if (! in_array($tipo, [5, 6, 7, 8], true)) {
-            $base = config('certificado.redirect_url'); 
-            if ($base) {
-                $url = rtrim($base, '?&') . (str_contains($base, '?') ? '' : '?')  . urlencode($certificadoId);
-                return redirect()->away($url);
+            $tipo = $record->tie_id;
+            if (! in_array($tipo, [5, 6, 7, 8], true)) {
+                $base = config('certificado.redirect_url'); 
+                if ($base) {
+                    $url = rtrim($base, '?&') . (str_contains($base, '?') ? '' : '?')  . urlencode($certificadoId);
+                    return redirect()->away($url);
+                }
+                return redirect()->back()->with('error', 'Tipo de edificación no permitido para generar este certificado.');
             }
-            return redirect()->back()->with('error', 'Tipo de edificación no permitido para generar este certificado.');
+
+            // Renderizar la vista Blade a HTML
+            $html = view('certificados.pdf', compact('record'))->render();
+
+            // Configurar opciones de Dompdf
+            $options = new \Dompdf\Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'DejaVu Sans');
+
+            // Generar PDF
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            $filename = "certificado_inspeccion_{$certificadoId}.pdf";
+
+            // Mostrar en el navegador en vez de forzar descarga
+            return response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => "inline; filename=\"{$filename}\"",
+            ]);
         }
-
-        // Renderizar la vista Blade a HTML
-        $html = view('certificados.pdf', compact('record'))->render();
-
-        // Configurar opciones de Dompdf
-        $options = new \Dompdf\Options();
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        // Generar PDF
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        $filename = "certificado_inspeccion_{$certificadoId}.pdf";
-
-        // Mostrar en el navegador en vez de forzar descarga
-        return response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => "inline; filename=\"{$filename}\"",
-        ]);
-    }
-
-
-
 }

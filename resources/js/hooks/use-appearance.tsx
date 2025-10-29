@@ -42,9 +42,8 @@ const handleSystemThemeChange = () => {
 
 export function initializeTheme() {
     const savedAppearance =
-        (localStorage.getItem('appearance') as Appearance) || 'light';
+        (localStorage.getItem('appearance') as Appearance) || 'system';
 
-    // Apply light theme by default when no preference is stored
     applyTheme(savedAppearance);
 
     // Add the event listener for system theme changes...
@@ -52,8 +51,7 @@ export function initializeTheme() {
 }
 
 export function useAppearance() {
-    // Default to light instead of system when no stored preference exists
-    const [appearance, setAppearance] = useState<Appearance>('light');
+    const [appearance, setAppearance] = useState<Appearance>('system');
 
     const updateAppearance = useCallback((mode: Appearance) => {
         setAppearance(mode);
@@ -71,7 +69,7 @@ export function useAppearance() {
         const savedAppearance = localStorage.getItem(
             'appearance',
         ) as Appearance | null;
-        updateAppearance(savedAppearance || 'light');
+        updateAppearance(savedAppearance || 'system');
 
         return () =>
             mediaQuery()?.removeEventListener(

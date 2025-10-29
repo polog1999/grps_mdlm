@@ -67,10 +67,18 @@ class CertificadoInspeccionsTable
                     ->searchable(),
                 TextColumn::make('cin_ubicacion')
                     ->label('Ubicación')
-                    ->searchable(),
+                    ->searchable()
+                    ->extraAttributes([
+                        'style' => 'max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;',
+                    ])
+                    ->tooltip(fn ($record) => $record->cin_ubicacion),
                 TextColumn::make('cin_giro')
                     ->label('Giro')
-                    ->searchable(),
+                    ->searchable()
+                    ->extraAttributes([
+                        'style' => 'max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;',
+                    ])
+                    ->tooltip(fn ($record) => $record->cin_giro),
                 TextColumn::make('cin_fecha')
                     ->label('Fecha')
                     ->date('d/m/Y')
@@ -244,6 +252,15 @@ class CertificadoInspeccionsTable
                             $query->whereDate('cin_fecha', '<=', Carbon::parse($data['to']));
                         }
                     }),
+                SelectFilter::make('cin_expediente')
+                    ->label('Expediente')
+                    ->options(fn () => CertificadoInspeccion::query()
+                        ->distinct()
+                        ->orderBy('cin_expediente', 'asc')
+                        ->pluck('cin_expediente', 'cin_expediente')
+                        ->toArray())
+                    ->searchable(),
+
             ], layout: FiltersLayout::AboveContent)
             ->recordActions([
                ViewAction::make()
@@ -265,7 +282,6 @@ class CertificadoInspeccionsTable
                     ->color('success')
                     ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
                     ->openUrlInNewTab()
-                
 
             ])
             ->modifyQueryUsing(fn ($query) => $query->where('cin_filaeliminada', false))

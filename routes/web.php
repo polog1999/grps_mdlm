@@ -46,10 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/certificado-inspeccion/buscar-ubicacion', [CertificadoInspeccionController::class, 'buscarUbicacion'])
             ->name('certificadoInspeccion.buscarUbicacion');
-
-        Route::get('/certificado-inspeccion/{certificadoId}/Certificado Inspección', [CertificadoInspeccionController::class, 'exportarPdf'])
-            ->name('certificadoInspeccion.exportarPdf');
-        });
+    });
 });
  
 
