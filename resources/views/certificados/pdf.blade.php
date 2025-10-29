@@ -246,7 +246,7 @@ table.fecha-table td.nota {
 
 /* === Footer === */
 .footer-note {
-    margin-top: 25px;
+    margin-top: 5px;
     font-size: 9px;
     line-height: 1.3;
     color: #000;
@@ -390,8 +390,16 @@ table.fecha-table td.nota {
             <td class="value">{{$fechaCaducidadFormatted}}</td>
         </tr>
     </table>
-
-
+    @if(filled($record->cin_nota))
+            <div>
+                <div style="text-decoration: underline;font-weight: bold">
+                    Nota:
+                </div>
+                <div>
+                    {!! nl2br(e($record->cin_nota)) !!}
+                </div>
+            </div>
+    @endif
     <!-- Notas al pie -->
     <div class="footer-note">
         <div style="margin-bottom: 0px;font-style:normal;">
