@@ -8,7 +8,7 @@ class CertificadoInspeccion extends Model
 {
     protected $table = 'certificadoinspeccion';
     protected $primaryKey = 'cin_id';
-    public $timestamps = true;
+    public $timestamps = false;
 
 
     protected $fillable = [

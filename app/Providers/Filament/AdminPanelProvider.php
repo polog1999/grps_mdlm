@@ -21,6 +21,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Enums\ThemeMode;
 use App\Filament\Pages\Register;
+use Filament\Support\Enums\Width;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -33,7 +34,10 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('Filament Demo')
             ->login()
-            ->globalSearch(false)
+            //>globalSearch(false)
+            ->sidebarFullyCollapsibleOnDesktop()
+                    ->maxContentWidth(Width::Full)
+
             ->colors([
                 'primary' => Color::Amber,
                 'white'=>'rgba(255, 255, 255, 1)',

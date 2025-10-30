@@ -83,12 +83,6 @@ class CertificadoInspeccionInfolist
                     ->placeholder('-'),
                 TextEntry::make('cin_solicitante')
                     ->placeholder('-'),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
             ]);
     }
 }

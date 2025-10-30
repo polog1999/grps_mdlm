@@ -89,7 +89,8 @@ class CertificadoInspeccionResource extends Resource
                                         ->badge()
                                         ->color('info')
                                         ->placeholder('No especificado'),
-
+                                      
+                                        
                                     TextEntry::make('cin_resolucion_completa')
                                         ->label('Resolución')
                                         ->getStateUsing(fn ($record) => $record->cin_resolucion . ' ' . $record->cin_resolucion_sigla)

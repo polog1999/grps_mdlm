@@ -14,7 +14,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -26,6 +25,8 @@ use Filament\Actions\Action;
 use Filament\Support\Enums\Width;
 use Filament\Support\Enums\IconPosition;
 use Carbon\Carbon;
+use Filament\Tables\Grouping\Group;
+use Filament\Forms\Components\Hidden;
 
 class CertificadoInspeccionForm
 {
@@ -35,6 +36,25 @@ class CertificadoInspeccionForm
     private const PROVINCIA_DEFAULT = 'Lima';
     private const DISTRITO_DEFAULT = 'La Molina';
     private const SIGLA_RESOLUCION = '-MDLM-GDEIP-SPEA';
+    private static function camposOcultosSistema(): array
+    {
+        return [
+            Hidden::make('cin_filafecha')
+                ->default(now()),
+            
+            Hidden::make('usa_id')
+                ->default(0),
+            
+            Hidden::make('cin_filaoriginal')
+                ->default(true),
+            
+            Hidden::make('cin_filaeliminada')
+                ->default(false),
+            
+            Hidden::make('cin_procedimiento')
+                ->default(''),  
+        ];
+    }
 
     /**
      * Genera el esquema completo del formulario
@@ -42,6 +62,7 @@ class CertificadoInspeccionForm
     public static function make(): array
     {
         return [
+            self::botonBusquedaAutocompletado(),
             self::seccionInformacionGeneral(),
             self::seccionDatosEstablecimiento(),
             self::seccionDimensiones(),
@@ -49,9 +70,53 @@ class CertificadoInspeccionForm
             self::seccionResolucion(),
             self::seccionLicencia(),
             self::seccionInformacionAdicional(),
-            self::seccionSistema(),
+            //self::seccionSistema(),
+            ...self::camposOcultosSistema(), 
+
         ];
     }
+
+    /**
+     * Botón de búsqueda y autocompletado
+     */
+    private static function botonBusquedaAutocompletado(): Action
+    {
+        return Action::make('buscar_por_licencia')
+            ->label('Buscar y autocompletar')
+            ->icon('heroicon-o-magnifying-glass')
+            //->iconPosition(IconPosition::Before)
+            ->color('success')
+            ->modalHeading('Búsqueda de Licencia')
+            ->modalDescription('Ingrese el número de expediente, licencia o ambos para buscar')
+            ->modalIcon('heroicon-o-magnifying-glass')
+            ->modalWidth(Width::Large)
+            ->modalSubmitActionLabel('Buscar Licencia')
+            ->modalCancelActionLabel('Cancelar')
+           ->form([
+                Grid::make(2)
+                    ->schema([
+                        TextInput::make('search_expediente')
+                            ->label('Número de Expediente')
+                            ->placeholder('Ej: 2025-001234')
+                            ->suffixIcon('heroicon-o-folder-open')
+                            ->helperText('Ingrese el expediente administrativo'),
+
+                        TextInput::make('search_licencia')
+                            ->label('Número de Licencia')
+                            ->placeholder('Ej: 2024-12345')
+                            ->suffixIcon('heroicon-o-document-check')
+                            ->helperText('Ingrese el número de licencia'),
+                    ]),
+            ])
+            ->action(function (array $data, Action $action) {
+                $livewire = $action->getLivewire();
+                $set = function (string $field, $value) use ($livewire) {
+                    data_set($livewire, "data.{$field}", $value);
+                };
+                self::manejarBusquedaLicencia($data, $set);
+            });
+    }
+
 
     /**
      * Configura el esquema del formulario (método requerido por Filament Resource)
@@ -123,19 +188,14 @@ class CertificadoInspeccionForm
                             ->label('Nombre del Establecimiento')
                             ->placeholder('Ej. Empresa XYZ S.A.C.')
                             ->required()
-                            ->maxLength(255)
-                            ->suffixIcon('heroicon-o-building-office-2')
-                            ->suffixAction(
-                                self::accionBuscarLicencia()
-                            ),
-
+                            ->maxLength(255),
                         TextInput::make('lic_id')
                             ->label('ID Licencia')
                             ->numeric()
                             ->disabled()
                             ->dehydrated()
                             ->placeholder('Auto')
-                            ->hidden(true)
+                            //->visible(false)
                             ->helperText('Se completa automáticamente'),
                     ]),
 
@@ -331,13 +391,15 @@ class CertificadoInspeccionForm
                             ->suffixIcon('heroicon-o-clipboard-document-check')
                             ->helperText('Licencia de funcionamiento'),
                     ]),
-
+                /*
                 TextInput::make('cin_procedimiento')
                     ->label('Tipo de Procedimiento')
                     ->placeholder('Ej. Evaluación previa con inspección técnica')
                     ->maxLength(255)
                     ->suffixIcon('heroicon-o-cog-6-tooth')
-                    ->helperText('Procedimiento administrativo aplicado'),
+                    ->helperText('Procedimiento administrativo aplicado')
+                    //->visible(false
+                */
             ])
             ->collapsible()
             ->columnSpan('full');
@@ -386,9 +448,8 @@ class CertificadoInspeccionForm
             ->columnSpan('full');
     }
 
-    /**
-     * Sección: Campos de Sistema 
-     */
+
+/*
     private static function seccionSistema(): Fieldset
     {
         return Fieldset::make('Campos del Sistema')
@@ -422,62 +483,22 @@ class CertificadoInspeccionForm
                             ->label('Registro Original')
                             ->default(true)
                             ->inline(false)
+                            ->dehydrated()
                             ->helperText('Marca si es un registro original'),
 
                         Toggle::make('cin_filaeliminada')
                             ->label('Registro Eliminado')
                             ->default(false)
                             ->inline(false)
+                            ->dehydrated()
                             ->helperText('Marca si el registro está inactivo'),
                     ]),
             ])
             ->hidden(true)
             ->columnSpan('full');
             //->collapsed();
-    }
-
-    /**
-     * Acción: Modal de búsqueda de licencia
-     */
-    private static function accionBuscarLicencia(): Action
-    {
-        return Action::make('buscar_licencia')
-            ->label('Buscar')
-            ->icon('heroicon-o-magnifying-glass')
-            ->iconPosition(IconPosition::Before)
-            ->color('primary')
-            ->modalHeading('Búsqueda de Licencia')
-            ->modalDescription('Puede buscar por número de expediente, número de licencia o ambos para mayor precisión')
-            ->modalIcon('heroicon-o-magnifying-glass-circle')
-            ->modalWidth(Width::Large)
-            ->modalSubmitActionLabel('Buscar Licencia')
-            ->modalCancelActionLabel('Cancelar')
-            ->fillForm(function (callable $get): array {
-                // Prellenar los campos del modal con los valores actuales del formulario
-                return [
-                    'search_expediente' => $get('cin_expediente'),
-                    'search_licencia' => $get('cin_licencia'),
-                ];
-            })
-            ->form([
-                Grid::make(2)
-                    ->schema([
-                        TextInput::make('search_expediente')
-                            ->label('Número de Expediente')
-                            ->placeholder('Ej: 2025-001234')
-                            ->suffixIcon('heroicon-o-folder-open')
-                            ->helperText('Ingrese el expediente administrativo'),
-
-                        TextInput::make('search_licencia')
-                            ->label('Número de Licencia')
-                            ->placeholder('Ej: 2024-12345')
-                            ->suffixIcon('heroicon-o-document-check')
-                            ->helperText('Ingrese el número de licencia'),
-                    ]),
-            ])
-            ->action(fn(array $data, callable $set) => self::manejarBusquedaLicencia($data, $set));
-    }
-
+    } 
+*/
     /**
      * Maneja la búsqueda de licencias
      */

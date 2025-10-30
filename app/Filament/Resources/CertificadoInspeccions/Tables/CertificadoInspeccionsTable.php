@@ -28,7 +28,7 @@ class CertificadoInspeccionsTable
     {
         return $table
             ->defaultSort('cin_fecha', 'desc')
-            ->searchable(false)
+            ->searchable(true)
             ->columns([
                 TextColumn::make('tipoEdificacion.tie_descripcion')
                     ->label('Edificación')
@@ -54,18 +54,12 @@ class CertificadoInspeccionsTable
                 TextColumn::make('cin_expediente')
                     ->label('Expediente')
                     ->searchable(),
-                TextColumn::make('cin_resolucion')
-                    ->label('Resolución')
-                    ->searchable()
-                    ->hidden(),
-                TextColumn::make('cin_resolucion_sigla')
-                    ->label('Resolución Sigla')
-                    ->searchable()
-                    ->hidden(),
+                TextColumn::make('cin_resolucion')->label('Resolución')->hidden()->searchable(),
+                TextColumn::make('cin_resolucion_sigla')->label('Resolución Sigla')->hidden()->searchable(),
+
                 TextColumn::make('cin_resolucion_completa')
-                    ->label('Resolución Completa')
-                    ->getStateUsing(fn ($record) => $record->cin_resolucion. $record->cin_resolucion_sigla)
-                    ->searchable(),
+                    ->label('Resolución')
+                    ->getStateUsing(fn ($record) => $record->cin_resolucion. $record->cin_resolucion_sigla),
                 TextColumn::make('cin_solicitante')
                     ->label('Solicitante')
                     ->searchable(),
@@ -171,21 +165,9 @@ class CertificadoInspeccionsTable
                     ->label('Establecimiento')
                     ->hidden()
                     ->searchable(),
-
-                TextColumn::make('created_at')
-                    ->label('Fecha de Creación')
-                    ->dateTime()
-                    ->hidden()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('Fecha de Actualización')
-                    ->dateTime()
-                    ->hidden()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
 ->filters([
+    //title filter
     SelectFilter::make('tie_id')
         ->label('Tipo de Edificación')
         ->relationship('tipoEdificacion', 'tie_descripcion')
@@ -314,9 +296,10 @@ class CertificadoInspeccionsTable
         ->placeholder('Buscar expediente...')
         ->native(false),
 
-], layout: FiltersLayout::AboveContent)
-->filtersFormColumns(4)
-->filtersFormMaxHeight('400px')
+], layout: FiltersLayout::Modal)
+    ->label('Buscar y Filtrar')
+    ->filtersFormColumns(4)
+    ->filtersFormMaxHeight('400px')
             ->recordActions([
                ViewAction::make()
                     ->icon('heroicon-o-eye')
@@ -329,14 +312,14 @@ class CertificadoInspeccionsTable
                     ->iconButton()
                     ->tooltip('Editar certificado')
                     ->color('warning'),
-             Action::make('exportar')
-                    ->label('Exportar')
-                    ->icon('heroicon-o-document')
-                    ->tooltip('Exportar certificado (PDF)')
-                    ->iconButton()
-                    ->color('success')
-                    ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
-                    ->openUrlInNewTab()
+                Action::make('exportar')
+                        ->label('Exportar')
+                        ->icon('heroicon-o-document')
+                        ->tooltip('Exportar certificado (PDF)')
+                        ->iconButton()
+                        ->color('success')
+                        ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
+                        ->openUrlInNewTab()
 
             ])
             ->modifyQueryUsing(fn ($query) => $query->where('cin_filaeliminada', false))
