@@ -43,34 +43,83 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure Fortify views.
+     * Configure Fortify views with error handling.
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'canRegister' => Features::enabled(Features::registration()),
-            'status' => $request->session()->get('status'),
-        ]));
+        Fortify::loginView(function (Request $request) {
+            try {
+                return Inertia::render('auth/login', [
+                    'canResetPassword' => Features::enabled(Features::resetPasswords()),
+                    'canRegister' => Features::enabled(Features::registration()),
+                    'status' => $request->session()->get('status'),
+                ]);
+            } catch (\Throwable $e) {
+                logger()->error('Error en vista de login: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
 
-        Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
-            'email' => $request->email,
-            'token' => $request->route('token'),
-        ]));
+        Fortify::resetPasswordView(function (Request $request) {
+            try {
+                return Inertia::render('auth/reset-password', [
+                    'email' => $request->email,
+                    'token' => $request->route('token'),
+                ]);
+            } catch (\Throwable $e) {
+                logger()->error('Error en reset password: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
 
-        Fortify::requestPasswordResetLinkView(fn (Request $request) => Inertia::render('auth/forgot-password', [
-            'status' => $request->session()->get('status'),
-        ]));
+        Fortify::requestPasswordResetLinkView(function (Request $request) {
+            try {
+                return Inertia::render('auth/forgot-password', [
+                    'status' => $request->session()->get('status'),
+                ]);
+            } catch (\Throwable $e) {
+                logger()->error('Error en forgot password: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
 
-        Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/verify-email', [
-            'status' => $request->session()->get('status'),
-        ]));
+        Fortify::verifyEmailView(function (Request $request) {
+            try {
+                return Inertia::render('auth/verify-email', [
+                    'status' => $request->session()->get('status'),
+                ]);
+            } catch (\Throwable $e) {
+                logger()->error('Error en verify email: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
 
-        Fortify::registerView(fn () => Inertia::render('auth/register'));
+        Fortify::registerView(function () {
+            try {
+                return Inertia::render('auth/register');
+            } catch (\Throwable $e) {
+                logger()->error('Error en register: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
 
-        Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
+        Fortify::twoFactorChallengeView(function () {
+            try {
+                return Inertia::render('auth/two-factor-challenge');
+            } catch (\Throwable $e) {
+                logger()->error('Error en 2FA challenge: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
 
-        Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+        Fortify::confirmPasswordView(function () {
+            try {
+                return Inertia::render('auth/confirm-password');
+            } catch (\Throwable $e) {
+                logger()->error('Error en confirm password: ' . $e->getMessage());
+                return Inertia::render('error', ['status' => 500]);
+            }
+        });
     }
 
     /**

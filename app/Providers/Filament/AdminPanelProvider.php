@@ -22,7 +22,7 @@ use Filament\Support\Facades\FilamentColor;
 use Filament\Enums\ThemeMode;
 use App\Filament\Pages\Register;
 use Filament\Support\Enums\Width;
-
+use App\Filament\Pages\Auth\RequestPasswordReset;
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -33,7 +33,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('Intranet')
+
+            ->authGuard('web')
+            ->authPasswordBroker('users')
             ->login()
+            ->profile()
+            ->passwordReset(RequestPasswordReset::class)
+            ->emailVerification() 
             //->globalSearch(false)
             ->sidebarFullyCollapsibleOnDesktop()
                     ->maxContentWidth(Width::Full)
