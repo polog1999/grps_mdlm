@@ -29,6 +29,7 @@ class LicenciaService
 */
     /**
      * Método privado para buscar y contar registros según condiciones
+     * Filtra automáticamente registros con cin_filaeliminada = false
      */
     private function buscarYContar(array $condiciones, string $descripcion)
     {
@@ -36,23 +37,27 @@ class LicenciaService
             $resultados = $this->connection
                 ->table('licencia.licencia')
                 ->where($condiciones)
+                ->where('lic_filaeliminada', false)
                 ->get();
 
             $count = $resultados->count();
 
             if ($count === 0) {
-                logger()->info("No se encontró ningún registro con {$descripcion}");
+                logger()->info("No se encontró ningún registro activo con {$descripcion}");
                 return ['status' => 'no_encontrado', 'data' => collect()];
             } elseif ($count > 1) {
-                logger()->warning("Se encontraron {$count} registros duplicados con {$descripcion}");
+                logger()->warning("Se encontraron {$count} registros activos duplicados con {$descripcion}");
                 return ['status' => 'duplicado', 'data' => $resultados];
             }
 
             return ['status' => 'ok', 'data' => $resultados->first()];
         } catch (\Throwable $e) {
             logger()->error('Error al consultar licencias: ' . $e->getMessage());
-            return ['status' => 'error',        'message' => $e->getMessage(),  // 🔍 agrega este campo
- 'data' => collect()];
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'data' => collect()
+            ];
         }
     }
 
