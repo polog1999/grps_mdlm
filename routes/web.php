@@ -49,6 +49,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/certificado-inspeccion/exportar-pdf/{certificadoId}', [CertificadoInspeccionController::class, 'exportarPdf'])
             ->name('certificadoInspeccion.exportarPdf');
+        Route::put('/certificado-inspeccion/eliminar/{certificadoId}', [CertificadoInspeccionController::class, 'borrarCertificado'])
+            ->name('certificadoInspeccion.borrarCertificado');
+
+
     });
 });
  

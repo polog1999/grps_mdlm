@@ -73,4 +73,15 @@ class CertificadoInspeccionController extends Controller
                 'Content-Disposition' => "inline; filename=\"{$filename}\"",
             ]);
         }
+
+    public function borrarCertificado($certificadoId) {
+        $record = CertificadoInspeccion::findOrFail($certificadoId);
+            $record->cin_filaeliminada = true;
+            $record->save();
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Certificado marcado como eliminado correctamente.',
+            ]);
+    }  
 }

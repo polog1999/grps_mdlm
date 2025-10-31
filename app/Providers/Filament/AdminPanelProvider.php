@@ -32,9 +32,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->defaultThemeMode(ThemeMode::Light)
-            ->brandName('Filament Demo')
+            ->brandName('Intranet')
             ->login()
-            //>globalSearch(false)
+            //->globalSearch(false)
             ->sidebarFullyCollapsibleOnDesktop()
                     ->maxContentWidth(Width::Full)
 

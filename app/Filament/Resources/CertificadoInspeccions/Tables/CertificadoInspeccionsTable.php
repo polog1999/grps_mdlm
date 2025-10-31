@@ -20,6 +20,8 @@ use Filament\Tables\Filters\Indicator;
 use App\Models\CertificadoInspeccion;
 use App\Services\CertificadoInspeccionService;
 use Filament\Actions\Action;
+use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Notifications\Notification;
 
 class CertificadoInspeccionsTable
 {
@@ -50,6 +52,7 @@ class CertificadoInspeccionsTable
                     ->sortable(),
                 TextColumn::make('cin_numero')
                     ->label('N° Certificado')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('cin_expediente')
                     ->label('Expediente')
@@ -80,22 +83,31 @@ class CertificadoInspeccionsTable
                 TextColumn::make('cin_fecha')
                     ->label('Fecha')
                     ->date('d/m/Y')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('cin_fec_inicio')
                     ->label('Vig. Fec. Inicio')
                     ->date('d/m/Y')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('cin_fec_fin')
                     ->label('Vig. Fec. Fin')
                     ->date('d/m/Y')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('cin_capacidad')
                     ->label('Capacidad')
                     ->numeric()
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('cin_area')
                     ->label('Área (m²)')
-                    ->numeric()
+                    ->numeric(
+                        decimalPlaces: 2,
+                        decimalSeparator: '.',
+                        thousandsSeparator: ','
+                    )
+                    ->searchable()
                     ->sortable(), 
 
 
@@ -297,36 +309,69 @@ class CertificadoInspeccionsTable
         ->native(false),
 
 ], layout: FiltersLayout::Modal)
-    ->label('Buscar y Filtrar')
     ->filtersFormColumns(4)
     ->filtersFormMaxHeight('400px')
-            ->recordActions([
-               ViewAction::make()
-                    ->icon('heroicon-o-eye')
-                    ->iconButton()
-                    ->tooltip('Ver detalles del certificado')
-                    ->color('info'),
+    ->recordActions([
+        ViewAction::make()
+            ->icon('heroicon-o-eye')
+            ->iconButton()
+            ->tooltip('Ver detalles del certificado')
+            ->color('info'),
 
-                EditAction::make()
-                    ->icon('heroicon-o-pencil')
-                    ->iconButton()
-                    ->tooltip('Editar certificado')
-                    ->color('warning'),
-                Action::make('exportar')
-                        ->label('Exportar')
-                        ->icon('heroicon-o-document')
-                        ->tooltip('Exportar certificado (PDF)')
-                        ->iconButton()
-                        ->color('success')
-                        ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
-                        ->openUrlInNewTab()
+        EditAction::make()
+            ->icon('heroicon-o-pencil')
+            ->iconButton()
+            ->tooltip('Editar certificado')
+            ->color('warning'),
+        Action::make('exportar')
+                ->label('Exportar')
+                ->icon('heroicon-o-document')
+                ->tooltip('Exportar certificado (PDF)')
+                ->iconButton()
+                ->color('success')
+                ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
+                ->openUrlInNewTab(),
+        Action::make('borrar')
+                ->label('Borrar')
+                ->icon('heroicon-o-trash')
+                ->tooltip('Borrar certificado')
+                ->iconButton()
+                ->color('danger')
+                ->requiresConfirmation()
+                ->modalHeading('Eliminar Certificado')
+                ->modalDescription('¿Está seguro que desea eliminar este certificado? Esta acción no se puede revertir.')
+                ->modalSubmitActionLabel('Sí, eliminar')
+                ->modalCancelActionLabel('Cancelar')
+                ->action(function ($record) {
+                    $record->cin_filaeliminada = true;
+                    $record->save();
+                    Notification::make()
+                        ->success()
+                        ->title('Certificado eliminado')
+                        ->body('El certificado ha sido marcado como eliminado correctamente.')
+                        ->send();
+                })
+                ->successRedirectUrl(fn () => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index')),
+                        
+            ], position: RecordActionsPosition::BeforeCells)
+    ->modifyQueryUsing(fn ($query) => $query->where('cin_filaeliminada', false))
+    ->toolbarActions([
+        BulkActionGroup::make([
+            DeleteBulkAction::make(),
+        ]),
+    ])
+    ->filtersTriggerAction(
+                fn (Action $action) => $action
+                    ->button()
+                    ->label('Filtros')
+                    ->modalHeading('Filtros Avanzados de Certificados')
+                    ->modalDescription('Utilice los filtros para refinar la lista de certificados según sus criterios.')
+                    ->modalIcon('heroicon-o-funnel')
+                    ->color('info')
+                    ->modalSubmitActionLabel('Buscar Certificados')
+                    ->modalCancelActionLabel('Cancelar')
+    );
 
-            ])
-            ->modifyQueryUsing(fn ($query) => $query->where('cin_filaeliminada', false))
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
-        }
     }
+
+}
