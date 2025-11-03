@@ -33,7 +33,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('Intranet')
-
+            ->brandLogo(asset('images/logo.svg'))
+            ->favicon(asset('images/favicon.png'))
             ->authGuard('web')
             ->authPasswordBroker('users')
             ->login()
@@ -49,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
                 'white'=>'rgba(255, 255, 255, 1)',
                 'danger-high' => 'rgba(231, 120, 120, 1)',
                 'danger-very-high' => 'rgba(110, 6, 6, 1)',
-
+                'primary' => Color::Green,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

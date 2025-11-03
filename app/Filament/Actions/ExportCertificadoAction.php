@@ -15,7 +15,7 @@ class ExportCertificadoAction
         return Action::make('exportar_excel')
             ->label('Exportar Certificados')
             ->icon('heroicon-o-document-arrow-down')
-            ->color('success')
+            ->color('warning')
             ->action(function ($livewire) {
                 return static::export($livewire);
             });

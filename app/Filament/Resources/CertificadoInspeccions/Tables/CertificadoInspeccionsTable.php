@@ -56,7 +56,9 @@ class CertificadoInspeccionsTable
                     ->sortable(),
                 TextColumn::make('cin_expediente')
                     ->label('Expediente')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('cin_resolucion')->label('Resolución')->hidden()->searchable(),
                 TextColumn::make('cin_resolucion_sigla')->label('Resolución Sigla')->hidden()->searchable(),
 
@@ -161,10 +163,6 @@ class CertificadoInspeccionsTable
                     ->label('Procedimiento')
                     ->hidden()
                     ->searchable(),
-                TextColumn::make('cin_expediente')
-                    ->label('Expediente')
-                    ->hidden()
-                    ->searchable(),
 
                 TextColumn::make('cin_nota')
                     ->label('Nota')
@@ -201,11 +199,14 @@ class CertificadoInspeccionsTable
         ->native(false),
 
     SelectFilter::make('cin_numero')
-        ->label('N° Certificado')
+          ->label('N° Certificado')
         ->options(fn () => CertificadoInspeccion::query()
+            ->select('cin_numero')
             ->distinct()
-            ->orderBy('cin_numero', 'desc')
-            ->pluck('cin_numero', 'cin_numero')
+            ->whereNotNull('cin_numero')
+            ->orderByDesc('cin_numero')
+            ->pluck('cin_numero')
+            ->mapWithKeys(fn ($v) => [(string) $v => (string) $v])
             ->toArray())
         ->searchable()
         ->indicator('N° Certificado')

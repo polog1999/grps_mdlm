@@ -22,6 +22,15 @@ class CertificadoInspeccionService{
         // Transformar a array simple de ubicaciones
         return array_map(fn ($r) => $r->ubicacion, $resultados);
     }
+    public function buscarNumeroCertificado(string $texto)
+    {
+        $resultados = DB::select("
+            SELECT * FROM itse.itse_certificadoinspeccion_buscar_numero_certificado(?)
+        ", [$texto]);
+
+        // Transformar a array simple de números de certificado
+        return array_map(fn ($r) => $r->numero_certificado, $resultados);
+    }
 
 
 }
