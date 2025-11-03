@@ -32,8 +32,25 @@ use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use BackendEnum;
 use UnitEnum;
 
+/**
+ * Recurso de Filament para Certificados de Inspección.
+ *
+ * Esta clase define cómo se muestran y administran los registros de
+ * `CertificadoInspeccion` dentro del panel administrativo Filament.
+ *
+ * Responsabilidades:
+ * - Proveer el `form` (schema) para crear/editar certificados.
+ * - Proveer el `infolist` para la vista detallada del registro.
+ * - Delegar la configuración de la `table` a la clase CertificadoInspeccionsTable.
+ * - Registrar las páginas (index, create, view, edit) usadas por la Resource.
+ */
 class CertificadoInspeccionResource extends Resource
 {
+    /**
+     * Modelo Eloquent asociado a la Resource.
+     *
+     * @var class-string|null
+     */
     protected static ?string $model = CertificadoInspeccion::class;
 
 
@@ -47,11 +64,30 @@ class CertificadoInspeccionResource extends Resource
     protected static ?string $pluralModelLabel = 'Certificados de Inspección';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
 
+    /**
+     * Configura y devuelve el esquema del formulario usado para crear/editar.
+     *
+     * Este método delega en `CertificadoInspeccionForm::configure` para
+     * construir la estructura de campos (Schema) consumida por Filament.
+     *
+     * @param Schema $schema Instancia de Schema proporcionada por Filament.
+     * @return Schema Schema configurado con los componentes del formulario.
+     */
     public static function form(Schema $schema): Schema
     {
         return CertificadoInspeccionForm::configure($schema);
     }
 
+    /**
+     * Construye y devuelve el infolist (vista detallada) para un registro.
+     *
+     * El infolist se delega en `CertificadoInspeccionInfolist::configure` y se
+     * complementa con secciones que muestran datos principales, vigencia,
+     * establecimiento e información adicional.
+     *
+     * @param Schema $schema Instancia de Schema para configurar el infolist.
+     * @return Schema Schema del infolist completo.
+     */
     public static function infolist(Schema $schema): Schema
     {
         $infolist = CertificadoInspeccionInfolist::configure($schema);
@@ -228,7 +264,7 @@ class CertificadoInspeccionResource extends Resource
                             ->placeholder('Sin notas')
                             ->columnSpanFull(),
                         
-
+                        
                     ])
             ]);
     }

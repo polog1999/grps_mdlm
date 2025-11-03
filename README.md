@@ -1,180 +1,255 @@
-# ITSE App
+# Intranet 
 
-Este sistema es una refactorización / migración del sistema anterior llamado "Sistema de Registro de Certificados ITSE".
+Plataforma administrativa modular construida con **Laravel** y **Filament**.
+La Intranet centraliza procesos municipales en un solo panel. Cada funcionalidad vive como **módulo**.
 
-Contexto de la migración
-------------------------
+---
 
-Origen (sistema antiguo - devlocal):
+## Tecnologías
 
-La migración de la base de datos completa se realizó desde PostgreSQL versión 12.22 a la versión 18.0.
+* **Laravel**: backend, migraciones, Eloquent, servicios y controladores.
+* **Filament**: panel administrativo (resources CRUD, páginas, tablas, formularios, widgets).
+* **PostgreSQL**: base de datos (migrada de v12.22 a v18.0).
+* *(Opcional según caso de uso)* **PhpSpreadsheet / Laravel-Excel** para plantillas y reportes.
 
-Base de datos anterior: observaciones
-------------------------------------
+---
 
-Durante el análisis del esquema original se detectaron inconsistencias relevantes en el esquema `licencias.licencias` que conviene documentar:
+# Módulos
 
-- Campos duplicados / repetidos: los valores de "número de licencia" y "número de expediente" aparecen repetidos en varias filas. Esto puede causar problemas al consultar registros por identificador (ambigüedad de claves o resultados inesperados) y requiere limpieza o reglas de normalización antes de depender de esos campos como identificadores únicos.
+## SIL
 
-- Dudas sobre `usa_id`: existe un campo `usa_id` en varias tablas cuya semántica no está completamente documentada. Una hipótesis es que podría tener relación con un identificador de usuario o incluso con un identificador de QR, pero esto no está confirmado. Es necesario revisar el sistema antiguo o consultar con el equipo que mantuvo la base de datos para confirmar su propósito y normalizar su uso en la nueva estructura.
-- Relación entre `licencias.licencias` y tablas auxiliares: durante el análisis se identificó que la tabla `licencias.licencias` contiene un identificador de la persona solicitante que se relaciona con registros en una tabla llamada `lictotal` . En `lictotal` se encuentra información asociada, y el nombre de la persona solicitante aparece en registros relacionados con `personasolicitante`. Esto implica que las consultas para autocompletar datos (por ejemplo, nombre del solicitante) requieren unir estas tablas en la base de datos antigua.
-- Campos repetidos/duplicados en `licencias.licencias` pueden provocar resultados múltiples al buscar por `número de expediente` o `número de licencia`. Tener reglas de deduplicación o comprobaciones en la aplicación es recomendable antes de aceptar una coincidencia como única.
-- Tabla `lictotal` y relación con solicitantes: se detectó una tabla llamada `lictotal` en el esquema `licencia` que actúa como punto de unión entre `per_idsolicitante` y los datos de la persona solicitante (campos de nombre/datos personales). En muchos casos ambos valores (el id y el detalle del solicitante) aparecen juntos en la misma fila de `lictotal`. No se encontró otra tabla separada que contenga exclusivamente los datos de la persona solicitante; por eso recomendamos crear una tabla dedicada para personas solicitantes (p. ej. `personasolicitante`) y normalizar las relaciones en lugar de mantener ambos conjuntos de datos en la misma tabla `lictotal`.
+Módulo enfocado en licencias y su interoperabilidad con datos históricos.
 
+---
 
+### Certificados de Inspección (ITSE)
 
+#### 1) Contexto de migración
 
-Descripción del nuevo sistema
------------------------------
+* **Origen (sistema antiguo – devlocal)**: PostgreSQL **12.22** → migrado a **18.0**.
+* **Tablas migradas** al esquema `itse`:
 
-El nuevo sistema está implementado con:
+  * `certificadoinspeccion` (principal)
+  * `tipoedificacion` (catálogo)
 
-- Laravel: framework PHP para aplicaciones web. Se usa para la lógica de servidor, migraciones de base de datos, modelos Eloquent y controladores.
-- Filament: conjunto de herramientas (panel administrativo) sobre Laravel para construir interfaces CRUD rápidamente (recursos, formularios, tablas y páginas administrativas).
+#### 2) Hallazgos del sistema heredado
 
-En este proyecto se han migrado las tablas principales del sistema antiguo (`certificadoinspeccion` y `tipoedificacion`) al esquema `itse` en la nueva base de datos. Se proporcionan migraciones en `database/migrations/` para crear las tablas con la estructura actualizada.
+* **Duplicados en licencias**: en `licencia.licencia` (o `licencias.licencias`) se repiten *número de licencia* y *número de expediente*.
+  → Requiere **deduplicación** o **reglas** antes de tratar esos campos como únicos.
+* **`usa_id` sin semántica clara**: aparece en varias tablas; podría ser identificador de usuario o QR (no confirmado).
+  → **Acción**: revisar el sistema anterior y normalizar su uso.
+* **Relaciones no normalizadas**: tabla `lictotal` actúa como unión entre `per_idsolicitante` y datos del solicitante.
+  → **Recomendación**: crear una tabla dedicada a **personas solicitantes** y normalizar FKs.
+* **Riesgo en búsquedas**: por duplicados, consultas por *número de expediente* o *número de licencia* pueden devolver múltiples filas.
+  → **Acción**: desambiguar en la aplicación y reforzar integridad a futuro.
 
-Qué incluye esta refactorización
----------------------------------
+---
 
-- Migraciones de base de datos adaptadas al nuevo esquema `itse`.
-- Modelos Eloquent para las tablas migradas.
-- Recursos Filament (resources):  generar certificados de inspeccion `CertificadoInspeccion`).
+#### 3) Qué incluye el submódulo ITSE
 
-Procedimiento General de migración y comandos
-------------------------------------
+* **Migraciones** de base de datos ajustadas al esquema `itse`.
+* **Modelo Eloquent** `App\Models\CertificadoInspeccion`.
+* **Resource Filament** `CertificadoInspeccionResource` (CRUD completo).
+* **Servicio de integración** `App\Services\LicenciaService` para consultar DB legada de licencias (`pgsql_licencias`).
+* **Rutas de apoyo** para autocompletado (respuestas JSON) consumidas por formularios Filament.
 
-A continuación se listan los comandos y el procedimiento habitual para trabajar con migraciones, modelos y recursos Filament en este proyecto. Aquí se explica desde crear una migración hasta ejecutarla y generar el CRUD en Filament.
+---
 
-1. Crear una nueva migración
+#### 4) Procedimiento de trabajo (migraciones, modelo, resource)
 
-```powershell
+**4.1 Crear migración**
+
+```bash
 php artisan make:migration create_certificadoinspeccion_table --create=certificadoinspeccion
-```
-
-2. Editar la migración (ubicada en `database/migrations/`) y definir las columnas y el esquema (si usa esquema `itse`, especificar el nombre de la tabla como `itse.certificadoinspeccion` en las consultas SQL o ajustar el prefijo del schema en la conexión).
-
-3. Ejecutar las migraciones (entorno local)
-
-```powershell
 php artisan migrate
-```
-
-Si necesita ejecutar una migración específica (por ejemplo, el archivo X):
-
-```powershell
+# o una migración específica:
 php artisan migrate --path=/database/migrations/2025_10_21_125804_create__talble__certificadoinspeccion.php
 ```
 
-4. Generar el modelo Eloquent
+**4.2 Modelo Eloquent**
 
-```powershell
+```bash
 php artisan make:model CertificadoInspeccion
 ```
 
-Editar `app/Models/CertificadoInspeccion.php` para establecer `protected $table = 'itse.certificadoinspeccion';` y definir `$fillable`, `$casts` y relaciones.
+`app/Models/CertificadoInspeccion.php`:
 
-5. Generar recurso Filament (CRUD)
+```php
+class CertificadoInspeccion extends Model
+{
+    protected $table = 'certificadoinspeccion'; // si la conexión ya apunta al esquema itse
+    protected $primaryKey = 'cin_id';
+    public $timestamps = true;
 
-```powershell
+    protected $fillable = [
+        'cin_anio','tie_id','cin_numero','cin_area','cin_capacidad',
+        'cin_fecha','cin_fec_inicio','cin_fec_fin','cin_indeterminado',
+        'cin_filafecha','cin_filaoriginal','cin_filaeliminada','usa_id',
+        'cin_consello','lic_id','cin_departamento','cin_provincia',
+        'cin_licencia','cin_procedimiento','cin_distrito','cin_expediente',
+        'cin_ubicacion','cin_nota','cin_resolucion_sigla','cin_giro',
+        'cin_resolucion','cin_establecimiento',
+    ];
+}
+```
+
+**4.3 Resource Filament (CRUD)**
+
+```bash
 php artisan make:filament-resource CertificadoInspeccion --model=App\\Models\\CertificadoInspeccion
 ```
 
-Editar los archivos generados en `app/Filament/Resources/CertificadoInspeccionResource.php` y las subcarpetas `Pages` para ajustar formularios, columnas y validaciones.
+Archivos generados (ruta base `app/Filament/Resources/CertificadoInspeccionResource/`):
 
-6. Probar la aplicación
+* `CertificadoInspeccionResource.php` (definición principal del resource)
+* `Pages/`
 
-```powershell
+  * `CreateCertificadoInspeccion.php`
+  * `EditCertificadoInspeccion.php`
+  * `ListCertificadoInspeccions.php`
+  * `ViewCertificadoInspeccion.php`
+* `Schemas/`
+
+  * `CertificadoInspeccionForm.php` (formulario)
+  * `CertificadoInspeccionInfolist.php` (vista detallada)
+* `Tables/`
+
+  * `CertificadoInspeccionsTable.php` (listado)
+
+**4.4 Probar**
+
+```bash
 php artisan serve
+# acceder a /admin
 ```
 
-Luego acceder a la interfaz de Filament (por defecto `/admin`) y verificar el CRUD.
+---
 
-Ciclo de vida del proyecto: migración y modelo
----------------------------------------------
+#### 5) Formulario ITSE (comportamientos y validaciones)
 
-Migración creada: `database/migrations/2025_10_21_125804_create__talble__certificadoinspeccion.php`
+Archivo: `app/Filament/Resources/CertificadoInspeccionResource/Schemas/CertificadoInspeccionForm.php`
 
-- Objetivo: crear la tabla `certificadoinspeccion` con sus campos principales para almacenar los certificados de inspección.
-- Decisiones clave:
-	- Se utilizó `id('cin_id')` como clave primaria para mantener compatibilidad con el sistema anterior.
-	- Campos numéricos (`cin_area`, `cin_capacidad`, `cin_numero`, `cin_anio`) se definieron con tipos adecuados (decimal/integer).
-	- Fechas (`cin_fecha`, `cin_fec_inicio`, `cin_fec_fin`) como `date`, y marcas de auditoría con `timestamps()`.
-	- Campos booleanos/flags (`cin_indeterminado`, `cin_filaoriginal`, `cin_filaeliminada`, `cin_consello`) para lógica de estado.
-	- Texto largo `cin_nota` con longitud aumentada (400) para comentarios.
+* **Defaults bloqueados**:
+  `cin_departamento = Lima`, `cin_provincia = Lima`, `cin_distrito = La Molina`
+  (via `default()` + `disabled()`; usar `->dehydrated()` si se requiere persistencia).
+* **Fechas**:
+  `cin_fec_fin` = `cin_fec_inicio` + **2 años** cuando `cin_indeterminado` es **false**.
+  `cin_indeterminado` (Toggle) controla visibilidad/habilitación de fechas.
+* **Validaciones**:
 
-Modelo Eloquent: `app/Models/CertificadoInspeccion.php`
+  * `cin_capacidad`: entero positivo (`min:1`).
+  * `cin_area`: decimal positivo (paso `0.01`).
+  * `cin_resolucion`: máscara/regex `YYYY-YYYY`.
+* **Solo lectura con guardado**:
+  Campos como `cin_resolucion_sigla` con `->disabled()->dehydrated()`.
+* **Autocompletado por expediente**:
+  Acción (`suffixAction`) sobre `cin_establecimiento` abre modal con `search_expediente`.
+  Consulta DB legada y, si hay coincidencia, **autocompleta**: nro de licencia, giro, área, dirección, fechas (inicio/fin), razón social y expediente.
+  Respuesta manejada con estados: `ok | duplicado | no_encontrado`.
 
-- Propósito: representar la tabla en Laravel, definir la tabla, la PK, los campos asignables y comportamientos (timestamps).
-- Detalles del modelo actual:
-	- `protected $table = 'certificadoinspeccion';` — mapeo directo a la tabla creada por la migración.
-	- `protected $primaryKey = 'cin_id';` — clave primaria personalizada.
-	- `$fillable` contiene los campos que se permiten asignar en masa; se añadió una lista inicial con los campos más relevantes.
+---
 
-Comando ejecutado para la Generacion del Resource Filament de CertificadoInspeccions:
+#### 6) Servicio de integración con DB legada
 
-```powershell
+Archivo: `app/Services/LicenciaService.php` (conexión **`pgsql_licencias`**).
+
+* **Métodos expuestos**:
+
+  * `obtenerPorNumeroExpediente($expediente)`
+  * `obtenerPorNumeroLicencia($licencia)`
+  * `obtenerPorNumeroLicenciaYExpediente($licencia, $expediente)`
+* **Comportamiento**:
+
+  * Consulta `licencia.licencia` (u homóloga en legado).
+  * Retorna estados: `ok | duplicado | no_encontrado | error`.
+  * Encapsula acceso a datos legados y reglas de negocio.
+
+---
+
+#### 7) Rutas para autocompletado
+
+* Rutas bajo `/test` en `routes/web.php` con middleware `auth` y `verified`.
+* Controladores como `LicenciaController` y `PersonaSolicitanteController` retornan **JSON** para autocompletar campos del formulario.
+* **Sugerencia**: para integraciones M2M, exponer endpoints **API** separados con autenticación de tokens y respuestas **401/403** en lugar de redirecciones a login.
+
+---
+
+#### 8) Conexión a base histórica/producción (licencias)
+
+* Agregar conexión `pgsql_licencias` en `config/database.php`.
+* Definir credenciales en `.env` (no versionar).
+* Consumir esta conexión exclusivamente desde el **Servicio** para mantener separación de responsabilidades.
+
+---
+
+#### 9) Decisiones de diseño de la tabla `certificadoinspeccion`
+
+* **PK**: `id('cin_id')` (compatibilidad con legado).
+* **Numéricos**: `cin_area`, `cin_capacidad`, `cin_numero`, `cin_anio`.
+* **Fechas**: `cin_fecha`, `cin_fec_inicio`, `cin_fec_fin`.
+* **Flags**: `cin_indeterminado`, `cin_filaoriginal`, `cin_filaeliminada`, `cin_consello`.
+* **Texto**: `cin_nota` (hasta 400).
+
+---
+
+#### 10) Funcionamiento del sistema (UI/UX, acciones y reglas)
+
+**Vista principal (Listado ITSE):**
+La pantalla inicial es una **tabla de Certificados de Inspección** con los **datos principales** del certificado (p. ej.: año, número, establecimiento, expediente, fecha, giro, ubicación, etc.).
+Incluye:
+
+* **Búsqueda y filtros** por campos clave.
+* **Paginación** y **ordenamiento**.
+* **Exportación a Excel** según columnas visibles/seleccionadas y filtros aplicados.
+
+**Acciones por registro (CRUD + utilidades):**
+
+* **Ver** → Abre una página de detalle con **Infolist** (lectura).
+* **Editar** → Formulario para actualizar campos.
+* **Borrar** → **Eliminación lógica**: marca `cin_filaeliminada = true` para **preservar histórico** (no se borra físicamente).
+* **Exportar PDF** → Genera el **“CERTIFICADO DE INSPECCIÓN TÉCNICA”** en formato PDF para descarga/impresión.
+
+**Creación de Certificado (autocompletado inteligente):**
+
+* Permite **autocompletar** datos a partir de:
+
+  * **Número de Expediente**, **Número de Licencia** o **ambos**.
+* **Regla de unicidad y vigencia:**
+  Antes de poblar el formulario, el sistema verifica que el registro fuente:
+
+  * Tenga `filaeliminada = false` (**vigente**), y
+  * Sea **único** (sin duplicados para los criterios ingresados).
+* Si hay duplicidad o el registro está eliminado, se notifica al usuario y **no se autocompleta**, evitando inconsistencias.
+
+**Filtros y exportaciones:**
+
+* Los **filtros del listado** se respetan en las **exportaciones a Excel** (y, opcionalmente, en reportes PDF).
+* Las exportaciones permiten ajustarse a las **columnas seleccionadas** o predeterminadas.
+
+---
+
+## Comandos útiles
+
+```bash
+# Migraciones
+php artisan migrate
+php artisan migrate:rollback
+php artisan migrate --path=/database/migrations/xxxx_xx_xx_xxxxxx_create__talble__certificadoinspeccion.php
+
+# Modelo / Resource
+php artisan make:model CertificadoInspeccion
 php artisan make:filament-resource CertificadoInspeccion --model=App\\Models\\CertificadoInspeccion
+
+# Servidor local
+php artisan serve
+
+# Limpieza de cachés
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
 ```
 
-Archivos creados en `app/Filament/Resources/CertificadoInspeccions/`:
-
-- `CertificadoInspeccionResource.php`: Archivo principal del Resource, define el modelo, navegación, formularios y tablas.
-
-- `Pages/`:
-  - `CreateCertificadoInspeccion.php`: Página para crear nuevos registros.
-  - `EditCertificadoInspeccion.php`: Página para editar registros existentes.
-  - `ListCertificadoInspeccions.php`: Página para listar registros.
-  - `ViewCertificadoInspeccion.php`: Página para ver detalles de un registro.
-
-- `Schemas/`:
-  - `CertificadoInspeccionForm.php`: Esquema del formulario para crear/editar.
-  - `CertificadoInspeccionInfolist.php`: Esquema para mostrar información en vista de detalles.
-
-- `Tables/`:
-  - `CertificadoInspeccionsTable.php`: Definición de la tabla para listar registros.
-
-Rutas y uso para autocompletado (formularios)
--------------------------------------------
-
-Las rutas definidas en `routes/web.php` bajo el prefijo `/test` están protegidas por middleware (`auth`, `verified`) y delegan la consulta en controladores (por ejemplo `LicenciaController` y `PersonaSolicitanteController`). Estos controladores retornan respuestas en formato JSON que se usan como fuente para autocompletar campos del formulario (por ejemplo al buscar por número de expediente o al cargar datos del solicitante). En el entorno de desarrollo es habitual autenticar una sesión en el panel para probar estas rutas; para integraciones programáticas se recomienda exponer endpoints API protegidos para recibir 401 en lugar de redirecciones a login.
-
-
-
-Se han realizado cambios en el formulario Filament asociado a `CertificadoInspeccion` para mejorar la entrada de datos y soportar autocompletado desde la base de datos histórica de licencias. Los cambios principales son:
-
-- Archivo del formulario: `app/Filament/Resources/CertificadoInspeccions/Schemas/CertificadoInspeccionForm.php`.
-- Comportamientos y validaciones añadidos:
-	- Campos por defecto y deshabilitados: `cin_departamento` = "Lima", `cin_provincia` = "Lima", `cin_distrito` = "La Molina" (son campos con `default()` y `disabled()` para evitar cambios manuales desde el formulario).
-	- `cin_fec_fin` se calcula automáticamente como dos años después de `cin_fec_inicio` cuando `cin_indeterminado` está desactivado. `cin_indeterminado` es un `Toggle` reactivo que oculta/mostrar las fechas según corresponda.
-	- Validaciones: `cin_capacidad` exige valores enteros positivos (`->minValue(1)` y reglas `integer|min:1`), `cin_area` exige valor decimal positivo con paso `0.01`, `cin_resolucion` tiene máscara y regla regex para formato `YYYY-YYYY`.
-	- `cin_resolucion_sigla` y otros campos de solo lectura se configuran con `->disabled()->dehydrated()` para que su valor se guarde pero no pueda editarse desde la UI.
-	- Búsqueda por expediente: `cin_establecimiento` incluye una `suffixAction` que abre un modal con un campo `search_expediente`. Al ejecutar la acción se consulta la base de datos de licencias y, si se encuentra una coincidencia, el formulario se autocompleta con datos como: número de licencia, giro, área, dirección, fecha de inicio y fin calculada, razón social y el expediente.
-
-Servicio que consulta la BD de licencias
----------------------------------------
-Se implementó el servicio `app/Services/LicenciaService.php` con el propósito de encapsular las consultas a la base de datos legada de licencias (`pgsql_licencias`).  
-Este servicio centraliza la lógica de acceso a datos, promoviendo la separación de responsabilidades y facilitando el mantenimiento del sistema.
-
-El servicio expone métodos específicos para realizar búsquedas dentro del esquema `licencia.licencia`, tales como:
-
-- **`obtenerPorNumeroExpediente($expediente)`**  
-  Permite buscar registros según el número de expediente, devolviendo un único resultado si existe coincidencia o indicando si no se encontró o existen duplicados.
-
-- **`obtenerPorNumeroLicencia($licencia)`**  
-  Busca registros asociados a un número de licencia determinado.
-
-- **`obtenerPorNumeroLicenciaYExpediente($licencia, $expediente)`**  
-  Realiza una búsqueda combinada, verificando coincidencias tanto por número de licencia como por número de expediente.
-
-Cada método ejecuta la consulta mediante la conexión `pgsql_licencias` y gestiona los posibles escenarios de resultado (`ok`, `duplicado`, `no_encontrado` o `error`).  
-De esta forma, `LicenciaService` actúa como una capa de integración entre el sistema actual y la base de datos antigua, garantizando un acceso **controlado**, **seguro** y **reutilizable** a la información de licencias.
-
-Conexión a la base de datos de producción (licencias)
----------------------------------------------------
-
-Este proyecto incluye una conexión adicional a la base de datos histórica/prod para recuperar datos de `licencias`. Por seguridad, las credenciales no se incluyen en el repositorio: se debe configurar una conexión en `config/database.php` con un nombre como `pgsql_licencias` y añadir las variables al archivo `.env` (o usar un vault/secret manager). 
-
-
+---
 
 

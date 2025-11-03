@@ -23,9 +23,34 @@ use Filament\Actions\Action;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;
 
+/**
+ * Configuración de la tabla de Certificados de Inspección para Filament.
+ *
+ * Esta clase centraliza la definición de columnas, filtros, acciones y otras
+ * opciones de la tabla que se muestran en la Resource `CertificadoInspeccion`.
+ *
+ * - columns(): define las columnas visibles/ocultas y su formato.
+ * - filters(): define filtros Select y de rango que respetan la búsqueda y
+ *   los indicadores mostrados en la UI.
+ * - recordActions(): define acciones por fila (ver, editar, exportar, borrar).
+ * - toolbarActions(): define acciones en la barra superior (bulk actions).
+ *
+ * Todos los métodos/manejadores son estáticos y la única entrada pública es
+ * `configure(Table $table): Table` que devuelve la tabla ya configurada.
+ */
 class CertificadoInspeccionsTable
 {
 
+    /**
+     * Aplica la configuración completa a un objeto `Filament\Tables\Table`.
+     *
+     * Este método recibe la instancia de la tabla y encadena las llamadas para
+     * definir orden por defecto, búsqueda, columnas, filtros, acciones por
+     * registro y otras opciones específicas de la UI.
+     *
+     * @param Table $table Instancia de la tabla a configurar.
+     * @return Table La instancia de tabla configurada (encadenable).
+     */
     public static function configure(Table $table): Table
     {
         return $table

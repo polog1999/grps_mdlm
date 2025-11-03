@@ -3,19 +3,42 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Servicio para operaciones relacionadas con Personas Solicitantes.
+ *
+ * Esta clase maneja consultas a la base de datos de licencias para obtener
+ * información de personas solicitantes, utilizando la tabla 'licencia.lictotal'.
+ * Maneja casos de no encontrado, duplicado o error.
+ */
 class PersonaSolicitante{
 
+    /**
+     * Conexión a la base de datos de licencias (PostgreSQL).
+     *
+     * @var \Illuminate\Database\Connection
+     */
     protected $connection;
-        
+
+    /**
+     * Constructor del servicio.
+     *
+     * Inicializa la conexión a la base de datos 'pgsql_licencias'.
+     */
     public function __construct()
     {
         $this->connection = DB::connection('pgsql_licencias');
     }
 
-
-
-    //En la tabla licencia.lictotal recoletar los datos por per_idsolicitante
-
+    /**
+     * Obtiene información de una persona solicitante por su ID.
+     *
+     * Consulta la tabla 'licencia.lictotal' filtrando por 'per_idsolicitante'.
+     * Maneja casos de no encontrado, duplicado o error, retornando un array
+     * con 'status' y 'data'.
+     *
+     * @param mixed $per_idsolicitante ID del solicitante.
+     * @return array Resultado de la consulta con status y data.
+     */
     public function obtenerPorIdSolicitante($per_idsolicitante)
     {    
 

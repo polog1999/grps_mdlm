@@ -28,6 +28,18 @@ use Carbon\Carbon;
 use Filament\Tables\Grouping\Group;
 use Filament\Forms\Components\Hidden;
 
+/**
+ * Esquema del formulario para Certificado de Inspección.
+ *
+ * Esta clase construye y devuelve el esquema de componentes utilizado por la
+ * Resource de Filament para crear/editar registros de certificados de inspección.
+ *
+ * Proporciona métodos estáticos para generar secciones del formulario, manejar
+ * la búsqueda y autocompletado de licencias y mapear datos provenientes de servicios.
+ *
+ * Nota: Todos los métodos son estáticos para facilitar su uso desde la definición
+ * del Schema en la Resource de Filament.
+ */
 class CertificadoInspeccionForm
 {
     // Constantes de configuración
@@ -36,23 +48,29 @@ class CertificadoInspeccionForm
     private const PROVINCIA_DEFAULT = 'Lima';
     private const DISTRITO_DEFAULT = 'La Molina';
     private const SIGLA_RESOLUCION = '-MDLM-GDEIP-SPEA';
+
+    /**
+     * Campos ocultos del sistema que se incluyen en el formulario pero no son visibles.
+     *
+     * @return array Lista de componentes Hidden con valores por defecto.
+     */
     private static function camposOcultosSistema(): array
     {
         return [
             Hidden::make('cin_filafecha')
                 ->default(now()),
-            
+
             Hidden::make('usa_id')
                 ->default(0),
-            
+
             Hidden::make('cin_filaoriginal')
                 ->default(true),
-            
+
             Hidden::make('cin_filaeliminada')
                 ->default(false),
-            
+
             Hidden::make('cin_procedimiento')
-                ->default(''),  
+                ->default(''),
         ];
     }
 
@@ -77,7 +95,13 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Botón de búsqueda y autocompletado
+     * Crea la acción que muestra el modal de búsqueda/autocompletado de licencia.
+     *
+     * El modal permite buscar por número de expediente o número de licencia y
+     * completar automáticamente los campos del formulario cuando se encuentra
+     * una licencia válida.
+     *
+     * @return Action Acción de Filament configurada.
      */
     private static function botonBusquedaAutocompletado(): Action
     {
@@ -119,7 +143,10 @@ class CertificadoInspeccionForm
 
 
     /**
-     * Configura el esquema del formulario (método requerido por Filament Resource)
+     * Configura el Schema de Filament con los componentes generados por esta clase.
+     *
+     * @param Schema $schema Instancia de Schema a configurar.
+     * @return Schema Schema con componentes añadidos.
      */
     public static function configure(Schema $schema): Schema
     {
@@ -127,7 +154,9 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Información General (Número y Año)
+     * Genera la sección "Información General" que incluye número y año del certificado.
+     *
+     * @return Section Componente Section con campos de número y año.
      */
     private static function seccionInformacionGeneral(): Section
     {
@@ -163,7 +192,9 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Datos del Establecimiento
+     * Genera la sección de datos del establecimiento (tipo, nombre, ubicación, distrito).
+     *
+     * @return Section Sección con campos del establecimiento.
      */
     private static function seccionDatosEstablecimiento(): Section
     {
@@ -233,7 +264,9 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Dimensiones (Área y Capacidad)
+     * Genera la sección de dimensiones que contiene área y capacidad de aforo.
+     *
+     * @return Section Sección con campos numéricos para área y capacidad.
      */
     private static function seccionDimensiones(): Section
     {
@@ -269,7 +302,12 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Vigencia del Certificado
+     * Genera la sección de vigencia del certificado.
+     *
+     * Incluye lógica para calcular la fecha de fin en función de la fecha de inicio
+     * y una vigencia por defecto (constante YEARS_VIGENCIA).
+     *
+     * @return Section Sección con DatePickers y toggles relacionados.
      */
     private static function seccionVigencia(): Section
     {
@@ -333,7 +371,11 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Resolución
+     * Genera la sección con datos de la resolución municipal.
+     *
+     * Valida el formato del número de resolución mediante una regla regex.
+     *
+     * @return Section Sección con campos de resolución y sigla.
      */
     private static function seccionResolucion(): Section
     {
@@ -367,7 +409,9 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Información de Licencia
+     * Genera la sección de información de licencia (expediente y número de licencia).
+     *
+     * @return Section Sección con campos relacionados a la licencia.
      */
     private static function seccionLicencia(): Section
     {
@@ -406,7 +450,9 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Sección: Información Adicional
+     * Genera la sección de información adicional (giro, solicitante, notas, sello).
+     *
+     * @return Section Sección con campos de texto y toggles complementarios.
      */
     private static function seccionInformacionAdicional(): Section
     {
@@ -500,7 +546,14 @@ class CertificadoInspeccionForm
     } 
 */
     /**
-     * Maneja la búsqueda de licencias
+     * Realiza la búsqueda de licencias y completa el formulario con los datos encontrados.
+     *
+     * Este método valida los input del modal, determina el tipo de búsqueda, llama al
+     * servicio de licencias y procesa el resultado para setear los campos del formulario.
+     *
+     * @param array $data Datos recibidos desde el modal (search_expediente, search_licencia).
+     * @param callable $set Callback para asignar valores en el formulario Livewire.
+     * @return void
      */
     public static function manejarBusquedaLicencia(array $data, callable $set): void
     {
@@ -558,7 +611,11 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Determina el tipo de búsqueda según los campos completados
+     * Determina si la búsqueda será por expediente, licencia o ambos.
+     *
+     * @param string|null $expediente Número de expediente.
+     * @param string|null $licencia Número de licencia.
+     * @return string Tipo de búsqueda: 'licencia', 'expediente' o 'licencia y expediente'.
      */
     private static function determinarTipoBusqueda(?string $expediente, ?string $licencia): string
     {
@@ -570,7 +627,12 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Ejecuta la búsqueda según el tipo
+     * Ejecuta la consulta al servicio de licencias según los parámetros proporcionados.
+     *
+     * @param LicenciaService $service Servicio encargado de obtener datos de licencias.
+     * @param string|null $expediente Número de expediente.
+     * @param string|null $licencia Número de licencia.
+     * @return array Respuesta del servicio en formato ['status' => ..., 'data' => ...].
      */
     private static function ejecutarBusqueda(
         LicenciaService $service,
@@ -589,7 +651,14 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Procesa el resultado de la búsqueda
+     * Procesa la respuesta del servicio de licencias y ejecuta la acción
+     * correspondiente en función del estado (ok, duplicado, no_encontrado).
+     *
+     * @param array $respuesta Respuesta devuelta por el servicio de licencias.
+     * @param callable $set Callback para asignar valores en el formulario.
+     * @param string|null $expediente Valor de expediente buscado.
+     * @param string|null $licencia Valor de licencia buscado.
+     * @return void
      */
     private static function procesarResultadoBusqueda(
         array $respuesta,
@@ -627,7 +696,14 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Procesa los datos de una licencia encontrada
+     * Inserta los datos de la licencia encontrada en el formulario y muestra
+     * una notificación de éxito con los detalles relevantes.
+     *
+     * @param mixed $licenciaData Objeto con los datos de la licencia.
+     * @param callable $set Callback para setear campos del formulario.
+     * @param string|null $expediente Número de expediente usado en la búsqueda.
+     * @param string|null $licencia Número de licencia usado en la búsqueda.
+     * @return void
      */
     private static function procesarLicenciaEncontrada(
         $licenciaData,
@@ -655,7 +731,10 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Obtiene el nombre del solicitante
+     * Obtiene el nombre del solicitante a partir de su ID utilizando el servicio.
+     *
+     * @param int|null $idSolicitante ID del solicitante.
+     * @return string Nombre del solicitante o 'No disponible' si no se encuentra.
      */
     private static function obtenerNombreSolicitante(?int $idSolicitante): string
     {
@@ -681,7 +760,14 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Setea los datos de la licencia en el formulario
+     * Asigna los valores obtenidos de la licencia a los campos del formulario.
+     *
+     * @param callable $set Callback para asignar valores en el formulario.
+     * @param mixed $licenciaData Datos de la licencia.
+     * @param string $nombreSolicitante Nombre resuelto del solicitante.
+     * @param string|null $expediente Número de expediente original de búsqueda.
+     * @param string|null $licencia Número de licencia original de búsqueda.
+     * @return void
      */
     private static function setearDatosLicencia(
         callable $set,
@@ -713,7 +799,11 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Genera el mensaje de éxito con los datos de la licencia
+     * Construye un mensaje de texto detallado con la información relevante de la licencia
+     * que se muestra al usuario cuando la búsqueda es exitosa.
+     *
+     * @param mixed $licenciaData Datos de la licencia.
+     * @return string Mensaje de éxito formateado.
      */
     private static function generarMensajeExito($licenciaData): string
     {
@@ -738,7 +828,10 @@ class CertificadoInspeccionForm
     }
 
     /**
-     * Obtiene los tipos de edificación del servicio y tambien los que en tie_activo sean tru
+     * Recupera la lista de tipos de edificación activos desde el servicio
+     * y la transforma en un array [id => descripcion] para usar en Select.
+     *
+     * @return array Lista de tipos de edificación (id => descripcion).
      */
     private static function obtenerTiposEdificacion(): array
     {

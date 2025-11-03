@@ -3,15 +3,39 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Servicio para operaciones relacionadas con Licencias.
+ *
+ * Esta clase maneja consultas a la base de datos de licencias, utilizando
+ * una conexión específica a PostgreSQL. Proporciona métodos para buscar
+ * licencias por diferentes criterios, manejando duplicados y errores.
+ */
 class LicenciaService
 {
+    /**
+     * Conexión a la base de datos de licencias (PostgreSQL).
+     *
+     * @var \Illuminate\Database\Connection
+     */
     protected $connection;
-    
+
+    /**
+     * Constructor del servicio.
+     *
+     * Inicializa la conexión a la base de datos 'pgsql_licencias'.
+     */
     public function __construct()
     {
         $this->connection = DB::connection('pgsql_licencias');
     }
 
+    /**
+     * Obtiene todas las licencias de la base de datos.
+     *
+     * Retorna una colección con todos los registros de la tabla 'licencia.licencia'.
+     *
+     * @return \Illuminate\Support\Collection Colección de licencias.
+     */
     public function getLicencias()
     {
         return $this->connection->table('licencia.licencia')->get();
@@ -25,11 +49,18 @@ class LicenciaService
             ->limit(10)
             //->select('lic_id')
             ->get();
-    }   
+    }
 */
+
     /**
-     * Método privado para buscar y contar registros según condiciones
-     * Filtra automáticamente registros con cin_filaeliminada = false
+     * Método privado para buscar y contar registros según condiciones.
+     *
+     * Filtra automáticamente registros con lic_filaeliminada = false.
+     * Maneja casos de no encontrado, duplicado o error.
+     *
+     * @param array $condiciones Condiciones de búsqueda (pares clave-valor).
+     * @param string $descripcion Descripción de las condiciones para logging.
+     * @return array Resultado con 'status' y 'data'.
      */
     private function buscarYContar(array $condiciones, string $descripcion)
     {
@@ -62,7 +93,10 @@ class LicenciaService
     }
 
     /**
-     * Buscar por número de expediente
+     * Busca una licencia por número de expediente.
+     *
+     * @param mixed $lic_expnum Número de expediente.
+     * @return array Resultado de la búsqueda.
      */
     public function obtenerPorNumeroExpediente($lic_expnum)
     {
@@ -73,7 +107,10 @@ class LicenciaService
     }
 
     /**
-     * Buscar por número de licencia
+     * Busca una licencia por número de licencia.
+     *
+     * @param mixed $lic_numlic Número de licencia.
+     * @return array Resultado de la búsqueda.
      */
     public function obtenerPorNumeroLicencia($lic_numlic)
     {
@@ -84,7 +121,10 @@ class LicenciaService
     }
 
     /**
-     * Buscar por ID de licencia
+     * Busca una licencia por ID de licencia.
+     *
+     * @param mixed $lic_id ID de la licencia.
+     * @return array Resultado de la búsqueda.
      */
     public function obtenerPorIdLicencia($lic_id)
     {
@@ -95,7 +135,11 @@ class LicenciaService
     }
 
     /**
-     * Buscar por número de licencia y expediente (combinado)
+     * Busca una licencia por número de licencia y expediente (combinado).
+     *
+     * @param mixed $lic_numlic Número de licencia.
+     * @param mixed $lic_expnum Número de expediente.
+     * @return array Resultado de la búsqueda.
      */
     public function obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum)
     {
