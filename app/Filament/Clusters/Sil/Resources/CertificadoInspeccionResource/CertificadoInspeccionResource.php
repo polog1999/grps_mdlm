@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\CertificadoInspeccions;
+namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource;
 
-use App\Filament\Resources\CertificadoInspeccions\Pages\CreateCertificadoInspeccion;
-use App\Filament\Resources\CertificadoInspeccions\Pages\EditCertificadoInspeccion;
-use App\Filament\Resources\CertificadoInspeccions\Pages\ListCertificadoInspeccions;
-use App\Filament\Resources\CertificadoInspeccions\Pages\ViewCertificadoInspeccion;
-use App\Filament\Resources\CertificadoInspeccions\Schemas\CertificadoInspeccionForm;
-use App\Filament\Resources\CertificadoInspeccions\Schemas\CertificadoInspeccionInfolist;
-use App\Filament\Resources\CertificadoInspeccions\Tables\CertificadoInspeccionsTable;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages\CreateCertificadoInspeccion;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages\EditCertificadoInspeccion;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages\ListCertificadoInspeccions;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages\ViewCertificadoInspeccion;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\CertificadoInspeccionForm;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\CertificadoInspeccionInfolist;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Tables\CertificadoInspeccionsTable;
+use App\Filament\Clusters\Sil\SilCluster;
 use App\Models\CertificadoInspeccion;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -57,8 +58,11 @@ class CertificadoInspeccionResource extends Resource
     protected static ?string $recordTitleAttribute = 'Certificado Inspeccion';
 
     // Etiquetas personalizadas para FilamentnavigationLabel
-    //navigation group
-    protected static string | UnitEnum | null $navigationGroup = 'SIL';
+
+    protected static ?string $cluster = SilCluster::class;
+
+
+
     //ICON FOR NAVIGATIONGROUP
     protected static ?string $navigationLabel = 'Certificados de Inspección';
     protected static ?string $pluralModelLabel = 'Certificados de Inspección';

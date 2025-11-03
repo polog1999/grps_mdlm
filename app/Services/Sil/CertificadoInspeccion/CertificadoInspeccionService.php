@@ -1,5 +1,5 @@
 <?php
-namespace App\Services;
+namespace App\Services\Sil\CertificadoInspeccion;
 
 use Illuminate\Support\Facades\DB;
 

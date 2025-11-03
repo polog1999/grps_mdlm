@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\CertificadoInspeccions\Tables;
+namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Tables;
 
-use Filament\Actions\BulkActionGroup;
+use Filament\Actions\BulkActionGroup;   
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -18,7 +18,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Indicator;
 use App\Models\CertificadoInspeccion;
-use App\Services\CertificadoInspeccionService;
+use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use Filament\Actions\Action;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;

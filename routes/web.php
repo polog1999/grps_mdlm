@@ -3,9 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
-use App\Services\LicenciaService;
-use App\Services\PersonaSolicitante;
-use App\Services\TipoEdificacionService;
 
 use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\PersonaSolicitanteController;

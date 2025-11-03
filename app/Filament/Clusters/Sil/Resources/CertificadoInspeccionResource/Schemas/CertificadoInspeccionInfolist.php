@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\CertificadoInspeccions\Schemas;
+namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas;
 
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;

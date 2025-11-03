@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\CertificadoInspeccions\Schemas;
+namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas;
 
-use App\Services\LicenciaService;
-use App\Services\PersonaSolicitante;
-use App\Services\TipoEdificacionService;
+use App\Services\Sil\CertificadoInspeccion\LicenciaService;
+use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
+use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
 
 use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\PersonaSolicitanteController;
 use App\Http\Controllers\TipoEdificacionController;
-
+use App\Services\Sil\CertificadoInspeccion\LicenciaService\LicenciaService as LicenciaServiceLicenciaService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Fieldset;

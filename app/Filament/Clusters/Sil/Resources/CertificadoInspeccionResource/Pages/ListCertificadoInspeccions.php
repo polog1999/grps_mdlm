@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\CertificadoInspeccions\Pages;
+namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages;
 
-use App\Filament\Resources\CertificadoInspeccions\CertificadoInspeccionResource;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource;
 use App\Filament\Actions\ExportCertificadoAction;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
