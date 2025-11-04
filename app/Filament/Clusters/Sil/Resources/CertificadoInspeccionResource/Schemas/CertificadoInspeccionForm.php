@@ -71,6 +71,12 @@ class CertificadoInspeccionForm
 
             Hidden::make('cin_procedimiento')
                 ->default(''),
+
+            //campos ocultos de autofill
+            Hidden::make('cin_establecimiento_autofilled')->default(false),
+            Hidden::make('cin_ubicacion_autofilled')->default(false),
+
+
         ];
     }
 
@@ -219,8 +225,23 @@ class CertificadoInspeccionForm
                             ->label('Nombre del Establecimiento')
                             ->placeholder('Ej. Empresa XYZ S.A.C.')
                             ->required()
-                            ->maxLength(255),
-                        TextInput::make('lic_id')
+                            ->maxLength(255)
+                            ->disabled(fn (callable $get) => (bool) $get('cin_establecimiento_autofilled'))
+                            ->extraInputAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_establecimiento_autofilled') ? '1' : '0',
+                                'style' => $get('cin_establecimiento_autofilled') 
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                    : '',
+                            ])
+                            ->extraAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_establecimiento_autofilled') ? '1' : '0',
+                            ])
+                            ->helperText(fn (callable $get) => 
+                                $get('cin_establecimiento_autofilled') 
+                                    ? '✓ Autocompletado' 
+                                    : 'Ingrese manualmente'
+                            ),
+                            TextInput::make('lic_id')
                             ->label('ID Licencia')
                             ->numeric()
                             ->disabled()
@@ -236,8 +257,22 @@ class CertificadoInspeccionForm
                     ->maxLength(255)
                     ->required()
                     ->suffixIcon('heroicon-o-map-pin')
-                    ->columnSpanFull(),
-
+                    ->columnSpanFull()
+                    ->disabled(fn (callable $get) => (bool) $get('cin_ubicacion_autofilled'))
+                            ->extraInputAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
+                                'style' => $get('cin_ubicacion_autofilled') 
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                    : '',
+                            ])
+                            ->extraAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
+                            ])
+                            ->helperText(fn (callable $get) => 
+                                $get('cin_ubicacion_autofilled') 
+                                    ? '✓ Autocompletado' 
+                                    : 'Ingrese manualmente'
+                    ),
                 Grid::make(3)
                     ->schema([
                         TextInput::make('cin_departamento')
@@ -782,7 +817,9 @@ class CertificadoInspeccionForm
         $set('cin_giro', $licenciaData->lic_giro ?? null);
         $set('cin_area', $licenciaData->lic_area ?? null);
         $set('cin_ubicacion', $licenciaData->lic_direccion ?? null);
+        $set('cin_ubicacion_autofilled', !empty($licenciaData->lic_direccion));
         $set('cin_establecimiento', $licenciaData->lic_razonsocial ?? null);
+        $set('cin_establecimiento_autofilled', !empty($licenciaData->lic_razonsocial));
         $set('cin_expediente', $licenciaData->lic_expnum ?? $expediente);
         $set('cin_solicitante', $nombreSolicitante);
 
