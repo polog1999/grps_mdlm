@@ -75,6 +75,7 @@ class CertificadoInspeccionForm
             //campos ocultos de autofill
             Hidden::make('cin_establecimiento_autofilled')->default(false),
             Hidden::make('cin_ubicacion_autofilled')->default(false),
+            Hidden::make('cin_area_autofilled')->default(false),
 
 
         ];
@@ -259,19 +260,19 @@ class CertificadoInspeccionForm
                     ->suffixIcon('heroicon-o-map-pin')
                     ->columnSpanFull()
                     ->disabled(fn (callable $get) => (bool) $get('cin_ubicacion_autofilled'))
-                            ->extraInputAttributes(fn (callable $get) => [
-                                'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
-                                'style' => $get('cin_ubicacion_autofilled') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
-                                    : '',
-                            ])
-                            ->extraAttributes(fn (callable $get) => [
-                                'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
-                            ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_ubicacion_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                    ->extraInputAttributes(fn (callable $get) => [
+                        'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
+                        'style' => $get('cin_ubicacion_autofilled') 
+                            ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                            : '',
+                    ])
+                    ->extraAttributes(fn (callable $get) => [
+                        'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
+                    ])
+                    ->helperText(fn (callable $get) => 
+                        $get('cin_ubicacion_autofilled') 
+                            ? '✓ Autocompletado' 
+                            : 'Ingrese manualmente'
                     ),
                 Grid::make(3)
                     ->schema([
@@ -319,7 +320,21 @@ class CertificadoInspeccionForm
                             ->suffix('m²')
                             ->placeholder('150.50')
                             ->required()
-                            ->helperText('Área en metros cuadrados'),
+                            ->disabled(fn (callable $get) => (bool) $get('cin_area_autofilled'))
+                            ->extraInputAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_area_autofilled') ? '1' : '0',
+                                'style' => $get('cin_area_autofilled') 
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                    : '',
+                            ])
+                            ->extraAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_area_autofilled') ? '1' : '0',
+                            ])
+                            ->helperText(fn (callable $get) => 
+                                $get('cin_area_autofilled') 
+                                    ? '✓ Autocompletado' 
+                                    : 'Ingrese manualmente'
+                            ),
 
                         TextInput::make('cin_capacidad')
                             ->label('Capacidad de Aforo')
