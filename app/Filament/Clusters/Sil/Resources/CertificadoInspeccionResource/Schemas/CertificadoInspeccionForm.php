@@ -240,6 +240,7 @@ class CertificadoInspeccionForm
                             ->required()
                             ->maxLength(255)
                             ->disabled(fn (callable $get) => (bool) $get('cin_establecimiento_autofilled'))
+                            ->dehydrated()
                             ->extraInputAttributes(fn (callable $get) => [
                                 'data-autofilled' => $get('cin_establecimiento_autofilled') ? '1' : '0',
                                 'style' => $get('cin_establecimiento_autofilled') 
@@ -271,7 +272,11 @@ class CertificadoInspeccionForm
                     ->required()
                     ->suffixIcon('heroicon-o-map-pin')
                     ->columnSpanFull()
+                    ->dehydrated()
+
                     ->disabled(fn (callable $get) => (bool) $get('cin_ubicacion_autofilled'))
+                                                ->dehydrated()
+
                     ->extraInputAttributes(fn (callable $get) => [
                         'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
                         'style' => $get('cin_ubicacion_autofilled') 
@@ -292,6 +297,7 @@ class CertificadoInspeccionForm
                             ->label('Departamento')
                             ->default(self::DEPARTAMENTO_DEFAULT)
                             ->disabled()
+                            
                             ->extraInputAttributes(fn (callable $get) => [
                                 'data-autofilled' => $get('cin_departamento') ? '1' : '0',
                                 'style' => $get('cin_departamento') 
@@ -351,6 +357,8 @@ class CertificadoInspeccionForm
                             ->placeholder('150.50')
                             ->required()
                             ->disabled(fn (callable $get) => (bool) $get('cin_area_autofilled'))
+                                                        ->dehydrated()
+
                             ->extraInputAttributes(fn (callable $get) => [
                                 'data-autofilled' => $get('cin_area_autofilled') ? '1' : '0',
                                 'style' => $get('cin_area_autofilled') 
@@ -432,6 +440,8 @@ class CertificadoInspeccionForm
                             })
                             ->suffixIcon('heroicon-o-play')
                             ->disabled(fn (callable $get) => (bool) $get('cin_fecha_inicio_autofilled'))
+                                                        ->dehydrated()
+
                             ->extraInputAttributes(fn (callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_inicio_autofilled') ? '1' : '0',
                                 'style' => $get('cin_fecha_inicio_autofilled') 
@@ -456,6 +466,8 @@ class CertificadoInspeccionForm
                             ->dehydrated()
                             ->suffixIcon('heroicon-o-stop')
                             ->disabled(fn (callable $get) => (bool) $get('cin_fecha_fin_autofilled'))
+                                                       ->dehydrated()
+
                             ->extraInputAttributes(fn (callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_fin_autofilled') ? '1' : '0',
                                 'style' => $get('cin_fecha_fin_autofilled') 
@@ -539,6 +551,8 @@ class CertificadoInspeccionForm
                             ->placeholder('2025-001234')
                             ->suffixIcon('heroicon-o-folder-open')
                             ->disabled(fn (callable $get) => (bool) $get('cin_expediente_autofilled'))
+                                                        ->dehydrated()
+
                             ->extraInputAttributes(fn (callable $get) => [
                             'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
                             'style' => $get('cin_expediente_autofilled') 
@@ -556,11 +570,12 @@ class CertificadoInspeccionForm
 
                         TextInput::make('cin_licencia')
                             ->label('Número de Licencia')
-                            ->disabled()
                             ->dehydrated()
                             ->placeholder('Se completa automáticamente')
                             ->suffixIcon('heroicon-o-clipboard-document-check')
                             ->disabled(fn (callable $get) => (bool) $get('cin_licencia_autofilled'))
+                                                        ->dehydrated()
+
                             ->extraInputAttributes(fn (callable $get) => [
                             'data-autofilled' => $get('cin_licencia_autofilled') ? '1' : '0',
                             'style' => $get('cin_licencia_autofilled') 
@@ -603,11 +618,12 @@ class CertificadoInspeccionForm
             ->schema([
                 TextInput::make('cin_giro')
                     ->label('Giro o Actividad Económica')
-                    ->disabled()
                     ->dehydrated()
                     ->placeholder('Se completa automáticamente')
                     ->suffixIcon('heroicon-o-briefcase')
                     ->disabled(fn (callable $get) => (bool) $get('cin_giro_autofilled'))
+                                                ->dehydrated()
+
                      ->extraInputAttributes(fn (callable $get) => [
                     'data-autofilled' => $get('cin_giro_autofilled') ? '1' : '0',
                     'style' => $get('cin_giro_autofilled') 
@@ -630,6 +646,8 @@ class CertificadoInspeccionForm
                     ->maxLength(255)
                     ->suffixIcon('heroicon-o-user')
                     ->disabled(fn (callable $get) => (bool) $get('cin_solicitante_autofilled'))
+                                                ->dehydrated()
+
                     ->extraInputAttributes(fn (callable $get) => [
                     'data-autofilled' => $get('cin_solicitante_autofilled') ? '1' : '0',
                     'style' => $get('cin_solicitante_autofilled') 
