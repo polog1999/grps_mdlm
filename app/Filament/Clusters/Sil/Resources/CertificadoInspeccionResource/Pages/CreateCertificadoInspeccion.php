@@ -8,5 +8,5 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCertificadoInspeccion extends CreateRecord
 {
     protected static string $resource = CertificadoInspeccionResource::class;
-    protected static ?string $title = 'Creación de Certificado de Inspección';
+    protected static ?string $title = 'Registro de Certificado de Inspección';
 }
