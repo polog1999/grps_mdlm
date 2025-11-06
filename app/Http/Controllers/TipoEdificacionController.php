@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Services\TipoEdificacionService;
+use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
 
 use Illuminate\Http\Request;
 

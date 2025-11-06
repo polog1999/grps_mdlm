@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PersonaSolicitante;
+use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
 use Illuminate\Http\Request;
 
 

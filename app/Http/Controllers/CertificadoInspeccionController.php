@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CertificadoInspeccionService;
+use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use Illuminate\Http\Request;
 use Dompdf\Dompdf;
 use App\Models\CertificadoInspeccion;

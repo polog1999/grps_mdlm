@@ -61,11 +61,7 @@ class User extends Authenticatable
         // Si implementas MustVerifyEmail, puedes usar:
         // return $this->hasVerifiedEmail();
     }
-
-    public function sendPasswordResetNotification($token): void
-    {
-        $this->notify(new ResetPasswordNotification($token));
-    }
+    
 
 
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\LicenciaService;
+use App\Services\Sil\CertificadoInspeccion\LicenciaService;
 use Illuminate\Http\Request;
 
 class LicenciaController extends Controller
