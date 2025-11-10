@@ -23,6 +23,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 
 /**
@@ -42,6 +43,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class CertificadoInspeccionsTable
 {
+    protected static $service;
 
     /**
      * Aplica la configuración completa a un objeto `Filament\Tables\Table`.
@@ -55,6 +57,10 @@ class CertificadoInspeccionsTable
      */
     public static function configure(Table $table): Table
     {
+        if (!isset(self::$service)) {
+            self::$service = new CertificadoInspeccionService();
+        }
+        
         return $table
             ->defaultSort('cin_fecha', 'desc')
             ->searchable(true)
@@ -257,9 +263,9 @@ class CertificadoInspeccionsTable
     SelectFilter::make('cin_ubicacion') 
         ->label('Ubicación') 
         ->searchable() 
+        
         ->getSearchResultsUsing(function (string $search): array {
-            $service = new CertificadoInspeccionService(); 
-            $ubicaciones = $service->buscarUbicacion($search); 
+            $ubicaciones = self::$service->buscarUbicacion($search); 
             return array_combine($ubicaciones, $ubicaciones);
         })
         ->getOptionLabelUsing(fn ($value): string => $value)
@@ -367,7 +373,7 @@ class CertificadoInspeccionsTable
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading('Eliminar Certificado')
-                ->modalDescription('¿Está seguro que desea eliminar este certificado? Esta acción no se puede revertir.')
+                ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>eliminar</strong> este certificado? Esta acción no se puede revertir. Se registrará el <strong>usuario</strong> que realiza la eliminación y la <strong>fecha/hora</strong> de la acción.'))
                 ->form([
                     TextInput::make('razon_eliminacion')
                         ->label('Razón de la eliminación')
@@ -395,8 +401,7 @@ class CertificadoInspeccionsTable
                     
                     $userId = Auth::id();
                     $cinId = $record->cin_id;
-                    $service = new CertificadoInspeccionService();
-                    $service->borrarCertificadoInspeccion($userId, $cinId, $razon);
+                    self::$service->borrarCertificadoInspeccion($userId, $cinId, $razon);
                  
                     
 
