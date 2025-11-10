@@ -5,11 +5,8 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Sche
 use App\Services\Sil\CertificadoInspeccion\LicenciaService;
 use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
 use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
+use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService; 
 
-use App\Http\Controllers\LicenciaController;
-use App\Http\Controllers\PersonaSolicitanteController;
-use App\Http\Controllers\TipoEdificacionController;
-use App\Services\Sil\CertificadoInspeccion\LicenciaService\LicenciaService as LicenciaServiceLicenciaService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Fieldset;
@@ -173,6 +170,14 @@ class CertificadoInspeccionForm
      */
     private static function seccionInformacionGeneral(): Section
     {
+        // Obtener el siguiente número de certificado disponible para mostrarlo en el label
+        $siguiente = null;
+        try {
+            $siguiente = app(CertificadoInspeccionService::class)->obtenerSiguienteNumero();
+        } catch (\Throwable $e) {
+            logger()->warning('No se pudo obtener siguiente numero de certificado', ['error' => $e->getMessage()]);
+        }
+
         return Section::make('Información General')
             ->description('Datos identificativos del certificado')
             ->icon('heroicon-o-identification')
@@ -180,11 +185,20 @@ class CertificadoInspeccionForm
                 Grid::make(2)
                     ->schema([
                         TextInput::make('cin_numero')
-                            ->label('Número de Certificado')
+                            ->label(
+                                'Número de Certificado'
+                            )
                             ->numeric()
                             ->required()
+                            ->disabled()
                             ->minValue(1)
-                            ->placeholder('001')
+                            ->default($siguiente)
+                            ->extraInputAttributes(fn (callable $get) => [
+                                'data-autofilled' => $get('cin_numero') ? '1' : '0',
+                                'style' => $get('cin_numero') 
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                    : '',
+                            ])
                             ->prefix('#')
                             ->helperText('Número correlativo del certificado'),
 

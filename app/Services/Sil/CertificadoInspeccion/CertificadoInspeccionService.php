@@ -67,5 +67,26 @@ class CertificadoInspeccionService{
         return array_map(fn ($r) => $r->numero_certificado, $resultados);
     }
 
+    /**
+     * Obtiene el siguiente número de certificado disponible.
+     *
+     * Consulta el rango de números disponibles y retorna el siguiente
+     * número que no esté asignado a ningún certificado existente.
+     *
+     * @return int|null Siguiente número disponible o null si no hay.
+     */
+    public function obtenerSiguienteNumero(){
+        $resultado = DB::select("
+        SELECT MIN(n) AS siguiente_numero
+        FROM generate_series(
+        (SELECT MAX(cin_numero) FROM itse.certificadoinspeccion WHERE cin_id NOT IN (8462, 8093, 9322)) + 1,
+        (SELECT MAX(cin_numero) FROM itse.certificadoinspeccion WHERE cin_id NOT IN (8462, 8093, 9322)) + 5000
+        ) AS n
+        WHERE n NOT IN (
+        SELECT cin_numero FROM itse.certificadoinspeccion
+        );");
+        return array_map(fn ($r) => $r->siguiente_numero, $resultado)[0] ?? null;
+    }
+
 
 }

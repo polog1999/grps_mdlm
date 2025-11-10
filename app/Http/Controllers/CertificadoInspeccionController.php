@@ -129,4 +129,10 @@ class CertificadoInspeccionController extends Controller
             'message' => 'Certificado marcado como eliminado correctamente.',
         ]);
     }
+
+    public function obtenerSiguienteNumero()
+    {
+        $siguiente = $this->service->obtenerSiguienteNumero();
+        return response()->json(['siguiente_numero' => $siguiente]);
+    }
 }
