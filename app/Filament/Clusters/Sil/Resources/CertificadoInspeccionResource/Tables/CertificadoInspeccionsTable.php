@@ -22,6 +22,8 @@ use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use Filament\Actions\Action;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
+
 
 /**
  * Configuración de la tabla de Certificados de Inspección para Filament.
@@ -366,9 +368,38 @@ class CertificadoInspeccionsTable
                 ->requiresConfirmation()
                 ->modalHeading('Eliminar Certificado')
                 ->modalDescription('¿Está seguro que desea eliminar este certificado? Esta acción no se puede revertir.')
+                ->form([
+                    TextInput::make('razon_eliminacion')
+                        ->label('Razón de la eliminación')
+                        ->required()
+                        ->placeholder('Ingrese la razón de la eliminación de este certificado')
+                    ->extraAttributes([
+                        'style' => '--tw-ring-color: #ef4444; --tw-ring-shadow: 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);'
+                    ])
+                    ->maxLength(255),
+                ])
                 ->modalSubmitActionLabel('Sí, eliminar')
                 ->modalCancelActionLabel('Cancelar')
-                ->action(function ($record) {
+                ->action(function ($record, array $data) {
+
+                    $razon = trim($data['razon_eliminacion'] ?? '');
+
+                    if ($razon === '') {
+                        Notification::make()
+                            ->danger()
+                            ->title('Razón requerida')
+                            ->body('Debe especificar la razón de la eliminación antes de confirmar.')
+                            ->send();
+                        return;
+                    }
+                    
+                    $userId = Auth::id();
+                    $cinId = $record->cin_id;
+                    $service = new CertificadoInspeccionService();
+                    $service->borrarCertificadoInspeccion($userId, $cinId, $razon);
+                 
+                    
+
                     $record->cin_filaeliminada = true;
                     $record->save();
                     Notification::make()

@@ -200,8 +200,8 @@ class CertificadoInspeccionForm
                                     : '',
                             ])
                             ->prefix('#')
-                            ->helperText('Número correlativo del certificado'),
-
+                            ->helperText('Número correlativo del certificado')
+                            ->dehydrated(),
                         TextInput::make('cin_anio')
                             ->label('Año')
                             ->numeric()

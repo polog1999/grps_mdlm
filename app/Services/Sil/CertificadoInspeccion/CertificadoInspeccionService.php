@@ -2,6 +2,7 @@
 namespace App\Services\Sil\CertificadoInspeccion;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Servicio para operaciones relacionadas con Certificados de Inspección.
@@ -88,5 +89,25 @@ class CertificadoInspeccionService{
         return array_map(fn ($r) => $r->siguiente_numero, $resultado)[0] ?? null;
     }
 
-
+    //borrar certificado inspeccion -> guardar en tabla certificados_borrados (user_id, cin_id, cin_razon_borrado)
+    public function borrarCertificadoInspeccion(int $userId, int $cinId, string $razon)
+    {
+        try{
+                DB::table('certificados_borrados')->insert([
+                'user_id' => $userId,
+                'cin_id' => $cinId,
+                'cin_razon_borrado' => $razon,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error registrando certificado borrado', [
+                'user_id' => $userId,
+                'cin_id' => $cinId,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+        
 }
