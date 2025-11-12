@@ -69,7 +69,7 @@ class CertificadoInspeccionForm
             Hidden::make('cin_procedimiento')
                 ->default(''),
 
-            //campos ocultos de autofill
+            //campos ocultos de autofil
             Hidden::make('cin_establecimiento_autofilled')->default(false),
             Hidden::make('cin_ubicacion_autofilled')->default(false),
             Hidden::make('cin_area_autofilled')->default(false),
@@ -269,14 +269,9 @@ class CertificadoInspeccionForm
                                     ? '✓ Autocompletado' 
                                     : 'Ingrese manualmente'
                             ),
-                            TextInput::make('lic_id')
-                            ->label('ID Licencia')
-                            ->numeric()
-                            ->disabled()
-                            ->dehydrated()
-                            ->placeholder('Auto')
-                            //->visible(false)
-                            ->helperText('Se completa automáticamente'),
+                        Hidden::make('lic_id')
+                                    ->dehydrated(),
+
                     ]),
 
                 TextInput::make('cin_ubicacion')
@@ -289,7 +284,7 @@ class CertificadoInspeccionForm
                     ->dehydrated()
 
                     ->disabled(fn (callable $get) => (bool) $get('cin_ubicacion_autofilled'))
-                                                ->dehydrated()
+                    ->dehydrated()
 
                     ->extraInputAttributes(fn (callable $get) => [
                         'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
@@ -850,6 +845,7 @@ class CertificadoInspeccionForm
         
         return $service->obtenerPorNumeroExpediente($expediente);
     }
+
 
     /**
      * Procesa la respuesta del servicio de licencias y ejecuta la acción
