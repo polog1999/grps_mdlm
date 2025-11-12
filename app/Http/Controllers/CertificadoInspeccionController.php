@@ -79,7 +79,8 @@ class CertificadoInspeccionController extends Controller
         $record = CertificadoInspeccion::with('tipoEdificacion')->findOrFail($certificadoId);
 
         $tipo = $record->tie_id;
-        if (! in_array($tipo, [5, 6, 7, 8], true)) {
+        $consello= $record->cin_consello;
+        if (! in_array($tipo, [5, 6, 7, 8], true) || $consello==true) {
             $base = config('certificado.redirect_url');
             if ($base) {
                 $url = rtrim($base, '?&') . (str_contains($base, '?') ? '' : '?')  . urlencode($certificadoId);
