@@ -359,7 +359,7 @@ class CertificadoInspeccionsTable
             ->color('warning'),
         Action::make('exportar')
                 ->label('Exportar')
-                ->icon('heroicon-o-document')
+                ->icon('heroicon-o-printer')
                 ->tooltip('Exportar certificado (PDF)')
                 ->iconButton()
                 ->color('success')
