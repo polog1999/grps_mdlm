@@ -127,6 +127,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/certificado-inspeccion/eliminar/{certificadoId}', [CertificadoInspeccionController::class, 'borrarCertificado'])
             ->name('certificadoInspeccion.borrarCertificado');
 
+
+        /**
+         * Rutas para Certificado de Licencia de Funcionamiento
+         */
+           
         Route::get('/certificado-licencia-funcionamiento/obtener-datos/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosLicenciaFuncionamiento'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatos');   
 

@@ -35,10 +35,9 @@ class LicenciaService
      *
      * @return \Illuminate\Support\Collection Colección de licencias.
      */
-    public function getLicencias()
-    {
-        return $this->connection->table('licencia.licencia')->get();
-    }
+    public function getLicencias($perPage = 10){
+        return $this->connection->table('licencia.licencia')->paginate($perPage);    
+    }   
 
     /*
     public function obtenerPrimerosDiez()

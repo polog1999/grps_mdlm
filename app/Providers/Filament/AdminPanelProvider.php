@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->defaultThemeMode(ThemeMode::Light)
             ->brandName('Intranet')
-            ->brandLogo(asset('images/logo.svg'))
+            //->brandLogo(asset('images/logo.svg'))
             ->favicon(asset('images/favicon.png'))
             ->authGuard('web')
             ->authPasswordBroker('users')

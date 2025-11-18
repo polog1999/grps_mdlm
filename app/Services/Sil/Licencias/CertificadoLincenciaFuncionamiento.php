@@ -3,6 +3,7 @@ namespace App\Services\Sil\Licencias;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Query\Builder;
 
 class CertificadoLincenciaFuncionamiento
 {
@@ -11,8 +12,28 @@ class CertificadoLincenciaFuncionamiento
       public function __construct()
     {
         $this->connectionToOracle = DB::connection('oracle');
-        $this->connectionToPostgreSQL = DB::connection('pgsql_syscat');
+        $this->connectionToPostgreSQL = DB::connection('pgsql_licencias');
     }
+
+
+    public function getLicenciasQueryBuilder(): Builder
+    {
+        return $this->connectionToPostgreSQL
+            ->table('licencia.vu_licencia')
+            ->select(
+                'lic_id',
+                'lic_numlic',
+                'lic_expnum',
+                'lic_razonsocial',
+                'codigocatastral',
+                'tli_descripcion',
+                'tes_descripcion',
+                'per_direccion',
+                'per_direccionsol'
+            )
+            ->distinct();
+    }
+
 
     public function obtenerDatosLicenciaFuncionamiento(string $expnum, array $columns = [
         'exp_num',
@@ -88,6 +109,39 @@ class CertificadoLincenciaFuncionamiento
         }
     }
 
+    public function obtenerCodCatPorExpedienteConVuLicencias(string $lic_id) {
+
+        try{
+            $result = $this -> connectionToPostgreSQL
+                ->table('licencia.vu_licencia')
+                ->select ('codigocatastral')
+                ->where('lic_id', $lic_id)
+                ->first();
+
+            return $result ? $result->codigocatastral : null;
+
+        }catch (\Throwable $e) {
+            Log::error("Error al obtener CODCAT para LIC_ID {$lic_id}: " . $e->getMessage());
+            return null;
+        }
+        
+    }
+
+    public function obtenerDireccionSolicitantePorIdLicencia(string $lic_id)
+    {
+        try {
+            $result = $this->connectionToPostgreSQL
+                ->table('licencia.vu_licencia')
+                ->select('per_direccionsol')
+                ->where('lic_id', $lic_id)
+                ->first();
+
+            return $result ? $result->per_direccionsol : null;
+        } catch (\Throwable $e) {
+            Log::error("Error al obtener dirección solicitante para LIC_ID {$lic_id}: " . $e->getMessage());
+            return null;
+        }
+    }
     /**
      * Ejecuta la función de tabla Oracle MESQUECHE.FU_SYSCATFICHAUBICACION_SEL
      * y retorna sus filas como colección.
