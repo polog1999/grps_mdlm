@@ -12,11 +12,13 @@ use Filament\Tables\Table;
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamiento;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Collection;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 
 class CertificadoLicenciaFuncionamientosTable
 {
@@ -54,7 +56,28 @@ class CertificadoLicenciaFuncionamientosTable
                     $hasFilters = false;
                 }
 
-                return ($livewire->hasTableSearch() || $hasFilters) ? $query : $query->whereRaw('1 = 0');
+                // Detect actual search term (Filament's hasTableSearch() only indicates the feature exists)
+                $searchTerm = null;
+                if (isset($livewire->tableSearch)) {
+                    $searchTerm = $livewire->tableSearch;
+                } elseif (method_exists($livewire, 'getTableSearch')) {
+                    try {
+                        $searchTerm = $livewire->getTableSearch();
+                    } catch (\Throwable $e) {
+                        $searchTerm = null;
+                    }
+                }
+                $hasSearch = !empty($searchTerm) && trim((string) $searchTerm) !== '';
+
+                // Apply base condition always
+                $query->where('lic_filaeliminada', false);
+
+                // Only allow results when there's an actual search term or active filters
+                if ($hasSearch || $hasFilters) {
+                    return $query;
+                }
+
+                return $query->whereRaw('1 = 0');
             })
                 
            ->defaultSort('lic_filafecha', 'desc') 
@@ -164,9 +187,131 @@ class CertificadoLicenciaFuncionamientosTable
                     ->indicator('Estado de Licencia')
                     ->placeholder('Todos los estados'),
 
+                Filter::make('codigocatastral')
+                    ->form([
+                        TextInput::make('codigocatastral')
+                            ->label('Código Catastral')
+                            ->placeholder('Ingrese código catastral...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            !empty($data['codigocatastral']),
+                            fn (Builder $query) => $query->whereIn('lic_id', function ($subquery) use ($data) {
+                                $subquery->select('lic_id')
+                                    ->from('licencia.vu_licencia')
+                                    ->where('codigocatastral', 'LIKE', '%' . $data['codigocatastral'] . '%');
+                            })
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!empty($data['codigocatastral'])) {
+                            return 'Código: ' . $data['codigocatastral'];
+                        }
+                        return null;
+                    }),
+                SelectFilter::make('lic_codigopredial')
+                    ->label('Codigo Predial')
+                    ->options(fn () => CertificadoLicenciaFuncionamiento::query()
+                        ->distinct()
+                        ->whereNotNull('lic_codigopredial')
+                        ->where('lic_codigopredial', '!=', '')
+                        ->orderBy('lic_codigopredial', 'asc')
+                        ->pluck('lic_codigopredial', 'lic_codigopredial')
+                        ->toArray())
+                    ->searchable()
+                    ->indicator('Codigo Predial')
+                    ->placeholder('Buscar codigo predial...')
+                    ->native(false),
+                
+                Filter::make('per_ruc')
+                    ->form([
+                        TextInput::make('per_ruc')
+                            ->label('RUC Personas')
+                            ->placeholder('Ingrese RUC...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            !empty($data['per_ruc']),
+                            fn (Builder $query) => $query->whereIn('lic_id', function ($subquery) use ($data) {
+                                $subquery->select('lic_id')
+                                    ->from('licencia.vu_licencia')
+                                    ->where('per_ruc', 'LIKE', '%' . $data['per_ruc'] . '%');
+                            })
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!empty($data['per_ruc'])) {
+                            return 'RUC Persona: ' . $data['per_ruc'];
+                        }
+                        return null;
+                    }),
+
+                Filter::make('numero')
+                    ->form([
+                        TextInput::make('numero')
+                            ->label('Número Dirección')
+                            ->placeholder('Ingrese número de dirección...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            !empty($data['numero']),
+                            fn (Builder $query) => $query->whereRaw(
+                                "lic_direccion LIKE ?",
+                                ['%' . $data['numero'] . '%']
+                            )
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!empty($data['numero'])) {
+                            return 'Número Dirección: ' . $data['numero'];
+                        }
+                        return null;
+                    }),
+
+                Filter::make('lic_direccion')
+                    ->form([
+                        TextInput::make('lic_direccion')
+                            ->label('Dirección Licencia')
+                            ->placeholder('Ingrese dirección licencia...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            !empty($data['lic_direccion']),
+                            fn (Builder $query) => $query->where('lic_direccion', 'ILIKE', '%' . $data['lic_direccion'] . '%')
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!empty($data['lic_direccion'])) {
+                            return 'Dirección Licencia: ' . $data['lic_direccion'];
+                        }
+                        return null;
+                    }),
+
+                Filter::make('per_direccionsol')
+                    ->form([
+                        TextInput::make('per_direccionsol')
+                            ->label('Dirección Solicitante')
+                            ->placeholder('Ingrese dirección solicitante...')
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            !empty($data['per_direccionsol']),
+                            fn (Builder $query) => $query->whereIn('lic_id', function ($subquery) use ($data) {
+                                $subquery->select('lic_id')
+                                    ->from('licencia.vu_licencia')
+                                    ->where('per_direccionsol', 'ILIKE', '%' . $data['per_direccionsol'] . '%');
+                            })
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!empty($data['per_direccionsol'])) {
+                            return 'Dirección Solicitante: ' . $data['per_direccionsol'];
+                        }
+                        return null;
+                    }),
+
             ], layout: FiltersLayout::Modal)
-                ->modifyQueryUsing(fn ($query) => $query->where('lic_filaeliminada', false))
-                ->filtersFormColumns(3)
+                ->filtersFormColumns(4)
                 ->filtersFormMaxHeight('400px')
             ->recordActions([
                 EditAction::make(),
@@ -182,11 +327,11 @@ class CertificadoLicenciaFuncionamientosTable
                 fn (Action $action) => $action
                     ->button()
                     ->label('Filtros')
-                    ->modalHeading('Filtros Avanzados de Certificados')
-                    ->modalDescription('Utilice los filtros para refinar la lista de certificados según sus criterios.')
+                    ->modalHeading('Filtros Avanzados de Licencias')
+                    ->modalDescription('Utilice los filtros para refinar la lista de licencias según sus criterios.')
                     ->modalIcon('heroicon-o-funnel')
                     ->color('info')
-                    ->modalSubmitActionLabel('Buscar Certificados')
+                    ->modalSubmitActionLabel('Buscar Licencias')
                     ->modalCancelActionLabel('Cancelar')
     );
     }
