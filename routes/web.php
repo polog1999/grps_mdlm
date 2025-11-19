@@ -135,20 +135,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/certificado-licencia-funcionamiento/obtener-datos/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosLicenciaFuncionamiento'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatos');   
 
-        Route::get('/certificado-licencia-funcionamiento/obtener-datos-por-codcon/{codcon}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosLicenciaFuncionamiento2'])
-            ->name('certificadoLicenciaFuncionamiento.obtenerDatosPorCodcon');
-    
+        /*
         Route::get('/certificado-licencia-funcionamiento/obtener-codcat-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerCodCatPorExpediente'])
             ->name('certificadoLicenciaFuncionamiento.obtenerCodCatPorExpediente');
-
+        */
 
         //obtenerDatosPorCodCat
         Route::get('/certificado-licencia-funcionamiento/obtener-datos-por-codcat/{codcat}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosPorCodCat'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatosPorCodCat');
-
-                 //obtenerViaNombrePorCodVia
-        Route::get('/certificado-licencia-funcionamiento/obtener-via-nombre/{codvia}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerViaNombrePorCodVia'])
-            ->name('certificadoLicenciaFuncionamiento.obtenerViaNombrePorCodVia');
         });
 
    
