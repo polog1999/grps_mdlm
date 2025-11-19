@@ -58,10 +58,8 @@ class CertificadoLincenciaFuncionamiento
             return $query->pluck("e.{$columns[0]}");
         }
 
-        // Ejecuta y obtiene los resultados principales
         $rows = $query->get();
 
-        // Obtener codcat asociado al expediente y, si existe, recuperar registros por ecc_codcat
         $codcat = $this->obtenerCodCatPorExpediente($expnum);
         if (! empty($codcat)) {
             $rows = $rows->map(function ($r) use ($codcat) {
@@ -77,21 +75,6 @@ class CertificadoLincenciaFuncionamiento
             return collect();
         }
     }
-
-        
-    public function obtenerDatosLicenciaFuncionamiento2(string $codcon)
-    {
-        try{
-            return $this->connectionToOracle
-                ->table('DS_VALORES.VU_PERSONA2')
-                ->where('CODCON', $codcon)
-                ->get(); 
-        } catch (\Throwable $e) {
-            Log::error("Error al obtener datos de Expediente por codcon {$codcon}: " . $e->getMessage());
-            return collect();
-        }
-    }
-
 
     public function obtenerCodCatPorExpediente(string $expnum)
     {
@@ -152,41 +135,73 @@ class CertificadoLincenciaFuncionamiento
     public function obtenerDatosPorCodCat(string $codcat)
     {
         try {
-            // Seleccionar sólo las columnas necesarias desde la función de tabla Oracle
-            $sql = "SELECT t.codpredio, t.descurb, t.codvia FROM TABLE(MESQUECHE.FU_SYSCATFICHAUBICACION_SEL(?, '')) t";
+
+           $sql = "
+                SELECT
+                    TRIM(t.coduca) AS coduca,
+                    TRIM(t.codpredio) AS codpredio,
+                    TRIM(t.descurb) AS descurb,
+                    TRIM(t.codvia) AS codvia,
+                    TRIM(t.numvia) AS numvia,
+                    TRIM(t.intdpto) AS intdpto,
+                    TRIM(t.blockedif) AS blockedif,
+                    TRIM(t.mz) AS mz,
+                    TRIM(t.lote) AS lote,
+                    TRIM(t.zonificacion) AS zonificacion,
+                    TRIM(TO_CHAR(t.area_economica, 'FM9999999990.00')) AS area_economica
+                FROM
+                    TABLE(MESQUECHE.FU_SYSCATFICHAUBICACION_SEL(?, '')) t
+            ";
             $result = $this->connectionToOracle->select($sql, [$codcat]);
-            return collect($result);
+            $rows = collect($result);
+
+            // Si no hay filas, devolver colección vacía
+            if ($rows->isEmpty()) {
+                return $rows;
+            }
+
+            // Recolectar codvia únicos para obtener nombres en una sola consulta
+            $codvias = $rows
+                ->pluck('codvia')
+                ->map(fn($v) => trim((string) $v))
+                ->filter(fn($v) => $v !== '')
+                ->unique()
+                ->values()
+                ->all();
+
+            $viaMap = [];
+
+            if (!empty($codvias)) {
+                $placeholders = implode(',', array_fill(0, count($codvias), '?'));
+
+                $sqlVias = "
+                    SELECT
+                        v.via_codvia,
+                        (vt.vit_abretipvia || ' ' || v.via_descvia) AS via_completa
+                    FROM syscat.via v
+                    LEFT JOIN syscat.viatipo vt
+                        ON v.via_codtipvia = vt.vit_codtipvia
+                    WHERE v.via_codvia IN ($placeholders)
+                ";
+
+                $viaRows = $this->connectionToPostgreSQL->select($sqlVias, $codvias);
+
+                foreach ($viaRows as $vr) {
+                    $key = trim((string) ($vr->via_codvia ?? ''));
+                    $viaMap[$key] = $vr->via_completa ?? null;
+                }
+            }
+
+            $rows = $rows->map(function ($r) use ($viaMap) {
+                $codvia = isset($r->codvia) ? trim((string) $r->codvia) : '';
+                $r->via_completa = $viaMap[$codvia] ?? null;
+                return $r;
+            });
+
+            return $rows;
         } catch (\Throwable $e) {
             Log::error("Error al ejecutar FU_SYSCATFICHAUBICACION_SEL para CODCAT {$codcat}: " . $e->getMessage());
             return collect();
         }
     }
-
-
-    public function obtenerViaNombrePorCodVia(string $codvia)
-    {
-        try {
-            $sql = <<<'SQL'
-                SELECT
-                    v.via_id,
-                    v.via_codvia,
-                    (vt.vit_abretipvia || ' ' || v.via_descvia) AS via_completa
-                FROM syscat.via v
-                LEFT JOIN syscat.viatipo vt
-                    ON v.via_codtipvia = vt.vit_codtipvia
-                WHERE v.via_codvia = ?
-                LIMIT 1
-                SQL;
-            
-            // Devuelve el objeto $row directamente (o null si no se encuentra)
-            return $this->connectionToPostgreSQL->selectOne($sql, [$codvia]);
-
-        } catch (\Throwable $e) {
-            Log::error("Error al obtener nombre de vía para CODVIA {$codvia}: " . $e->getMessage());
-            return null;
-        }
-    }
-
-
-
 }
