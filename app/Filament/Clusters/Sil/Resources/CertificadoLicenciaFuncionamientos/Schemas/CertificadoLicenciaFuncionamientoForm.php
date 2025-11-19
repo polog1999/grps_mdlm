@@ -187,6 +187,7 @@ class CertificadoLicenciaFuncionamientoForm
             $set($destino, $data->$origen ?? null);
         }
 
+        
         $editFlags = ['fecha', 'nombre', 'razon', 'ruc', 'tel', 'dir', 'email'];
         foreach ($editFlags as $flag) {
             $set("_edit_{$flag}", false);
