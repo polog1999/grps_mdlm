@@ -143,7 +143,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         //obtenerDatosPorCodCat
         Route::get('/certificado-licencia-funcionamiento/obtener-datos-por-codcat/{codcat}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosPorCodCat'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatosPorCodCat');
+
+
+          //obtenerListaDeProcedimientosTupaDeLicencias
+        Route::get('/certificado-licencia-funcionamiento/obtener-lista-procedimientos-tupa-licencias', [CertificadoLicenciaFuncionamientoController::class, 'obtenerListaDeProcedimientosTupaDeLicencias'])
+            ->name('certificadoLicenciaFuncionamiento.obtenerListaDeProcedimientosTupaDeLicencias');
         });
+
+      
 
    
 });

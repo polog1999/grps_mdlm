@@ -204,4 +204,52 @@ class CertificadoLincenciaFuncionamiento
             return collect();
         }
     }
+
+    public function obtenerListaDeProcedimientosTupaDeLicencias()
+ {
+        try {
+            $rows = $this->connectionToOracle
+                ->table('ds_valores.VU_PROCEDIMIENTO_TOTAL')
+                ->select('PROCCODIGO', 'PROCDESCRI')
+                ->whereIn('PROCCODIGO', ['P047', 'P046', 'P048', 'P043', 'P041'])
+               ->get();
+
+            $collection = collect($rows)->map(function ($r) {
+                // obtener la descripción de forma robusta (clave puede variar entre conexiones)
+                $arr = (array) $r;
+                $descr = '';
+                foreach ($arr as $k => $v) {
+                    if (stripos($k, 'DESCR') !== false || stripos($k, 'PROCDESCRI') !== false) {
+                        $descr = (string) $v;
+                        break;
+                    }
+                }
+
+                $texto = strtoupper($descr);
+
+                // determinar nivel de riesgo (orden: muy alto -> alto -> medio -> bajo)
+                if (preg_match('/\bMUY\s+ALTO\b/i', $texto) || preg_match('/RIESGO\s+MUY\s+ALTO/i', $texto)) {
+                    $nivel = 'RIESGO MUY ALTO';
+                } elseif (preg_match('/\bALTO\b/i', $texto) || preg_match('/RIESGO\s+ALTO/i', $texto)) {
+                    $nivel = 'RIESGO ALTO';
+                } elseif (preg_match('/\bMEDIO\b/i', $texto) || preg_match('/RIESGO\s+MEDIO/i', $texto)) {
+                    $nivel = 'RIESGO MEDIO';
+                } elseif (preg_match('/\bBAJO\b/i', $texto) || preg_match('/RIESGO\s+BAJO/i', $texto)) {
+                    $nivel = 'RIESGO BAJO';
+                } else {
+                    $nivel = 'RIESGO NO ESPECIFICADO';
+                }
+
+                // agregar propiedad procnivel al objeto
+                $r->procnivel = $nivel;
+
+                return $r;
+            });
+
+            return $collection;
+        } catch (\Throwable $e) {
+            Log::error("Error al obtener lista de procedimientos TUPA de licencias: " . $e->getMessage());
+            return collect();
+        }
+    }
 }

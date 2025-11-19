@@ -54,7 +54,7 @@ class CertificadoLicenciaFuncionamientoController extends Controller
     {
         $datos = $this->service->obtenerDatosPorCodCat($codcat);
 
-        if ($datos->isNotEmpty()) {
+        if ($datos) {
             return response()->json([
                 'success' => true,
                 'data' => $datos,
@@ -64,6 +64,23 @@ class CertificadoLicenciaFuncionamientoController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'No se encontraron datos para el CODCAT proporcionado.',
+        ], 404);
+    }
+
+    public function obtenerListaDeProcedimientosTupaDeLicencias()
+    {
+        $datos = $this->service->obtenerListaDeProcedimientosTupaDeLicencias();
+
+        if ($datos->isNotEmpty()) {
+            return response()->json([
+                'success' => true,
+                'data' => $datos->values(), // colección serializable
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron datos de procedimientos TUPA para licencias.',
         ], 404);
     }
 

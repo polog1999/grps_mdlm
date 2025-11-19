@@ -34,6 +34,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
 
     public static function infolist(Schema $schema): Schema
     {
+        
         return $schema;
     }   
 
