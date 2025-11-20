@@ -111,11 +111,24 @@ class CertificadoLicenciaFuncionamientoForm
             ->description('Información de la licencia de funcionamiento')
             ->icon('heroicon-o-map-pin')
             ->schema([
-                TextInput::make('lic_direccion')
-                    ->label('Dirección')
-                    ->placeholder('Ingrese dirección')
-                    ->maxLength(255)
-                    ->columnSpanFull(),
+                self::makeEditableField('lic_nivel_riesgo', 'Nivel de Riesgo'),
+                self::makeEditableField('lic_tipo_resolucion', 'Tipo Resolución'),
+                self::makeEditableField('lic_nro_resolucion', 'N Resolución', 'text', maxLength: 50),
+                self::makeEditableField('lic_fecha_resolucion', 'Fecha Resolución', 'date'),
+                self::makeEditableField('lic_numero_licencia', 'Número Licencia', 'text', maxLength: 50),
+                self::makeEditableField('lic_tipo_licencia', 'Tipo Licencia'),
+                self::makeEditableField('lic_fecha_emision', 'Fecha Emisión', 'date'),
+                self::makeEditableField('lic_fecha_vencimiento', 'Fecha vencimiento', 'date'),
+                self::makeEditableField('lic_mype', 'Mype'),
+                self::makeEditableField('lic_compatibilidad', 'Compatibilidad', 'text', maxLength: 255),
+                self::makeEditableField('lic_nro_compatibilidad', 'Nro. Compatibilidad', 'text', maxLength: 50),
+                self::makeEditableField('lic_horario_atencion', 'Horario Atención'),
+                self::makeEditableField('lic_hora_inicio', 'Hora Inicio', 'text', maxLength: 10),
+                self::makeEditableField('lic_hora_fin', 'Hora Fin', 'text', maxLength: 10),
+                self::makeEditableField('lic_direccion', 'Dirección', 'text', columnSpanFull: true),
+                self::makeEditableField('lic_observaciones', 'Observaciones', 'text', columnSpanFull: true),
+                self::makeEditableField('lic_tipo_establecimientos', 'Tipo Establecimientos'),
+                self::makeEditableField('lic_descripcion_giros', 'Descripción Giros', 'text', columnSpanFull: true),
             ])
             ->columns(2);
     }

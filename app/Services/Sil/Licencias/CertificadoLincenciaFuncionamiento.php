@@ -215,7 +215,6 @@ class CertificadoLincenciaFuncionamiento
                ->get();
 
             $collection = collect($rows)->map(function ($r) {
-                // obtener la descripción de forma robusta (clave puede variar entre conexiones)
                 $arr = (array) $r;
                 $descr = '';
                 foreach ($arr as $k => $v) {
@@ -227,7 +226,6 @@ class CertificadoLincenciaFuncionamiento
 
                 $texto = strtoupper($descr);
 
-                // determinar nivel de riesgo (orden: muy alto -> alto -> medio -> bajo)
                 if (preg_match('/\bMUY\s+ALTO\b/i', $texto) || preg_match('/RIESGO\s+MUY\s+ALTO/i', $texto)) {
                     $nivel = 'RIESGO MUY ALTO';
                 } elseif (preg_match('/\bALTO\b/i', $texto) || preg_match('/RIESGO\s+ALTO/i', $texto)) {
@@ -240,7 +238,6 @@ class CertificadoLincenciaFuncionamiento
                     $nivel = 'RIESGO NO ESPECIFICADO';
                 }
 
-                // agregar propiedad procnivel al objeto
                 $r->procnivel = $nivel;
 
                 return $r;
