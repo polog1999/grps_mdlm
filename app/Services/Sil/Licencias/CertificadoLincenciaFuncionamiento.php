@@ -206,7 +206,7 @@ class CertificadoLincenciaFuncionamiento
     }
 
     public function obtenerListaDeProcedimientosTupaDeLicencias()
- {
+    {
         try {
             $rows = $this->connectionToOracle
                 ->table('ds_valores.VU_PROCEDIMIENTO_TOTAL')
@@ -247,6 +247,117 @@ class CertificadoLincenciaFuncionamiento
         } catch (\Throwable $e) {
             Log::error("Error al obtener lista de procedimientos TUPA de licencias: " . $e->getMessage());
             return collect();
+        }
+    }
+
+    public function obtenerNivelDeRiesgoPorExpediente(string $exp_num){
+        try {
+            // 1. Obtener proccodigo desde Oracle
+            $row = $this->connectionToOracle
+                ->table('ds_valores.dur_expediente')
+                ->select('proccodigo')
+                ->where('exp_num', $exp_num)
+                ->first();
+
+            if (! $row || ! isset($row->proccodigo)) {
+                return null;
+            }
+
+            $proccodigo = $row->proccodigo;
+
+            // 2. Lista de procedimientos del TUPA
+            $procedimientos = $this->obtenerListaDeProcedimientosTupaDeLicencias();
+
+            $proc = $procedimientos->firstWhere('proccodigo', $proccodigo);
+
+            if (! $proc || ! isset($proc->procnivel)) {
+                return null;
+            }
+
+            $procnivel = $proc->procnivel;
+
+            // 3. Buscar el nivel de riesgo completo
+            $nivelRiesgo = $this->connectionToPostgreSQL
+                ->table('licencia.nivelriesgo')
+                ->select('nir_id', 'nir_descripcion')
+                ->where('nir_descripcion', $procnivel)
+                ->first();
+
+            // 4. Retornar TODO junto
+            return [
+                'proccodigo'   => $proccodigo,
+                'procnivel'    => $procnivel,
+                'nivel_riesgo' => $nivelRiesgo,
+            ];
+
+        } catch (\Throwable $th) {
+            Log::error("Error al obtener nivel de riesgo por expediente: " . $th->getMessage());
+            return null;
+        }
+    }
+
+    public function obtenerDatosParaRegistrarLicencia(string $exp_num){
+
+        try {
+            // Reusar la función de obtenerNivelDeRiesgoPorExpediente
+            $nivelRiesgoData = $this->obtenerNivelDeRiesgoPorExpediente($exp_num);
+            
+            if ($nivelRiesgoData === null) {
+                Log::warning("No se encontraron datos de nivel de riesgo para EXP_NUM: {$exp_num}");
+                return null;
+            }
+
+            return $nivelRiesgoData;
+        } catch (\Throwable $th) {
+            Log::error("Error al obtener datos para registrar licencia: " . $th->getMessage());
+            return null;
+        }
+    }
+    /**
+     * Obtiene todos los datos necesarios para registrar una licencia
+     * combinando datos del expediente, catastro y nivel de riesgo.
+     *
+     * @param string $exp_num
+     * @return array|null
+     */
+    public function obtenerDatosCompletosParaRegistrarPorExpediente(string $exp_num){
+        try {
+            // 1. Obtener datos del expediente
+            $expedienteData = $this->obtenerDatosLicenciaFuncionamiento($exp_num);
+            
+            if ($expedienteData->isEmpty()) {
+                Log::warning("No se encontraron datos de expediente para EXP_NUM: {$exp_num}");
+                return [
+                    'expediente' => null,
+                    'catastro' => null,
+                    'nivel_riesgo' => null,
+                ];
+            }
+
+            // Obtener el primer registro del expediente
+            $expediente = $expedienteData->first();
+            
+            // 2. Obtener datos del catastro si existe ecc_codcat
+            $catastroData = null;
+            if (isset($expediente->ecc_codcat) && !empty($expediente->ecc_codcat)) {
+                $catastroCollection = $this->obtenerDatosPorCodCat($expediente->ecc_codcat);
+                if (!$catastroCollection->isEmpty()) {
+                    $catastroData = $catastroCollection->first();
+                }
+            }
+
+            // 3. Obtener datos del nivel de riesgo
+            $nivelRiesgoData = $this->obtenerDatosParaRegistrarLicencia($exp_num);
+
+            return [
+                'expediente' => $expediente,
+                'catastro' => $catastroData,
+                'nivel_riesgo' => $nivelRiesgoData,
+            ];
+            
+        } catch (\Throwable $th) {
+            Log::error("Error al obtener datos completos para registrar por expediente: " . $th->getMessage());
+            return null;
         }
     }
 }

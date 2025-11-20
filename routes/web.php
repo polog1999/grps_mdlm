@@ -148,7 +148,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
           //obtenerListaDeProcedimientosTupaDeLicencias
         Route::get('/certificado-licencia-funcionamiento/obtener-lista-procedimientos-tupa-licencias', [CertificadoLicenciaFuncionamientoController::class, 'obtenerListaDeProcedimientosTupaDeLicencias'])
             ->name('certificadoLicenciaFuncionamiento.obtenerListaDeProcedimientosTupaDeLicencias');
+        
+        //obtenerNivelDeRiesgoPorExpediente
+        Route::get('/certificado-licencia-funcionamiento/obtener-nivel-riesgo-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerNivelDeRiesgoPorExpediente'])
+            ->name('certificadoLicenciaFuncionamiento.obtenerNivelDeRiesgoPorExpediente');
+        
+            //obtenerDatosCompletosParaRegistrarPorExpediente
+        Route::get('/certificado-licencia-funcionamiento/obtener-datos-completos-para-registrar-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosCompletosParaRegistrarPorExpediente'])
+        ->name('certificadoLicenciaFuncionamiento.obtenerDatosCompletosParaRegistrarPorExpediente');
+        
         });
+
 
       
 

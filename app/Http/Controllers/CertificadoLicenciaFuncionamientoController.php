@@ -84,4 +84,36 @@ class CertificadoLicenciaFuncionamientoController extends Controller
         ], 404);
     }
 
+    public function obtenerNivelDeRiesgoPorExpediente($exp_num){
+        $datos = $this->service->obtenerNivelDeRiesgoPorExpediente($exp_num);
+
+        if ($datos) {
+            return response()->json([
+                'success' => true,
+                'data' => $datos,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron datos para el número de expediente proporcionado.',
+        ], 404);
+    }
+
+    //obtenerDatosCompletosParaRegistrarPorExpediente
+    public function obtenerDatosCompletosParaRegistrarPorExpediente($exp_num){
+        $datos = $this->service->obtenerDatosCompletosParaRegistrarPorExpediente($exp_num);
+
+        if ($datos) {
+            return response()->json([
+                'success' => true,
+                'data' => $datos,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron datos para el número de expediente proporcionado.',
+        ], 404);
+    }
 }
