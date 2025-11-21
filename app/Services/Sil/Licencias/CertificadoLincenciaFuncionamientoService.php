@@ -211,7 +211,7 @@ class CertificadoLincenciaFuncionamientoService
             $rows = $this->connectionToOracle
                 ->table('ds_valores.VU_PROCEDIMIENTO_TOTAL')
                 ->select('PROCCODIGO', 'PROCDESCRI')
-                ->whereIn('PROCCODIGO', ['P047', 'P046', 'P048', 'P043', 'P041'])
+                ->whereIn('PROCCODIGO', ['P047', 'P046', 'P048', 'P043', 'P041','P042','P044'])
                ->get();
 
             $collection = collect($rows)->map(function ($r) {

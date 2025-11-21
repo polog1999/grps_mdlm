@@ -2,7 +2,13 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas;
 
-use Filament\Forms\Components\{TextInput, DatePicker, Select, Radio, TimePicker, Textarea};
+use Filament\Forms\Components\TextInput;    
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TagsInput;
 use Filament\Actions\Action;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -13,10 +19,12 @@ use App\Services\Sil\Licencias\TipoLicenciaService;
 use App\Services\Sil\Licencias\TipoResolucionService;
 use App\Services\Sil\Licencias\NumeroSiguienteLicenciaService;
 use App\Services\Sil\Licencias\TipoEstablecimientoService;
+use App\Services\Sil\Licencias\GiroLicenciaService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Illuminate\Support\Facades\Http;
 
 class CertificadoLicenciaFuncionamientoForm
 {
@@ -182,25 +190,41 @@ class CertificadoLicenciaFuncionamientoForm
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn () => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn ($get) => $get('_section_licencias_saved')),
                 Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved')),
                 DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn ($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn ($get) => $get('_section_licencias_saved')),
-                DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                //DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->inline()->disabled(fn ($get) => $get('_section_licencias_saved')),
                 TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 TextInput::make('nro_compatibilidad')->label('Nro. Compatibilidad')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 
-                Select::make('horario_atencion')->label('Horario Atención')->options(self::horariosAtencion())->searchable()->live()
+                Select::make('horario_atencion')
+                    ->label('Horario Atención')
+                    ->options(self::horariosAtencion())
+                    ->searchable()
+                    ->live() // live() por defecto detecta el cambio ("onChange")
                     ->afterStateUpdated(function ($state, callable $set) {
-                        if ($state === 'normal') { $set('hora_inicio', '07:00'); $set('hora_fin', '23:00'); } 
-                        elseif ($state === 'extraordinario') { $set('hora_inicio', '23:00'); $set('hora_fin', '03:00'); } 
-                        elseif ($state === '24_horas') { $set('hora_inicio', '00:00'); $set('hora_fin', '23:59'); }
-                    })->disabled(fn ($get) => $get('_section_licencias_saved')),
+                        // CORRECCIÓN: Comparar con las llaves (keys) del array
+                        if ($state === 'normal') { 
+                            $set('hora_inicio', '07:00'); 
+                            $set('hora_fin', '23:00'); 
+                        } 
+                        elseif ($state === 'extraordinario') { 
+                            $set('hora_inicio', '23:00'); 
+                            $set('hora_fin', '03:00'); 
+                        } 
+                        elseif ($state === '24_horas') { 
+                            $set('hora_inicio', '00:00'); 
+                            $set('hora_fin', '23:59'); 
+                        }
+                    })
+                     ->disabled(fn ($get) => $get('_section_licencias_saved')),
                 TimePicker::make('hora_inicio')->label('Hora Inicio')->seconds(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 TimePicker::make('hora_fin')->label('Hora Fin')->seconds(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 
-                // ESTE ES EL CAMPO QUE RECIBE LA DATA
                 TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 
                 Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                Select::make('giros_seleccionados'),
+                    
                 Textarea::make('descripcion_giros')->label('Descripción Giros')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
                 Textarea::make('observaciones')->label('Observaciones')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
             ])
@@ -211,8 +235,9 @@ class CertificadoLicenciaFuncionamientoForm
             ->columnSpanFull()
             ->columns(3);
     }
+    
 
-    // ... (Tus acciones guardarAction y editarAction se mantienen igual) ...
+
     private static function guardarAction(string $section): Action
     {
         return Action::make("guardar_{$section}")
@@ -297,11 +322,32 @@ class CertificadoLicenciaFuncionamientoForm
     {
         Notification::make()->$type()->title($title)->body($body)->send();
     }
-    private static function tiposLicencia(): array { return []; } // Simplificado para el ejemplo
-    private static function tiposResolucion(): array { return []; } // Simplificado
+    private static function tiposLicencia(): array
+    {
+        return self::obtenerOpciones(TipoLicenciaService::class, 'getTipoLicencias', 'tli_descripcion', 'tli_id');
+    }   
+    private static function tiposResolucion(): array
+    {
+        return self::obtenerOpciones(TipoResolucionService::class, 'getTipoResoluciones', 'tir_descripcion', 'tir_id');
+    }
     private static function horariosAtencion(): array { return ['normal'=>'Normal', 'extraordinario'=>'Extra', '24_horas'=>'24H']; }
-    private static function tiposEstablecimientos(): array { return []; } // Simplificado
+    private static function tiposEstablecimientos(): array
+    {
+        return self::obtenerOpciones(TipoEstablecimientoService::class, 'getTipoEstablecimiento', 'tes_descripcion', 'tes_id');
+    }
 
+
+    private static function obtenerOpciones(string $serviceClass, string $method, string $labelField, string $valueField): array
+    {
+        try {
+            $service = app($serviceClass);
+            $items = $service->$method();
+            return $items->pluck($labelField, $valueField)->toArray();
+        } catch (\Exception $e) {
+            Log::error("Error obteniendo opciones de {$serviceClass}: " . $e->getMessage());
+            return [];
+        }
+    }
     /**
      * Esta función se ejecuta SOLO cuando el usuario escribe manualmente
      */

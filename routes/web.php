@@ -10,6 +10,7 @@ use App\Http\Controllers\TipoEdificacionController;
 use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
 use App\Http\Controllers\TipoLicenciaController;
+use App\Http\Controllers\GiroLicenciaController;
 
 /**
  * Archivo de rutas web para la aplicación Laravel.
@@ -162,12 +163,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         //getTipoLicencias
         Route::get('/tipo-licencia/lista', [TipoLicenciaController::class, 'getTipoLicencias'])
             ->name('tipoLicencia.listar');
+
+        
+        //public function getGiros($search)
+        Route::get('/giros/lista/{search}', [GiroLicenciaController::class, 'buscar'])
+            ->name('giros.listar');
+
+        Route::get('/giros/listar', [GiroLicenciaController::class, 'obtenerTodosLosGiros'])
+            ->name('giros.listarTodos');
         });
-
-
-      
-
-   
 });
  
 
