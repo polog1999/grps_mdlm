@@ -9,7 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamiento;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +29,7 @@ class CertificadoLicenciaFuncionamientosTable
     {
 
         if (!isset(self::$service)) {
-            self::$service = new CertificadoLincenciaFuncionamiento();
+            self::$service = new CertificadoLincenciaFuncionamientoService();
         }
 
         return $table

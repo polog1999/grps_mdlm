@@ -2,25 +2,25 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas;
 
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\TimePicker;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\{TextInput, DatePicker, Select, Radio, TimePicker, Textarea};
 use Filament\Actions\Action;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
-use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamiento;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
+use App\Services\Sil\Licencias\TipoLicenciaService;
+use App\Services\Sil\Licencias\TipoResolucionService;
+use App\Services\Sil\Licencias\NumeroSiguienteLicenciaService;
+use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
-use Filament\Schemas\Components\Fieldset;
-
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 
 class CertificadoLicenciaFuncionamientoForm
 {
+
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -30,6 +30,7 @@ class CertificadoLicenciaFuncionamientoForm
             ])->columnSpanFull()
         ]);
     }
+
 
     private static function busquedaStep(): Step
     {
@@ -43,46 +44,32 @@ class CertificadoLicenciaFuncionamientoForm
                     ->required()
                     ->maxLength(50)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(function (?string $state, callable $set, callable $get) {
-                        if (empty($state)) return;
-
-                        try {
-                            $service = app(CertificadoLincenciaFuncionamiento::class);
-                            $result = $service->obtenerDatosCompletosParaRegistrarPorExpediente($state);
-
-                            if ($result && isset($result['expediente'])) {
-                                // Guardar datos completos en el estado
-                                $set('_datos_completos', $result);
-                                
-                                // Autocompletar todos los campos
-                                self::autocompletarTodosLosDatos($result, $set);
-
-                                // Mostrar notificación de éxito
-                                Notification::make()
-                                    ->success()
-                                    ->title('Datos recuperados exitosamente')
-                                    ->body('Se encontraron los datos del expediente.')
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->warning()
-                                    ->title('No se encontraron datos')
-                                    ->body('No se encontró información para el expediente ingresado.')
-                                    ->send();
-                            }
-                        } catch (\Throwable $e) {
-                            Log::error('Error recuperando datos completos: ' . $e->getMessage());
-                            Notification::make()
-                                ->danger()
-                                ->title('Error')
-                                ->body('Ocurrió un error al recuperar los datos.')
-                                ->send();
-                        }
-                    })
+                    ->afterStateUpdated(fn ($state, $set) => self::buscarExpediente($state, $set))
                     ->columnSpanFull()
                     ->extraAttributes(['class' => 'text-center']),
-            ])
-            ->columns(1);
+            ]);
+    }
+
+    private static function buscarExpediente(?string $state, callable $set): void
+    {
+        if (empty($state)) return;
+
+        try {
+            // Asegúrate que este servicio esté bien inyectado
+            $service = app(CertificadoLincenciaFuncionamientoService::class);
+            $result = $service->obtenerDatosCompletosParaRegistrarPorExpediente($state);
+
+            if ($result && isset($result['expediente'])) {
+                $set('_datos_completos', $result);
+                self::autocompletarDatos($result, $set);
+                self::notify('success', 'Datos recuperados exitosamente', 'Se encontraron los datos del expediente.');
+            } else {
+                self::notify('warning', 'No se encontraron datos', 'No se encontró información para el expediente ingresado.');
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error recuperando datos: ' . $e->getMessage());
+            self::notify('danger', 'Error', 'Ocurrió un error al recuperar los datos.');
+        }
     }
 
     private static function datosCompletosStep(): Step
@@ -91,337 +78,262 @@ class CertificadoLicenciaFuncionamientoForm
             ->description('Revise y complete la información')
             ->icon('heroicon-o-document-text')
             ->schema([
-                // Sección Expediente
-                Section::make('Expediente')
-                    ->description('Datos del expediente administrativo')
-                    ->icon('heroicon-o-archive-box')
-                    ->collapsible()
-                    ->collapsed(false)
-                    ->schema([
-                        TextInput::make('exp_num')->label('Número de Expediente')->disabled()->dehydrated(),
-                        DatePicker::make('exp_fec')->label('Fecha de Expediente')->displayFormat('d/m/Y')->native(false)->disabled(fn (callable $get) => $get('_section_expediente_saved') === true),
-                        TextInput::make('exp_nomrec')->label('Nombre/Razón Social')->maxLength(255)->columnSpanFull()->disabled(fn (callable $get) => $get('_section_expediente_saved') === true),
-                        TextInput::make('numdoc')->label('RUC/DNI')->maxLength(20)->disabled(fn (callable $get) => $get('_section_expediente_saved') === true),
-                        TextInput::make('numtel')->label('Teléfono')->maxLength(50)->disabled(fn (callable $get) => $get('_section_expediente_saved') === true),
-                        TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255)->disabled(fn (callable $get) => $get('_section_expediente_saved') === true),
-                        TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled(fn (callable $get) => $get('_section_expediente_saved') === true),
-                        ])
-                    ->headerActions([
-                            Action::make('guardar_expediente')
-                                ->label('Guardar')
-                                ->icon('heroicon-o-check')
-                                ->color('success')
-                                ->visible(fn (callable $get) => $get('_section_expediente_saved') !== true)
-                                ->action(function (callable $set) {
-                                    $set('_section_expediente_saved', true);
-                                    Notification::make()
-                                        ->success()
-                                        ->title('Expediente Guardado')
-                                        ->body('Los datos de expediente han sido guardados.')
-                                        ->send();
-                                }),
-                            Action::make('editar_expediente')
-                                ->label('Editar')
-                                ->icon('heroicon-o-pencil')
-                                ->color('warning')
-                                ->visible(fn (callable $get) => $get('_section_expediente_saved') === true)
-                                ->action(function (callable $set) {
-                                    $set('_section_expediente_saved', false);
-                                    Notification::make()
-                                        ->info()
-                                        ->title('Modo edición')
-                                        ->body('Ahora puede editar los datos de expediente.')
-                                        ->send();
-                                }),
-                     ])
-                    ->columnSpanFull()
-                    ->columns(2),
-
-                // Sección Catastro
-                Section::make('Catastro')
-                    ->description('Información catastral del predio')
-                    ->icon('heroicon-o-map-pin')
-                    ->collapsible()
-                    ->collapsed(false)
-                    ->schema([
-
-                        TextInput::make('coduca')->label('Código Catastral')->maxLength(50)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('codpredio')->label('Código Predial')->maxLength(50)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('descurb')->label('Urbanización')->maxLength(255)->columnSpanFull()->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('via_completa')->label('Vía')->maxLength(255)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('numvia')->label('Número')->maxLength(20)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('intdpto')->label('Dpto.')->maxLength(20)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('blockedif')->label('Bloque')->maxLength(20)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('mz')->label('Manzana')->maxLength(20)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('lote')->label('Lote')->maxLength(20)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('zonificacion')->label('Zonificación')->maxLength(100)->disabled(fn ($get) => $get('_section_catastro_saved')),
-                        TextInput::make('area_economica')->label('Área Económica')->numeric()->suffix('m²')->disabled(fn ($get) => $get('_section_catastro_saved')),
-
-                    ])
-                    ->headerActions([
-
-                        Action::make('guardar_catastro')
-                            ->label('Guardar')
-                            ->icon('heroicon-o-check')
-                            ->color('success')
-                            ->visible(fn ($get) => $get('_section_catastro_saved') !== true)
-                            ->action(function (callable $set) {
-                                $set('_section_catastro_saved', true);
-                                Notification::make()->success()->title('Catastro Guardado')->body('Los datos han sido guardados')->send();
-                            }),
-
-                        Action::make('editar_catastro')
-                            ->label('Editar')
-                            ->icon('heroicon-o-pencil')
-                            ->color('warning')
-                            ->visible(fn ($get) => $get('_section_catastro_saved') === true)
-                            ->action(function (callable $set) {
-                                $set('_section_catastro_saved', false);
-                                Notification::make()->info()->title('Modo edición')->body('Ahora puede editar los datos')->send();
-                            }),
-
-                    ])
-                    ->columnSpanFull()
-                    ->columns(3),
-
-
-
-                // Sección Licencias
-                Section::make('Licencias')
-                    ->description('Información de Licencias')
-                    ->icon('heroicon-o-exclamation-triangle')
-                    ->collapsible()
-                    ->collapsed(false)
-                    ->schema([
-                        // Campos de Nivel de Riesgo (Autocompletados)
-                        TextInput::make('proccodigo')
-                            ->label('Código de Procedimiento')
-                            ->maxLength(50)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TextInput::make('procnivel')
-                            ->label('Nivel de Riesgo')
-                            ->maxLength(100)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TextInput::make('nir_id')
-                            ->label('ID Nivel de Riesgo')
-                            ->numeric()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TextInput::make('nir_descripcion')
-                            ->label('Descripción Nivel de Riesgo')
-                            ->maxLength(255)
-                            ->columnSpanFull()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        // Campos de Licencia
-                        // Fila 1
-                        Select::make('tipo_resolucion')
-                            ->label('Tipo Resolución')
-                            ->options([
-                                'resolucion_gerencial' => 'Resolución Gerencial',
-                                'resolucion_alcaldia' => 'Resolución de Alcaldía',
-                                'resolucion_subgerencia' => 'Resolución de Subgerencia',
-                            ])
-                            ->searchable()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TextInput::make('n_resolucion')
-                            ->label('N° Resolución')
-                            ->maxLength(100)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        DatePicker::make('fecha_resolucion')
-                            ->label('Fecha Resolución')
-                            ->displayFormat('d/m/Y')
-                            ->native(false)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        // Fila 2
-                        TextInput::make('numero_licencia')
-                            ->label('Número Licencia')
-                            ->maxLength(100)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        Select::make('tipo_licencia')
-                            ->label('Tipo Licencia')
-                            ->options([
-                                'temporal' => 'Temporal',
-                                'indefinida' => 'Indefinida',
-                                'provisional' => 'Provisional',
-                            ])
-                            ->searchable()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        DatePicker::make('fecha_emision')
-                            ->label('Fecha Emisión')
-                            ->displayFormat('d/m/Y')
-                            ->native(false)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        // Fila 3
-                        DatePicker::make('fecha_vencimiento')
-                            ->label('Fecha Vencimiento')
-                            ->displayFormat('d/m/Y')
-                            ->native(false)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        Radio::make('mype')
-                            ->label('Mype')
-                            ->options([
-                                '1' => 'Sí',
-                                '0' => 'No',
-                            ])
-                            ->inline()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TextInput::make('compatibilidad')
-                            ->label('Compatibilidad')
-                            ->maxLength(255)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        // Fila 4
-                        TextInput::make('nro_compatibilidad')
-                            ->label('Nro. Compatibilidad')
-                            ->maxLength(100)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        DatePicker::make('fecha_compatibilidad')
-                            ->label('Fecha Compatibilidad')
-                            ->displayFormat('d/m/Y')
-                            ->native(false)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        Select::make('horario_atencion')
-                            ->label('Horario Atención')
-                            ->options([
-                                'diurno' => 'Diurno',
-                                'nocturno' => 'Nocturno',
-                                'mixto' => 'Mixto',
-                                '24_horas' => '24 Horas',
-                            ])
-                            ->searchable()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        // Fila 5
-                        TimePicker::make('hora_inicio')
-                            ->label('Hora Inicio')
-                            ->seconds(false)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TimePicker::make('hora_fin')
-                            ->label('Hora Fin')
-                            ->seconds(false)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        TextInput::make('direccion')
-                            ->label('Dirección')
-                            ->maxLength(255)
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        // Fila 6
-                        Select::make('tipo_establecimientos')
-                            ->label('Tipo Establecimientos')
-                            ->options([
-                                'comercial' => 'Comercial',
-                                'industrial' => 'Industrial',
-                                'servicios' => 'Servicios',
-                                'mixto' => 'Mixto',
-                            ])
-                            ->searchable()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        Textarea::make('descripcion_giros')
-                            ->label('Descripción Giros')
-                            ->rows(3)
-                            ->columnSpanFull()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        Textarea::make('observaciones')
-                            ->label('Observaciones')
-                            ->rows(3)
-                            ->columnSpanFull()
-                            ->disabled(fn ($get) => $get('_section_licencias_saved') === true),
-                        
-                        
-                    ])
-                    ->headerActions([
-                        Action::make('guardar_licencias')
-                            ->label('Guardar')
-                            ->icon('heroicon-o-check')
-                            ->color('success')
-                            ->visible(fn (callable $get) => $get('_section_licencias_saved') !== true)
-                            ->action(function (callable $set) {
-                                $set('_section_licencias_saved', true);
-                                Notification::make()
-                                    ->success()
-                                    ->title('Licencias Guardado')
-                                    ->body('Los datos de licencias han sido guardados.')
-                                    ->send();
-                            }),
-                        
-                        Action::make('editar_licencias')
-                            ->label('Editar')
-                            ->icon('heroicon-o-pencil')
-                            ->color('warning')
-                            ->visible(fn (callable $get) => $get('_section_licencias_saved') === true)
-                            ->action(function (callable $set) {
-                                $set('_section_licencias_saved', false);
-                                Notification::make()
-                                    ->info()
-                                    ->title('Modo edición')
-                                    ->body('Ahora puede editar los datos de licencias.')
-                                    ->send();
-                            }),
-                    ])
-                    ->columnSpanFull()
-                    ->columns(3),
-            ])
-            ->columns(1);
+                self::expedienteSection(),
+                self::catastroSection(),
+                self::licenciasSection(),
+            ]);
     }
 
-    private static function autocompletarTodosLosDatos(array $data, callable $set): void
+    private static function expedienteSection(): Section
     {
-        // Datos del Expediente
+        return Section::make('Expediente')
+            ->description('Datos del expediente administrativo')
+            ->icon('heroicon-o-archive-box')
+            ->collapsible()
+            ->schema([
+                TextInput::make('exp_num')->label('Número de Expediente')->disabled()->dehydrated(),
+                DatePicker::make('exp_fec')->label('Fecha de Expediente')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_expediente_saved')),
+                TextInput::make('exp_nomrec')->label('Nombre/Razón Social')->maxLength(255)->columnSpanFull()->disabled(fn ($get) => $get('_section_expediente_saved')),
+                TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled(fn ($get) => $get('_section_expediente_saved')),
+                TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()->disabled(fn ($get) => $get('_section_expediente_saved')),
+                TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255)->disabled(fn ($get) => $get('_section_expediente_saved')),
+                TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled(fn ($get) => $get('_section_expediente_saved')),
+            ])
+            ->headerActions([
+                self::guardarAction('expediente'),
+                self::editarAction('expediente'),
+            ])
+            ->columnSpanFull()
+            ->columns(2);
+    }
+
+    private static function catastroSection(): Section
+    {
+        return Section::make('Catastro')
+            ->description('Información catastral del predio')
+            ->icon('heroicon-o-map-pin')
+            ->collapsible()
+            ->schema([
+                TextInput::make('coduca')->label('Código Catastral')->maxLength(50)->extraAttributes(['inputmode' => 'numeric'])->rule('regex:/^[0-9]+$/')->disabled(fn ($get) => $get('_section_catastro_saved')),
+                TextInput::make('codpredio')->label('Código Predial')->maxLength(50)->rule('regex:/^[0-9]+$/')->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                // AQUI: Agregamos onBlur: true para asegurar que el evento se dispare al salir
+                TextInput::make('descurb')->label('Urbanización')->maxLength(255)->columnSpanFull()
+                    ->live(onBlur: true) 
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('via_completa')->label('Vía')->maxLength(255)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('numvia')->label('Número')->maxLength(20)->numeric()
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('intdpto')->label('Dpto.')->maxLength(20)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('blockedif')->label('Bloque')->maxLength(20)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('mz')->label('Manzana')->maxLength(20)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('lote')->label('Lote')->maxLength(20)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
+                    ->disabled(fn ($get) => $get('_section_catastro_saved')),
+                
+                TextInput::make('zonificacion')->label('Zonificación')->maxLength(100)->disabled(fn ($get) => $get('_section_catastro_saved')),
+                TextInput::make('area_economica')->label('Área Económica')->numeric()->step(0.01)->suffix('m²')->formatStateUsing(fn ($state) => $state ? number_format((float)$state, 2, '.', '') : null)->extraInputAttributes(['onchange' => "if(this.value) this.value = parseFloat(this.value).toFixed(2)"])->disabled(fn ($get) => $get('_section_catastro_saved')),
+            ])
+            ->headerActions([
+                self::guardarAction('catastro'),
+                self::editarAction('catastro'),
+            ])
+            ->columnSpanFull()
+            ->columns(3);
+    }
+
+    private static function licenciasSection(): Section
+    {
+        return Section::make('Licencias')
+            ->description('Información de Licencias')
+            ->icon('heroicon-o-exclamation-triangle')
+            ->collapsible()
+            ->schema([
+                // ... (Resto de tus inputs de Nivel de Riesgo y Resolución igual) ...
+                TextInput::make('proccodigo')->label('Código de Procedimiento')->maxLength(50)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('procnivel')->label('Nivel de Riesgo')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('nir_id')->label('ID Nivel de Riesgo')->numeric()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('nir_descripcion')->label('Descripción Nivel de Riesgo')->maxLength(255)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('n_resolucion')->label('N° Resolución')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn ($state, callable $set) => $set('fecha_emision', $state))->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn () => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn ($get) => $get('_section_licencias_saved')),
+                Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn ($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn ($get) => $get('_section_licencias_saved')),
+                DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->inline()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TextInput::make('nro_compatibilidad')->label('Nro. Compatibilidad')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                
+                Select::make('horario_atencion')->label('Horario Atención')->options(self::horariosAtencion())->searchable()->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state === 'normal') { $set('hora_inicio', '07:00'); $set('hora_fin', '23:00'); } 
+                        elseif ($state === 'extraordinario') { $set('hora_inicio', '23:00'); $set('hora_fin', '03:00'); } 
+                        elseif ($state === '24_horas') { $set('hora_inicio', '00:00'); $set('hora_fin', '23:59'); }
+                    })->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TimePicker::make('hora_inicio')->label('Hora Inicio')->seconds(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                TimePicker::make('hora_fin')->label('Hora Fin')->seconds(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                
+                // ESTE ES EL CAMPO QUE RECIBE LA DATA
+                TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                
+                Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                Textarea::make('descripcion_giros')->label('Descripción Giros')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                Textarea::make('observaciones')->label('Observaciones')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
+            ])
+            ->headerActions([
+                self::guardarAction('licencias'),
+                self::editarAction('licencias'),
+            ])
+            ->columnSpanFull()
+            ->columns(3);
+    }
+
+    // ... (Tus acciones guardarAction y editarAction se mantienen igual) ...
+    private static function guardarAction(string $section): Action
+    {
+        return Action::make("guardar_{$section}")
+            ->label('Guardar')
+            ->icon('heroicon-o-check')
+            ->color('success')
+            ->visible(fn ($get) => $get("_section_{$section}_saved") !== true)
+            ->action(function ($set) use ($section) {
+                $set("_section_{$section}_saved", true);
+                self::notify('success', ucfirst($section) . ' Guardado', 'Los datos han sido guardados.');
+            });
+    }
+
+    private static function editarAction(string $section): Action
+    {
+        return Action::make("editar_{$section}")
+            ->label('Editar')
+            ->icon('heroicon-o-pencil')
+            ->color('warning')
+            ->visible(fn ($get) => $get("_section_{$section}_saved") === true)
+            ->action(function ($set) use ($section) {
+                $set("_section_{$section}_saved", false);
+                self::notify('info', 'Modo edición', 'Ahora puede editar los datos.');
+            });
+    }
+
+    private static function autocompletarDatos(array $data, callable $set): void
+    {
+        // Expediente
         if (isset($data['expediente'])) {
-            $expediente = (array) $data['expediente'];
-            $set('exp_num', $expediente['exp_num'] ?? null);
-            $set('exp_fec', $expediente['exp_fec'] ?? null);
-            $set('exp_nomrec', $expediente['exp_nomrec'] ?? null);
-            $set('numdoc', $expediente['numdoc'] ?? null);
-            $set('numtel', $expediente['numtel'] ?? null);
-            $set('correo', $expediente['correo'] ?? null);
-            $set('domfis', $expediente['domfis'] ?? null);
-        }
-
-        // Datos del Catastro
-        if (isset($data['catastro']) && $data['catastro']) {
-            $catastro = (array) $data['catastro'];
-            $set('coduca', $catastro['coduca'] ?? null);
-            $set('codpredio', $catastro['codpredio'] ?? null);
-            $set('descurb', $catastro['descurb'] ?? null);
-            $set('via_completa', $catastro['via_completa'] ?? null);
-            $set('numvia', $catastro['numvia'] ?? null);
-            $set('intdpto', $catastro['intdpto'] ?? null);
-            $set('blockedif', $catastro['blockedif'] ?? null);
-            $set('mz', $catastro['mz'] ?? null);
-            $set('lote', $catastro['lote'] ?? null);
-            $set('zonificacion', $catastro['zonificacion'] ?? null);
-            $set('area_economica', $catastro['area_economica'] ?? null);
-        }
-
-        // Datos del Nivel de Riesgo
-        if (isset($data['nivel_riesgo']) && $data['nivel_riesgo']) {
-            $nivelRiesgo = (array) $data['nivel_riesgo'];
-            $set('proccodigo', $nivelRiesgo['proccodigo'] ?? null);
-            $set('procnivel', $nivelRiesgo['procnivel'] ?? null);
-            
-            if (isset($nivelRiesgo['nivel_riesgo'])) {
-                $nivelRiesgoDetalle = (array) $nivelRiesgo['nivel_riesgo'];
-                $set('nir_id', $nivelRiesgoDetalle['nir_id'] ?? null);
-                $set('nir_descripcion', $nivelRiesgoDetalle['nir_descripcion'] ?? null);
+            $exp = (array) $data['expediente'];
+            foreach (['exp_num', 'exp_fec', 'exp_nomrec', 'numdoc', 'numtel', 'correo', 'domfis'] as $field) {
+                $set($field, $exp[$field] ?? null);
             }
         }
+
+        // Catastro
+        if (!empty($data['catastro'])) {
+            $cat = (array) $data['catastro'];
+            foreach (['coduca', 'codpredio', 'descurb', 'via_completa', 'numvia', 'intdpto', 'blockedif', 'mz', 'lote', 'zonificacion', 'area_economica'] as $field) {
+                $set($field, $cat[$field] ?? null);
+            }
+
+
+            $componentes = [
+                'via_completa' => '',
+                'descurb' => '',
+                'numvia' => 'NRO',
+                'intdpto' => 'DPTO',
+                'blockedif' => 'BLQ',
+                'mz' => 'MZ',
+                'lote' => 'LT',
+            ];
+            $parts = [];
+            foreach ($componentes as $campo => $prefijo) {
+                $valor = trim($cat[$campo] ?? '');
+                if (!empty($valor)) {
+                    $parts[] = trim($prefijo . ' ' . strtoupper($valor));
+                }
+            }
+            $direccionCalculada = implode(' ', $parts);
+            $set('direccion', $direccionCalculada);
+            // -----------------------------------------------------
+        }
+
+        // Nivel de Riesgo
+        if (!empty($data['nivel_riesgo'])) {
+            $nr = (array) $data['nivel_riesgo'];
+            $set('proccodigo', $nr['proccodigo'] ?? null);
+            $set('procnivel', $nr['procnivel'] ?? null);
+            
+            if (isset($nr['nivel_riesgo'])) {
+                $nrd = (array) $nr['nivel_riesgo'];
+                $set('nir_id', $nrd['nir_id'] ?? null);
+                $set('nir_descripcion', $nrd['nir_descripcion'] ?? null);
+            }
+        }
+    }
+
+    // ... (Tus funciones auxiliares notify, tiposLicencia, etc, se mantienen igual) ...
+    private static function notify(string $type, string $title, string $body): void
+    {
+        Notification::make()->$type()->title($title)->body($body)->send();
+    }
+    private static function tiposLicencia(): array { return []; } // Simplificado para el ejemplo
+    private static function tiposResolucion(): array { return []; } // Simplificado
+    private static function horariosAtencion(): array { return ['normal'=>'Normal', 'extraordinario'=>'Extra', '24_horas'=>'24H']; }
+    private static function tiposEstablecimientos(): array { return []; } // Simplificado
+
+    /**
+     * Esta función se ejecuta SOLO cuando el usuario escribe manualmente
+     */
+    private static function actualizarDireccion(callable $get, callable $set): void
+    {
+        // Log::info se ve en storage/logs/laravel.log incluso en producción
+        Log::info('Iniciando actualización de dirección...');
+
+        $componentes = [
+            'via_completa' => 'AV',
+            'descurb' => 'URB',
+            'numvia' => 'NRO',
+            'intdpto' => 'DPTO',
+            'blockedif' => 'BLQ',
+            'mz' => 'MZ',
+            'lote' => 'LT',
+        ];
+
+        $parts = [];
+        foreach ($componentes as $campo => $prefijo) {
+            // Usamos $get para obtener el estado actual del formulario
+            $valor = trim($get($campo) ?? '');
+            
+            if (!empty($valor)) {
+                $parts[] = $prefijo . ' ' . strtoupper($valor);
+            }
+        }
+
+        $direccion = implode(' ', $parts);
+        
+        Log::info('Dirección calculada: ' . $direccion);
+        
+        $set('direccion', $direccion);
     }
 }

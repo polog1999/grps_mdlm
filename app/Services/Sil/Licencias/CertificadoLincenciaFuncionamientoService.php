@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Query\Builder;
 
-class CertificadoLincenciaFuncionamiento
+class CertificadoLincenciaFuncionamientoService
 {
     protected $connectionToOracle;
     protected $connectionToPostgreSQL;

@@ -150,4 +150,9 @@ class LicenciaService
             "lic_numlic = {$lic_numlic} y lic_expnum = {$lic_expnum}"
         );
     }
+
+    public function obtenerSiguienteNumeroLicencia()
+    {
+        return $this->connection->select('SELECT licencia.fn_get_next_lic_numlic() as next_numlic')->first()->next_numlic;
+    }
 }

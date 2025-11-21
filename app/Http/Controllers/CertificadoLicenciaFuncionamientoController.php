@@ -10,7 +10,7 @@ class CertificadoLicenciaFuncionamientoController extends Controller
    
     protected $service;
 
-    public function __construct(CertificadoLincenciaFuncionamiento $service)
+    public function __construct(CertificadoLincenciaFuncionamientoService $service)
     {
         $this->service = $service;
     }
@@ -116,4 +116,5 @@ class CertificadoLicenciaFuncionamientoController extends Controller
             'message' => 'No se encontraron datos para el número de expediente proporcionado.',
         ], 404);
     }
+
 }

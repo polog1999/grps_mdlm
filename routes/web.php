@@ -9,6 +9,8 @@ use App\Http\Controllers\PersonaSolicitanteController;
 use App\Http\Controllers\TipoEdificacionController;
 use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
+use App\Http\Controllers\TipoLicenciaController;
+
 /**
  * Archivo de rutas web para la aplicación Laravel.
  *
@@ -157,6 +159,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/certificado-licencia-funcionamiento/obtener-datos-completos-para-registrar-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosCompletosParaRegistrarPorExpediente'])
         ->name('certificadoLicenciaFuncionamiento.obtenerDatosCompletosParaRegistrarPorExpediente');
         
+        //getTipoLicencias
+        Route::get('/tipo-licencia/lista', [TipoLicenciaController::class, 'getTipoLicencias'])
+            ->name('tipoLicencia.listar');
         });
 
 
