@@ -22,4 +22,12 @@ class LicenciaPersonaService
         ->get();
 
     }
+    public function getIdPersonaPorNombre($nombre){
+        return $this->connectionToPostgreSQL
+        ->table('licencia.persona')
+        ->select('per_id')
+        ->where('per_nombrerazonsocial', $nombre)
+        ->where('per_filaeliminada', false)   
+        ->get();
+    }
 }

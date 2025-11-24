@@ -110,7 +110,7 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/licencia-persona', [LicenciaPersonaController::class, 'getLicenciaPersonaNombre']);
-
+    Route::get('/licencia-persona/{nombre}', [LicenciaPersonaController::class, 'getIdPersonaPorNombre']);
     /*
     |--------------------------------------------------------------------------
     | GIROS

@@ -20,4 +20,5 @@ class LicenciaPersonaController extends Controller
         $resultado = $this->service->getLicenciaPersonaNombre();
         return response()->json($resultado);
     }
+
 }

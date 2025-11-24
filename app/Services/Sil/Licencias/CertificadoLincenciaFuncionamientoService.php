@@ -34,7 +34,15 @@ class CertificadoLincenciaFuncionamientoService
             ->distinct();
     }
 
-
+    public function getIdPersonaPorNombre($nombre){
+        return $this->connectionToPostgreSQL
+        ->table('licencia.persona')
+        ->select('per_id')
+        ->where('per_nombrerazonsocial', $nombre)
+        ->where('per_filaeliminada', false)   
+        ->get();
+    }
+    
     public function obtenerDatosLicenciaFuncionamiento(string $expnum, array $columns = [
         'exp_num',
         'exp_fec',
@@ -59,6 +67,18 @@ class CertificadoLincenciaFuncionamientoService
         }
 
         $rows = $query->get();
+
+        // Obtener per_id usando exp_nomrec
+        $rows = $rows->map(function ($r) {
+            if (isset($r->exp_nomrec) && !empty($r->exp_nomrec)) {
+                // Usamos el método getIdPersonaPorNombre que ya existe en la clase
+                $persona = $this->getIdPersonaPorNombre($r->exp_nomrec)->first();
+                $r->per_id = $persona ? $persona->per_id : null;
+            } else {
+                $r->per_id = null;
+            }
+            return $r;
+        });
 
         $codcat = $this->obtenerCodCatPorExpediente($expnum);
         if (! empty($codcat)) {
