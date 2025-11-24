@@ -198,6 +198,27 @@ class CertificadoLincenciaFuncionamientoService
                 return $r;
             });
 
+            // Obtener fiu_id usando coduca
+            $rows = $rows->map(function ($r) {
+                if (isset($r->coduca) && !empty($r->coduca)) {
+                    try {
+                        $fiuResult = $this->connectionToPostgreSQL
+                            ->table('syscat.fichaubicacion')
+                            ->select('fiu_id')
+                            ->where('fiu_coduca', $r->coduca)
+                            ->orderBy('fiu_id', 'DESC')
+                            ->limit(1)
+                            ->first();
+                        
+                        $r->fiu_id = $fiuResult ? $fiuResult->fiu_id : null;
+                    } catch (\Throwable $e) {
+                        Log::error("Error al obtener fiu_id para coduca {$r->coduca}: " . $e->getMessage());
+                        $r->fiu_id = null;
+                    }
+                }
+                return $r;
+            });
+
             return $rows;
         } catch (\Throwable $e) {
             Log::error("Error al ejecutar FU_SYSCATFICHAUBICACION_SEL para CODCAT {$codcat}: " . $e->getMessage());

@@ -151,8 +151,5 @@ class LicenciaService
         );
     }
 
-    public function obtenerSiguienteNumeroLicencia()
-    {
-        return $this->connection->select('SELECT licencia.fn_get_next_lic_numlic() as next_numlic')->first()->next_numlic;
-    }
+
 }

@@ -133,7 +133,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: November 21, 2025</li>
+        <li>Last updated: November 24, 2025</li>
     </ul>
 </div>
 
@@ -1467,7 +1467,7 @@ fetch(url, {
 
 <span id="example-responses-GETapi-v1-certificado-lic-func-datos--expnum-">
             <blockquote>
-            <p>Example response (500):</p>
+            <p>Example response (404):</p>
         </blockquote>
                 <details class="annotation">
             <summary style="cursor: pointer;">
@@ -1479,7 +1479,8 @@ access-control-allow-origin: *
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Server Error&quot;
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;No se encontraron datos para la Licencia de Funcionamiento.&quot;
 }</code>
  </pre>
     </span>
@@ -1606,7 +1607,7 @@ fetch(url, {
 
 <span id="example-responses-GETapi-v1-certificado-lic-func-datos-codcat--codcat-">
             <blockquote>
-            <p>Example response (500):</p>
+            <p>Example response (200):</p>
         </blockquote>
                 <details class="annotation">
             <summary style="cursor: pointer;">
@@ -1618,7 +1619,8 @@ access-control-allow-origin: *
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Server Error&quot;
+    &quot;success&quot;: true,
+    &quot;data&quot;: []
 }</code>
  </pre>
     </span>
@@ -1745,7 +1747,7 @@ fetch(url, {
 
 <span id="example-responses-GETapi-v1-certificado-lic-func-lista-procedimientos-tupa">
             <blockquote>
-            <p>Example response (500):</p>
+            <p>Example response (200):</p>
         </blockquote>
                 <details class="annotation">
             <summary style="cursor: pointer;">
@@ -1757,7 +1759,44 @@ access-control-allow-origin: *
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Server Error&quot;
+    &quot;success&quot;: true,
+    &quot;data&quot;: [
+        {
+            &quot;proccodigo&quot;: &quot;P041&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO BAJO (CON ITSE POSTERIOR)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO BAJO&quot;
+        },
+        {
+            &quot;proccodigo&quot;: &quot;P047&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA CESIONARIOS EN EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO ALTO (CON ITSE PREVIA)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO ALTO&quot;
+        },
+        {
+            &quot;proccodigo&quot;: &quot;P048&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA CESIONARIOS EN EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MUY ALTO (CON ITSE PREVIA)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO MUY ALTO&quot;
+        },
+        {
+            &quot;proccodigo&quot;: &quot;P043&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO ALTO (CON ITSE PREVIA)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO ALTO&quot;
+        },
+        {
+            &quot;proccodigo&quot;: &quot;P042&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MEDIO (CON ITSE POSTERIOR)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO MEDIO&quot;
+        },
+        {
+            &quot;proccodigo&quot;: &quot;P046&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA CESIONARIOS EN EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MEDIO (CON ITSE POSTERIOR)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO MEDIO&quot;
+        },
+        {
+            &quot;proccodigo&quot;: &quot;P044&quot;,
+            &quot;procdescri&quot;: &quot;LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MUY ALTO (CON ITSE PREVIA)&quot;,
+            &quot;procnivel&quot;: &quot;RIESGO MUY ALTO&quot;
+        }
+    ]
 }</code>
  </pre>
     </span>
@@ -1871,7 +1910,7 @@ fetch(url, {
 
 <span id="example-responses-GETapi-v1-certificado-lic-func-nivel-riesgo--expnum-">
             <blockquote>
-            <p>Example response (500):</p>
+            <p>Example response (404):</p>
         </blockquote>
                 <details class="annotation">
             <summary style="cursor: pointer;">
@@ -1883,7 +1922,8 @@ access-control-allow-origin: *
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Server Error&quot;
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;No se encontraron datos para el n&uacute;mero de expediente proporcionado.&quot;
 }</code>
  </pre>
     </span>
@@ -2010,7 +2050,7 @@ fetch(url, {
 
 <span id="example-responses-GETapi-v1-certificado-lic-func-datos-completos--expnum-">
             <blockquote>
-            <p>Example response (500):</p>
+            <p>Example response (200):</p>
         </blockquote>
                 <details class="annotation">
             <summary style="cursor: pointer;">
@@ -2022,7 +2062,12 @@ access-control-allow-origin: *
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Server Error&quot;
+    &quot;success&quot;: true,
+    &quot;data&quot;: {
+        &quot;expediente&quot;: null,
+        &quot;catastro&quot;: null,
+        &quot;nivel_riesgo&quot;: null
+    }
 }</code>
  </pre>
     </span>

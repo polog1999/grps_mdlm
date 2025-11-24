@@ -1,7 +1,8 @@
 <?php 
 namespace App\Http\Controllers;
 
-use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamiento;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
+
 use Illuminate\Http\Request;
 
 

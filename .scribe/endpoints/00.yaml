@@ -515,11 +515,8 @@ endpoints:
     responses:
       -
         custom: []
-        status: 500
-        content: |-
-          {
-              "message": "Server Error"
-          }
+        status: 404
+        content: '{"success":false,"message":"No se encontraron datos para la Licencia de Funcionamiento."}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -570,11 +567,8 @@ endpoints:
     responses:
       -
         custom: []
-        status: 500
-        content: |-
-          {
-              "message": "Server Error"
-          }
+        status: 200
+        content: '{"success":true,"data":[]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -613,11 +607,8 @@ endpoints:
     responses:
       -
         custom: []
-        status: 500
-        content: |-
-          {
-              "message": "Server Error"
-          }
+        status: 200
+        content: '{"success":true,"data":[{"proccodigo":"P041","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO BAJO (CON ITSE POSTERIOR)","procnivel":"RIESGO BAJO"},{"proccodigo":"P047","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA CESIONARIOS EN EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO ALTO (CON ITSE PREVIA)","procnivel":"RIESGO ALTO"},{"proccodigo":"P048","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA CESIONARIOS EN EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MUY ALTO (CON ITSE PREVIA)","procnivel":"RIESGO MUY ALTO"},{"proccodigo":"P043","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO ALTO (CON ITSE PREVIA)","procnivel":"RIESGO ALTO"},{"proccodigo":"P042","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MEDIO (CON ITSE POSTERIOR)","procnivel":"RIESGO MEDIO"},{"proccodigo":"P046","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA CESIONARIOS EN EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MEDIO (CON ITSE POSTERIOR)","procnivel":"RIESGO MEDIO"},{"proccodigo":"P044","procdescri":"LICENCIA DE FUNCIONAMIENTO PARA EDIFICACIONES CALIFICADAS CON NIVEL DE RIESGO MUY ALTO (CON ITSE PREVIA)","procnivel":"RIESGO MUY ALTO"}]}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -668,11 +659,8 @@ endpoints:
     responses:
       -
         custom: []
-        status: 500
-        content: |-
-          {
-              "message": "Server Error"
-          }
+        status: 404
+        content: '{"success":false,"message":"No se encontraron datos para el n\u00famero de expediente proporcionado."}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json
@@ -723,11 +711,8 @@ endpoints:
     responses:
       -
         custom: []
-        status: 500
-        content: |-
-          {
-              "message": "Server Error"
-          }
+        status: 200
+        content: '{"success":true,"data":{"expediente":null,"catastro":null,"nivel_riesgo":null}}'
         headers:
           cache-control: 'no-cache, private'
           content-type: application/json

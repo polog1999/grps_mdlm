@@ -9,6 +9,8 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Hidden;
 use Filament\Actions\Action;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -26,6 +28,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Illuminate\Support\Facades\Http;
 
+
 class CertificadoLicenciaFuncionamientoForm
 {
 
@@ -37,6 +40,12 @@ class CertificadoLicenciaFuncionamientoForm
                 self::datosCompletosStep(),
             ])->columnSpanFull()
         ]);
+    }
+    private static function camposOcultosSistema(): array
+    {
+        return [
+            Hidden::make('fiu_id')->dehydrated(),
+        ];
     }
 
 
@@ -86,6 +95,7 @@ class CertificadoLicenciaFuncionamientoForm
             ->description('Revise y complete la información')
             ->icon('heroicon-o-document-text')
             ->schema([
+                ...self::camposOcultosSistema(),
                 self::expedienteSection(),
                 self::catastroSection(),
                 self::licenciasSection(),
@@ -124,8 +134,6 @@ class CertificadoLicenciaFuncionamientoForm
             ->schema([
                 TextInput::make('coduca')->label('Código Catastral')->maxLength(50)->extraAttributes(['inputmode' => 'numeric'])->rule('regex:/^[0-9]+$/')->disabled(fn ($get) => $get('_section_catastro_saved')),
                 TextInput::make('codpredio')->label('Código Predial')->maxLength(50)->rule('regex:/^[0-9]+$/')->disabled(fn ($get) => $get('_section_catastro_saved')),
-                
-                // AQUI: Agregamos onBlur: true para asegurar que el evento se dispare al salir
                 TextInput::make('descurb')->label('Urbanización')->maxLength(255)->columnSpanFull()
                     ->live(onBlur: true) 
                     ->afterStateUpdated(fn ($get, $set) => self::actualizarDireccion($get, $set))
@@ -223,11 +231,63 @@ class CertificadoLicenciaFuncionamientoForm
                 TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved')),
                 
                 Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved')),
-                Select::make('giros_seleccionados'),
-                    
-                Textarea::make('descripcion_giros')->label('Descripción Giros')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
+                
+                Select::make('giros_seleccionar')
+                    ->label('Giros encontrados')
+                    ->multiple()
+                    ->options(function () {
+                        $service = app(GiroLicenciaService::class);
+                        $giros = $service->buscarGiros('');
+                        return $giros->pluck('gir_descripcion', 'gir_id')->toArray();
+                    })
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (empty($state)) {
+                            $set('tabla_giros', []);
+                            return;
+                        }
+                        
+                        $service = app(GiroLicenciaService::class);
+                        $todosLosGiros = $service->buscarGiros('');
+                        $mapaGiros = $todosLosGiros->pluck('gir_descripcion', 'gir_id')->toArray();
+                        
+                        $filas = [];
+                        foreach ((array) $state as $giroId) {
+                            if (isset($mapaGiros[$giroId])) {
+                                $filas[] = [
+                                    'giro' => $mapaGiros[$giroId],
+                                    'giro_especifico' => '',
+                                ];
+                            }
+                        }
+                        
+                        $set('tabla_giros', $filas);
+                    })
+                    ->columnSpanFull()
+                    ->disabled(fn ($get) => $get('_section_licencias_saved')),
+                
+                Repeater::make('tabla_giros')
+                    ->label('Giros Seleccionados')
+                    ->schema([
+                        TextInput::make('giro')
+                            ->label('Giro')
+                            ->disabled()
+                            ->dehydrated(),
+                        TextInput::make('giro_especifico')
+                            ->label('Giro Específico')
+                            ->placeholder('Ingrese especificación...')
+                            ->disabled(fn ($get) => $get('../../_section_licencias_saved')),
+                    ])
+                    ->columns(2)
+                    ->defaultItems(0)
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderable(false)
+                    ->columnSpanFull()
+                    ->disabled(fn ($get) => $get('_section_licencias_saved')),
                 Textarea::make('observaciones')->label('Observaciones')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved')),
-            ])
+                ])
             ->headerActions([
                 self::guardarAction('licencias'),
                 self::editarAction('licencias'),
@@ -277,7 +337,7 @@ class CertificadoLicenciaFuncionamientoForm
         // Catastro
         if (!empty($data['catastro'])) {
             $cat = (array) $data['catastro'];
-            foreach (['coduca', 'codpredio', 'descurb', 'via_completa', 'numvia', 'intdpto', 'blockedif', 'mz', 'lote', 'zonificacion', 'area_economica'] as $field) {
+            foreach (['fiu_id', 'coduca', 'codpredio', 'descurb', 'via_completa', 'numvia', 'intdpto', 'blockedif', 'mz', 'lote', 'zonificacion', 'area_economica'] as $field) {
                 $set($field, $cat[$field] ?? null);
             }
 
