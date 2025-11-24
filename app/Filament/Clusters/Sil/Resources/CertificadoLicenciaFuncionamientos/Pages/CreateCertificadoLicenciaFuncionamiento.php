@@ -38,22 +38,93 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
             }
         }
         
+        // Transformar tabla_giros en dos arrays separados
+        $girosIds = [];
+        $girosEspecificos = [];
+        
+        if (isset($datosOrganizados['licencias']['tabla_giros']) && is_array($datosOrganizados['licencias']['tabla_giros'])) {
+            $girosSeleccionados = $datosOrganizados['licencias']['giros_seleccionar'] ?? [];
+            
+            foreach ($datosOrganizados['licencias']['tabla_giros'] as $index => $giro) {
+                $girosIds[] = isset($girosSeleccionados[$index]) ? (int)$girosSeleccionados[$index] : 0;
+                $girosEspecificos[] = $giro['giro_especifico'] ?? '';
+            }
+        }
+        
+        // Estructura de parámetros para el procedimiento almacenado spu_licencia_ins4
+        $parametrosStoredProcedure = [
+            'pfiu_id' => $datosOrganizados['catastro']['fiu_id'] ?? null,
+            'giros_id' => $girosIds,
+            'giros_especificos' => $girosEspecificos,
+            'ptli_id' => $datosOrganizados['licencias']['tipo_licencia'] ?? null,
+            'ptes_id' => $datosOrganizados['licencias']['tipo_establecimientos'] ?? null,
+            'pper_idsolicitante' => null, // TODO: Determinar origen
+            'pper_idrazonsocial' => null, // TODO: Determinar origen
+            'plic_numlic' => $datosOrganizados['licencias']['numero_licencia'] ?? '',
+            'plic_codigopredial' => $datosOrganizados['catastro']['codpredio'] ?? '',
+            'plic_expnum' => $datosOrganizados['expediente']['exp_num'] ?? '',
+            'area' => (float)($datosOrganizados['catastro']['area_economica'] ?? 0),
+            'mype' => ($datosOrganizados['licencias']['mype'] ?? '0') === '1',
+            'resnum' => $datosOrganizados['licencias']['n_resolucion'] ?? '',
+            'fecha_resol' => $this->formatDate($datosOrganizados['licencias']['fecha_resolucion'] ?? null),
+            'fecha_emision' => $this->formatDate($datosOrganizados['licencias']['fecha_emision'] ?? null),
+            'fecha_venc' => '', // TODO: Calcular fecha de vencimiento
+            'licobs' => $datosOrganizados['licencias']['observaciones'] ?? '',
+            'pcec_id' => 1, // TODO: Determinar ID centro comercial
+            'ptlo_id' => 1, // TODO: Determinar tipo de local
+            'plcc_observacion' => '',
+            'plcc_local' => '',
+            'plca_descripcion' => $datosOrganizados['licencias']['direccion'] ?? '',
+            'urbanizacion_id' => $datosOrganizados['catastro']['descurb'] ?? '',
+            'zonificacion' => $datosOrganizados['catastro']['zonificacion'] ?? '',
+            'plic_giro' => '', // TODO: Concatenación de giros
+            'modidirecc' => false,
+            'hora_inicio' => $datosOrganizados['licencias']['hora_inicio'] ?? '9',
+            'hora_fin' => $datosOrganizados['licencias']['hora_fin'] ?? '18',
+            'tir_id' => $datosOrganizados['licencias']['tipo_resolucion'] ?? 2,
+            'usa_id' => 99, // TODO: Usuario actual
+            'nota' => '',
+            'compatibilidad' => $datosOrganizados['licencias']['compatibilidad'] ?? '',
+            'nir_id' => $datosOrganizados['licencias']['nir_id'] ?? 0,
+            'cin_id' => 0, // TODO: ID certificado ITSE
+            'expfec' => $this->formatDate($datosOrganizados['expediente']['exp_fec'] ?? null),
+            'compatib_num' => $datosOrganizados['licencias']['nro_compatibilidad'] ?? '',
+            'compatib_fecha' => $this->formatDate($datosOrganizados['licencias']['fecha_compatibilidad'] ?? null)
+        ];
+        
         // Log de datos organizados
         \Log::info('=== DATOS DEL FORMULARIO ORGANIZADOS POR SECCIONES ===');
         \Log::info('Expediente:', $datosOrganizados['expediente']);
         \Log::info('Catastro:', $datosOrganizados['catastro']);
         \Log::info('Licencias:', $datosOrganizados['licencias']);
         
-        // JSON formateado
-        \Log::info('JSON Completo:', [
-            'json' => json_encode($datosOrganizados, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-        ]);
+        \Log::info('=== PARÁMETROS PARA STORED PROCEDURE ===');
+        \Log::info('Parámetros spu_licencia_ins4:', $parametrosStoredProcedure);
         
-        // Opción: Ver en pantalla (descomenta para debug)
-        // dd($datosOrganizados);
+        // JSON formateado
+        \Log::info('JSON Parámetros:', [
+            'json' => json_encode($parametrosStoredProcedure, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        ]);
         
         // Retornar datos originales para que Filament los guarde normalmente
         return $data;
+    }
+    
+    /**
+     * Formatea fecha al formato DD/MM/YYYY requerido por el stored procedure
+     */
+    private function formatDate($date): string
+    {
+        if (empty($date)) {
+            return '';
+        }
+        
+        try {
+            return \Carbon\Carbon::parse($date)->format('d/m/Y');
+        } catch (\Exception $e) {
+            \Log::warning("Error al formatear fecha: {$date}");
+            return '';
+        }
     }
     
     /**

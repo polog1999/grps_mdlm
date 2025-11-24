@@ -10,6 +10,10 @@ use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
 use App\Http\Controllers\TipoLicenciaController;
 use App\Http\Controllers\GiroLicenciaController;
+use App\Http\Controllers\TipoCentroComercialController;
+use App\Http\Controllers\TipoLocalController;
+use App\Http\Controllers\LicenciaPersonaController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +90,26 @@ Route::prefix('v1')->group(function () {
     */
     Route::get('/tipo-licencia', [TipoLicenciaController::class, 'getTipoLicencias']);
 
+    /*
+    |--------------------------------------------------------------------------
+    | TIPO DE CENTRO COMERCIAL
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/tipo-centro-comercial', [TipoCentroComercialController::class, 'getTipoCentroComercial']);
+
+   /*
+    |--------------------------------------------------------------------------
+    | TIPO DE LOCAL
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/tipo-local', [TipoLocalController::class, 'getTipoLocal']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | LICENCIA PERSONA
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/licencia-persona', [LicenciaPersonaController::class, 'getLicenciaPersonaNombre']);
 
     /*
     |--------------------------------------------------------------------------
