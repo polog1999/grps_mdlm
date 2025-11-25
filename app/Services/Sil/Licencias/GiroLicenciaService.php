@@ -71,4 +71,16 @@ class GiroLicenciaService
             return null;
         }
     }
+
+    public function obtenerGirosPorIdLicencia(int $lic_id)
+    {
+        try{
+            $sql="SELECT* FROM licencia.vu_licenciagiro where lic_id= ?";
+            $result = $this->connectionToPostgreSQL->select($sql, [$lic_id]);
+            return collect($result);
+        }catch(\Exception $e){
+            Log::error("Error al obtener giros por ID de licencia {$lic_id}: " . $e->getMessage());
+            return collect();
+        }
+    }
 }

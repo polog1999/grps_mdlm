@@ -4,10 +4,10 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
 use Filament\Resources\Pages\CreateRecord;
-use App\Services\Sil\Licencias\LicenciaInsertService;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Notifications\Notification;
+use Filament\Notifications\Notification;    
+use App\Services\Sil\Licencias\LicenciaService;
 
 class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
 {
@@ -38,7 +38,6 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
         
         $datosOrganizados = [
             'expediente' => [],
-
             'catastro' => [],
             'licencias' => [],
         ];
@@ -53,11 +52,10 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
             }
         }
         
-        // Ejecutar procedimiento almacenado
-        $service = app(LicenciaInsertService::class);
+        $service = app(LicenciaService::class);
         
         try {
-            $result = $service->insertarLicencia($datosOrganizados);
+            $result = $service->create($datosOrganizados);
             
             \Log::info('Procedimiento almacenado ejecutado', ['result' => $result]);
             

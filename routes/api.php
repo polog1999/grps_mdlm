@@ -125,6 +125,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('giros')->group(function () {
         Route::get('/buscar/{search}', [GiroLicenciaController::class, 'buscar']);
         Route::get('/listar', [GiroLicenciaController::class, 'listar']);
+        Route::get('/obtenerGirosPorIdLicencia/{lic_id}', [GiroLicenciaController::class, 'obtenerGirosPorIdLicencia']);
     });
 
 });

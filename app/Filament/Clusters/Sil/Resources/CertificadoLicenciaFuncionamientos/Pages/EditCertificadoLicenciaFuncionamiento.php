@@ -6,7 +6,8 @@ use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Certi
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use App\Services\Sil\Licencias\TipoEstablecimientoService;
-use App\Services\Sil\Licencias\LicenciaUpdateService;
+use App\Services\Sil\Licencias\GiroLicenciaService;
+use App\Services\Sil\Licencias\LicenciaService;
 
 class EditCertificadoLicenciaFuncionamiento extends EditRecord
 {
@@ -20,14 +21,12 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
     }
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $service = app(LicenciaUpdateService::class);
-        $rows = $service->obtenerPorIdLicencia($this->record->lic_id);
+        $service = app(LicenciaService::class);
+        $row = $service->getById($this->record->lic_id);
         
-        if ($rows->isEmpty()) {
+        if (!$row) {
             return $data;
         }
-
-        $row = $rows->first();
 
         // Expediente
         $data['exp_num'] = $row->lic_expnum;
@@ -89,5 +88,104 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         // If lic_giro is a simple string, we might not be able to fully populate the complex selector without more logic.
         
         return $data;
+    }
+    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    {
+        // Construct Giros
+        $giros = [];
+        // We need to map the selected IDs (giros_seleccionar) to the repeater data (tabla_giros)
+        // Assumption: The order in tabla_giros matches the order of selection or we can't easily map without ID in repeater.
+        // However, the repeater has 'giro' name. We can try to look up ID by name if needed, 
+        // OR we can assume the 'giros_seleccionar' contains the IDs we need.
+        // But 'tabla_giros' contains the 'giro_especifico'.
+        
+        // Let's try to use the 'giros_seleccionar' array as the source of truth for IDs.
+        // And try to find the matching specific text from 'tabla_giros'.
+        // This is imperfect if there are duplicate giro names, but best effort.
+        
+        $selectedIds = $data['giros_seleccionar'] ?? [];
+        $repeaterItems = $data['tabla_giros'] ?? [];
+        
+        // Create a map of Giro Name -> Specifico from repeater
+        $specificMap = [];
+        foreach ($repeaterItems as $item) {
+            if (isset($item['giro'])) {
+                $specificMap[$item['giro']] = $item['giro_especifico'] ?? '';
+            }
+        }
+        
+        // We need a service to map ID -> Name to use the map above
+        $giroService = app(GiroLicenciaService::class);
+        // This might be expensive if we fetch all, but let's fetch selected ones if possible or just all.
+        // For now, let's assume we can't easily get the name for the ID without a query.
+        // A simpler approach: Just iterate the repeater items. 
+        // If the repeater items don't have IDs, we are stuck.
+        // WAIT: The repeater items are populated in the form using:
+        // $filas[] = ['giro' => $mapaGiros[$giroId], 'giro_especifico' => ''];
+        // So 'giro' holds the NAME.
+        
+        // So we can iterate selected IDs, get their Name, look up in $specificMap.
+        // But we don't have the Name for the ID here easily without fetching.
+        
+        // Let's fetch all giros to map ID to Name.
+        $allGiros = $giroService->buscarGiros('');
+        $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
+        
+        foreach ($selectedIds as $girId) {
+            $name = $idToName[$girId] ?? '';
+            $specific = $specificMap[$name] ?? '';
+            
+            $giros[] = [
+                'gir_id' => $girId,
+                'especifico' => $specific,
+                'lig_id' => 0, // We don't have this, treating as new/update without ID tracking
+                'estado' => 'M'
+            ];
+        }
+
+        $params = [
+            'lic_id' => $record->lic_id,
+            'tli_id' => $data['tipo_licencia'],
+            'tes_id' => $data['tipo_establecimientos'],
+            'per_idsolicitante' => $data['exp_nomrec_id'] ?? 0,
+            'per_idrazonsocial' => $data['exp_razsoc_id'] ?? 0,
+            'lic_numlic' => $data['numero_licencia'],
+            'lic_codigopredial' => $data['codpredio'],
+            'lic_expnum' => $data['exp_num'],
+            'lic_direccion' => $data['direccion'],
+            'lic_urbanizacion' => $data['descurb'],
+            'lic_area' => $data['area_economica'],
+            'lic_mype' => $data['mype'] == '1',
+            'lic_resnum' => $data['n_resolucion'],
+            'lic_fecharesolucion' => $data['fecha_resolucion'],
+            'lic_fechaemision' => $data['fecha_emision'],
+            'lic_fechavencimiento' => null,
+            'lic_licobs' => $data['observaciones'],
+            'lic_giro' => '', 
+            'fiu_id' => $data['fiu_id'] ?? 0,
+            'lca_descripcion' => '',
+            'lca_urbanizacion' => $data['descurb'],
+            'lca_zonificacion' => $data['zonificacion'],
+            'lca_origen' => '',
+            'cec_id' => 0,
+            'tlo_id' => 0,
+            'lcc_observacion' => '',
+            'lcc_local' => '',
+            'lic_modidirecc' => false,
+            'lic_horainicio' => $data['hora_inicio'],
+            'lic_horafin' => $data['hora_fin'],
+            'tir_id' => $data['tipo_resolucion'],
+            'lic_nota' => '',
+            'compatibilidad' => $data['compatibilidad'],
+            'rsgparrafo1' => '',
+            'rsgparrafo2' => '',
+            'nir_id' => $data['nir_id'],
+            'giros' => $giros,
+        ];
+
+        $service = app(LicenciaService::class);
+        $service->update($params);
+
+        return $record;
     }
 }

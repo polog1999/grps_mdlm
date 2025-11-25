@@ -321,8 +321,6 @@ class CertificadoLicenciaFuncionamientosTable
                     ->tooltip('Modificar certificado')
                     ->color('warning'),
             ], position: RecordActionsPosition::BeforeCells)
-            
-
 
             ->filtersTriggerAction(
                 fn (Action $action) => $action
