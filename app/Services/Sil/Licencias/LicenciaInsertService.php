@@ -3,6 +3,7 @@ namespace App\Services\Sil\Licencias;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class LicenciaInsertService
 {
@@ -26,11 +27,19 @@ class LicenciaInsertService
             $girosIds = [];
             $girosEspecificos = [];
             
+            // Lógica para extraer IDs de giros y específicos
+            // Se asume que $datos['licencias']['giros_seleccionar'] contiene los IDs seleccionados
+            // y $datos['licencias']['tabla_giros'] contiene los detalles (incluyendo giro_especifico)
+            
             if (isset($datos['licencias']['tabla_giros']) && is_array($datos['licencias']['tabla_giros'])) {
-                foreach ($datos['licencias']['tabla_giros'] as $giro) {
-                    // Necesitarás obtener el ID del giro desde la descripción
-                    // Por ahora lo dejamos como placeholder
-                    $girosIds[] = $giro['gir_id'] ?? 0;
+                $girosSeleccionados = $datos['licencias']['giros_seleccionar'] ?? [];
+                
+                foreach ($datos['licencias']['tabla_giros'] as $index => $giro) {
+                    // Intentar obtener el ID del giro de la selección múltiple usando el índice
+                    // Esto asume que el orden en tabla_giros corresponde al orden en giros_seleccionar
+                    // Una mejor aproximación sería si tabla_giros tuviera el ID del giro, pero el repeater a veces pierde contexto
+                    // Usaremos la lógica del controlador:
+                    $girosIds[] = isset($girosSeleccionados[$index]) ? (int)$girosSeleccionados[$index] : 0;
                     $girosEspecificos[] = $giro['giro_especifico'] ?? '';
                 }
             }
@@ -76,21 +85,21 @@ class LicenciaInsertService
             )";
 
             $parametros = [
-                123, // pfiu_id - TODO: Obtener de algún lado
+                $datos['catastro']['fiu_id'] ?? null, // pfiu_id
                 '{' . implode(',', $girosIds) . '}', // giros_id como array PostgreSQL
-                '{' . implode(',', array_map(fn($g) => '"' . $g . '"', $girosEspecificos)) . '}', // giros_especificos
+                '{' . implode(',', array_map(fn($g) => '"' . str_replace('"', '\"', $g) . '"', $girosEspecificos)) . '}', // giros_especificos
                 $datos['licencias']['tipo_licencia'] ?? null, // ptli_id
                 $datos['licencias']['tipo_establecimientos'] ?? null, // ptes_id
-                2000, // pper_idsolicitante - TODO: Obtener del usuario
-                3040, // pper_idrazonsocial - TODO: Obtener de expediente
-                $datos['licencias']['numero_licencia'] ?? null, // plic_numlic
-                $datos['catastro']['codpredio'] ?? null, // plic_codigopredial
-                $datos['expediente']['exp_num'] ?? null, // plic_expnum
-                $datos['catastro']['area_economica'] ?? 0, // area
-                $datos['licencias']['mype'] === '1', // mype (boolean)
-                $datos['licencias']['n_resolucion'] ?? null, // resnum
-                $datos['licencias']['fecha_resolucion'] ?? null, // fecha resol
-                $datos['licencias']['fecha_emision'] ?? null, // fecha emision
+                $datos['expediente']['exp_nomrec_id'] ?? null, // pper_idsolicitante
+                $datos['expediente']['exp_razsoc_id'] ?? null, // pper_idrazonsocial
+                $datos['licencias']['numero_licencia'] ?? '', // plic_numlic
+                $datos['catastro']['codpredio'] ?? '', // plic_codigopredial
+                $datos['expediente']['exp_num'] ?? '', // plic_expnum
+                (float)($datos['catastro']['area_economica'] ?? 0), // area
+                ($datos['licencias']['mype'] ?? '0') === '1', // mype (boolean)
+                $datos['licencias']['n_resolucion'] ?? '', // resnum
+                $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null), // fecha resol
+                $this->formatDate($datos['licencias']['fecha_emision'] ?? null), // fecha emision
                 null, // fecha venc - TODO: Calcular
                 $datos['licencias']['observaciones'] ?? '', // licobs
                 1, // pcec_id - TODO: Determinar
@@ -102,18 +111,21 @@ class LicenciaInsertService
                 $datos['catastro']['zonificacion'] ?? '', // zonificación
                 '', // plic_giro - Concatenación de giros
                 false, // modidirecc
-                $datos['licencias']['hora_inicio'] ?? '9', // hora inicio
-                $datos['licencias']['hora_fin'] ?? '18', // hora fin
+                $datos['licencias']['hora_inicio'] ?? '09:00', // hora inicio
+                $datos['licencias']['hora_fin'] ?? '18:00', // hora fin
                 $datos['licencias']['tipo_resolucion'] ?? 2, // tir_id
-                99, // usa_id - TODO: Obtener usuario actual
                 '', // nota
+                auth()->id() ?? 0, // usa_id
                 $datos['licencias']['compatibilidad'] ?? '', // compatibilidad
                 $datos['licencias']['nir_id'] ?? 0, // nir_id
                 0, // cin_id - TODO: Determinar
-                $datos['expediente']['exp_fec'] ?? '', // expfec
+                $this->formatDate($datos['expediente']['exp_fec'] ?? null), // expfec
                 $datos['licencias']['nro_compatibilidad'] ?? '', // compatib_num
-                $datos['licencias']['fecha_compatibilidad'] ?? '' // compatib_fecha
+                $this->formatDate($datos['licencias']['fecha_compatibilidad'] ?? null) // compatib_fecha
             ];
+
+            // Log para depuración
+            Log::info('Ejecutando spu_licencia_ins4 con parámetros:', $parametros);
 
             $result = $this->connectionToPostgreSQL->select($sql, $parametros);
             
@@ -123,6 +135,19 @@ class LicenciaInsertService
         } catch (\Exception $e) {
             Log::error("Error al insertar licencia: " . $e->getMessage());
             throw $e;
+        }
+    }
+
+    private function formatDate($date): ?string
+    {
+        if (empty($date)) {
+            return null;
+        }
+        
+        try {
+            return Carbon::parse($date)->format('d/m/Y');
+        } catch (\Exception $e) {
+            return null;
         }
     }
 }

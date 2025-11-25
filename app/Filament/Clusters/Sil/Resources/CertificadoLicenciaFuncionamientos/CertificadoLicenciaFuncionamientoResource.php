@@ -38,9 +38,15 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     }   
 
     public static function table(Table $table): Table
+    
     {
-        return CertificadoLicenciaFuncionamientosTable::configure($table);
+        return CertificadoLicenciaFuncionamientosTable::configure($table)
+            ->bulkActions([
+        
+            ]);
     }
+
+
 
     public static function getRelations(): array
     {

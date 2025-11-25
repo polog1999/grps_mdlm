@@ -19,6 +19,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Collection;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\RecordActionsPosition;
 
 class CertificadoLicenciaFuncionamientosTable
 {
@@ -314,14 +315,14 @@ class CertificadoLicenciaFuncionamientosTable
                 ->filtersFormColumns(4)
                 ->filtersFormMaxHeight('400px')
             ->recordActions([
-                EditAction::make(),
-            ])
+                EditAction::make()
+                    ->icon('heroicon-o-pencil')
+                    ->iconButton()
+                    ->tooltip('Modificar certificado')
+                    ->color('warning'),
+            ], position: RecordActionsPosition::BeforeCells)
             
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ])
+
 
             ->filtersTriggerAction(
                 fn (Action $action) => $action

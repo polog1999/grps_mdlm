@@ -13,7 +13,7 @@ use App\Http\Controllers\GiroLicenciaController;
 use App\Http\Controllers\TipoCentroComercialController;
 use App\Http\Controllers\TipoLocalController;
 use App\Http\Controllers\LicenciaPersonaController;
-
+use App\Http\Controllers\LicenciaUpdateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,6 +82,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/datos-completos/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosCompletosParaRegistrarPorExpediente']);
     });
 
+    /*
+    |--------------------------------------------------------------------------
+    | LICENCIA UPDATE
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/licencia-retornar/{lic_id}', [LicenciaUpdateController::class, 'obtenerPorIdLicencia']);
 
     /*
     |--------------------------------------------------------------------------

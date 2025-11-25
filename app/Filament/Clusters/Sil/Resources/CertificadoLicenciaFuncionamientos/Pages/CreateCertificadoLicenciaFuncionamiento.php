@@ -4,6 +4,10 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
 use Filament\Resources\Pages\CreateRecord;
+use App\Services\Sil\Licencias\LicenciaInsertService;
+use App\Models\CertificadoLicenciaFuncionamiento;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 
 class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
 {
@@ -16,131 +20,25 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
      */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Definir qué campos pertenecen a cada sección
-        $camposExpediente = ['exp_num', 'exp_fec', 'exp_nomrec', 'numdoc', 'numtel', 'correo', 'domfis','exp_nomrec_id','exp_razsoc_id'];
-        $camposCatastro = ['fiu_id','coduca', 'codpredio', 'descurb', 'via_completa', 'numvia', 'intdpto', 'blockedif', 'mz', 'lote', 'zonificacion', 'area_economica'];
-        $camposLicencias = ['proccodigo', 'procnivel', 'nir_id', 'nir_descripcion', 'tipo_resolucion', 'n_resolucion', 'fecha_resolucion', 'numero_licencia', 'tipo_licencia', 'fecha_emision', 'mype', 'compatibilidad', 'nro_compatibilidad', 'fecha_compatibilidad', 'horario_atencion', 'hora_inicio', 'hora_fin', 'direccion', 'tipo_establecimientos', 'giros_seleccionar', 'tabla_giros', 'observaciones'];
-        
-        // Reorganizar datos por secciones
-        $datosOrganizados = [
-            'expediente' => [],
-            'catastro' => [],
-            'licencias' => [],
-        ];
-
-        foreach ($data as $campo => $valor) {
-            if (in_array($campo, $camposExpediente)) {
-                $datosOrganizados['expediente'][$campo] = $valor;
-            } elseif (in_array($campo, $camposCatastro)) {
-                $datosOrganizados['catastro'][$campo] = $valor;
-            } elseif (in_array($campo, $camposLicencias)) {
-                $datosOrganizados['licencias'][$campo] = $valor;
-            }
-        }
-        
-        // Transformar tabla_giros en dos arrays separados
-        $girosIds = [];
-        $girosEspecificos = [];
-        
-        if (isset($datosOrganizados['licencias']['tabla_giros']) && is_array($datosOrganizados['licencias']['tabla_giros'])) {
-            $girosSeleccionados = $datosOrganizados['licencias']['giros_seleccionar'] ?? [];
-            
-            foreach ($datosOrganizados['licencias']['tabla_giros'] as $index => $giro) {
-                $girosIds[] = isset($girosSeleccionados[$index]) ? (int)$girosSeleccionados[$index] : 0;
-                $girosEspecificos[] = $giro['giro_especifico'] ?? '';
-            }
-        }
-        
-        // Estructura de parámetros para el procedimiento almacenado spu_licencia_ins4
-        $parametrosStoredProcedure = [
-            'pfiu_id' => $datosOrganizados['catastro']['fiu_id'] ?? null,
-            'giros_id' => $girosIds,
-            'giros_especificos' => $girosEspecificos,
-            'ptli_id' => $datosOrganizados['licencias']['tipo_licencia'] ?? null,
-            'ptes_id' => $datosOrganizados['licencias']['tipo_establecimientos'] ?? null,
-            'pper_idsolicitante' => $datosOrganizados['expediente']['exp_nomrec_id'] ?? null,
-            'pper_idrazonsocial' => $datosOrganizados['expediente']['exp_razsoc_id'] ?? null, 
-            'plic_numlic' => $datosOrganizados['licencias']['numero_licencia'] ?? '',
-            'plic_codigopredial' => $datosOrganizados['catastro']['codpredio'] ?? '',
-            'plic_expnum' => $datosOrganizados['expediente']['exp_num'] ?? '',
-            'area' => (float)($datosOrganizados['catastro']['area_economica'] ?? 0),
-            'mype' => ($datosOrganizados['licencias']['mype'] ?? '0') === '1',
-            'resnum' => $datosOrganizados['licencias']['n_resolucion'] ?? '',
-            'fecha_resol' => $this->formatDate($datosOrganizados['licencias']['fecha_resolucion'] ?? null),
-            'fecha_emision' => $this->formatDate($datosOrganizados['licencias']['fecha_emision'] ?? null),
-            'fecha_venc' => '', // TODO: Calcular fecha de vencimiento
-            'licobs' => $datosOrganizados['licencias']['observaciones'] ?? '',
-            'pcec_id' => 1, // TODO: Determinar ID centro comercial
-            'ptlo_id' => 1, // TODO: Determinar tipo de local
-            'plcc_observacion' => '',
-            'plcc_local' => '',
-            'plca_descripcion' => $datosOrganizados['licencias']['direccion'] ?? '',
-            'urbanizacion_id' => $datosOrganizados['catastro']['descurb'] ?? '',
-            'zonificacion' => $datosOrganizados['catastro']['zonificacion'] ?? '',
-            'plic_giro' => '', // TODO: Concatenación de giros
-            'modidirecc' => false,
-            'hora_inicio' => $datosOrganizados['licencias']['hora_inicio'] ?? '9',
-            'hora_fin' => $datosOrganizados['licencias']['hora_fin'] ?? '18',
-            'tir_id' => $datosOrganizados['licencias']['tipo_resolucion'] ?? 2,
-            'usa_id' => 99, // TODO: Usuario actual
-            'nota' => '',
-            'compatibilidad' => $datosOrganizados['licencias']['compatibilidad'] ?? '',
-            'nir_id' => $datosOrganizados['licencias']['nir_id'] ?? 0,
-            'cin_id' => 0, // TODO: ID certificado ITSE
-            'expfec' => $this->formatDate($datosOrganizados['expediente']['exp_fec'] ?? null),
-            'compatib_num' => $datosOrganizados['licencias']['nro_compatibilidad'] ?? '',
-            'compatib_fecha' => $this->formatDate($datosOrganizados['licencias']['fecha_compatibilidad'] ?? null)
-        ];
-        
-        // Log de datos organizados
-        \Log::info('=== DATOS DEL FORMULARIO ORGANIZADOS POR SECCIONES ===');
-        \Log::info('Expediente:', $datosOrganizados['expediente']);
-        \Log::info('Catastro:', $datosOrganizados['catastro']);
-        \Log::info('Licencias:', $datosOrganizados['licencias']);
-        
-        \Log::info('=== PARÁMETROS PARA STORED PROCEDURE ===');
-        \Log::info('Parámetros spu_licencia_ins4:', $parametrosStoredProcedure);
-        
-        // JSON formateado
-        \Log::info('JSON Parámetros:', [
-            'json' => json_encode($parametrosStoredProcedure, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-        ]);
-        
-        // Retornar datos originales para que Filament los guarde normalmente
+        // Mantenemos este método por si Filament necesita hacer algo con los datos,
+        // pero la lógica principal se ha movido a handleRecordCreation.
+        // Solo retornamos los datos tal cual.
         return $data;
-    }
-    
-    /**
-     * Formatea fecha al formato DD/MM/YYYY requerido por el stored procedure
-     */
-    private function formatDate($date): string
-    {
-        if (empty($date)) {
-            return '';
-        }
-        
-        try {
-            return \Carbon\Carbon::parse($date)->format('d/m/Y');
-        } catch (\Exception $e) {
-            \Log::warning("Error al formatear fecha: {$date}");
-            return '';
-        }
     }
     
     /**
      * Maneja la creación del registro usando el procedimiento almacenado
      */
-
-    /*
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         // Reorganizar datos por secciones
-        $camposExpediente = ['exp_num', 'exp_fec', 'exp_nomrec', 'numdoc', 'numtel', 'correo', 'domfis'];
+        $camposExpediente = ['exp_num', 'exp_fec', 'exp_nomrec', 'numdoc', 'numtel', 'correo', 'domfis', 'exp_nomrec_id', 'exp_razsoc_id', 'exp_razsoc'];
         $camposCatastro = ['fiu_id','coduca', 'codpredio', 'descurb', 'via_completa', 'numvia', 'intdpto', 'blockedif', 'mz', 'lote', 'zonificacion', 'area_economica'];
         $camposLicencias = ['proccodigo', 'procnivel', 'nir_id', 'nir_descripcion', 'tipo_resolucion', 'n_resolucion', 'fecha_resolucion', 'numero_licencia', 'tipo_licencia', 'fecha_emision', 'mype', 'compatibilidad', 'nro_compatibilidad', 'fecha_compatibilidad', 'horario_atencion', 'hora_inicio', 'hora_fin', 'direccion', 'tipo_establecimientos', 'giros_seleccionar', 'tabla_giros', 'observaciones'];
         
         $datosOrganizados = [
             'expediente' => [],
+
             'catastro' => [],
             'licencias' => [],
         ];
@@ -156,23 +54,87 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
         }
         
         // Ejecutar procedimiento almacenado
-        $service = app(\App\Services\Sil\Licencias\LicenciaInsertService::class);
+        $service = app(LicenciaInsertService::class);
         
         try {
             $result = $service->insertarLicencia($datosOrganizados);
             
-            \Log::info('Procedimiento almacenado ejecutado exitosamente', ['result' => $result]);
+            \Log::info('Procedimiento almacenado ejecutado', ['result' => $result]);
             
-            // Crear un modelo temporal para que Filament no falle
-            // TODO: Ajustar según lo que retorne el procedimiento
-            $model = new \App\Models\CertificadoLicenciaFuncionamiento();
+            // Validar que el resultado no esté vacío
+            if (empty($result) || !isset($result[0])) {
+                Notification::make()
+                    ->title('Error al guardar')
+                    ->body('El procedimiento almacenado no retornó ningún resultado.')
+                    ->danger()
+                    ->send();
+                    
+                $this->halt();
+            }
+            
+            $spResult = $result[0];
+            
+            // Verificar el status del procedimiento almacenado
+            $status = $spResult->status ?? 0;
+            $message = $spResult->message ?? 'Error desconocido';
+            $newId = $spResult->new_id ?? null;
+            
+            \Log::info('Resultado del SP', [
+                'status' => $status,
+                'message' => $message,
+                'new_id' => $newId
+            ]);
+            
+            // Si el status es error (< 1), detener el proceso
+            if ($status < 1) {
+                Notification::make()
+                    ->title('Error al guardar')
+                    ->body($message)
+                    ->danger()
+                    ->send();
+                    
+                $this->halt();
+            }
+            
+            // Si no hay new_id, también es un error
+            if (!$newId) {
+                Notification::make()
+                    ->title('Error al guardar')
+                    ->body('No se pudo obtener el ID del registro creado.')
+                    ->danger()
+                    ->send();
+                    
+                $this->halt();
+            }
+            
+            // Crear el modelo con el ID correcto
+            $model = new CertificadoLicenciaFuncionamiento();
             $model->exists = true;
-            $model->id = $result[0]->lic_id ?? 1; // Ajustar según el retorno del SP
+            $model->lic_id = $newId;
+            
+            // Hidratar otros atributos del modelo si es necesario
+            $model->lic_expnum = $datosOrganizados['expediente']['exp_num'] ?? null;
+            $model->lic_numlic = $datosOrganizados['licencias']['numero_licencia'] ?? null;
+            
+            // Mostrar notificación de éxito
+            Notification::make()
+                ->title('Registro creado exitosamente')
+                ->body($message)
+                ->success()
+                ->send();
             
             return $model;
+            
         } catch (\Exception $e) {
             \Log::error('Error al ejecutar procedimiento almacenado: ' . $e->getMessage());
-            throw $e;
+            
+            Notification::make()
+                ->title('Error al guardar')
+                ->body('Ocurrió un error al guardar la licencia: ' . $e->getMessage())
+                ->danger()
+                ->send();
+                
+            $this->halt();
         }
-    }*/
+    }
 }

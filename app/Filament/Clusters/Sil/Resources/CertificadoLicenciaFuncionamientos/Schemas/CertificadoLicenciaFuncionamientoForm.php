@@ -13,7 +13,8 @@ class CertificadoLicenciaFuncionamientoForm
     {
         return $schema->components([
             Wizard::make([
-                BusquedaStep::make(),
+                BusquedaStep::make()
+                    ->hidden(fn (string $operation) => $operation === 'edit'),
                 DatosCompletosStep::make(),
             ])->columnSpanFull()
         ]);
