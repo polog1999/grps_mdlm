@@ -15,10 +15,8 @@ class LicenciaService
 
     public function __construct()
     {
-        // Inyectamos la conexión específica
         $connection = DB::connection('pgsql_licencias');
 
-        // Instanciamos los handlers con esa conexión
         $this->reader = new LicenciaReader($connection);
         $this->creator = new LicenciaCreator($connection);
         $this->updater = new LicenciaUpdater($connection);
