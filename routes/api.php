@@ -14,6 +14,7 @@ use App\Http\Controllers\TipoCentroComercialController;
 use App\Http\Controllers\TipoLocalController;
 use App\Http\Controllers\LicenciaPersonaController;
 use App\Http\Controllers\LicenciaUpdateController;
+use App\Http\Controllers\LicenciaCrudController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/numero/{lic_numlic}', [LicenciaController::class, 'obtenerPorNumeroLicencia']);
         Route::get('/licencia-expediente/{lic_numlic}/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroLicenciaYExpediente']);
         Route::get('/id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia']);
+        Route::get('/expediente-razon-social/{lic_expnum}', [LicenciaCrudController::class, 'obtenerDatosDeRazonSocialPorExpediente']);
+        Route::get('/expediente-catastro/{codcat}', [LicenciaCrudController::class, 'obtenerDatosGeneralesDeCatastroPorCodigoCatastral']);
     });
 
 

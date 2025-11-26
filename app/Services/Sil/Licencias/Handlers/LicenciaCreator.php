@@ -20,7 +20,6 @@ class LicenciaCreator
     public function execute(array $datos)
     {
         try {
-            // Extraer giros
             $girosIds = [];
             $girosEspecificos = [];
             
