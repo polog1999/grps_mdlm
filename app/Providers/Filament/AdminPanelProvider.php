@@ -39,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->authPasswordBroker('users')
             ->login()
             ->profile()
+            ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
             ->emailVerification() 
             //->globalSearch(false)

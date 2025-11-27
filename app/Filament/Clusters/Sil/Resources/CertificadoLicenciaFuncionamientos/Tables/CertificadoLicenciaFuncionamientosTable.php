@@ -9,7 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamiento;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +19,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Collection;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\RecordActionsPosition;
 
 class CertificadoLicenciaFuncionamientosTable
 {
@@ -29,7 +30,7 @@ class CertificadoLicenciaFuncionamientosTable
     {
 
         if (!isset(self::$service)) {
-            self::$service = new CertificadoLincenciaFuncionamiento();
+            self::$service = new CertificadoLincenciaFuncionamientoService();
         }
 
         return $table
@@ -314,14 +315,12 @@ class CertificadoLicenciaFuncionamientosTable
                 ->filtersFormColumns(4)
                 ->filtersFormMaxHeight('400px')
             ->recordActions([
-                EditAction::make(),
-            ])
-            
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ])
+                EditAction::make()
+                    ->icon('heroicon-o-pencil')
+                    ->iconButton()
+                    ->tooltip('Modificar certificado')
+                    ->color('warning'),
+            ], position: RecordActionsPosition::BeforeCells)
 
             ->filtersTriggerAction(
                 fn (Action $action) => $action

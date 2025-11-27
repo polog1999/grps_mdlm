@@ -9,6 +9,9 @@ use App\Http\Controllers\PersonaSolicitanteController;
 use App\Http\Controllers\TipoEdificacionController;
 use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
+use App\Http\Controllers\TipoLicenciaController;
+use App\Http\Controllers\GiroLicenciaController;
+
 /**
  * Archivo de rutas web para la aplicación Laravel.
  *
@@ -143,9 +146,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         //obtenerDatosPorCodCat
         Route::get('/certificado-licencia-funcionamiento/obtener-datos-por-codcat/{codcat}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosPorCodCat'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatosPorCodCat');
-        });
 
-   
+
+          //obtenerListaDeProcedimientosTupaDeLicencias
+        Route::get('/certificado-licencia-funcionamiento/obtener-lista-procedimientos-tupa-licencias', [CertificadoLicenciaFuncionamientoController::class, 'obtenerListaDeProcedimientosTupaDeLicencias'])
+            ->name('certificadoLicenciaFuncionamiento.obtenerListaDeProcedimientosTupaDeLicencias');
+        
+        //obtenerNivelDeRiesgoPorExpediente
+        Route::get('/certificado-licencia-funcionamiento/obtener-nivel-riesgo-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerNivelDeRiesgoPorExpediente'])
+            ->name('certificadoLicenciaFuncionamiento.obtenerNivelDeRiesgoPorExpediente');
+        
+            //obtenerDatosCompletosParaRegistrarPorExpediente
+        Route::get('/certificado-licencia-funcionamiento/obtener-datos-completos-para-registrar-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosCompletosParaRegistrarPorExpediente'])
+        ->name('certificadoLicenciaFuncionamiento.obtenerDatosCompletosParaRegistrarPorExpediente');
+        
+        //getTipoLicencias
+        Route::get('/tipo-licencia/lista', [TipoLicenciaController::class, 'getTipoLicencias'])
+            ->name('tipoLicencia.listar');
+
+        
+        //public function getGiros($search)
+        Route::get('/giros/lista/{search}', [GiroLicenciaController::class, 'buscar'])
+            ->name('giros.listar');
+
+        Route::get('/giros/listar', [GiroLicenciaController::class, 'obtenerTodosLosGiros'])
+            ->name('giros.listarTodos');
+        });
 });
  
 

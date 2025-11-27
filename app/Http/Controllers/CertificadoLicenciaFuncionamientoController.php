@@ -1,7 +1,8 @@
 <?php 
 namespace App\Http\Controllers;
 
-use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamiento;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
+
 use Illuminate\Http\Request;
 
 
@@ -10,7 +11,7 @@ class CertificadoLicenciaFuncionamientoController extends Controller
    
     protected $service;
 
-    public function __construct(CertificadoLincenciaFuncionamiento $service)
+    public function __construct(CertificadoLincenciaFuncionamientoService $service)
     {
         $this->service = $service;
     }
@@ -54,7 +55,7 @@ class CertificadoLicenciaFuncionamientoController extends Controller
     {
         $datos = $this->service->obtenerDatosPorCodCat($codcat);
 
-        if ($datos->isNotEmpty()) {
+        if ($datos) {
             return response()->json([
                 'success' => true,
                 'data' => $datos,
@@ -65,6 +66,63 @@ class CertificadoLicenciaFuncionamientoController extends Controller
             'success' => false,
             'message' => 'No se encontraron datos para el CODCAT proporcionado.',
         ], 404);
+    }
+
+    public function obtenerListaDeProcedimientosTupaDeLicencias()
+    {
+        $datos = $this->service->obtenerListaDeProcedimientosTupaDeLicencias();
+
+        if ($datos->isNotEmpty()) {
+            return response()->json([
+                'success' => true,
+                'data' => $datos->values(), // colección serializable
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron datos de procedimientos TUPA para licencias.',
+        ], 404);
+    }
+
+    public function obtenerNivelDeRiesgoPorExpediente($exp_num){
+        $datos = $this->service->obtenerNivelDeRiesgoPorExpediente($exp_num);
+
+        if ($datos) {
+            return response()->json([
+                'success' => true,
+                'data' => $datos,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron datos para el número de expediente proporcionado.',
+        ], 404);
+    }
+
+    //obtenerDatosCompletosParaRegistrarPorExpediente
+    public function obtenerDatosCompletosParaRegistrarPorExpediente($exp_num){
+        $datos = $this->service->obtenerDatosCompletosParaRegistrarPorExpediente($exp_num);
+
+        if ($datos) {
+            return response()->json([
+                'success' => true,
+                'data' => $datos,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron datos para el número de expediente proporcionado.',
+        ], 404);
+    }
+
+
+        //obtenerDatosDePersonaPorExpediente
+    public function obtenerDatosDePersonaPorExpediente($expnum){
+        $items = $this->service->obtenerDatosDePersonaPorExpediente($expnum);
+        return response()->json($items);
     }
 
 }
