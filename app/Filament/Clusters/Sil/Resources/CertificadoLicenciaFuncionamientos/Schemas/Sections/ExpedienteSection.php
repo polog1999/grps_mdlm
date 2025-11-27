@@ -21,12 +21,11 @@ class ExpedienteSection
             ->collapsible()
             ->schema([
                 TextInput::make('exp_num')->label('Número de Expediente')->disabled()->dehydrated(),
-                DatePicker::make('exp_fec')->label('Fecha de Expediente')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_expediente_saved'))->dehydrated(),
+                DatePicker::make('exp_fec')->label('Fecha de Expediente')->displayFormat('d/m/Y')->native(false)->disabled()->dehydrated(),
                 TextInput::make('exp_nomrec')
                     ->label('Nombre y Apellidos')
                     ->maxLength(255)
                     ->columnSpanFull()
-                    ->disabled(fn ($get) => $get('_section_expediente_saved'))
                     ->dehydrated()
                     ->suffixAction(
                         Action::make('buscar_nombre')
@@ -131,7 +130,6 @@ class ExpedienteSection
                     ->label('Razón Social')
                     ->maxLength(255)
                     ->columnSpanFull()
-                    ->disabled(fn ($get) => $get('_section_expediente_saved'))
                     ->dehydrated()
                     ->suffixAction(
                         Action::make('buscar_razon_social')
@@ -232,10 +230,10 @@ class ExpedienteSection
                     ->columnSpan(1),
 
                     
-                TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled(fn ($get) => $get('_section_expediente_saved'))->dehydrated(),
-                TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()->disabled(fn ($get) => $get('_section_expediente_saved'))->dehydrated(),
-                TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255)->disabled(fn ($get) => $get('_section_expediente_saved'))->dehydrated(),
-                TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled(fn ($get) => $get('_section_expediente_saved'))->dehydrated(),
+                TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled()->dehydrated(),
+                TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()->disabled()->dehydrated(),
+                TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255)->disabled()->dehydrated(),
+                TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled()->dehydrated(),
             ])
             ->headerActions(SectionHeaderActions::make('expediente'))
             ->columnSpanFull()
