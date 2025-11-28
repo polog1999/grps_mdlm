@@ -52,7 +52,7 @@ class CertificadoInspeccionForm
      *
      * @return array Lista de componentes Hidden con valores por defecto.
      */
-    private static function camposOcultosSistema(): array
+    public static function camposOcultosSistema(): array
     {
         return [
             Hidden::make('cin_filafecha')
@@ -88,20 +88,16 @@ class CertificadoInspeccionForm
     /**
      * Genera el esquema completo del formulario
      */
+    /**
+     * Genera el esquema completo del formulario
+     */
     public static function make(): array
     {
         return [
-            self::botonBusquedaAutocompletado(),
-            self::seccionInformacionGeneral(),
-            self::seccionDatosEstablecimiento(),
-            self::seccionDimensiones(),
-            self::seccionVigencia(),
-            self::seccionResolucion(),
-            self::seccionLicencia(),
-            self::seccionInformacionAdicional(),
-            //self::seccionSistema(),
-            ...self::camposOcultosSistema(), 
-
+            \Filament\Schemas\Components\Wizard::make([
+                \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep::make(),
+                \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep::make(),
+            ])->columnSpanFull()
         ];
     }
 
@@ -114,49 +110,7 @@ class CertificadoInspeccionForm
      *
      * @return Action Acción de Filament configurada.
      */
-    private static function botonBusquedaAutocompletado(): Action
-    {
-        return Action::make('buscar_por_licencia')
-            ->label('Buscar y autocompletar')
-            ->icon('heroicon-o-magnifying-glass')
-            //->iconPosition(IconPosition::Before)
-            ->color('success')
-            ->modalHeading('Búsqueda de Licencia')
-            ->modalDescription('Ingrese el número de expediente, licencia o ambos para buscar')
-            ->modalIcon('heroicon-o-magnifying-glass')
-            ->modalWidth(Width::Large)
-            ->modalSubmitActionLabel('Buscar Licencia')
-            ->modalCancelActionLabel('Cancelar')
-           ->form([
-                Grid::make(3)
-                    ->schema([
-                        TextInput::make('search_expediente')
-                            ->label('Número de Expediente')
-                            ->placeholder('Ej: 2025-001234')
-                            ->suffixIcon('heroicon-o-folder-open')
-                            ->helperText('Ingrese el expediente administrativo'),
 
-                        TextInput::make('search_licencia')
-                            ->label('Número de Licencia')
-                            ->placeholder('Ej: 2024-12345')
-                            ->suffixIcon('heroicon-o-document-check')
-                            ->helperText('Ingrese el número de licencia'),
-
-                        TextInput::make('search_resolucion')
-                            ->label('Número de Resolución')
-                            ->placeholder('Ej: 3095-2024')
-                            ->suffixIcon('heroicon-o-document-text')
-                            ->helperText('Ingrese el número de resolución'),
-                    ]),
-            ])
-            ->action(function (array $data, Action $action) {
-                $livewire = $action->getLivewire();
-                $set = function (string $field, $value) use ($livewire) {
-                    data_set($livewire, "data.{$field}", $value);
-                };
-                self::manejarBusquedaLicencia($data, $set);
-            });
-    }
 
 
     /**
@@ -175,7 +129,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Componente Section con campos de número y año.
      */
-    private static function seccionInformacionGeneral(): Section
+    public static function seccionInformacionGeneral(): Section
     {
         // Obtener el siguiente número de certificado disponible para mostrarlo en el label
         $siguiente = null;
@@ -236,7 +190,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos del establecimiento.
      */
-    private static function seccionDatosEstablecimiento(): Section
+    public static function seccionDatosEstablecimiento(): Section
     {
         return Section::make('Datos del Establecimiento')
             ->description('Información del local o establecimiento a certificar')
@@ -356,7 +310,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos numéricos para área y capacidad.
      */
-    private static function seccionDimensiones(): Section
+    public static function seccionDimensiones(): Section
     {
         return Section::make('Dimensiones')
             ->description('Características físicas del establecimiento')
@@ -413,7 +367,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con DatePickers y toggles relacionados.
      */
-    private static function seccionVigencia(): Section
+    public static function seccionVigencia(): Section
     {
         return Section::make('Vigencia del Certificado')
             ->description('Período de validez del certificado de inspección')
@@ -512,7 +466,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos de resolución y sigla.
      */
-    private static function seccionResolucion(): Section
+    public static function seccionResolucion(): Section
     {
         return Section::make('Resolución Municipal')
             ->description('Datos de la resolución que respalda el certificado')
@@ -566,7 +520,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos relacionados a la licencia.
      */
-    private static function seccionLicencia(): Section
+    public static function seccionLicencia(): Section
     {
         return Section::make('Información de Licencia')
             ->description('Datos relacionados con la licencia de funcionamiento')
@@ -638,7 +592,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos de texto y toggles complementarios.
      */
-    private static function seccionInformacionAdicional(): Section
+    public static function seccionInformacionAdicional(): Section
     {
         return Section::make('Información Adicional')
             ->description('Detalles complementarios del certificado')
