@@ -22,7 +22,7 @@ class LicenciaService
     /**
      * Constructor del servicio.
      *
-     * Inicializa la conexión a la base de datos 'pgsql_licencias'.
+     * Inicializa la conexión a la base de datos 'pgsql'.
      */
     public function __construct()
     {
