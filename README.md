@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Intranet 
 
 Plataforma administrativa modular construida con **Laravel** y **Filament**.
@@ -253,3 +254,7 @@ php artisan view:clear
 ---
 
 
+=======
+# grps-mldm
+Sistema de Planificación de Recursos de Gubernamentales (Government Resource Planning System)
+>>>>>>> 70ef79449570912a485715276b1a177d55b1840d
