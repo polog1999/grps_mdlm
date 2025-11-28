@@ -15,6 +15,7 @@ use App\Http\Controllers\TipoLocalController;
 use App\Http\Controllers\LicenciaPersonaController;
 use App\Http\Controllers\LicenciaUpdateController;
 use App\Http\Controllers\LicenciaCrudController;
+use App\Http\Controllers\ResolucionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -133,4 +134,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/obtenerGirosPorIdLicencia/{lic_id}', [GiroLicenciaController::class, 'obtenerGirosPorIdLicencia']);
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESOLUCION
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('resolucion')->group(function () {
+        Route::get('/buscar-expnum-por-resolucion/{numres}', [ResolucionController::class, 'obtenerNumeroExpedientePorNumeroResolucion']);
+        Route::get('/buscar-resolucion-por-expnum/{numexp}', [ResolucionController::class, 'obtenerNumeroResolucionPorNumeroExpediente']);
+    });
 });
