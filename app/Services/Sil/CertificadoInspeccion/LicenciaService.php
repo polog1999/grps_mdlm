@@ -151,5 +151,30 @@ class LicenciaService
         );
     }
 
+    /**
+     * Obtiene el tipo de licencia (descripción) dado un expediente o número de licencia.
+     *
+     * @param string|null $lic_expnum Número de expediente.
+     * @param string|null $lic_numlic Número de licencia.
+     * @return object|null Objeto con tli_id y tli_descripcion, o null si no se encuentra.
+     */
+    public function obtenerTipoLicencia($lic_expnum = null, $lic_numlic = null)
+    {
+        $query = $this->connection->table('licencia.licencia as l')
+            ->join('licencia.tipolicencia as t', 'l.tli_id', '=', 't.tli_id')
+            ->select('t.tli_id', 't.tli_descripcion')
+            ->where('l.lic_filaeliminada', false)
+            ->where('t.tli_activo', true)
+            ->orderBy('l.lic_filafecha', 'desc');
 
+        if ($lic_expnum) {
+            $query->where('l.lic_expnum', $lic_expnum);
+        }
+
+        if ($lic_numlic) {
+            $query->where('l.lic_numlic', $lic_numlic);
+        }
+
+        return $query->first();
+    }
 }
