@@ -8,7 +8,8 @@ use Illuminate\Database\Query\Builder;
 class LicenciaPersonaService
 {
     protected $connectionToPostgreSQL;
-      public function __construct()
+
+    public function __construct()
     {
         $this->connectionToPostgreSQL = DB::connection('pgsql_licencias');
     }
@@ -17,8 +18,19 @@ class LicenciaPersonaService
     {
         return $this->connectionToPostgreSQL
         ->table('licencia.persona')
-        ->select('per_id', 'per_nombrerazonsocial','per_ruc','per_direccion','per_telefono','per_email','per_expcodcon')
-        ->where('per_filaeliminada', false)   
+        ->select(
+            'per_id',
+            'per_nombrerazonsocial',
+            'per_ruc',
+            'per_direccion',
+            'per_telefono',
+            'per_email',
+            'per_expcodcon'
+        )
+        ->where('per_filaeliminada', false)
+        ->distinct('per_nombrerazonsocial')
+        ->orderBy('per_nombrerazonsocial')
+        ->orderByDesc('per_id')
         ->get();
 
     }

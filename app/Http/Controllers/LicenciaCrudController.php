@@ -19,4 +19,9 @@ class LicenciaCrudController extends Controller{
         $items = $this->service->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat);
         return response()->json($items);
     }
+    //
+    public function obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social){
+        $items = $this->service->obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social);
+        return response()->json($items);
+    }
 }

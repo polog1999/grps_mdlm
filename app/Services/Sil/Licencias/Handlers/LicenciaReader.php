@@ -24,30 +24,63 @@ class LicenciaReader
         ->get()
         ->first();
     }
-    
-    public function obtenerDatosDeRazonSocialPorExpediente($expnum){
-        $exp= $this->db2
+
+    //Paso 1: Datos de Expediente
+    public function obtenerDatosDeRazonSocialPorExpediente($expnum)
+    {
+        $exp = $this->db2
             ->table('DS_VALORES.DUR_EXPEDIENTE')
-            ->select('exp_codcon')
+            ->select(
+                'exp_codcon',
+                'exp_num',
+                $this->db2->raw("TO_CHAR(exp_fec, 'DD/MM/YYYY') AS exp_fec_formateado")
+            )
             ->where('EXP_NUM', $expnum)
             ->first();
-        //VALIDAR SI EXP_CODCON ES NULL
-        if(!$exp || $exp->exp_codcon == null){
+
+        if (!$exp || $exp->exp_codcon == null) {
             return null;
         }
-        //ASIGNAR VALOR DE EXP_CODCON A COD_CON
+
         $cod_con = $exp->exp_codcon;
 
-        //OBTENER DATOS DE LA PERSONA/RAZON SOCIAL DE LA TABLA VU_PERSONA2
         $datos_persona = $this->db2
             ->table('DS_VALORES.VU_PERSONA2')
-            ->select('nomcom','domfis','numtel','correo')
+            ->select('nomcom','domfis','numtel','correo','codcon')
             ->where('CODCON', $cod_con)
-            ->get()
             ->first();
+
+        if (!$datos_persona) {
+            return (object)[
+                'nomcom' => null,
+                'domfis' => null,
+                'numtel' => null,
+                'correo' => null,
+                'codcon' => $cod_con,
+                'exp_num' => $exp->exp_num,
+                'exp_fec' => $exp->exp_fec_formateado,
+            ];
+        }
+
+        $datos_persona->exp_num = $exp->exp_num;
+        $datos_persona->exp_fec = $exp->exp_fec_formateado;
+
         return $datos_persona;
     }
 
+   public function obtenerDatosDePersonaORazonSocialPorNombre($nombre)
+    {
+        $personas = $this->db
+            ->table('licencia.persona')
+            ->select('per_id','per_nombrerazonsocial')
+            ->where('per_nombrerazonsocial', $nombre)
+            ->where('per_filaeliminada', false)
+            ->orderBy('per_id', 'desc')
+            ->get()
+            ->first();
+        return $personas;
+    }
+    //Paso 1: Datos de Expediente
     public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat){
         $sql = "
             SELECT                     
@@ -161,5 +194,10 @@ class LicenciaReader
 
         return $resultado_final;
 
+    }
+    
+    //Paso 1: Datos de Expediente
+    public function obtenerDatosGeneralesDeLicenciaPorExpediente($expnum){
+        
     }
 }

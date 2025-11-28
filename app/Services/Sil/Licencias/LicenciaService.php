@@ -23,6 +23,7 @@ class LicenciaService
         $this->creator = new LicenciaCreator($this->connection);
         $this->updater = new LicenciaUpdater($this->connection);
     }
+    //READER
 
     public function getById($id)
     {
@@ -35,6 +36,10 @@ class LicenciaService
     public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat){
         return $this->reader->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat);
     }
+    public function obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social){
+        return $this->reader->obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social);
+    }
+    //CREATOR
     public function create(array $data)
     {
         return $this->creator->execute($data);
