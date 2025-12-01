@@ -50,8 +50,8 @@ class CertificadoPdfGenerator
             $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
 
-            // Nombre del archivo
-            $filename = "certificado_inspeccion_id_{$record->cin_id}.pdf";
+            // Nombre del archivo con subdirectorio
+            $filename = "originales/certificado_inspeccion_id_{$record->cin_id}.pdf";
 
             // Guardar en el disco certificados_externos
             $pdfContent = $dompdf->output();
