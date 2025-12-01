@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Tables;
 
+use Illuminate\Support\Facades\Storage;
 use Filament\Actions\BulkActionGroup;   
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -346,6 +347,8 @@ class CertificadoInspeccionsTable
     ->filtersFormColumns(4)
     ->filtersFormMaxHeight('400px')
     ->recordActions([
+
+
         ViewAction::make()
             ->icon('heroicon-o-eye')
             ->iconButton()
@@ -357,14 +360,24 @@ class CertificadoInspeccionsTable
             ->iconButton()
             ->tooltip('Editar certificado')
             ->color('warning'),
+
+       Action::make('ver_original')
+            ->icon('heroicon-o-document')
+            ->color('gray') 
+            ->iconButton()
+            ->tooltip('Ver el PDF original generado por el sistema')
+            ->visible(fn ($record) => Storage::disk('certificados_externos')->exists("originales/certificado_inspeccion_id_{$record->cin_id}.pdf"))
+            ->url(fn ($record) => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'original']))
+            ->openUrlInNewTab(),
+
         Action::make('exportar')
-                ->label('Exportar')
-                ->icon('heroicon-o-printer')
-                ->tooltip('Exportar certificado (PDF)')
-                ->iconButton()
-                ->color('success')
-                ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
-                ->openUrlInNewTab(),
+            ->label('Exportar')
+            ->icon('heroicon-o-printer')
+            ->tooltip('Exportar certificado (PDF)')
+            ->iconButton()
+            ->color('success')
+            ->url(fn ($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
+            ->openUrlInNewTab(),
         Action::make('borrar')
                 ->label('Borrar')
                 ->icon('heroicon-o-trash')

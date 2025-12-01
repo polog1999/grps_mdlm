@@ -36,6 +36,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+
 /**
  * Grupo de rutas protegidas por autenticación y verificación.
  *
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
      *
      * Prefijo 'test' y nombre base 'test.'. Todas requieren autenticación.
      */
+
     Route::prefix('test')->name('test.')->group(function () {
         /**
          * Obtener licencia por número de expediente.
@@ -171,7 +173,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/giros/listar', [GiroLicenciaController::class, 'obtenerTodosLosGiros'])
             ->name('giros.listarTodos');
-        });
+    });
+    
+    Route::get('/certificado/ver/{id}/{tipo}', function ($id, $tipo) {
+        if (!auth()->check()) { abort(403); }
+
+        // Usamos el disco personalizado configurado anteriormente
+        $disk = Storage::disk('certificados_externos');
+
+        // Definimos el nombre del archivo según el tipo
+        if ($tipo === 'original') {
+            // CAMBIO AQUI: Ajustamos el patrón del nombre
+            $filename = "originales/certificado_inspeccion_id_{$id}.pdf";
+            $downloadName = "Certificado_Borrador_{$id}.pdf"; // Nombre con el que se descarga/muestra al usuario
+        } elseif ($tipo === 'firmado') {
+            // Asumiendo que los firmados siguen otro patrón o el mismo con sufijo
+            $filename = "firmados/{$id}_firmado.pdf";
+            $downloadName = "Certificado_Oficial_{$id}.pdf";
+        } else {
+            abort(404);
+        }
+
+        if (!$disk->exists($filename)) {
+            abort(404, "El archivo no se encuentra: " . $filename);
+        }
+
+        return $disk->response($filename, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline'
+        ]);
+
+    })->name('certificado.ver-archivo');
+
+
 });
  
 
