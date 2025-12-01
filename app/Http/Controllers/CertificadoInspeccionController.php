@@ -136,4 +136,5 @@ class CertificadoInspeccionController extends Controller
         $siguiente = $this->service->obtenerSiguienteNumero();
         return response()->json(['siguiente_numero' => $siguiente]);
     }
+
 }

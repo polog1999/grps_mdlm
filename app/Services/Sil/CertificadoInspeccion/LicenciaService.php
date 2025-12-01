@@ -158,23 +158,39 @@ class LicenciaService
      * @param string|null $lic_numlic Número de licencia.
      * @return object|null Objeto con tli_id y tli_descripcion, o null si no se encuentra.
      */
-    public function obtenerTipoLicencia($lic_expnum = null, $lic_numlic = null)
+    /**
+     * Obtiene el tipo de licencia dado un número de expediente.
+     *
+     * @param string $lic_expnum Número de expediente.
+     * @return object|null Objeto con tli_id y tli_descripcion, o null si no se encuentra.
+     */
+    public function obtenerTipoLicenciaPorExpediente($lic_expnum)
     {
-        $query = $this->connection->table('licencia.licencia as l')
+        return $this->connection->table('licencia.licencia as l')
             ->join('licencia.tipolicencia as t', 'l.tli_id', '=', 't.tli_id')
             ->select('t.tli_id', 't.tli_descripcion')
             ->where('l.lic_filaeliminada', false)
             ->where('t.tli_activo', true)
-            ->orderBy('l.lic_filafecha', 'desc');
+            ->where('l.lic_expnum', $lic_expnum)
+            ->orderBy('l.lic_filafecha', 'desc')
+            ->first();
+    }
 
-        if ($lic_expnum) {
-            $query->where('l.lic_expnum', $lic_expnum);
-        }
-
-        if ($lic_numlic) {
-            $query->where('l.lic_numlic', $lic_numlic);
-        }
-
-        return $query->first();
+    /**
+     * Obtiene el tipo de licencia dado un número de licencia.
+     *
+     * @param string $lic_numlic Número de licencia.
+     * @return object|null Objeto con tli_id y tli_descripcion, o null si no se encuentra.
+     */
+    public function obtenerTipoLicenciaPorNumeroLicencia($lic_numlic)
+    {
+        return $this->connection->table('licencia.licencia as l')
+            ->join('licencia.tipolicencia as t', 'l.tli_id', '=', 't.tli_id')
+            ->select('t.tli_id', 't.tli_descripcion')
+            ->where('l.lic_filaeliminada', false)
+            ->where('t.tli_activo', true)
+            ->where('l.lic_numlic', $lic_numlic)
+            ->orderBy('l.lic_filafecha', 'desc')
+            ->first();
     }
 }

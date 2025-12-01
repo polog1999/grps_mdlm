@@ -25,6 +25,8 @@ use Filament\Support\Enums\IconPosition;
 use Carbon\Carbon;
 use Filament\Tables\Grouping\Group;
 use Filament\Forms\Components\Hidden;
+use Illuminate\Support\HtmlString;
+
 
 /**
  * Esquema del formulario para Certificado de Inspección.
@@ -81,6 +83,7 @@ class CertificadoInspeccionForm
             Hidden::make('cin_expediente_autofilled')->default(false),
             Hidden::make('cin_solicitante_autofilled')->default(false),
             Hidden::make('cin_resolucion_autofilled')->default(false),
+            Hidden::make('cin_es_temporal')->default(false),
             
         ];
     }
@@ -97,7 +100,8 @@ class CertificadoInspeccionForm
             \Filament\Schemas\Components\Wizard::make([
                 \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep::make(),
                 \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep::make(),
-            ])->columnSpanFull()
+            ])->columnSpanFull(),
+            
         ];
     }
 
@@ -409,7 +413,7 @@ class CertificadoInspeccionForm
                                 }
                             })
                             ->suffixIcon('heroicon-o-play')
-                            ->disabled(fn (callable $get) => (bool) $get('cin_fecha_inicio_autofilled'))
+                            ->disabled(fn (callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
                                                         ->dehydrated()
 
                             ->extraInputAttributes(fn (callable $get) => [
@@ -435,7 +439,7 @@ class CertificadoInspeccionForm
                             ->hidden(fn(callable $get) => $get('cin_indeterminado'))
                             ->dehydrated()
                             ->suffixIcon('heroicon-o-stop')
-                            ->disabled(fn (callable $get) => (bool) $get('cin_fecha_fin_autofilled'))
+                            ->disabled(fn (callable $get) => (bool) $get('cin_fecha_fin_autofilled') && !$get('cin_es_temporal'))
                                                        ->dehydrated()
 
                             ->extraInputAttributes(fn (callable $get) => [
@@ -920,6 +924,9 @@ class CertificadoInspeccionForm
         // Setear valores en el formulario
         self::setearDatosLicencia($set, $licenciaData, $nombreSolicitante, $expediente, $licencia, $resolucion);
 
+        // Mark search as completed successfully
+        $set('search_completed', true);
+
         // Mostrar notificación de éxito
         Notification::make()
             ->title('✅ Licencia Encontrada')
@@ -1005,6 +1012,36 @@ class CertificadoInspeccionForm
                 ->toDateString();
             $set('cin_fec_fin', $fechaFin);
             $set('cin_fecha_fin_autofilled', !empty($licenciaData->lic_fechaemision));
+        }
+
+        // Verificar si es licencia temporal
+        $esTemporal = false;
+        try {
+            $serviceLicencia = app(LicenciaService::class);
+            $tipoLicencia = null;
+
+            if (!empty($licenciaData->lic_numlic)) {
+                $tipoLicencia = $serviceLicencia->obtenerTipoLicenciaPorNumeroLicencia($licenciaData->lic_numlic);
+            } elseif (!empty($licenciaData->lic_expnum)) {
+                $tipoLicencia = $serviceLicencia->obtenerTipoLicenciaPorExpediente($licenciaData->lic_expnum);
+            }
+
+            if ($tipoLicencia && isset($tipoLicencia->tli_descripcion)) {
+                // Buscar palabras clave como TEMPORAL, PROVISIONAL, etc.
+                if (stripos($tipoLicencia->tli_descripcion, 'TEMPORAL') !== false) {
+                    $esTemporal = true;
+                }
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('Error verificando tipo de licencia temporal', ['error' => $e->getMessage()]);
+        }
+
+        $set('cin_es_temporal', $esTemporal);
+        
+        if ($esTemporal) {
+            $set('cin_indeterminado', false);
+            // Si es temporal, aseguramos que las fechas se puedan editar (la lógica disabled lo manejará)
+            // y tal vez queramos notificar al usuario o simplemente dejarlo editar.
         }
 
         // Fetch and set resolution number

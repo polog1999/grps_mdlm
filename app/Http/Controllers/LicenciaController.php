@@ -79,4 +79,28 @@ class LicenciaController extends Controller
         $items = $this->service->obtenerPorIdLicencia($lic_id);
         return response()->json($items);
     }
+
+    /**
+     * Obtiene el tipo de licencia por número de expediente.
+     *
+     * @param string $lic_expnum
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function obtenerTipoLicenciaPorExpediente($lic_expnum)
+    {
+        $item = $this->service->obtenerTipoLicenciaPorExpediente($lic_expnum);
+        return response()->json($item);
+    }
+
+    /**
+     * Obtiene el tipo de licencia por número de licencia.
+     *
+     * @param string $lic_numlic
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function obtenerTipoLicenciaPorNumeroLicencia($lic_numlic)
+    {
+        $item = $this->service->obtenerTipoLicenciaPorNumeroLicencia($lic_numlic);
+        return response()->json($item);
+    }
 }

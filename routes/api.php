@@ -48,6 +48,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/numero/{lic_numlic}', [LicenciaController::class, 'obtenerPorNumeroLicencia']);
         Route::get('/licencia-expediente/{lic_numlic}/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroLicenciaYExpediente']);
         Route::get('/id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia']);
+        
+        Route::get('/tipo-licencia/expediente/{lic_expnum}', [LicenciaController::class, 'obtenerTipoLicenciaPorExpediente']);
+        Route::get('/tipo-licencia/numero/{lic_numlic}', [LicenciaController::class, 'obtenerTipoLicenciaPorNumeroLicencia']);
+
         //obtenerDatosDePersonaORazonSocialPorNombre
         Route::get('/persona-razon-social/{nombre_razon_social}', [LicenciaCrudController::class, 'obtenerDatosDePersonaORazonSocialPorNombre']);
         Route::get('/expediente-razon-social/{lic_expnum}', [LicenciaCrudController::class, 'obtenerDatosDeRazonSocialPorExpediente']);
@@ -101,7 +105,6 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/tipo-licencia', [TipoLicenciaController::class, 'getTipoLicencias']);
-
     /*
     |--------------------------------------------------------------------------
     | TIPO DE CENTRO COMERCIAL
