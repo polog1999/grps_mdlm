@@ -20,6 +20,7 @@
         "maatwebsite/excel": "^3.1",
         "pxlrbt/filament-excel": "3.0",
         "secondnetwork/blade-tabler-icons": "^3.35",
+        "spatie/laravel-permission": "^6.23",
         "yajra/laravel-oci8": "12"
     },
     "require-dev": {

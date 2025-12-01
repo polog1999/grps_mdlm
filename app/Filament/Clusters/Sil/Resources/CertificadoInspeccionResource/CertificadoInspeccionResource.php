@@ -83,6 +83,17 @@ class CertificadoInspeccionResource extends Resource
     }
 
     /**
+     * Determina si el usuario actual puede acceder a este recurso.
+     * 
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view_certificado_inspeccion') ?? false;
+    }
+
+
+    /**
      * Construye y devuelve el infolist (vista detallada) para un registro.
      *
      * El infolist se delega en `CertificadoInspeccionInfolist::configure` y se
