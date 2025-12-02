@@ -57,7 +57,7 @@ class CertificadoInspeccionResource extends Resource
     //ICON FOR NAVIGATIONGROUP
     protected static ?string $navigationLabel = 'Certificados de Inspección';
     protected static ?string $pluralModelLabel = 'Certificados de Inspección';
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-clipboard-check';
 
     /**
      * Configura y devuelve el esquema del formulario usado para crear/editar.

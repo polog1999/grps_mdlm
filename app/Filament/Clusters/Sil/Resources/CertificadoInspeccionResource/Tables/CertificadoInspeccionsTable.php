@@ -10,7 +10,6 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
-use Filament\Forms\Components\ViewField;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -25,7 +24,6 @@ use Filament\Tables\Filters\Indicator;
 use App\Models\CertificadoInspeccion;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use Filament\Actions\Action;
-use Filament\Actions\ActionGroup;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -373,7 +371,7 @@ class CertificadoInspeccionsTable
                     ->color('warning'),
 
                 Action::make('ver_original')
-                    ->icon('heroicon-o-document')
+                    ->icon('bxs-badge-check')
                     ->color('gray')
                     ->iconButton()
                     ->tooltip('Ver el PDF original generado por el sistema')
@@ -382,7 +380,7 @@ class CertificadoInspeccionsTable
                     ->openUrlInNewTab(),
 
                 Action::make('ver_actualizado')
-                    ->icon('heroicon-o-document-duplicate')
+                    ->icon('tabler-certificate')
                     ->color('primary')
                     ->iconButton()
                     ->tooltip('Gestionar certificado actualizado')
@@ -390,15 +388,12 @@ class CertificadoInspeccionsTable
                     ->modalDescription('Modal para subir y descargar certificado actualizado')
                     ->modalWidth('5xl')
 
-                    // 1. Configuramos el botón principal del modal para EJECUTAR la subida
                     ->modalSubmitActionLabel('Subir Certificado')
                     ->modalCancelActionLabel('Cerrar')
 
-                    // 2. Definición del Formulario
                     ->form(fn($record) => [
                         Grid::make(2)
                             ->schema([
-                                // COLUMNA 1: SUBIDA
                                 Section::make('Subir/Actualizar Certificado')
                                     ->description('Suba o actualice el certificado en formato PDF')
                                     ->icon('heroicon-o-arrow-up-tray')
@@ -415,14 +410,13 @@ class CertificadoInspeccionsTable
                                             ->openable()
                                             ->previewable()
                                             ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
-                                            ->storeFiles(false) // CRUCIAL: Pasa el objeto al action sin moverlo
-                                            ->required(), // Obligatorio para poder dar clic en Subir
+                                            ->storeFiles(false)
+                                            ->required(),
 
                                         Hidden::make('cin_id')
                                             ->default(fn($record) => $record->cin_id),
                                     ]),
 
-                                // COLUMNA 2: ESTADO Y DESCARGA
                                 Section::make('Descargar Certificado')
                                     ->description('Descargue el certificado actualizado')
                                     ->icon('heroicon-o-arrow-down-tray')
@@ -465,7 +459,6 @@ class CertificadoInspeccionsTable
                             ])
                     ])
 
-                    // 3. Lógica de Ejecución (Se activa al dar clic en "Subir Certificado")
                     ->action(function (array $data, $record, Action $action) {
                         $service = app(CertificadoInspeccionService::class);
 
