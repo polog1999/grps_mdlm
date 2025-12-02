@@ -98,6 +98,26 @@ class BusquedaStep
                     $result['catastro'] = is_object($primerCatastro) ? (array) $primerCatastro : $primerCatastro;
                 }
 
+                // Obtener datos de resolución usando el número de expediente
+                try {
+                    $resolucionService = app(\App\Services\Sil\CertificadoInspeccion\ResolucionService::class);
+                    $resolucionData = $resolucionService->obtenerNumeroResolucionPorNumeroExpediente($state);
+
+                    if ($resolucionData && $resolucionData->isNotEmpty()) {
+                        // Tomar el primer resultado
+                        $primeraResolucion = $resolucionData->first();
+                        $result['resolucion'] = [
+                            'numero_resolucion' => $primeraResolucion->numero_resolucion ?? '',
+                            'fecha_ingreso' => $primeraResolucion->fecha_ingreso ?? ''
+                        ];
+                    } else {
+                        $result['resolucion'] = null;
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('No se pudo obtener datos de resolución: ' . $e->getMessage());
+                    $result['resolucion'] = null;
+                }
+
                 $set('_datos_completos', $result);
                 $set('_catastro_coincidencias', null);
                 $set('_tiene_errores', false);

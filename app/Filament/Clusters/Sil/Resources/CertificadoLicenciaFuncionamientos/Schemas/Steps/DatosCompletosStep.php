@@ -87,5 +87,28 @@ class DatosCompletosStep
                 $set('nir_descripcion', $nrd['nir_descripcion'] ?? null);
             }
         }
+
+        // Resolución
+        if (!empty($data['resolucion'])) {
+            $res = (array) $data['resolucion'];
+            $set('n_resolucion', $res['numero_resolucion'] ?? null);
+
+            // Convertir fecha de DD/MM/YYYY a formato que DatePicker entienda (YYYY-MM-DD)
+            if (!empty($res['fecha_ingreso'])) {
+                $fechaIngreso = $res['fecha_ingreso'];
+                $fechaConvertida = null;
+
+                // Si viene en formato DD/MM/YYYY, convertir a YYYY-MM-DD
+                if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $fechaIngreso, $matches)) {
+                    $fechaConvertida = "{$matches[3]}-{$matches[2]}-{$matches[1]}";
+                } else {
+                    $fechaConvertida = $fechaIngreso;
+                }
+
+                // Establecer ambas fechas con el mismo valor
+                $set('fecha_resolucion', $fechaConvertida);
+                $set('fecha_emision', $fechaConvertida);  // Copiar también a fecha_emision
+            }
+        }
     }
 }
