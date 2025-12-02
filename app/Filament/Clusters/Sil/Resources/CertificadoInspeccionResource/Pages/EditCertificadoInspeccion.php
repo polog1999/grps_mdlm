@@ -3,7 +3,6 @@
 namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages;
 
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 

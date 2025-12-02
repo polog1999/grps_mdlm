@@ -7,9 +7,11 @@ use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
 use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use App\Services\Sil\CertificadoInspeccion\ResolucionService;
-
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -91,17 +93,14 @@ class CertificadoInspeccionForm
     /**
      * Genera el esquema completo del formulario
      */
-    /**
-     * Genera el esquema completo del formulario
-     */
     public static function make(): array
     {
         return [
-            \Filament\Schemas\Components\Wizard::make([
-                \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep::make(),
-                \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep::make(),
+            Wizard::make([
+                BusquedaStep::make()
+                    ->hidden(fn(string $operation) => $operation === 'edit'),
+                DatosCompletosStep::make(),
             ])->columnSpanFull(),
-
         ];
     }
 

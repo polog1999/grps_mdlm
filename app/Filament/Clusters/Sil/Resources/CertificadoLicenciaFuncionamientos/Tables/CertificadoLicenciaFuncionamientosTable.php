@@ -3,16 +3,12 @@
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Tables;
 
 use App\Models\CertificadoLicenciaFuncionamiento;
-use Dom\Text;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;

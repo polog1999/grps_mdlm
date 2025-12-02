@@ -8,7 +8,7 @@ use Filament\Resources\Pages\EditRecord;
 use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
-
+use Illuminate\Database\Eloquent\Model;
 class EditCertificadoLicenciaFuncionamiento extends EditRecord
 {
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
@@ -89,7 +89,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
         return $data;
     }
-    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
         // Construct Giros
         $giros = [];

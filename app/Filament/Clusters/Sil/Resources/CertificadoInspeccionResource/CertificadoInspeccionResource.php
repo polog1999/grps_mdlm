@@ -16,22 +16,13 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Infolists\Infolist;
-use Filament\Support\Facades\FilamentColor;
 use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Support\Enums\TextSize;
 use Filament\Support\Enums\FontWeight;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Group;
-use Filament\Support\Enums\IconSize;
-use Filament\Infolists\Components\CodeEntry;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
-use pxlrbt\FilamentExcel\Columns\Column;
-use pxlrbt\FilamentExcel\Exports\ExcelExport;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
-use BackendEnum;
-use UnitEnum;
+
 
 /**
  * Recurso de Filament para Certificados de Inspección.
