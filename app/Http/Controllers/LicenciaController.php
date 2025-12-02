@@ -61,7 +61,7 @@ class LicenciaController extends Controller
      * @param  string  $lic_expnum  Número de expediente
      * @return \Illuminate\Http\JsonResponse
      */
-    public function obtenerPorNumeroLicenciaYExpediente( $lic_numlic,  $lic_expnum)
+    public function obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum)
     {
         $items = $this->service->obtenerPorNumeroLicenciaYExpediente($lic_numlic, $lic_expnum);
         return response()->json($items);

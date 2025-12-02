@@ -48,11 +48,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
      *
      * Renderiza la vista 'dashboard' usando Inertia.
      */
+
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
     /**
+     * Subir certificado actualizado
+     */
+    Route::post('/certificado/upload-actualizado', [CertificadoInspeccionController::class, 'subirPdfActualizado'])
+        ->name('certificado.upload-actualizado');
+
+    /**
+     * 
      * Ruta para obtener la lista de tipos de edificación.
      *
      * Endpoint protegido que delega al controlador TipoEdificacionController.
@@ -183,11 +191,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Definimos el nombre del archivo según el tipo
         if ($tipo === 'original') {
-            // CAMBIO AQUI: Ajustamos el patrón del nombre
             $filename = "originales/certificado_inspeccion_id_{$id}.pdf";
-            $downloadName = "Certificado_Borrador_{$id}.pdf"; // Nombre con el que se descarga/muestra al usuario
+            $downloadName = "Certificado_Original_{$id}.pdf";
+        } elseif ($tipo === 'actualizado') {
+            $filename = "actualizados/certificado_inspeccion_actualizado_id_{$id}.pdf";
+            $downloadName = "Certificado_Actualizado_{$id}.pdf";
         } elseif ($tipo === 'firmado') {
-            // Asumiendo que los firmados siguen otro patrón o el mismo con sufijo
             $filename = "firmados/{$id}_firmado.pdf";
             $downloadName = "Certificado_Oficial_{$id}.pdf";
         } else {
@@ -204,6 +213,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
 
     })->name('certificado.ver-archivo');
+
+
+
 
 
 });

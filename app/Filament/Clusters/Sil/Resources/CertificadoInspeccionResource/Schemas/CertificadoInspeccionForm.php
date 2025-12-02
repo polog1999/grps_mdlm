@@ -6,7 +6,7 @@ use App\Services\Sil\CertificadoInspeccion\LicenciaService;
 use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
 use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
-use App\Services\Sil\CertificadoInspeccion\ResolucionService; 
+use App\Services\Sil\CertificadoInspeccion\ResolucionService;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -84,7 +84,7 @@ class CertificadoInspeccionForm
             Hidden::make('cin_solicitante_autofilled')->default(false),
             Hidden::make('cin_resolucion_autofilled')->default(false),
             Hidden::make('cin_es_temporal')->default(false),
-            
+
         ];
     }
 
@@ -101,7 +101,7 @@ class CertificadoInspeccionForm
                 \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep::make(),
                 \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep::make(),
             ])->columnSpanFull(),
-            
+
         ];
     }
 
@@ -158,10 +158,10 @@ class CertificadoInspeccionForm
                             ->disabled()
                             ->minValue(1)
                             ->default($siguiente)
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_numero') ? '1' : '0',
-                                'style' => $get('cin_numero') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_numero')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
                             ->prefix('#')
@@ -176,10 +176,10 @@ class CertificadoInspeccionForm
                             ->maxValue(2100)
                             ->disabled()
                             ->dehydrated()
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_anio') ? '1' : '0',
-                                'style' => $get('cin_anio') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_anio')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
                             ->helperText('Año actual del certificado'),
@@ -200,7 +200,7 @@ class CertificadoInspeccionForm
             ->description('Información del local o establecimiento a certificar')
             ->icon('heroicon-o-building-storefront')
             ->schema([
-                
+
 
                 Grid::make(2)
                     ->schema([
@@ -218,24 +218,25 @@ class CertificadoInspeccionForm
                             ->placeholder('Ej. Empresa XYZ S.A.C.')
                             ->required()
                             ->maxLength(255)
-                            ->disabled(fn (callable $get) => (bool) $get('cin_establecimiento_autofilled'))
+                            ->disabled(fn(callable $get) => (bool) $get('cin_establecimiento_autofilled'))
                             ->dehydrated()
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_establecimiento_autofilled') ? '1' : '0',
-                                'style' => $get('cin_establecimiento_autofilled') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_establecimiento_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
-                            ->extraAttributes(fn (callable $get) => [
+                            ->extraAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_establecimiento_autofilled') ? '1' : '0',
                             ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_establecimiento_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_establecimiento_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
                             ),
                         Hidden::make('lic_id')
-                                    ->dehydrated(),
+                            ->dehydrated(),
 
                     ]),
 
@@ -248,22 +249,23 @@ class CertificadoInspeccionForm
                     ->columnSpanFull()
                     ->dehydrated()
 
-                    ->disabled(fn (callable $get) => (bool) $get('cin_ubicacion_autofilled'))
+                    ->disabled(fn(callable $get) => (bool) $get('cin_ubicacion_autofilled'))
                     ->dehydrated()
 
-                    ->extraInputAttributes(fn (callable $get) => [
+                    ->extraInputAttributes(fn(callable $get) => [
                         'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
-                        'style' => $get('cin_ubicacion_autofilled') 
-                            ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                        'style' => $get('cin_ubicacion_autofilled')
+                            ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                             : '',
                     ])
-                    ->extraAttributes(fn (callable $get) => [
+                    ->extraAttributes(fn(callable $get) => [
                         'data-autofilled' => $get('cin_ubicacion_autofilled') ? '1' : '0',
                     ])
-                    ->helperText(fn (callable $get) => 
-                        $get('cin_ubicacion_autofilled') 
-                            ? '✓ Autocompletado' 
-                            : 'Ingrese manualmente'
+                    ->helperText(
+                        fn(callable $get) =>
+                        $get('cin_ubicacion_autofilled')
+                        ? '✓ Autocompletado'
+                        : 'Ingrese manualmente'
                     ),
                 Grid::make(3)
                     ->schema([
@@ -271,11 +273,11 @@ class CertificadoInspeccionForm
                             ->label('Departamento')
                             ->default(self::DEPARTAMENTO_DEFAULT)
                             ->disabled()
-                            
-                            ->extraInputAttributes(fn (callable $get) => [
+
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_departamento') ? '1' : '0',
-                                'style' => $get('cin_departamento') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_departamento')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
                             ->dehydrated(),
@@ -284,10 +286,10 @@ class CertificadoInspeccionForm
                             ->label('Provincia')
                             ->default(self::PROVINCIA_DEFAULT)
                             ->disabled()
-                                ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_provincia') ? '1' : '0',
-                                'style' => $get('cin_provincia') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_provincia')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
                             ->dehydrated(),
@@ -296,10 +298,10 @@ class CertificadoInspeccionForm
                             ->label('Distrito')
                             ->default(self::DISTRITO_DEFAULT)
                             ->disabled()
-                                 ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_distrito') ? '1' : '0',
-                                'style' => $get('cin_distrito') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_distrito')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
                             ->dehydrated(),
@@ -330,22 +332,23 @@ class CertificadoInspeccionForm
                             ->suffix('m²')
                             ->placeholder('150.50')
                             ->required()
-                            ->disabled(fn (callable $get) => (bool) $get('cin_area_autofilled'))
-                                                        ->dehydrated()
+                            ->disabled(fn(callable $get) => (bool) $get('cin_area_autofilled'))
+                            ->dehydrated()
 
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_area_autofilled') ? '1' : '0',
-                                'style' => $get('cin_area_autofilled') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_area_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
-                            ->extraAttributes(fn (callable $get) => [
+                            ->extraAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_area_autofilled') ? '1' : '0',
                             ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_area_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_area_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
                             ),
 
                         TextInput::make('cin_capacidad')
@@ -413,22 +416,23 @@ class CertificadoInspeccionForm
                                 }
                             })
                             ->suffixIcon('heroicon-o-play')
-                            ->disabled(fn (callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
-                                                        ->dehydrated()
+                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
+                            ->dehydrated()
 
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_inicio_autofilled') ? '1' : '0',
-                                'style' => $get('cin_fecha_inicio_autofilled') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_fecha_inicio_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
-                            ->extraAttributes(fn (callable $get) => [
+                            ->extraAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_inicio_autofilled') ? '1' : '0',
                             ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_fecha_inicio_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_fecha_inicio_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
                             ),
 
                         DatePicker::make('cin_fec_fin')
@@ -439,22 +443,23 @@ class CertificadoInspeccionForm
                             ->hidden(fn(callable $get) => $get('cin_indeterminado'))
                             ->dehydrated()
                             ->suffixIcon('heroicon-o-stop')
-                            ->disabled(fn (callable $get) => (bool) $get('cin_fecha_fin_autofilled') && !$get('cin_es_temporal'))
-                                                       ->dehydrated()
+                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_fin_autofilled') && !$get('cin_es_temporal'))
+                            ->dehydrated()
 
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_fin_autofilled') ? '1' : '0',
-                                'style' => $get('cin_fecha_fin_autofilled') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_fecha_fin_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
-                            ->extraAttributes(fn (callable $get) => [
+                            ->extraAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_fin_autofilled') ? '1' : '0',
                             ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_fecha_fin_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_fecha_fin_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
                             ),
                     ])
                     ->hidden(fn(callable $get) => $get('cin_indeterminado')),
@@ -483,21 +488,22 @@ class CertificadoInspeccionForm
                             ->placeholder('1942-2025')
                             ->required()
                             ->maxLength(10)
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_resolucion_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Formato: #####-YYYY (1 a 5 dígitos, guion, año)'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_resolucion_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Formato: #####-YYYY (1 a 5 dígitos, guion, año)'
                             )
                             ->rule('regex:/^\d{1,5}-\d{4}$/')
                             ->validationMessages([
                                 'regex' => 'El formato debe ser: números-año (Ej: 1942-2025)',
                             ])
-                            ->disabled(fn (callable $get) => (bool) $get('cin_resolucion_autofilled'))
+                            ->disabled(fn(callable $get) => (bool) $get('cin_resolucion_autofilled'))
                             ->dehydrated()
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_resolucion_autofilled') ? '1' : '0',
-                                'style' => $get('cin_resolucion_autofilled') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_resolucion_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ]),
 
@@ -506,10 +512,10 @@ class CertificadoInspeccionForm
                             ->default(self::SIGLA_RESOLUCION)
                             ->disabled()
                             ->dehydrated()
-                            ->extraInputAttributes(fn (callable $get) => [
+                            ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_resolucion_sigla') ? '1' : '0',
-                                'style' => $get('cin_resolucion_sigla') 
-                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
+                                'style' => $get('cin_resolucion_sigla')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
                                     : '',
                             ])
                             ->helperText('Identificador de la municipalidad'),
@@ -536,22 +542,23 @@ class CertificadoInspeccionForm
                             ->label('Número de Expediente')
                             ->placeholder('2025-001234')
                             ->suffixIcon('heroicon-o-folder-open')
-                            ->disabled(fn (callable $get) => (bool) $get('cin_expediente_autofilled'))
-                                                        ->dehydrated()
+                            ->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
+                            ->dehydrated()
 
-                            ->extraInputAttributes(fn (callable $get) => [
-                            'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
-                            'style' => $get('cin_expediente_autofilled') 
-                                ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
-                                : '',
+                            ->extraInputAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
+                                'style' => $get('cin_expediente_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
+                                    : '',
                             ])
-                            ->extraAttributes(fn (callable $get) => [
+                            ->extraAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
                             ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_expediente_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_expediente_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
                             ),
 
                         TextInput::make('cin_licencia')
@@ -559,22 +566,23 @@ class CertificadoInspeccionForm
                             ->dehydrated()
                             ->placeholder('Se completa automáticamente')
                             ->suffixIcon('heroicon-o-clipboard-document-check')
-                            ->disabled(fn (callable $get) => (bool) $get('cin_licencia_autofilled'))
-                                                        ->dehydrated()
+                            ->disabled(fn(callable $get) => (bool) $get('cin_licencia_autofilled'))
+                            ->dehydrated()
 
-                            ->extraInputAttributes(fn (callable $get) => [
-                            'data-autofilled' => $get('cin_licencia_autofilled') ? '1' : '0',
-                            'style' => $get('cin_licencia_autofilled') 
-                                ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
-                                : '',
+                            ->extraInputAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('cin_licencia_autofilled') ? '1' : '0',
+                                'style' => $get('cin_licencia_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
+                                    : '',
                             ])
-                            ->extraAttributes(fn (callable $get) => [
+                            ->extraAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_licencia_autofilled') ? '1' : '0',
                             ])
-                            ->helperText(fn (callable $get) => 
-                                $get('cin_licencia_autofilled') 
-                                    ? '✓ Autocompletado' 
-                                    : 'Ingrese manualmente'
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_licencia_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
                             )
                     ]),
                 /*
@@ -607,22 +615,23 @@ class CertificadoInspeccionForm
                     ->dehydrated()
                     ->placeholder('Se completa automáticamente')
                     ->suffixIcon('heroicon-o-briefcase')
-                    ->disabled(fn (callable $get) => (bool) $get('cin_giro_autofilled'))
-                                                ->dehydrated()
+                    ->disabled(fn(callable $get) => (bool) $get('cin_giro_autofilled'))
+                    ->dehydrated()
 
-                     ->extraInputAttributes(fn (callable $get) => [
-                    'data-autofilled' => $get('cin_giro_autofilled') ? '1' : '0',
-                    'style' => $get('cin_giro_autofilled') 
-                        ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
-                        : '',
+                    ->extraInputAttributes(fn(callable $get) => [
+                        'data-autofilled' => $get('cin_giro_autofilled') ? '1' : '0',
+                        'style' => $get('cin_giro_autofilled')
+                            ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
+                            : '',
                     ])
-                    ->extraAttributes(fn (callable $get) => [
+                    ->extraAttributes(fn(callable $get) => [
                         'data-autofilled' => $get('cin_giro_autofilled') ? '1' : '0',
                     ])
-                    ->helperText(fn (callable $get) => 
-                        $get('cin_giro_autofilled') 
-                            ? '✓ Autocompletado' 
-                            : 'Ingrese manualmente'
+                    ->helperText(
+                        fn(callable $get) =>
+                        $get('cin_giro_autofilled')
+                        ? '✓ Autocompletado'
+                        : 'Ingrese manualmente'
                     )
                     ->columnSpanFull(),
 
@@ -631,22 +640,23 @@ class CertificadoInspeccionForm
                     ->placeholder('Nombres y apellidos del titular')
                     ->maxLength(255)
                     ->suffixIcon('heroicon-o-user')
-                    ->disabled(fn (callable $get) => (bool) $get('cin_solicitante_autofilled'))
-                                                ->dehydrated()
+                    ->disabled(fn(callable $get) => (bool) $get('cin_solicitante_autofilled'))
+                    ->dehydrated()
 
-                    ->extraInputAttributes(fn (callable $get) => [
-                    'data-autofilled' => $get('cin_solicitante_autofilled') ? '1' : '0',
-                    'style' => $get('cin_solicitante_autofilled') 
-                        ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;' 
-                        : '',
+                    ->extraInputAttributes(fn(callable $get) => [
+                        'data-autofilled' => $get('cin_solicitante_autofilled') ? '1' : '0',
+                        'style' => $get('cin_solicitante_autofilled')
+                            ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
+                            : '',
                     ])
-                    ->extraAttributes(fn (callable $get) => [
+                    ->extraAttributes(fn(callable $get) => [
                         'data-autofilled' => $get('cin_solicitante_autofilled') ? '1' : '0',
                     ])
-                    ->helperText(fn (callable $get) => 
-                        $get('cin_solicitante_autofilled') 
-                            ? '✓ Autocompletado' 
-                            : 'Ingrese manualmente'
+                    ->helperText(
+                        fn(callable $get) =>
+                        $get('cin_solicitante_autofilled')
+                        ? '✓ Autocompletado'
+                        : 'Ingrese manualmente'
                     )
                     ->columnSpanFull(),
 
@@ -668,56 +678,56 @@ class CertificadoInspeccionForm
     }
 
 
-/*
-    private static function seccionSistema(): Fieldset
-    {
-        return Fieldset::make('Campos del Sistema')
-            ->schema([
-                Grid::make(3)
-                    ->schema([
-                        DateTimePicker::make('cin_filafecha')
-                            ->label('Fecha de Registro')
-                            ->default(now())
-                            ->disabled()
-                            ->dehydrated()
-                            ->native(false)
-                            ->seconds(true)
-                            ->displayFormat('d/m/Y H:i:s')
-                            ->helperText('Generado automáticamente al crear el registro'),
+    /*
+        private static function seccionSistema(): Fieldset
+        {
+            return Fieldset::make('Campos del Sistema')
+                ->schema([
+                    Grid::make(3)
+                        ->schema([
+                            DateTimePicker::make('cin_filafecha')
+                                ->label('Fecha de Registro')
+                                ->default(now())
+                                ->disabled()
+                                ->dehydrated()
+                                ->native(false)
+                                ->seconds(true)
+                                ->displayFormat('d/m/Y H:i:s')
+                                ->helperText('Generado automáticamente al crear el registro'),
 
-                        TextInput::make('usa_id')
-                            ->label('Usuario ID')
-                            ->numeric()
-                            ->default(0)
-                            ->disabled()
-                            ->dehydrated()
-                            ->helperText('ID del usuario del sistema'),
+                            TextInput::make('usa_id')
+                                ->label('Usuario ID')
+                                ->numeric()
+                                ->default(0)
+                                ->disabled()
+                                ->dehydrated()
+                                ->helperText('ID del usuario del sistema'),
 
-             
-                    ]),
 
-                Grid::make(2)
-                    ->schema([
-                        Toggle::make('cin_filaoriginal')
-                            ->label('Registro Original')
-                            ->default(true)
-                            ->inline(false)
-                            ->dehydrated()
-                            ->helperText('Marca si es un registro original'),
+                        ]),
 
-                        Toggle::make('cin_filaeliminada')
-                            ->label('Registro Eliminado')
-                            ->default(false)
-                            ->inline(false)
-                            ->dehydrated()
-                            ->helperText('Marca si el registro está inactivo'),
-                    ]),
-            ])
-            ->hidden(true)
-            ->columnSpan('full');
-            //->collapsed();
-    } 
-*/
+                    Grid::make(2)
+                        ->schema([
+                            Toggle::make('cin_filaoriginal')
+                                ->label('Registro Original')
+                                ->default(true)
+                                ->inline(false)
+                                ->dehydrated()
+                                ->helperText('Marca si es un registro original'),
+
+                            Toggle::make('cin_filaeliminada')
+                                ->label('Registro Eliminado')
+                                ->default(false)
+                                ->inline(false)
+                                ->dehydrated()
+                                ->helperText('Marca si el registro está inactivo'),
+                        ]),
+                ])
+                ->hidden(true)
+                ->columnSpan('full');
+                //->collapsed();
+        } 
+    */
     /**
      * Realiza la búsqueda de licencias y completa el formulario con los datos encontrados.
      *
@@ -750,7 +760,7 @@ class CertificadoInspeccionForm
             if (!empty($resolucion)) {
                 $serviceResolucion = app(ResolucionService::class);
                 $resultadoResolucion = $serviceResolucion->obtenerNumeroExpedientePorNumeroResolucion($resolucion);
-                
+
                 if (!$resultadoResolucion || empty($resultadoResolucion->numero_expediente)) {
                     Notification::make()
                         ->title('Resolución no encontrada')
@@ -760,10 +770,10 @@ class CertificadoInspeccionForm
                         ->send();
                     return;
                 }
-                
+
                 // Usar el expediente encontrado
                 $expediente = $resultadoResolucion->numero_expediente;
-                
+
                 logger()->info('CertificadoInspeccionForm: Expediente obtenido desde resolución', [
                     'resolucion' => $resolucion,
                     'expediente' => $expediente,
@@ -772,7 +782,7 @@ class CertificadoInspeccionForm
 
             // Determinar tipo de búsqueda
             $tipoBusqueda = self::determinarTipoBusqueda($expediente, $licencia);
-            
+
             logger()->info('CertificadoInspeccionForm: Iniciando búsqueda', [
                 'tipo' => $tipoBusqueda,
                 'expediente' => $expediente,
@@ -820,7 +830,7 @@ class CertificadoInspeccionForm
         if (!empty($licencia) && !empty($expediente)) {
             return 'licencia y expediente';
         }
-        
+
         return !empty($licencia) ? 'licencia' : 'expediente';
     }
 
@@ -840,11 +850,11 @@ class CertificadoInspeccionForm
         if (!empty($licencia) && !empty($expediente)) {
             return $service->obtenerPorNumeroLicenciaYExpediente($licencia, $expediente);
         }
-        
+
         if (!empty($licencia)) {
             return $service->obtenerPorNumeroLicencia($licencia);
         }
-        
+
         return $service->obtenerPorNumeroExpediente($expediente);
     }
 
@@ -951,7 +961,7 @@ class CertificadoInspeccionForm
         try {
             $servicePersona = app(PersonaSolicitante::class);
             $respuesta = $servicePersona->obtenerPorIdSolicitante($idSolicitante);
-            
+
             if (isset($respuesta['status']) && $respuesta['status'] === 'ok') {
                 return $respuesta['data']->personasolicitante ?? 'No disponible';
             }
@@ -1006,7 +1016,7 @@ class CertificadoInspeccionForm
             $set('cin_indeterminado', false);
             $set('cin_fec_inicio', $licenciaData->lic_fechaemision);
             $set('cin_fecha_inicio_autofilled', !empty($licenciaData->lic_fechaemision));
-            
+
             $fechaFin = Carbon::parse($licenciaData->lic_fechaemision)
                 ->addYears(self::YEARS_VIGENCIA)
                 ->toDateString();
@@ -1037,7 +1047,7 @@ class CertificadoInspeccionForm
         }
 
         $set('cin_es_temporal', $esTemporal);
-        
+
         if ($esTemporal) {
             $set('cin_indeterminado', false);
             // Si es temporal, aseguramos que las fechas se puedan editar (la lógica disabled lo manejará)
@@ -1049,7 +1059,7 @@ class CertificadoInspeccionForm
             try {
                 $serviceResolucion = app(ResolucionService::class);
                 $resultadoResolucion = $serviceResolucion->obtenerNumeroResolucionPorNumeroExpediente($expediente);
-                
+
                 if ($resultadoResolucion && !empty($resultadoResolucion->numero_resolucion)) {
                     $set('cin_resolucion', $resultadoResolucion->numero_resolucion);
                     $set('cin_resolucion_autofilled', true);
@@ -1086,11 +1096,11 @@ class CertificadoInspeccionForm
             '📍 Ubicación' => $licenciaData->lic_direccion ?? 'N/A',
             '🗂️ Expediente N°' => $licenciaData->lic_expnum ?? 'N/A',
             '👤 Solicitante' => $licenciaData->personasolicitante ?? 'N/A',
-            ];
+        ];
 
-        $mensaje = "Se completaron automáticamente los siguientes datos:". PHP_EOL . PHP_EOL;
+        $mensaje = "Se completaron automáticamente los siguientes datos:" . PHP_EOL . PHP_EOL;
         foreach ($detalles as $label => $valor) {
-            $mensaje .= "{$label}: {$valor}". PHP_EOL;
+            $mensaje .= "{$label}: {$valor}" . PHP_EOL;
         }
 
         return trim($mensaje);

@@ -32,7 +32,8 @@ trait PostgresHelpers
      */
     protected function formatDate($date, $default = null): ?string
     {
-        if (empty($date)) return $default;
+        if (empty($date))
+            return $default;
         try {
             return Carbon::parse($date)->format('d/m/Y');
         } catch (\Exception $e) {

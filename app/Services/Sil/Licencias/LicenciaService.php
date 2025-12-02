@@ -19,7 +19,7 @@ class LicenciaService
         $this->connection = DB::connection('pgsql_licencias');
         $this->connection2 = DB::connection('oracle');
 
-        $this->reader = new LicenciaReader($this->connection,$this->connection2);
+        $this->reader = new LicenciaReader($this->connection, $this->connection2);
         $this->creator = new LicenciaCreator($this->connection);
         $this->updater = new LicenciaUpdater($this->connection);
     }
@@ -28,15 +28,18 @@ class LicenciaService
     public function getById($id)
     {
         return $this->reader->findById($id);
-    }       
+    }
 
-    public function obtenerDatosDeRazonSocialPorExpediente($expnum){
+    public function obtenerDatosDeRazonSocialPorExpediente($expnum)
+    {
         return $this->reader->obtenerDatosDeRazonSocialPorExpediente($expnum);
     }
-    public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat){
+    public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat)
+    {
         return $this->reader->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat);
     }
-    public function obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social){
+    public function obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social)
+    {
         return $this->reader->obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social);
     }
     //CREATOR

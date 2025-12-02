@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Log;
  * relacionadas con certificados de inspección, utilizando procedimientos almacenados
  * y conexiones específicas a PostgreSQL.
  */
-class CertificadoInspeccionService{
+class CertificadoInspeccionService
+{
 
     /**
      * Conexión a la base de datos PostgreSQL.
@@ -46,7 +47,7 @@ class CertificadoInspeccionService{
         ", [$texto]);
 
         // Transformar a array simple de ubicaciones
-        return array_map(fn ($r) => $r->ubicacion, $resultados);
+        return array_map(fn($r) => $r->ubicacion, $resultados);
     }
 
     /**
@@ -65,7 +66,7 @@ class CertificadoInspeccionService{
         ", [$texto]);
 
         // Transformar a array simple de números de certificado
-        return array_map(fn ($r) => $r->numero_certificado, $resultados);
+        return array_map(fn($r) => $r->numero_certificado, $resultados);
     }
 
     /**
@@ -76,7 +77,8 @@ class CertificadoInspeccionService{
      *
      * @return int|null Siguiente número disponible o null si no hay.
      */
-    public function obtenerSiguienteNumero(){
+    public function obtenerSiguienteNumero()
+    {
         $resultado = DB::select("
         SELECT MIN(n) AS siguiente_numero
         FROM generate_series(
@@ -86,14 +88,14 @@ class CertificadoInspeccionService{
         WHERE n NOT IN (
         SELECT cin_numero FROM itse.certificadoinspeccion
         );");
-        return array_map(fn ($r) => $r->siguiente_numero, $resultado)[0] ?? null;
+        return array_map(fn($r) => $r->siguiente_numero, $resultado)[0] ?? null;
     }
 
     //borrar certificado inspeccion -> guardar en tabla certificados_borrados (user_id, cin_id, cin_razon_borrado)
     public function borrarCertificadoInspeccion(int $userId, int $cinId, string $razon)
     {
-        try{
-                DB::table('certificados_borrados')->insert([
+        try {
+            DB::table('certificados_borrados')->insert([
                 'user_id' => $userId,
                 'cin_id' => $cinId,
                 'cin_razon_borrado' => $razon,
@@ -109,5 +111,61 @@ class CertificadoInspeccionService{
             return false;
         }
     }
-        
+
+    /**
+     * Sube un certificado actualizado al almacenamiento externo.
+     *
+     * @param int $certificadoId ID del certificado.
+     * @param \Illuminate\Http\UploadedFile $file Archivo PDF a subir.
+     * @return array Resultado de la operación.
+     */
+    public function subirPdfActualizado($certificadoId, $file)
+    {
+        $fileName = "certificado_inspeccion_actualizado_id_{$certificadoId}.pdf";
+        $filePath = "actualizados/{$fileName}";
+        $disk = \Illuminate\Support\Facades\Storage::disk('certificados_externos');
+
+        // Verificar si ya existe
+        if ($disk->exists($filePath)) {
+            return [
+                'success' => false,
+                'message' => 'Ya existe un certificado actualizado para este registro. No se permite sobrescribir.',
+                'status_code' => 409
+            ];
+        }
+
+        // Guardar archivo
+        $disk->put($filePath, file_get_contents($file->getRealPath()));
+
+        return [
+            'success' => true,
+            'message' => 'Certificado actualizado subido exitosamente',
+            'file_name' => $fileName,
+            'status_code' => 200
+        ];
+    }
+
+    /**
+     * Reemplaza (sobrescribe) un certificado actualizado existente.
+     *
+     * @param int $certificadoId ID del certificado.
+     * @param \Illuminate\Http\UploadedFile $file Archivo PDF a subir.
+     * @return array Resultado de la operación.
+     */
+    public function reemplazarPdfActualizado($certificadoId, $file)
+    {
+        $fileName = "certificado_inspeccion_actualizado_id_{$certificadoId}.pdf";
+        $filePath = "actualizados/{$fileName}";
+        $disk = \Illuminate\Support\Facades\Storage::disk('certificados_externos');
+
+        // No verificamos existencia, sobrescribimos directamente
+        $disk->put($filePath, file_get_contents($file->getRealPath()));
+
+        return [
+            'success' => true,
+            'message' => 'Certificado actualizado reemplazado exitosamente',
+            'file_name' => $fileName,
+            'status_code' => 200
+        ];
+    }
 }

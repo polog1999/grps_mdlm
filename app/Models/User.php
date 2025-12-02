@@ -19,15 +19,18 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = ['name','email','password'];
+    protected $fillable = ['name', 'email', 'password'];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
      */
-     protected $hidden = [
-        'password','two_factor_secret','two_factor_recovery_codes','remember_token',
+    protected $hidden = [
+        'password',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'remember_token',
     ];
 
     /**
@@ -44,7 +47,7 @@ class User extends Authenticatable
         ];
     }
 
-     public function canAccessPanel(Panel $panel): bool
+    public function canAccessPanel(Panel $panel): bool
     {
         // Ejemplo seguro: permite siempre en local, y en otros entornos exige email verificado.
         if (app()->isLocal()) {
@@ -57,11 +60,11 @@ class User extends Authenticatable
         // }
 
         // Si no usas MustVerifyEmail, basta revisar el timestamp:
-        return ! is_null($this->email_verified_at);
+        return !is_null($this->email_verified_at);
         // Si implementas MustVerifyEmail, puedes usar:
         // return $this->hasVerifiedEmail();
     }
-    
+
 
 
 

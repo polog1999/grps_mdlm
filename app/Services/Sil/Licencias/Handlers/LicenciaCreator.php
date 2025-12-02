@@ -22,12 +22,12 @@ class LicenciaCreator
         try {
             $girosIds = [];
             $girosEspecificos = [];
-            
+
             if (isset($datos['licencias']['tabla_giros']) && is_array($datos['licencias']['tabla_giros'])) {
                 $girosSeleccionados = $datos['licencias']['giros_seleccionar'] ?? [];
-                
+
                 foreach ($datos['licencias']['tabla_giros'] as $index => $giro) {
-                    $girosIds[] = isset($girosSeleccionados[$index]) ? (int)$girosSeleccionados[$index] : 0;
+                    $girosIds[] = isset($girosSeleccionados[$index]) ? (int) $girosSeleccionados[$index] : 0;
                     $girosEspecificos[] = $giro['giro_especifico'] ?? '';
                 }
             }
@@ -47,7 +47,7 @@ class LicenciaCreator
                 $datos['licencias']['numero_licencia'] ?? '', // 8 plic_numlic
                 $datos['catastro']['codpredio'] ?? '', // 9 plic_codigopredial
                 $datos['expediente']['exp_num'] ?? '', // 10 plic_expnum
-                (float)($datos['catastro']['area_economica'] ?? 0), // 11 plic_area
+                (float) ($datos['catastro']['area_economica'] ?? 0), // 11 plic_area
                 ($datos['licencias']['mype'] ?? '0') === '1', // 12 plic_mype
                 $datos['licencias']['n_resolucion'] ?? '', // 13 plic_resnum
                 $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null), // 14 p_lic_fecharesolucion
@@ -79,9 +79,9 @@ class LicenciaCreator
             Log::info('Ejecutando spu_licencia_ins4 con parámetros:', $parametros);
 
             $result = $this->db->select($sql, $parametros);
-            
+
             Log::info('Licencia insertada exitosamente', ['result' => $result]);
-            
+
             return $result;
         } catch (\Exception $e) {
             Log::error("Error al insertar licencia: " . $e->getMessage());

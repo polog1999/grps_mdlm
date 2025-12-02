@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class LicenciaPersonaController extends Controller
 {
     protected $service;
-    
+
     public function __construct(LicenciaPersonaService $service)
     {
         $this->service = $service;
