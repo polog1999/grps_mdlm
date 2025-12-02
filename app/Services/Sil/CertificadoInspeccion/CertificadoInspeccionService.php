@@ -114,6 +114,7 @@ class CertificadoInspeccionService
 
     /**
      * Sube un certificado actualizado al almacenamiento externo.
+     * Permite sobrescribir el archivo si ya existe.
      *
      * @param int $certificadoId ID del certificado.
      * @param \Illuminate\Http\UploadedFile $file Archivo PDF a subir.
@@ -125,23 +126,22 @@ class CertificadoInspeccionService
         $filePath = "actualizados/{$fileName}";
         $disk = \Illuminate\Support\Facades\Storage::disk('certificados_externos');
 
-        // Verificar si ya existe
-        if ($disk->exists($filePath)) {
-            return [
-                'success' => false,
-                'message' => 'Ya existe un certificado actualizado para este registro. No se permite sobrescribir.',
-                'status_code' => 409
-            ];
-        }
+        // Verificar si ya existe para informar al usuario
+        $existeArchivo = $disk->exists($filePath);
 
-        // Guardar archivo
+        // Guardar archivo (sobrescribe si existe)
         $disk->put($filePath, file_get_contents($file->getRealPath()));
+
+        $mensaje = $existeArchivo
+            ? 'Certificado actualizado reemplazado exitosamente'
+            : 'Certificado actualizado subido exitosamente';
 
         return [
             'success' => true,
-            'message' => 'Certificado actualizado subido exitosamente',
+            'message' => $mensaje,
             'file_name' => $fileName,
-            'status_code' => 200
+            'status_code' => 200,
+            'was_overwritten' => $existeArchivo
         ];
     }
 
