@@ -22,6 +22,10 @@ class LicenciaCreator
         try {
             $girosIds = [];
             $girosEspecificos = [];
+<<<<<<< HEAD
+=======
+            $girosDescripciones = [];  // Para construir plic_giro
+>>>>>>> feature/licencias
 
             if (isset($datos['licencias']['tabla_giros']) && is_array($datos['licencias']['tabla_giros'])) {
                 $girosSeleccionados = $datos['licencias']['giros_seleccionar'] ?? [];
@@ -29,8 +33,16 @@ class LicenciaCreator
                 foreach ($datos['licencias']['tabla_giros'] as $index => $giro) {
                     $girosIds[] = isset($girosSeleccionados[$index]) ? (int) $girosSeleccionados[$index] : 0;
                     $girosEspecificos[] = $giro['giro_especifico'] ?? '';
+
+                    // Agregar la descripción del giro para plic_giro
+                    if (!empty($giro['giro'])) {
+                        $girosDescripciones[] = $giro['giro'];
+                    }
                 }
             }
+
+            // Construir plic_giro como string concatenado con comas
+            $plicGiro = !empty($girosDescripciones) ? implode(',', $girosDescripciones) : '';
 
             $sql = "SELECT * FROM licencia.spu_licencia_ins4(
                 ?, ?::integer[], ?::text[], ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
@@ -61,7 +73,7 @@ class LicenciaCreator
                 $datos['licencias']['direccion'] ?? '', // 22 plca_descripcion
                 $datos['catastro']['descurb'] ?? '', // 23 urbanizacion_id
                 $datos['catastro']['zonificacion'] ?? '', // 24 plca_zonificacion
-                '', // 25 plic_giro
+                $plicGiro, // 25 plic_giro (concatenado con comas)
                 false, // 26 p_lic_modidirecc
                 $datos['licencias']['hora_inicio'] ?? '09:00', // 27 p_lic_horainicio
                 $datos['licencias']['hora_fin'] ?? '18:00', // 28 p_lic_horafin
