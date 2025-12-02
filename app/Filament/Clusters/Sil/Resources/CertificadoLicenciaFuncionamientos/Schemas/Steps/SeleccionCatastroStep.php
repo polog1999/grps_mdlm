@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 use Filament\Forms\Components\Radio;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Wizard\Step;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\DatosCompletosStep; // Added import
 
 class SeleccionCatastroStep
 {
@@ -53,6 +54,37 @@ class SeleccionCatastroStep
                         ->descriptions($descripciones)
                         ->required()
                         ->live()
+                        ->afterStateUpdated(function ($state, $set, $get) {
+                            if (!$state)
+                                return;
+
+                            // Buscar el registro completo por fiu_id
+                            $coincidencias = $get('_catastro_coincidencias') ?? [];
+                            $catastroSeleccionado = null;
+
+                            foreach ($coincidencias as $item) {
+                                $fiuId = is_object($item) ? ($item->fiu_id ?? null) : ($item['fiu_id'] ?? null);
+
+                                if ($fiuId == $state) {
+                                    $catastroSeleccionado = is_object($item) ? (array) $item : $item;
+                                    break;
+                                }
+                            }
+
+                            if ($catastroSeleccionado) {
+                                // Obtener los datos completos actuales
+                                $datosCompletos = $get('_datos_completos') ?? [];
+
+                                // Agregar el catastro seleccionado
+                                $datosCompletos['catastro'] = $catastroSeleccionado;
+
+                                // Guardar de vuelta
+                                $set('_datos_completos', $datosCompletos);
+
+                                // Llamar al autocompletado
+                                DatosCompletosStep::autocompletarDatos($datosCompletos, $set);
+                            }
+                        })
                         ->columnSpanFull()
                 ])
                 ->collapsible(false)
