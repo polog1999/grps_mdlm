@@ -362,7 +362,10 @@ class CertificadoLincenciaFuncionamientoService
     }
     /**
      * Obtiene todos los datos necesarios para registrar una licencia
-     * combinando datos del expediente, catastro y nivel de riesgo.
+     * combinando datos del expediente y nivel de riesgo.
+     * 
+     * Nota: Los datos de catastro ya no se obtienen automáticamente aquí.
+     * Se deben obtener por separado usando LicenciaService->obtenerDatosGeneralesDeCatastroPorCodigoCatastral()
      *
      * @param string $exp_num
      * @return array|null
@@ -385,14 +388,10 @@ class CertificadoLincenciaFuncionamientoService
             // Obtener el primer registro del expediente
             $expediente = $expedienteData->first();
 
-            // 2. Obtener datos del catastro si existe ecc_codcat
+
+            // 2. Datos de catastro ya no se obtienen aquí
+            // Se deben obtener por separado usando el servicio de LicenciaService
             $catastroData = null;
-            if (isset($expediente->ecc_codcat) && !empty($expediente->ecc_codcat)) {
-                $catastroCollection = $this->obtenerDatosPorCodCat($expediente->ecc_codcat);
-                if (!$catastroCollection->isEmpty()) {
-                    $catastroData = $catastroCollection->first();
-                }
-            }
 
             // 3. Obtener datos del nivel de riesgo
             $nivelRiesgoData = $this->obtenerDatosParaRegistrarLicencia($exp_num);

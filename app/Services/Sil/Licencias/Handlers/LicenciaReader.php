@@ -84,7 +84,8 @@ class LicenciaReader
     public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat)
     {
         $sql = "
-            SELECT                     
+            SELECT      
+                TRIM(t.coduca) AS coduca,               
                 TRIM(t.codpredio) AS codpredio,
                 TRIM(t.descurb) AS descurb,
                 TRIM(t.codvia) AS codvia,
