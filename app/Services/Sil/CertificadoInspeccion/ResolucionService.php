@@ -35,7 +35,7 @@ class ResolucionService
             ->where('n.cdgo_tpo_trmte', 48)
             ->whereNotNull('n.cdgo_dto_trmte')
             ->where('t.nu_expe_todo', $nu_expe_todo)
-            ->select('n.nu_tram_todo as numero_resolucion')
+            ->selectRaw("n.nu_tram_todo as numero_resolucion, TO_CHAR(n.fe_ingrso, 'DD/MM/YYYY') as fecha_ingreso")
             ->get();
     }
 
