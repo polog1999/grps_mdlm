@@ -90,6 +90,14 @@ class BusquedaStep
                 );
             } else {
                 // Un solo resultado: continuar normalmente
+
+                // Agregar los datos de catastro al resultado
+                if (!empty($catastroResults)) {
+                    $primerCatastro = is_array($catastroResults) ? $catastroResults[0] : $catastroResults->first();
+                    // Convertir a array si es objeto
+                    $result['catastro'] = is_object($primerCatastro) ? (array) $primerCatastro : $primerCatastro;
+                }
+
                 $set('_datos_completos', $result);
                 $set('_catastro_coincidencias', null);
                 $set('_tiene_errores', false);
