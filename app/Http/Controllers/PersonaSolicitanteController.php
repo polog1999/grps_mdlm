@@ -20,7 +20,7 @@ class PersonaSolicitanteController extends Controller
      * @var PersonaSolicitante
      */
     protected $service;
-    
+
     /**
      * Constructor.
      *

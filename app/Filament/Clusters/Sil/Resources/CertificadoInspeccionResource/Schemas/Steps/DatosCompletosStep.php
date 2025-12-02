@@ -20,8 +20,6 @@ class DatosCompletosStep
                 CertificadoInspeccionForm::seccionResolucion(),
                 CertificadoInspeccionForm::seccionLicencia(),
                 CertificadoInspeccionForm::seccionInformacionAdicional(),
-                // CertificadoInspeccionForm::camposOcultosSistema() // This returns an array, schema expects components. 
-                // We need to spread it or add it to the schema array.
                 ...CertificadoInspeccionForm::camposOcultosSistema(),
             ]);
     }

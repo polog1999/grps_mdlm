@@ -59,6 +59,11 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        'certificados_externos' => [
+            'driver' => 'local',
+            'root' => env('PATH_CERTIFICADOS'), // Leerá la ruta del .env
+            'throw' => false,
+        ],
 
     ],
 

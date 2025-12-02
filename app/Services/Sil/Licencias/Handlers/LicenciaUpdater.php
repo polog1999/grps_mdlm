@@ -32,9 +32,9 @@ class LicenciaUpdater
                 // Pero el helper formatPostgresArray ya maneja el escaping si le pasamos isText=true
                 // Sin embargo, la logica original hacia un str_replace especifico antes.
                 // Usaremos los arrays crudos y dejaremos que formatPostgresArray lo maneje.
-                $arrEspecifico[] = $giro['especifico']; 
+                $arrEspecifico[] = $giro['especifico'];
                 $arrLigId[] = $giro['lig_id'];
-                $arrEstado[] = $giro['estado']; 
+                $arrEstado[] = $giro['estado'];
             }
         }
 
@@ -75,13 +75,13 @@ class LicenciaUpdater
             $data['tlo_id'] ?? 0,
             $data['lcc_observacion'] ?? '',
             $data['lcc_local'] ?? '',
-            
+
             // Arrays formateados usando el helper
             $this->formatPostgresArray($arrGirId),
             $this->formatPostgresArray($arrEspecifico, true),
             $this->formatPostgresArray($arrLigId),
             $this->formatPostgresArray($arrEstado, true),
-            
+
             $data['lic_modidirecc'] ? 'true' : 'false',
             $data['lic_horainicio'],
             $data['lic_horafin'],

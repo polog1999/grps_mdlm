@@ -86,6 +86,12 @@
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-licencias-id--lic_id-">
                                 <a href="#endpoints-GETapi-v1-licencias-id--lic_id-">Buscar por ID de licencia.</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-">
+                                <a href="#endpoints-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-">Obtiene el tipo de licencia por número de expediente.</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-">
+                                <a href="#endpoints-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-">Obtiene el tipo de licencia por número de licencia.</a>
+                            </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-licencias-persona-razon-social--nombre_razon_social-">
                                 <a href="#endpoints-GETapi-v1-licencias-persona-razon-social--nombre_razon_social-">GET api/v1/licencias/persona-razon-social/{nombre_razon_social}</a>
                             </li>
@@ -106,6 +112,12 @@
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-PUTapi-v1-itse-certificados-eliminar--certificadoId-">
                                 <a href="#endpoints-PUTapi-v1-itse-certificados-eliminar--certificadoId-">Marca un certificado como eliminado (eliminación lógica).</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="endpoints-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-">
+                                <a href="#endpoints-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-">POST api/v1/itse/certificados/certificado/upload-actualizado/{certificadoId}</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="endpoints-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-">
+                                <a href="#endpoints-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-">POST api/v1/itse/certificados/certificado/reemplazar-actualizado/{certificadoId}</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-certificado-lic-func-datos--expnum-">
                                 <a href="#endpoints-GETapi-v1-certificado-lic-func-datos--expnum-">GET api/v1/certificado-lic-func/datos/{expnum}</a>
@@ -149,6 +161,9 @@
                                                                                 <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-resolucion-buscar-expnum-por-resolucion--numres-">
                                 <a href="#endpoints-GETapi-v1-resolucion-buscar-expnum-por-resolucion--numres-">GET api/v1/resolucion/buscar-expnum-por-resolucion/{numres}</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="endpoints-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-">
+                                <a href="#endpoints-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-">GET api/v1/resolucion/buscar-resolucion-por-expnum/{numexp}</a>
+                            </li>
                                                                         </ul>
                             </ul>
             </div>
@@ -160,7 +175,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: November 28, 2025</li>
+        <li>Last updated: December 1, 2025</li>
     </ul>
 </div>
 
@@ -922,6 +937,280 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="url">
     <br>
 <p>The ID of the lic. Example: <code>architecto</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="endpoints-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-">Obtiene el tipo de licencia por número de expediente.</h2>
+
+<p>
+</p>
+
+
+
+<span id="example-requests-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://itse-app.test/api/v1/licencias/tipo-licencia/expediente/architecto" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://itse-app.test/api/v1/licencias/tipo-licencia/expediente/architecto"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-" data-method="GET"
+      data-path="api/v1/licencias/tipo-licencia/expediente/{lic_expnum}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+                    onclick="tryItOut('GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+                    onclick="cancelTryOut('GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/licencias/tipo-licencia/expediente/{lic_expnum}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>lic_expnum</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="lic_expnum"                data-endpoint="GETapi-v1-licencias-tipo-licencia-expediente--lic_expnum-"
+               value="architecto"
+               data-component="url">
+    <br>
+<p>Example: <code>architecto</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="endpoints-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-">Obtiene el tipo de licencia por número de licencia.</h2>
+
+<p>
+</p>
+
+
+
+<span id="example-requests-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://itse-app.test/api/v1/licencias/tipo-licencia/numero/architecto" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://itse-app.test/api/v1/licencias/tipo-licencia/numero/architecto"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-" data-method="GET"
+      data-path="api/v1/licencias/tipo-licencia/numero/{lic_numlic}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+                    onclick="tryItOut('GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+                    onclick="cancelTryOut('GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/licencias/tipo-licencia/numero/{lic_numlic}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>lic_numlic</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="lic_numlic"                data-endpoint="GETapi-v1-licencias-tipo-licencia-numero--lic_numlic-"
+               value="architecto"
+               data-component="url">
+    <br>
+<p>Example: <code>architecto</code></p>
             </div>
                     </form>
 
@@ -1867,6 +2156,288 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Example: <code>architecto</code></p>
             </div>
                     </form>
+
+                    <h2 id="endpoints-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-">POST api/v1/itse/certificados/certificado/upload-actualizado/{certificadoId}</h2>
+
+<p>
+</p>
+
+
+
+<span id="example-requests-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "http://itse-app.test/api/v1/itse/certificados/certificado/upload-actualizado/architecto" \
+    --header "Content-Type: multipart/form-data" \
+    --header "Accept: application/json" \
+    --form "certificado_file=@C:\Users\dacuna\AppData\Local\Temp\php5496.tmp" </code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://itse-app.test/api/v1/itse/certificados/certificado/upload-actualizado/architecto"
+);
+
+const headers = {
+    "Content-Type": "multipart/form-data",
+    "Accept": "application/json",
+};
+
+const body = new FormData();
+body.append('certificado_file', document.querySelector('input[name="certificado_file"]').files[0]);
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-">
+</span>
+<span id="execution-results-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-" data-method="POST"
+      data-path="api/v1/itse/certificados/certificado/upload-actualizado/{certificadoId}"
+      data-authed="0"
+      data-hasfiles="1"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+                    onclick="tryItOut('POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+                    onclick="cancelTryOut('POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/itse/certificados/certificado/upload-actualizado/{certificadoId}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+               value="multipart/form-data"
+               data-component="header">
+    <br>
+<p>Example: <code>multipart/form-data</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>certificadoId</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="certificadoId"                data-endpoint="POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+               value="architecto"
+               data-component="url">
+    <br>
+<p>Example: <code>architecto</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>certificado_file</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="certificado_file"                data-endpoint="POSTapi-v1-itse-certificados-certificado-upload-actualizado--certificadoId-"
+               value=""
+               data-component="body">
+    <br>
+<p>Must be a file. validation.max. Example: <code>C:\Users\dacuna\AppData\Local\Temp\php5496.tmp</code></p>
+        </div>
+        </form>
+
+                    <h2 id="endpoints-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-">POST api/v1/itse/certificados/certificado/reemplazar-actualizado/{certificadoId}</h2>
+
+<p>
+</p>
+
+
+
+<span id="example-requests-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "http://itse-app.test/api/v1/itse/certificados/certificado/reemplazar-actualizado/architecto" \
+    --header "Content-Type: multipart/form-data" \
+    --header "Accept: application/json" \
+    --form "certificado_file=@C:\Users\dacuna\AppData\Local\Temp\php54A8.tmp" </code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://itse-app.test/api/v1/itse/certificados/certificado/reemplazar-actualizado/architecto"
+);
+
+const headers = {
+    "Content-Type": "multipart/form-data",
+    "Accept": "application/json",
+};
+
+const body = new FormData();
+body.append('certificado_file', document.querySelector('input[name="certificado_file"]').files[0]);
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-">
+</span>
+<span id="execution-results-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-" data-method="POST"
+      data-path="api/v1/itse/certificados/certificado/reemplazar-actualizado/{certificadoId}"
+      data-authed="0"
+      data-hasfiles="1"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+                    onclick="tryItOut('POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+                    onclick="cancelTryOut('POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/itse/certificados/certificado/reemplazar-actualizado/{certificadoId}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+               value="multipart/form-data"
+               data-component="header">
+    <br>
+<p>Example: <code>multipart/form-data</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>certificadoId</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="certificadoId"                data-endpoint="POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+               value="architecto"
+               data-component="url">
+    <br>
+<p>Example: <code>architecto</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>certificado_file</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="certificado_file"                data-endpoint="POSTapi-v1-itse-certificados-certificado-reemplazar-actualizado--certificadoId-"
+               value=""
+               data-component="body">
+    <br>
+<p>Must be a file. validation.max. Example: <code>C:\Users\dacuna\AppData\Local\Temp\php54A8.tmp</code></p>
+        </div>
+        </form>
 
                     <h2 id="endpoints-GETapi-v1-certificado-lic-func-datos--expnum-">GET api/v1/certificado-lic-func/datos/{expnum}</h2>
 
@@ -160107,7 +160678,7 @@ fetch(url, {
 
 <span id="example-responses-GETapi-v1-resolucion-buscar-expnum-por-resolucion--numres-">
             <blockquote>
-            <p>Example response (500):</p>
+            <p>Example response (200):</p>
         </blockquote>
                 <details class="annotation">
             <summary style="cursor: pointer;">
@@ -160118,9 +160689,7 @@ content-type: application/json
 access-control-allow-origin: *
  </code></pre></details>         <pre>
 
-<code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Server Error&quot;
-}</code>
+<code class="language-json" style="max-height: 300px;">{}</code>
  </pre>
     </span>
 <span id="execution-results-GETapi-v1-resolucion-buscar-expnum-por-resolucion--numres-" hidden>
@@ -160202,6 +160771,143 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="numres"                data-endpoint="GETapi-v1-resolucion-buscar-expnum-por-resolucion--numres-"
+               value="architecto"
+               data-component="url">
+    <br>
+<p>Example: <code>architecto</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="endpoints-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-">GET api/v1/resolucion/buscar-resolucion-por-expnum/{numexp}</h2>
+
+<p>
+</p>
+
+
+
+<span id="example-requests-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://itse-app.test/api/v1/resolucion/buscar-resolucion-por-expnum/architecto" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://itse-app.test/api/v1/resolucion/buscar-resolucion-por-expnum/architecto"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">[]</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-" data-method="GET"
+      data-path="api/v1/resolucion/buscar-resolucion-por-expnum/{numexp}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
+                    onclick="tryItOut('GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
+                    onclick="cancelTryOut('GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/resolucion/buscar-resolucion-por-expnum/{numexp}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>numexp</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="numexp"                data-endpoint="GETapi-v1-resolucion-buscar-resolucion-por-expnum--numexp-"
                value="architecto"
                data-component="url">
     <br>

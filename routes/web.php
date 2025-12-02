@@ -36,6 +36,7 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+
 /**
  * Grupo de rutas protegidas por autenticación y verificación.
  *
@@ -47,11 +48,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
      *
      * Renderiza la vista 'dashboard' usando Inertia.
      */
+
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
     /**
+     * Subir certificado actualizado
+     */
+    Route::post('/certificado/upload-actualizado', [CertificadoInspeccionController::class, 'subirPdfActualizado'])
+        ->name('certificado.upload-actualizado');
+
+    /**
+     * 
      * Ruta para obtener la lista de tipos de edificación.
      *
      * Endpoint protegido que delega al controlador TipoEdificacionController.
@@ -64,6 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
      *
      * Prefijo 'test' y nombre base 'test.'. Todas requieren autenticación.
      */
+
     Route::prefix('test')->name('test.')->group(function () {
         /**
          * Obtener licencia por número de expediente.
@@ -171,7 +181,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/giros/listar', [GiroLicenciaController::class, 'obtenerTodosLosGiros'])
             ->name('giros.listarTodos');
-        });
+    });
+    
+    Route::get('/certificado/ver/{id}/{tipo}', function ($id, $tipo) {
+        if (!auth()->check()) { abort(403); }
+
+        // Usamos el disco personalizado configurado anteriormente
+        $disk = Storage::disk('certificados_externos');
+
+        // Definimos el nombre del archivo según el tipo
+        if ($tipo === 'original') {
+            $filename = "originales/certificado_inspeccion_id_{$id}.pdf";
+            $downloadName = "Certificado_Original_{$id}.pdf";
+        } elseif ($tipo === 'actualizado') {
+            $filename = "actualizados/certificado_inspeccion_actualizado_id_{$id}.pdf";
+            $downloadName = "Certificado_Actualizado_{$id}.pdf";
+        } elseif ($tipo === 'firmado') {
+            $filename = "firmados/{$id}_firmado.pdf";
+            $downloadName = "Certificado_Oficial_{$id}.pdf";
+        } else {
+            abort(404);
+        }
+
+        if (!$disk->exists($filename)) {
+            abort(404, "El archivo no se encuentra: " . $filename);
+        }
+
+        return $disk->response($filename, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline'
+        ]);
+
+    })->name('certificado.ver-archivo');
+
+
+
+
+
 });
  
 

@@ -22,7 +22,7 @@ class BusquedaStep
                     ->required()
                     ->maxLength(50)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn ($state, $set) => self::buscarExpediente($state, $set))
+                    ->afterStateUpdated(fn($state, $set) => self::buscarExpediente($state, $set))
                     ->columnSpanFull()
                     ->extraAttributes(['class' => 'text-center']),
             ]);
@@ -30,7 +30,8 @@ class BusquedaStep
 
     private static function buscarExpediente(?string $state, callable $set): void
     {
-        if (empty($state)) return;
+        if (empty($state))
+            return;
 
         try {
             // Asegúrate que este servicio esté bien inyectado

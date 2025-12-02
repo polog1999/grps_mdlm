@@ -18,6 +18,8 @@
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
         "maatwebsite/excel": "^3.1",
+        "mallardduck/blade-boxicons": "^2.4",
+        "postare/blade-mdi": "^1.1",
         "pxlrbt/filament-excel": "3.0",
         "secondnetwork/blade-tabler-icons": "^3.35",
         "spatie/laravel-permission": "^6.23",

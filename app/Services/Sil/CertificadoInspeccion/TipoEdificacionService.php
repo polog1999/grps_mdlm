@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\DB;
  * utilizando la tabla 'itse.tipoedificacion'. Proporciona métodos para listar
  * todos los tipos o solo los activos.
  */
-class TipoEdificacionService{
+class TipoEdificacionService
+{
 
     /**
      * Conexión a la base de datos PostgreSQL.

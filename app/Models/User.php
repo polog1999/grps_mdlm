@@ -51,7 +51,7 @@ class User extends Authenticatable
         ];
     }
 
-    // Opcional pero recomendado: Restringir el acceso al panel si no tiene un Rol
+
     public function canAccessPanel(Panel $panel): bool
     {
         // 1. **Verificación de Entorno (como ya tenías)**
@@ -64,8 +64,8 @@ class User extends Authenticatable
         if ($this->roles->isEmpty()) {
             return false;
         }
-        
+
         // 3. **Verificación de Email (como ya tenías)**
-        return ! is_null($this->email_verified_at);
+        return !is_null($this->email_verified_at);
     }
 }

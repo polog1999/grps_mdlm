@@ -12,7 +12,6 @@ use App\Models\CertificadoLicenciaFuncionamiento;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -21,10 +20,10 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     protected static ?string $model = CertificadoLicenciaFuncionamiento::class;
 
     protected static ?string $recordTitleAttribute = 'Certificado Licencia de Funcionamiento';
- protected static ?string $navigationLabel = 'Certificados de Licencia de Funcionamiento';
+    protected static ?string $navigationLabel = 'Certificados de Licencia de Funcionamiento';
     protected static ?string $pluralModelLabel = 'Certificados de Licencia de Funcionamiento';
- 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static string|BackedEnum|null $navigationIcon = 'mdi-storefront-check-outline';
     protected static ?string $cluster = SilCluster::class;
 
     public static function form(Schema $schema): Schema
@@ -46,14 +45,13 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return $schema;
-    }   
+    }
 
     public static function table(Table $table): Table
-    
     {
         return CertificadoLicenciaFuncionamientosTable::configure($table)
             ->bulkActions([
-        
+
             ]);
     }
 
@@ -78,7 +76,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->limit(1000);   
+            ->limit(1000);
     }
 
 

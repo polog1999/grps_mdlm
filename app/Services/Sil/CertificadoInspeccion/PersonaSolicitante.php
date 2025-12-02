@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\DB;
  * información de personas solicitantes, utilizando la tabla 'licencia.lictotal'.
  * Maneja casos de no encontrado, duplicado o error.
  */
-class PersonaSolicitante{
+class PersonaSolicitante
+{
 
     /**
      * Conexión a la base de datos de licencias (PostgreSQL).
@@ -39,7 +40,7 @@ class PersonaSolicitante{
      * @return array Resultado de la consulta con status y data.
      */
     public function obtenerPorIdSolicitante($per_idsolicitante)
-    {    
+    {
 
         try {
             $resultados = $this->connection

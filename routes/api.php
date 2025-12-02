@@ -76,6 +76,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/buscar-ubicacion', [CertificadoInspeccionController::class, 'buscarUbicacion']);
         Route::get('/exportar-pdf/{certificadoId}', [CertificadoInspeccionController::class, 'exportarPdf']);
         Route::put('/eliminar/{certificadoId}', [CertificadoInspeccionController::class, 'borrarCertificado']);
+        Route::post('/certificado/upload-actualizado/{certificadoId}', [CertificadoInspeccionController::class, 'subirPdfActualizado']);
+        Route::post('/certificado/reemplazar-actualizado/{certificadoId}', [CertificadoInspeccionController::class, 'reemplazarPdfActualizado']);
     });
 
 

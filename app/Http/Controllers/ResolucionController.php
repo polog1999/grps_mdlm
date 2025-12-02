@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 
 class ResolucionController extends Controller
 {
-   
+
     protected $service;
-    
-  
+
+
     public function __construct(ResolucionService $service)
     {
         $this->service = $service;

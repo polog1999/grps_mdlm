@@ -16,22 +16,13 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Infolists\Infolist;
-use Filament\Support\Facades\FilamentColor;
 use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Support\Enums\TextSize;
 use Filament\Support\Enums\FontWeight;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Group;
-use Filament\Support\Enums\IconSize;
-use Filament\Infolists\Components\CodeEntry;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
-use pxlrbt\FilamentExcel\Columns\Column;
-use pxlrbt\FilamentExcel\Exports\ExcelExport;
-use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
-use BackendEnum;
-use UnitEnum;
+
 
 /**
  * Recurso de Filament para Certificados de Inspección.
@@ -66,7 +57,7 @@ class CertificadoInspeccionResource extends Resource
     //ICON FOR NAVIGATIONGROUP
     protected static ?string $navigationLabel = 'Certificados de Inspección';
     protected static ?string $pluralModelLabel = 'Certificados de Inspección';
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-clipboard-check';
 
     /**
      * Configura y devuelve el esquema del formulario usado para crear/editar.
@@ -109,112 +100,112 @@ class CertificadoInspeccionResource extends Resource
         return $infolist
             ->schema([
                 Group::make()
-                    ->columns(1)  
+                    ->columns(1)
                     ->schema([
                         // --- Sección 1: Datos Principales del Certificado ---
-                            Section::make('Información del Certificado')
-                                ->description('Datos principales de identificación y estado del certificado')
-                                ->icon('heroicon-o-document-text')
-                                ->columns(3)
-                                ->schema([
-                                    TextEntry::make('cin_numero')
-                                        ->label('Número de Certificado')   
-                                        ->icon('heroicon-o-identification')
-                                        ->badge()
-                                        ->color('info')
-                                        ->size(TextSize::Large)
-                                        ->weight(FontWeight::Bold),
-                                    
-                                    TextEntry::make('cin_anio')
-                                        ->label('Año')
-                                        ->badge()
-                                        ->color('gray'),
+                        Section::make('Información del Certificado')
+                            ->description('Datos principales de identificación y estado del certificado')
+                            ->icon('heroicon-o-document-text')
+                            ->columns(3)
+                            ->schema([
+                                TextEntry::make('cin_numero')
+                                    ->label('Número de Certificado')
+                                    ->icon('heroicon-o-identification')
+                                    ->badge()
+                                    ->color('info')
+                                    ->size(TextSize::Large)
+                                    ->weight(FontWeight::Bold),
 
-                                    TextEntry::make('cin_expediente')
-                                        ->label('Expediente')
-                                        ->badge()
-                                        ->color('primary')
-                                        ->icon('heroicon-o-folder-open'),
-                                    TextEntry::make('cin_licencia')
-                                        ->label('Número de Licencia')
-                                        ->badge()
-                                        ->color('info')
-                                        ->placeholder('No especificado'),
-                                      
-                                        
-                                    TextEntry::make('cin_resolucion_completa')
-                                        ->label('Resolución')
-                                        ->getStateUsing(fn ($record) => $record->cin_resolucion . ' ' . $record->cin_resolucion_sigla)
-                                        ->badge()
-                                        ->color('primary')
-                                        ->icon('heroicon-o-clipboard-document-check')
-                                        ->columnSpan(2),
-                                ]),
-                            // --- Sección 2: Datos de Vigencia y Capacidad ---
-                            Section::make('Vigencia y Capacidad')
-                                ->description('Periodo de validez y características del establecimiento')
-                                ->icon('heroicon-o-calendar')
-                                ->columns(4)
-                                ->schema([
-                                    TextEntry::make('cin_fecha')
-                                        ->label('Fecha de Emisión')
-                                        ->date('d/m/Y')
-                                        ->icon('heroicon-o-calendar-days')
-                                        ->badge()
-                                        ->color('gray'),
+                                TextEntry::make('cin_anio')
+                                    ->label('Año')
+                                    ->badge()
+                                    ->color('gray'),
 
-                                    TextEntry::make('cin_fec_inicio')
-                                        ->label('Inicio de Vigencia')
-                                        ->date('d/m/Y')
-                                        ->icon('heroicon-o-calendar')
-                                        ->badge()
-                                        ->color('success')
-                                        ->placeholder('No especificada'),
+                                TextEntry::make('cin_expediente')
+                                    ->label('Expediente')
+                                    ->badge()
+                                    ->color('primary')
+                                    ->icon('heroicon-o-folder-open'),
+                                TextEntry::make('cin_licencia')
+                                    ->label('Número de Licencia')
+                                    ->badge()
+                                    ->color('info')
+                                    ->placeholder('No especificado'),
 
-                                    TextEntry::make('cin_fec_fin')
-                                        ->label('Fin de Vigencia')
-                                        ->date('d/m/Y')
-                                        ->icon('heroicon-o-calendar')
-                                        ->badge()
-                                        ->color(fn ($record) => $record->cin_indeterminado ? 'gray' : 'warning')
-                                        ->placeholder('No especificada')
-                                        ->visible(fn ($record) => !$record->cin_indeterminado),
-                                    
-                                    IconEntry::make('cin_indeterminado')
-                                        ->label('Vigencia Indeterminada')
-                                        ->boolean()
-                                        ->trueIcon('heroicon-o-check-circle')
-                                        ->falseIcon('heroicon-o-x-circle')
-                                        ->trueColor('info')
-                                        ->falseColor('gray')
-                                        ->visible(fn ($record) => $record->cin_indeterminado),
 
-                                    TextEntry::make('cin_capacidad')
-                                        ->label('Capacidad')
-                                        ->numeric()
-                                        ->icon('heroicon-o-users')
-                                        ->suffix(' personas')
-                                        ->badge()
-                                        ->color('primary')
-                                        ->placeholder('No especificada'),
-                                        
-                                    TextEntry::make('cin_area')
-                                        ->label('Área Total')
-                                        ->numeric(
-                                            decimalPlaces: 2,
-                                            decimalSeparator: '.',
-                                            thousandsSeparator: ',',
-                                        )
-                                        ->suffix(' m²')
-                                        ->icon('heroicon-o-square-3-stack-3d')
-                                        ->badge()
-                                        ->color('primary')
-                                        ->placeholder('No especificada')
-                                        ->columnSpan(2),
-                                        ]),
-                     
-                        ]),
-                
+                                TextEntry::make('cin_resolucion_completa')
+                                    ->label('Resolución')
+                                    ->getStateUsing(fn($record) => $record->cin_resolucion . ' ' . $record->cin_resolucion_sigla)
+                                    ->badge()
+                                    ->color('primary')
+                                    ->icon('heroicon-o-clipboard-document-check')
+                                    ->columnSpan(2),
+                            ]),
+                        // --- Sección 2: Datos de Vigencia y Capacidad ---
+                        Section::make('Vigencia y Capacidad')
+                            ->description('Periodo de validez y características del establecimiento')
+                            ->icon('heroicon-o-calendar')
+                            ->columns(4)
+                            ->schema([
+                                TextEntry::make('cin_fecha')
+                                    ->label('Fecha de Emisión')
+                                    ->date('d/m/Y')
+                                    ->icon('heroicon-o-calendar-days')
+                                    ->badge()
+                                    ->color('gray'),
+
+                                TextEntry::make('cin_fec_inicio')
+                                    ->label('Inicio de Vigencia')
+                                    ->date('d/m/Y')
+                                    ->icon('heroicon-o-calendar')
+                                    ->badge()
+                                    ->color('success')
+                                    ->placeholder('No especificada'),
+
+                                TextEntry::make('cin_fec_fin')
+                                    ->label('Fin de Vigencia')
+                                    ->date('d/m/Y')
+                                    ->icon('heroicon-o-calendar')
+                                    ->badge()
+                                    ->color(fn($record) => $record->cin_indeterminado ? 'gray' : 'warning')
+                                    ->placeholder('No especificada')
+                                    ->visible(fn($record) => !$record->cin_indeterminado),
+
+                                IconEntry::make('cin_indeterminado')
+                                    ->label('Vigencia Indeterminada')
+                                    ->boolean()
+                                    ->trueIcon('heroicon-o-check-circle')
+                                    ->falseIcon('heroicon-o-x-circle')
+                                    ->trueColor('info')
+                                    ->falseColor('gray')
+                                    ->visible(fn($record) => $record->cin_indeterminado),
+
+                                TextEntry::make('cin_capacidad')
+                                    ->label('Capacidad')
+                                    ->numeric()
+                                    ->icon('heroicon-o-users')
+                                    ->suffix(' personas')
+                                    ->badge()
+                                    ->color('primary')
+                                    ->placeholder('No especificada'),
+
+                                TextEntry::make('cin_area')
+                                    ->label('Área Total')
+                                    ->numeric(
+                                        decimalPlaces: 2,
+                                        decimalSeparator: '.',
+                                        thousandsSeparator: ',',
+                                    )
+                                    ->suffix(' m²')
+                                    ->icon('heroicon-o-square-3-stack-3d')
+                                    ->badge()
+                                    ->color('primary')
+                                    ->placeholder('No especificada')
+                                    ->columnSpan(2),
+                            ]),
+
+                    ]),
+
                 Section::make('Establecimiento')
                     ->description('Información del establecimiento inspeccionado')
                     ->icon('heroicon-o-building-office')
@@ -224,14 +215,14 @@ class CertificadoInspeccionResource extends Resource
                             ->label('Tipo de Edificación')
                             ->badge()
                             ->size(TextSize::Large)
-                            ->color(fn (string $state) => match ($state) {
+                            ->color(fn(string $state) => match ($state) {
                                 'RIESGO BAJO' => 'info',
                                 'RIESGO MEDIO' => 'warning',
                                 'RIESGO ALTO' => 'danger',
                                 'RIESGO MUY ALTO' => 'danger',
                                 default => 'gray',
                             })
-                            ->icon(fn (string $state) => match ($state) {
+                            ->icon(fn(string $state) => match ($state) {
                                 'RIESGO BAJO' => 'heroicon-o-shield-check',
                                 'RIESGO MEDIO' => 'heroicon-o-shield-exclamation',
                                 'RIESGO ALTO' => 'heroicon-o-exclamation-triangle',
@@ -257,14 +248,14 @@ class CertificadoInspeccionResource extends Resource
                             ->icon('heroicon-o-map-pin')
                             ->placeholder('No especificada')
                             ->columnSpanFull(),
-                        
+
                         TextEntry::make('cin_giro')
                             ->label('Giro del Negocio')
                             ->icon('heroicon-o-briefcase')
                             ->placeholder('No especificado')
                             ->columnSpanFull(),
                     ]),
-                
+
                 // --- Sección 3: Vigencia y Capacidad ---
 
                 // --- Sección 4: Información Administrativa ---
@@ -278,8 +269,8 @@ class CertificadoInspeccionResource extends Resource
                             ->label('Nota')
                             ->placeholder('Sin notas')
                             ->columnSpanFull(),
-                        
-                        
+
+
                     ])
             ]);
     }
@@ -288,7 +279,7 @@ class CertificadoInspeccionResource extends Resource
     {
         return CertificadoInspeccionsTable::configure($table)
             ->bulkActions([
-        
+
             ]);
     }
 
@@ -308,5 +299,5 @@ class CertificadoInspeccionResource extends Resource
             'edit' => EditCertificadoInspeccion::route('/{record}/edit'),
         ];
     }
-    
+
 }

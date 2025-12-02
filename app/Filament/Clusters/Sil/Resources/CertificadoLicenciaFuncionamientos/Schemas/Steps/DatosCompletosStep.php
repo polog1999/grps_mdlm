@@ -80,7 +80,7 @@ class DatosCompletosStep
             $nr = (array) $data['nivel_riesgo'];
             $set('proccodigo', $nr['proccodigo'] ?? null);
             $set('procnivel', $nr['procnivel'] ?? null);
-            
+
             if (isset($nr['nivel_riesgo'])) {
                 $nrd = (array) $nr['nivel_riesgo'];
                 $set('nir_id', $nrd['nir_id'] ?? null);
