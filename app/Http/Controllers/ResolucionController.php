@@ -28,4 +28,10 @@ class ResolucionController extends Controller
         $resultado = $this->service->obtenerNumeroResolucionPorNumeroExpediente($num_exp);
         return response()->json($resultado);
     }
+    //obtenerResolucionMasAreaCompletaPorNumeroResolucion
+    public function obtenerResolucionMasAreaCompletaPorNumeroResolucion($num_exp)
+    {
+        $resultado = $this->service->obtenerResolucionMasAreaCompletaPorNumeroResolucion($num_exp);
+        return response()->json($resultado);
+    }
 }
