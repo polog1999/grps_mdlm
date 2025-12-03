@@ -123,12 +123,12 @@ class SeleccionCoincidenciasStep
                 ->compact()
         ];
     }
-    //--- SECCIÓN 3: Schema de Persona ---
+    // --- SECCIÓN 3: Schema de Persona ---
     private static function schemaBuscarPersona(): array
     {
         return [
             Section::make('Vincular Persona al Expediente')
-                ->description("El expediente encontrado no tiene un solicitante identificado. Por favor, busque y seleccione la persona correcta.")
+                ->description("El expediente encontrado no tiene un solicitante identificado...")
                 ->icon('heroicon-o-user-plus')
                 ->schema([
                     // Campo 1: Nombre y Apellidos
@@ -137,6 +137,11 @@ class SeleccionCoincidenciasStep
                         ->placeholder('Buscar persona...')
                         ->dehydrated(false)
                         ->columnSpan(1)
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Debes buscar y seleccionar una Persona Natural.',
+                        ])
+                        ->validationAttribute('Nombre y Apellidos')
                         ->suffixAction(
                             Action::make('buscar_nombre_modal')
                                 ->icon('heroicon-o-magnifying-glass')
@@ -156,9 +161,6 @@ class SeleccionCoincidenciasStep
                                                 ->toArray();
                                         })
                                         ->getOptionLabelUsing(function ($value): ?string {
-                                            if (!$value || !is_scalar($value)) {
-                                                return null;
-                                            }
                                             return Persona::find($value)?->per_nombrerazonsocial;
                                         })
                                         ->required()
@@ -169,10 +171,13 @@ class SeleccionCoincidenciasStep
                                         $persona = Persona::find($data['_persona_nombre_temp']);
                                         if ($persona) {
                                             $set('_temp_nombre_apellidos', $persona->per_nombrerazonsocial);
+
+                                            // IMPORTANTE: HE BORRADO LA LÍNEA QUE LIMPIABA LA RAZÓN SOCIAL
+                                            // $set('_temp_razon_social', null); <--- ELIMINADO
+                        
                                             $set('exp_nomrec', $persona->per_nombrerazonsocial);
                                             $set('exp_nomrec_id', $persona->per_id);
 
-                                            // Actualizar el estado interno
                                             self::actualizarPersonaEnDatos($get, $set, 'exp_nomrec', $persona->per_nombrerazonsocial, $persona->per_id);
                                         }
                                     }
@@ -185,6 +190,11 @@ class SeleccionCoincidenciasStep
                         ->placeholder('Buscar razón social...')
                         ->dehydrated(false)
                         ->columnSpan(1)
+                        ->required()
+                        ->validationMessages([
+                            'required' => 'Debes buscar y seleccionar una Razón Social (Empresa).',
+                        ])
+                        ->validationAttribute('Razón Social')
                         ->suffixAction(
                             Action::make('buscar_razon_modal')
                                 ->icon('heroicon-o-magnifying-glass')
@@ -204,9 +214,6 @@ class SeleccionCoincidenciasStep
                                                 ->toArray();
                                         })
                                         ->getOptionLabelUsing(function ($value): ?string {
-                                            if (!$value || !is_scalar($value)) {
-                                                return null;
-                                            }
                                             return Persona::find($value)?->per_nombrerazonsocial;
                                         })
                                         ->required()
@@ -217,10 +224,13 @@ class SeleccionCoincidenciasStep
                                         $persona = Persona::find($data['_persona_razon_temp']);
                                         if ($persona) {
                                             $set('_temp_razon_social', $persona->per_nombrerazonsocial);
+
+                                            // IMPORTANTE: HE BORRADO LA LÍNEA QUE LIMPIABA EL NOMBRE
+                                            // $set('_temp_nombre_apellidos', null); <--- ELIMINADO
+                        
                                             $set('exp_razsoc', $persona->per_nombrerazonsocial);
                                             $set('exp_razsoc_id', $persona->per_id);
 
-                                            // Actualizar el estado interno
                                             self::actualizarPersonaEnDatos($get, $set, 'exp_razsoc', $persona->per_nombrerazonsocial, $persona->per_id);
                                         }
                                     }
@@ -229,7 +239,6 @@ class SeleccionCoincidenciasStep
                 ])->columns(2)->compact()
         ];
     }
-
     private static function actualizarPersonaEnDatos(callable $get, callable $set, string $campo, string $nombre, int $personaId): void
     {
         $datosRaw = $get('_datos_completos');
