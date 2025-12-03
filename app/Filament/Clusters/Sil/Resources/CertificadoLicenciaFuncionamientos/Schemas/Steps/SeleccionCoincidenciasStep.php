@@ -7,7 +7,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Wizard\Step;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\DatosCompletosStep;
 
-class SeleccionCatastroStep
+class SeleccionCoincidenciasStep
 {
     public static function make(): Step
     {

@@ -92,8 +92,8 @@ class DatosCompletosStep
         if (!empty($data['resolucion'])) {
             $res = (array) $data['resolucion'];
 
-            // Si hay codigo_unico_tramite, usarlo; si no, usar numero_resolucion
-            $valorResolucion = $res['codigo_unico_tramite'] ?? $res['numero_resolucion'] ?? null;
+            $valorResolucion = $res['codigo_unico_tramite'] ?? null;
+
             $set('n_resolucion', $valorResolucion);
 
             // Convertir fecha de DD/MM/YYYY a formato que DatePicker entienda (YYYY-MM-DD)
