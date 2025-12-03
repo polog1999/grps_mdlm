@@ -2,98 +2,79 @@
 
 namespace App\Services\Sil\Licencias\Handlers;
 
+use App\Models\CertificadoLicenciaFuncionamiento;
 use Illuminate\Database\ConnectionInterface;
 use App\Services\Sil\Licencias\Concerns\PostgresHelpers;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class LicenciaUpdater
 {
-    use PostgresHelpers;
-
-    protected $db;
-
-    public function __construct(ConnectionInterface $db)
-    {
-        $this->db = $db;
-    }
-
     public function execute(array $data)
     {
-        // 1. Preparar Arrays de Giros
-        $arrGirId = [];
-        $arrEspecifico = [];
-        $arrLigId = [];
-        $arrEstado = [];
+        // El modelo ya tiene definida la conexión 'pgsql_licencias'
+        // No necesitamos especificarla aquí
+        return DB::transaction(function () use ($data) {
 
-        if (!empty($data['giros'])) {
-            foreach ($data['giros'] as $giro) {
-                $arrGirId[] = $giro['gir_id'];
-                // Escapamos comillas dobles para el array de texto de Postgres
-                // La logica original usaba str_replace manual, aqui usamos el helper si fuera necesario
-                // Pero el helper formatPostgresArray ya maneja el escaping si le pasamos isText=true
-                // Sin embargo, la logica original hacia un str_replace especifico antes.
-                // Usaremos los arrays crudos y dejaremos que formatPostgresArray lo maneje.
-                $arrEspecifico[] = $giro['especifico']; 
-                $arrLigId[] = $giro['lig_id'];
-                $arrEstado[] = $giro['estado']; 
-            }
-        }
+            // 1. Buscamos la Licencia (usa automáticamente pgsql_licencias)
+            $licencia = CertificadoLicenciaFuncionamiento::findOrFail($data['lic_id']);
 
-        // 2. Ejecutar SP
-        // Nota: Como devuelve SETOF resultado, usamos select()
-        // Usamos spu_licencia_upd3 como en el servicio original
-        $sql = "SELECT * FROM licencia.spu_licencia_upd3(
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-            ?::int[], ?::text[], ?::int[], ?::text[], 
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )";
+            // 2. Helper local para limpiar fechas
+            $parseDate = function ($date) {
+                if (empty($date) || trim($date) === '/  /' || trim($date) === '') {
+                    return null;
+                }
+                try {
+                    return Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    return null;
+                }
+            };
 
-        $params = [
-            $data['lic_id'],
-            $data['tli_id'],
-            $data['tes_id'],
-            $data['per_idsolicitante'],
-            $data['per_idrazonsocial'],
-            $data['lic_numlic'],
-            $data['lic_codigopredial'],
-            $data['lic_expnum'],
-            $data['lic_direccion'],
-            $data['lic_urbanizacion'],
-            $data['lic_area'],
-            $data['lic_mype'] ? 'true' : 'false',
-            $data['lic_resnum'],
-            $data['lic_fecharesolucion'],   // String 'DD/MM/YYYY'
-            $data['lic_fechaemision'],      // String 'DD/MM/YYYY'
-            $data['lic_fechavencimiento'],  // String 'DD/MM/YYYY' o null
-            $data['lic_licobs'],
-            $data['lic_giro'],
-            $data['fiu_id'],
-            $data['lca_descripcion'],
-            $data['lca_urbanizacion'],
-            $data['lca_zonificacion'],
-            $data['lca_origen'],
-            $data['cec_id'] ?? 0,
-            $data['tlo_id'] ?? 0,
-            $data['lcc_observacion'] ?? '',
-            $data['lcc_local'] ?? '',
-            
-            // Arrays formateados usando el helper
-            $this->formatPostgresArray($arrGirId),
-            $this->formatPostgresArray($arrEspecifico, true),
-            $this->formatPostgresArray($arrLigId),
-            $this->formatPostgresArray($arrEstado, true),
-            
-            $data['lic_modidirecc'] ? 'true' : 'false',
-            $data['lic_horainicio'],
-            $data['lic_horafin'],
-            $data['tir_id'],
-            $data['lic_nota'],
-            auth()->id(), // usa_id
-            $data['compatibilidad'],
-            $data['rsgparrafo1'] ?? '',
-            $data['rsgparrafo2'] ?? '',
-            $data['nir_id'] ?? 0
-        ];
+            // 3. Actualizamos los campos
+            $licencia->update([
+                // IDs y Relaciones
+                'tli_id' => $data['tli_id'],
+                'tes_id' => $data['tes_id'],
+                'per_idsolicitante' => $data['per_idsolicitante'],
+                'per_idrazonsocial' => $data['per_idrazonsocial'],
+                'usa_id' => auth()->id() ?? $data['usa_id'],
 
-        return $this->db->select($sql, $params);
+                // Datos Generales
+                'lic_numlic' => $data['lic_numlic'],
+                'lic_codigopredial' => $data['lic_codigopredial'],
+                'lic_expnum' => $data['lic_expnum'],
+                'lic_direccion' => $data['lic_direccion'],
+                'lic_urbanizacion' => $data['lic_urbanizacion'],
+                'lic_area' => $data['lic_area'],
+                'lic_mype' => (bool) $data['lic_mype'],
+                'lic_resnum' => $data['lic_resnum'],
+
+                // Fechas
+                'lic_fecharesolucion' => $parseDate($data['lic_fecharesolucion']),
+                'lic_fechaemision' => $parseDate($data['lic_fechaemision']),
+                'lic_fechavencimiento' => $parseDate($data['lic_fechavencimiento']),
+
+                // Observaciones y Textos
+                'lic_licobs' => $data['lic_licobs'],
+                'lic_giro' => $data['lic_giro'],
+                'lic_nota' => mb_strtoupper($data['lic_nota'] ?? '', 'UTF-8'),
+
+                // Campos de control interno
+                'lic_filaoriginal' => false,
+
+                // Horarios y Compatibilidad
+                'lic_horainicio' => $data['lic_horainicio'],
+                'lic_horafin' => $data['lic_horafin'],
+                'tir_id' => $data['tir_id'],
+                'lic_compatibilidad' => $data['compatibilidad'],
+                'lic_rsgparrafo1' => $data['rsgparrafo1'] ?? '',
+                'lic_rsgparrafo2' => $data['rsgparrafo2'] ?? '',
+                'nir_id' => $data['nir_id'] ?? 0
+            ]);
+
+            // Retornamos el modelo actualizado
+            return $licencia;
+        });
     }
 }
