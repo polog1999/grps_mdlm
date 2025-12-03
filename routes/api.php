@@ -15,6 +15,7 @@ use App\Http\Controllers\TipoLocalController;
 use App\Http\Controllers\LicenciaPersonaController;
 use App\Http\Controllers\LicenciaUpdateController;
 use App\Http\Controllers\LicenciaCrudController;
+use App\Http\Controllers\ResolucionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +36,7 @@ Route::prefix('v1')->group(function () {
     */
     Route::get('/tipo-edificacion', [TipoEdificacionController::class, 'getTipoEdificaciones']);
 
-    
+
     /*
     |--------------------------------------------------------------------------
     | LICENCIAS - Consultas
@@ -47,6 +48,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/numero/{lic_numlic}', [LicenciaController::class, 'obtenerPorNumeroLicencia']);
         Route::get('/licencia-expediente/{lic_numlic}/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroLicenciaYExpediente']);
         Route::get('/id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia']);
+
+        Route::get('/tipo-licencia/expediente/{lic_expnum}', [LicenciaController::class, 'obtenerTipoLicenciaPorExpediente']);
+        Route::get('/tipo-licencia/numero/{lic_numlic}', [LicenciaController::class, 'obtenerTipoLicenciaPorNumeroLicencia']);
+
         //obtenerDatosDePersonaORazonSocialPorNombre
         Route::get('/persona-razon-social/{nombre_razon_social}', [LicenciaCrudController::class, 'obtenerDatosDePersonaORazonSocialPorNombre']);
         Route::get('/expediente-razon-social/{lic_expnum}', [LicenciaCrudController::class, 'obtenerDatosDeRazonSocialPorExpediente']);
@@ -71,6 +76,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/buscar-ubicacion', [CertificadoInspeccionController::class, 'buscarUbicacion']);
         Route::get('/exportar-pdf/{certificadoId}', [CertificadoInspeccionController::class, 'exportarPdf']);
         Route::put('/eliminar/{certificadoId}', [CertificadoInspeccionController::class, 'borrarCertificado']);
+        Route::post('/certificado/upload-actualizado/{certificadoId}', [CertificadoInspeccionController::class, 'subirPdfActualizado']);
+        Route::post('/certificado/reemplazar-actualizado/{certificadoId}', [CertificadoInspeccionController::class, 'reemplazarPdfActualizado']);
     });
 
 
@@ -100,7 +107,6 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/tipo-licencia', [TipoLicenciaController::class, 'getTipoLicencias']);
-
     /*
     |--------------------------------------------------------------------------
     | TIPO DE CENTRO COMERCIAL
@@ -108,11 +114,11 @@ Route::prefix('v1')->group(function () {
     */
     Route::get('/tipo-centro-comercial', [TipoCentroComercialController::class, 'getTipoCentroComercial']);
 
-   /*
-    |--------------------------------------------------------------------------
-    | TIPO DE LOCAL
-    |--------------------------------------------------------------------------
-    */
+    /*
+     |--------------------------------------------------------------------------
+     | TIPO DE LOCAL
+     |--------------------------------------------------------------------------
+     */
     Route::get('/tipo-local', [TipoLocalController::class, 'getTipoLocal']);
 
     /*
@@ -133,4 +139,16 @@ Route::prefix('v1')->group(function () {
         Route::get('/obtenerGirosPorIdLicencia/{lic_id}', [GiroLicenciaController::class, 'obtenerGirosPorIdLicencia']);
     });
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESOLUCION
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('resolucion')->group(function () {
+        Route::get('/buscar-expnum-por-resolucion/{numres}', [ResolucionController::class, 'obtenerNumeroExpedientePorNumeroResolucion']);
+        Route::get('/buscar-resolucion-por-expnum/{numexp}', [ResolucionController::class, 'obtenerNumeroResolucionPorNumeroExpediente']);
+        //obtenerResolucionMasAreaCompletaPorNumeroResolucion
+        Route::get('/obtener-area-por-resolucion/{numres}', [ResolucionController::class, 'obtenerResolucionMasAreaCompletaPorNumeroResolucion']);
+    });
 });

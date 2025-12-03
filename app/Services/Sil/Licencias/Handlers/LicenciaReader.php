@@ -17,12 +17,12 @@ class LicenciaReader
 
     public function findById($licId)
     {
-         return $this->db
-        ->table('licencia.vu_licencia')
-        ->select("*")
-        ->where('lic_id', $licId)
-        ->get()
-        ->first();
+        return $this->db
+            ->table('licencia.vu_licencia')
+            ->select("*")
+            ->where('lic_id', $licId)
+            ->get()
+            ->first();
     }
 
     //Paso 1: Datos de Expediente
@@ -46,12 +46,12 @@ class LicenciaReader
 
         $datos_persona = $this->db2
             ->table('DS_VALORES.VU_PERSONA2')
-            ->select('nomcom','domfis','numtel','correo','codcon')
+            ->select('nomcom', 'domfis', 'numtel', 'correo', 'codcon')
             ->where('CODCON', $cod_con)
             ->first();
 
         if (!$datos_persona) {
-            return (object)[
+            return (object) [
                 'nomcom' => null,
                 'domfis' => null,
                 'numtel' => null,
@@ -68,11 +68,11 @@ class LicenciaReader
         return $datos_persona;
     }
 
-   public function obtenerDatosDePersonaORazonSocialPorNombre($nombre)
+    public function obtenerDatosDePersonaORazonSocialPorNombre($nombre)
     {
         $personas = $this->db
             ->table('licencia.persona')
-            ->select('per_id','per_nombrerazonsocial')
+            ->select('per_id', 'per_nombrerazonsocial')
             ->where('per_nombrerazonsocial', $nombre)
             ->where('per_filaeliminada', false)
             ->orderBy('per_id', 'desc')
@@ -81,9 +81,11 @@ class LicenciaReader
         return $personas;
     }
     //Paso 1: Datos de Expediente
-    public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat){
+    public function obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codcat)
+    {
         $sql = "
-            SELECT                     
+            SELECT      
+                TRIM(t.coduca) AS coduca,               
                 TRIM(t.codpredio) AS codpredio,
                 TRIM(t.descurb) AS descurb,
                 TRIM(t.codvia) AS codvia,
@@ -195,9 +197,10 @@ class LicenciaReader
         return $resultado_final;
 
     }
-    
+
     //Paso 1: Datos de Expediente
-    public function obtenerDatosGeneralesDeLicenciaPorExpediente($expnum){
-        
+    public function obtenerDatosGeneralesDeLicenciaPorExpediente($expnum)
+    {
+
     }
 }

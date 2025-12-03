@@ -7,19 +7,31 @@ use Illuminate\Http\Request;
 
 class ResolucionController extends Controller
 {
-   
+
     protected $service;
-    
-  
+
+
     public function __construct(ResolucionService $service)
     {
         $this->service = $service;
     }
 
-    
-    public function obtenerNumeroExpedientePorNumeroResolucion()
+
+    public function obtenerNumeroExpedientePorNumeroResolucion($num_res)
     {
-        $resultado = $this->service->obtenerNumeroExpedientePorNumeroResolucion();
+        $resultado = $this->service->obtenerNumeroExpedientePorNumeroResolucion($num_res);
+        return response()->json($resultado);
+    }
+
+    public function obtenerNumeroResolucionPorNumeroExpediente($num_exp)
+    {
+        $resultado = $this->service->obtenerNumeroResolucionPorNumeroExpediente($num_exp);
+        return response()->json($resultado);
+    }
+    //obtenerResolucionMasAreaCompletaPorNumeroResolucion
+    public function obtenerResolucionMasAreaCompletaPorNumeroResolucion($num_exp)
+    {
+        $resultado = $this->service->obtenerResolucionMasAreaCompletaPorNumeroResolucion($num_exp);
         return response()->json($resultado);
     }
 }

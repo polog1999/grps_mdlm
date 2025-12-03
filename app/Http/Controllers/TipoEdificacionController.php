@@ -20,7 +20,7 @@ class TipoEdificacionController extends Controller
      * @var TipoEdificacionService
      */
     protected $service;
-    
+
     /**
      * Constructor.
      *

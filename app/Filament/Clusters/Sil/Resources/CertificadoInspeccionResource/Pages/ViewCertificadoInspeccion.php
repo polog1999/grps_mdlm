@@ -18,5 +18,5 @@ class ViewCertificadoInspeccion extends ViewRecord
             EditAction::make(),
         ];
     }
-    
+
 }

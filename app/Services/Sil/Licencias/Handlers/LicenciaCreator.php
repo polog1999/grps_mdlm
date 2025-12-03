@@ -22,15 +22,27 @@ class LicenciaCreator
         try {
             $girosIds = [];
             $girosEspecificos = [];
-            
+<<<<<<< HEAD
+=======
+            $girosDescripciones = [];  // Para construir plic_giro
+>>>>>>> feature/licencias
+
             if (isset($datos['licencias']['tabla_giros']) && is_array($datos['licencias']['tabla_giros'])) {
                 $girosSeleccionados = $datos['licencias']['giros_seleccionar'] ?? [];
-                
+
                 foreach ($datos['licencias']['tabla_giros'] as $index => $giro) {
-                    $girosIds[] = isset($girosSeleccionados[$index]) ? (int)$girosSeleccionados[$index] : 0;
+                    $girosIds[] = isset($girosSeleccionados[$index]) ? (int) $girosSeleccionados[$index] : 0;
                     $girosEspecificos[] = $giro['giro_especifico'] ?? '';
+
+                    // Agregar la descripción del giro para plic_giro
+                    if (!empty($giro['giro'])) {
+                        $girosDescripciones[] = $giro['giro'];
+                    }
                 }
             }
+
+            // Construir plic_giro como string concatenado con comas
+            $plicGiro = !empty($girosDescripciones) ? implode(',', $girosDescripciones) : '';
 
             $sql = "SELECT * FROM licencia.spu_licencia_ins4(
                 ?, ?::integer[], ?::text[], ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
@@ -47,7 +59,7 @@ class LicenciaCreator
                 $datos['licencias']['numero_licencia'] ?? '', // 8 plic_numlic
                 $datos['catastro']['codpredio'] ?? '', // 9 plic_codigopredial
                 $datos['expediente']['exp_num'] ?? '', // 10 plic_expnum
-                (float)($datos['catastro']['area_economica'] ?? 0), // 11 plic_area
+                (float) ($datos['catastro']['area_economica'] ?? 0), // 11 plic_area
                 ($datos['licencias']['mype'] ?? '0') === '1', // 12 plic_mype
                 $datos['licencias']['n_resolucion'] ?? '', // 13 plic_resnum
                 $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null), // 14 p_lic_fecharesolucion
@@ -61,7 +73,7 @@ class LicenciaCreator
                 $datos['licencias']['direccion'] ?? '', // 22 plca_descripcion
                 $datos['catastro']['descurb'] ?? '', // 23 urbanizacion_id
                 $datos['catastro']['zonificacion'] ?? '', // 24 plca_zonificacion
-                '', // 25 plic_giro
+                $plicGiro, // 25 plic_giro (concatenado con comas)
                 false, // 26 p_lic_modidirecc
                 $datos['licencias']['hora_inicio'] ?? '09:00', // 27 p_lic_horainicio
                 $datos['licencias']['hora_fin'] ?? '18:00', // 28 p_lic_horafin
@@ -79,9 +91,9 @@ class LicenciaCreator
             Log::info('Ejecutando spu_licencia_ins4 con parámetros:', $parametros);
 
             $result = $this->db->select($sql, $parametros);
-            
+
             Log::info('Licencia insertada exitosamente', ['result' => $result]);
-            
+
             return $result;
         } catch (\Exception $e) {
             Log::error("Error al insertar licencia: " . $e->getMessage());

@@ -21,7 +21,7 @@ class SectionHeaderActions
             ->label('Guardar')
             ->icon('heroicon-o-check')
             ->color('success')
-            ->visible(fn ($get) => $get("_section_{$section}_saved") !== true)
+            ->visible(fn($get) => $get("_section_{$section}_saved") !== true)
             ->action(function ($set) use ($section) {
                 $set("_section_{$section}_saved", true);
                 self::notify('success', ucfirst($section) . ' Guardado', 'Los datos han sido guardados.');
@@ -34,7 +34,7 @@ class SectionHeaderActions
             ->label('Editar')
             ->icon('heroicon-o-pencil')
             ->color('warning')
-            ->visible(fn ($get) => $get("_section_{$section}_saved") === true)
+            ->visible(fn($get) => $get("_section_{$section}_saved") === true)
             ->action(function ($set) use ($section) {
                 $set("_section_{$section}_saved", false);
                 self::notify('info', 'Modo edición', 'Ahora puede editar los datos.');

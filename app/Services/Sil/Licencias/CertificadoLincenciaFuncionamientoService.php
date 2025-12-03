@@ -9,7 +9,7 @@ class CertificadoLincenciaFuncionamientoService
 {
     protected $connectionToOracle;
     protected $connectionToPostgreSQL;
-      public function __construct()
+    public function __construct()
     {
         $this->connectionToOracle = DB::connection('oracle');
         $this->connectionToPostgreSQL = DB::connection('pgsql_licencias');
@@ -34,61 +34,64 @@ class CertificadoLincenciaFuncionamientoService
             ->distinct();
     }
 
-    public function getIdPersonaPorNombre($nombre){
-        return $this->connectionToPostgreSQL
-        ->table('licencia.persona')
-        ->select('per_id')
-        ->where('per_nombrerazonsocial', $nombre)
-        ->where('per_filaeliminada', false)   
-        ->get();
-    }
-    
-    public function obtenerDatosLicenciaFuncionamiento(string $expnum, array $columns = [
-        'exp_num',
-        'exp_fec',
-        'exp_nomrec',
-        'exp_codcon'
-    ])
+    public function getIdPersonaPorNombre($nombre)
     {
+        return $this->connectionToPostgreSQL
+            ->table('licencia.persona')
+            ->select('per_id')
+            ->where('per_nombrerazonsocial', $nombre)
+            ->where('per_filaeliminada', false)
+            ->get();
+    }
+
+    public function obtenerDatosLicenciaFuncionamiento(
+        string $expnum,
+        array $columns = [
+            'exp_num',
+            'exp_fec',
+            'exp_nomrec',
+            'exp_codcon'
+        ]
+    ) {
         try {
-        $query = $this->connectionToOracle
-            ->table('ds_valores.dur_expediente as e')
-            ->join('ds_valores.vu_persona2 as p', 'e.exp_codcon', '=', 'p.codcon')
-            ->where('e.exp_num', $expnum);
+            $query = $this->connectionToOracle
+                ->table('ds_valores.dur_expediente as e')
+                ->join('ds_valores.vu_persona2 as p', 'e.exp_codcon', '=', 'p.codcon')
+                ->where('e.exp_num', $expnum);
 
-        $selects = array_merge(
-            array_map(fn($col) => "e.{$col}", $columns), 
-            ['p.numdoc', 'p.domfis','p.numtel','p.correo'] 
-        );
-        $query->select($selects);
+            $selects = array_merge(
+                array_map(fn($col) => "e.{$col}", $columns),
+                ['p.numdoc', 'p.domfis', 'p.numtel', 'p.correo']
+            );
+            $query->select($selects);
 
-        if (count($columns) === 1) {
-            return $query->pluck("e.{$columns[0]}");
-        }
-
-        $rows = $query->get();
-
-        // Obtener per_id usando exp_nomrec
-        $rows = $rows->map(function ($r) {
-            if (isset($r->exp_nomrec) && !empty($r->exp_nomrec)) {
-                // Usamos el método getIdPersonaPorNombre que ya existe en la clase
-                $persona = $this->getIdPersonaPorNombre($r->exp_nomrec)->first();
-                $r->per_id = $persona ? $persona->per_id : null;
-            } else {
-                $r->per_id = null;
+            if (count($columns) === 1) {
+                return $query->pluck("e.{$columns[0]}");
             }
-            return $r;
-        });
 
-        $codcat = $this->obtenerCodCatPorExpediente($expnum);
-        if (! empty($codcat)) {
-            $rows = $rows->map(function ($r) use ($codcat) {
-                $r->ecc_codcat = $codcat;
+            $rows = $query->get();
+
+            // Obtener per_id usando exp_nomrec
+            $rows = $rows->map(function ($r) {
+                if (isset($r->exp_nomrec) && !empty($r->exp_nomrec)) {
+                    // Usamos el método getIdPersonaPorNombre que ya existe en la clase
+                    $persona = $this->getIdPersonaPorNombre($r->exp_nomrec)->first();
+                    $r->per_id = $persona ? $persona->per_id : null;
+                } else {
+                    $r->per_id = null;
+                }
                 return $r;
             });
-        }
 
-        return $rows;
+            $codcat = $this->obtenerCodCatPorExpediente($expnum);
+            if (!empty($codcat)) {
+                $rows = $rows->map(function ($r) use ($codcat) {
+                    $r->ecc_codcat = $codcat;
+                    return $r;
+                });
+            }
+
+            return $rows;
 
         } catch (\Throwable $e) {
             Log::error("Error al obtener datos de Expediente para EXP_NUM {$expnum}: " . $e->getMessage());
@@ -112,22 +115,23 @@ class CertificadoLincenciaFuncionamientoService
         }
     }
 
-    public function obtenerCodCatPorExpedienteConVuLicencias(string $lic_id) {
+    public function obtenerCodCatPorExpedienteConVuLicencias(string $lic_id)
+    {
 
-        try{
-            $result = $this -> connectionToPostgreSQL
+        try {
+            $result = $this->connectionToPostgreSQL
                 ->table('licencia.vu_licencia')
-                ->select ('codigocatastral')
+                ->select('codigocatastral')
                 ->where('lic_id', $lic_id)
                 ->first();
 
             return $result ? $result->codigocatastral : null;
 
-        }catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             Log::error("Error al obtener CODCAT para LIC_ID {$lic_id}: " . $e->getMessage());
             return null;
         }
-        
+
     }
 
     public function obtenerDireccionSolicitantePorIdLicencia(string $lic_id)
@@ -156,7 +160,7 @@ class CertificadoLincenciaFuncionamientoService
     {
         try {
 
-           $sql = "
+            $sql = "
                 SELECT
                     TRIM(t.coduca) AS coduca,
                     TRIM(t.codpredio) AS codpredio,
@@ -229,7 +233,7 @@ class CertificadoLincenciaFuncionamientoService
                             ->orderBy('fiu_id', 'DESC')
                             ->limit(1)
                             ->first();
-                        
+
                         $r->fiu_id = $fiuResult ? $fiuResult->fiu_id : null;
                     } catch (\Throwable $e) {
                         Log::error("Error al obtener fiu_id para coduca {$r->coduca}: " . $e->getMessage());
@@ -252,8 +256,8 @@ class CertificadoLincenciaFuncionamientoService
             $rows = $this->connectionToOracle
                 ->table('ds_valores.VU_PROCEDIMIENTO_TOTAL')
                 ->select('PROCCODIGO', 'PROCDESCRI')
-                ->whereIn('PROCCODIGO', ['P047', 'P046', 'P048', 'P043', 'P041','P042','P044'])
-               ->get();
+                ->whereIn('PROCCODIGO', ['P047', 'P046', 'P048', 'P043', 'P041', 'P042', 'P044'])
+                ->get();
 
             $collection = collect($rows)->map(function ($r) {
                 $arr = (array) $r;
@@ -291,7 +295,8 @@ class CertificadoLincenciaFuncionamientoService
         }
     }
 
-    public function obtenerNivelDeRiesgoPorExpediente(string $exp_num){
+    public function obtenerNivelDeRiesgoPorExpediente(string $exp_num)
+    {
         try {
             // 1. Obtener proccodigo desde Oracle
             $row = $this->connectionToOracle
@@ -300,7 +305,7 @@ class CertificadoLincenciaFuncionamientoService
                 ->where('exp_num', $exp_num)
                 ->first();
 
-            if (! $row || ! isset($row->proccodigo)) {
+            if (!$row || !isset($row->proccodigo)) {
                 return null;
             }
 
@@ -311,7 +316,7 @@ class CertificadoLincenciaFuncionamientoService
 
             $proc = $procedimientos->firstWhere('proccodigo', $proccodigo);
 
-            if (! $proc || ! isset($proc->procnivel)) {
+            if (!$proc || !isset($proc->procnivel)) {
                 return null;
             }
 
@@ -326,8 +331,8 @@ class CertificadoLincenciaFuncionamientoService
 
             // 4. Retornar TODO junto
             return [
-                'proccodigo'   => $proccodigo,
-                'procnivel'    => $procnivel,
+                'proccodigo' => $proccodigo,
+                'procnivel' => $procnivel,
                 'nivel_riesgo' => $nivelRiesgo,
             ];
 
@@ -337,12 +342,13 @@ class CertificadoLincenciaFuncionamientoService
         }
     }
 
-    public function obtenerDatosParaRegistrarLicencia(string $exp_num){
+    public function obtenerDatosParaRegistrarLicencia(string $exp_num)
+    {
 
         try {
             // Reusar la función de obtenerNivelDeRiesgoPorExpediente
             $nivelRiesgoData = $this->obtenerNivelDeRiesgoPorExpediente($exp_num);
-            
+
             if ($nivelRiesgoData === null) {
                 Log::warning("No se encontraron datos de nivel de riesgo para EXP_NUM: {$exp_num}");
                 return null;
@@ -356,16 +362,20 @@ class CertificadoLincenciaFuncionamientoService
     }
     /**
      * Obtiene todos los datos necesarios para registrar una licencia
-     * combinando datos del expediente, catastro y nivel de riesgo.
+     * combinando datos del expediente y nivel de riesgo.
+     * 
+     * Nota: Los datos de catastro ya no se obtienen automáticamente aquí.
+     * Se deben obtener por separado usando LicenciaService->obtenerDatosGeneralesDeCatastroPorCodigoCatastral()
      *
      * @param string $exp_num
      * @return array|null
      */
-    public function obtenerDatosCompletosParaRegistrarPorExpediente(string $exp_num){
+    public function obtenerDatosCompletosParaRegistrarPorExpediente(string $exp_num)
+    {
         try {
             // 1. Obtener datos del expediente
             $expedienteData = $this->obtenerDatosLicenciaFuncionamiento($exp_num);
-            
+
             if ($expedienteData->isEmpty()) {
                 Log::warning("No se encontraron datos de expediente para EXP_NUM: {$exp_num}");
                 return [
@@ -377,15 +387,11 @@ class CertificadoLincenciaFuncionamientoService
 
             // Obtener el primer registro del expediente
             $expediente = $expedienteData->first();
-            
-            // 2. Obtener datos del catastro si existe ecc_codcat
+
+
+            // 2. Datos de catastro ya no se obtienen aquí
+            // Se deben obtener por separado usando el servicio de LicenciaService
             $catastroData = null;
-            if (isset($expediente->ecc_codcat) && !empty($expediente->ecc_codcat)) {
-                $catastroCollection = $this->obtenerDatosPorCodCat($expediente->ecc_codcat);
-                if (!$catastroCollection->isEmpty()) {
-                    $catastroData = $catastroCollection->first();
-                }
-            }
 
             // 3. Obtener datos del nivel de riesgo
             $nivelRiesgoData = $this->obtenerDatosParaRegistrarLicencia($exp_num);
@@ -395,7 +401,7 @@ class CertificadoLincenciaFuncionamientoService
                 'catastro' => $catastroData,
                 'nivel_riesgo' => $nivelRiesgoData,
             ];
-            
+
         } catch (\Throwable $th) {
             Log::error("Error al obtener datos completos para registrar por expediente: " . $th->getMessage());
             return null;

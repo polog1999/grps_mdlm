@@ -10,7 +10,7 @@ class TipoLicenciaController extends Controller
 {
 
     protected $service;
-    
+
     public function __construct(TipoLicencia $service)
     {
         $this->service = $service;
