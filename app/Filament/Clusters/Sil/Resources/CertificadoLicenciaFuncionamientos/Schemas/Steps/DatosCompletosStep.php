@@ -91,7 +91,10 @@ class DatosCompletosStep
         // Resolución
         if (!empty($data['resolucion'])) {
             $res = (array) $data['resolucion'];
-            $set('n_resolucion', $res['numero_resolucion'] ?? null);
+
+            // Si hay codigo_unico_tramite, usarlo; si no, usar numero_resolucion
+            $valorResolucion = $res['codigo_unico_tramite'] ?? $res['numero_resolucion'] ?? null;
+            $set('n_resolucion', $valorResolucion);
 
             // Convertir fecha de DD/MM/YYYY a formato que DatePicker entienda (YYYY-MM-DD)
             if (!empty($res['fecha_ingreso'])) {

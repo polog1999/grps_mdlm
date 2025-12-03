@@ -36,7 +36,7 @@ Route::prefix('v1')->group(function () {
     */
     Route::get('/tipo-edificacion', [TipoEdificacionController::class, 'getTipoEdificaciones']);
 
-    
+
     /*
     |--------------------------------------------------------------------------
     | LICENCIAS - Consultas
@@ -48,7 +48,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/numero/{lic_numlic}', [LicenciaController::class, 'obtenerPorNumeroLicencia']);
         Route::get('/licencia-expediente/{lic_numlic}/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroLicenciaYExpediente']);
         Route::get('/id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia']);
-        
+
         Route::get('/tipo-licencia/expediente/{lic_expnum}', [LicenciaController::class, 'obtenerTipoLicenciaPorExpediente']);
         Route::get('/tipo-licencia/numero/{lic_numlic}', [LicenciaController::class, 'obtenerTipoLicenciaPorNumeroLicencia']);
 
@@ -114,11 +114,11 @@ Route::prefix('v1')->group(function () {
     */
     Route::get('/tipo-centro-comercial', [TipoCentroComercialController::class, 'getTipoCentroComercial']);
 
-   /*
-    |--------------------------------------------------------------------------
-    | TIPO DE LOCAL
-    |--------------------------------------------------------------------------
-    */
+    /*
+     |--------------------------------------------------------------------------
+     | TIPO DE LOCAL
+     |--------------------------------------------------------------------------
+     */
     Route::get('/tipo-local', [TipoLocalController::class, 'getTipoLocal']);
 
     /*
@@ -148,5 +148,7 @@ Route::prefix('v1')->group(function () {
     Route::prefix('resolucion')->group(function () {
         Route::get('/buscar-expnum-por-resolucion/{numres}', [ResolucionController::class, 'obtenerNumeroExpedientePorNumeroResolucion']);
         Route::get('/buscar-resolucion-por-expnum/{numexp}', [ResolucionController::class, 'obtenerNumeroResolucionPorNumeroExpediente']);
+        //obtenerResolucionMasAreaCompletaPorNumeroResolucion
+        Route::get('/obtener-area-por-resolucion/{numres}', [ResolucionController::class, 'obtenerResolucionMasAreaCompletaPorNumeroResolucion']);
     });
 });

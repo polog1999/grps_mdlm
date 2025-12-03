@@ -8,6 +8,7 @@ use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use App\Services\Sil\Licencias\LicenciaService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use App\Enums\AreaCodigo;
 
 class BusquedaStep
 {
@@ -98,6 +99,7 @@ class BusquedaStep
                     $result['catastro'] = is_object($primerCatastro) ? (array) $primerCatastro : $primerCatastro;
                 }
 
+
                 // Obtener datos de resolución usando el número de expediente
                 try {
                     $resolucionService = app(\App\Services\Sil\CertificadoInspeccion\ResolucionService::class);
@@ -106,16 +108,61 @@ class BusquedaStep
                     if ($resolucionData && $resolucionData->isNotEmpty()) {
                         // Tomar el primer resultado
                         $primeraResolucion = $resolucionData->first();
+                        $numeroResolucion = $primeraResolucion->numero_resolucion ?? '';
+
                         $result['resolucion'] = [
-                            'numero_resolucion' => $primeraResolucion->numero_resolucion ?? '',
+                            'numero_resolucion' => $numeroResolucion,
                             'fecha_ingreso' => $primeraResolucion->fecha_ingreso ?? ''
                         ];
+
+                        // Obtener áreas de resolución si hay número de resolución
+                        if (!empty($numeroResolucion)) {
+                            try {
+                                $areasData = $resolucionService->obtenerResolucionMasAreaCompletaPorNumeroResolucion($numeroResolucion);
+
+                                if ($areasData && $areasData->isNotEmpty()) {
+
+                                    $areasData = $areasData->where('cdgo_area', AreaCodigo::SUBGERENCIA_PROMOCION_EMPRESARIAL->value);
+                                    $cantidadAreas = $areasData->count();
+
+                                    Log::info('Áreas de resolución encontradas:', [
+                                        'numero_resolucion' => $numeroResolucion,
+                                        'cantidad' => $cantidadAreas
+                                    ]);
+
+                                    if ($cantidadAreas > 1) {
+                                        // Múltiples áreas: activar selección
+                                        $areasArray = [];
+                                        foreach ($areasData as $area) {
+                                            $areasArray[] = (array) $area;
+                                        }
+
+                                        $set('_resolucion_areas_coincidencias', $areasArray);
+
+                                        Log::info('Múltiples áreas de resolución detectadas:', [
+                                            'cantidad' => $cantidadAreas,
+                                            'primera_area' => $areasArray[0] ?? null
+                                        ]);
+                                    } else {
+                                        // Una sola área: agregar directamente
+                                        $primeraArea = $areasData->first();
+                                        $result['resolucion']['codigo_unico_tramite'] = $primeraArea->codigo_unico_tramite ?? '';
+                                        $set('_resolucion_areas_coincidencias', null);
+                                    }
+                                }
+                            } catch (\Throwable $e) {
+                                Log::warning('No se pudo obtener áreas de resolución: ' . $e->getMessage());
+                                $set('_resolucion_areas_coincidencias', null);
+                            }
+                        }
                     } else {
                         $result['resolucion'] = null;
+                        $set('_resolucion_areas_coincidencias', null);
                     }
                 } catch (\Throwable $e) {
                     Log::warning('No se pudo obtener datos de resolución: ' . $e->getMessage());
                     $result['resolucion'] = null;
+                    $set('_resolucion_areas_coincidencias', null);
                 }
 
                 $set('_datos_completos', $result);
