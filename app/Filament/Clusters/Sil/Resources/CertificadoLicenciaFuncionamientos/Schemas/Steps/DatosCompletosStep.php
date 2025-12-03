@@ -27,6 +27,12 @@ class DatosCompletosStep
     {
         return [
             Hidden::make('fiu_id')->dehydrated(),
+            Hidden::make('_datos_completos')
+                ->formatStateUsing(fn($state) => is_array($state) ? json_encode($state) : $state)
+                ->dehydrated(false)
+                ->live(),
+
+            Hidden::make('_persona_requerida')->live(),
         ];
     }
 
@@ -42,8 +48,8 @@ class DatosCompletosStep
             $set('exp_razsoc', $exp['exp_nomrec'] ?? null);
 
             // Llenar los IDs
-            $set('exp_nomrec_id', $exp['per_id'] ?? null);
-            $set('exp_razsoc_id', $exp['per_id'] ?? null);
+            $set('exp_nomrec_id', $exp['exp_nomrec_id'] ?? $exp['per_id'] ?? null);
+            $set('exp_razsoc_id', $exp['exp_razsoc_id'] ?? $exp['per_id'] ?? null);
         }
 
         // Catastro

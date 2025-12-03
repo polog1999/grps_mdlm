@@ -4,6 +4,7 @@ namespace App\Actions\Sil;
 
 use App\DTOs\Sil\CatastroSearchResult;
 use App\Services\Sil\Licencias\LicenciaService;
+use Illuminate\Support\Facades\Log;
 class ObtenerDatosCatastroAction
 {
     public function __construct(

@@ -9,6 +9,8 @@ class BusquedaExpedienteResult
     public const STATUS_NOT_FOUND = 'NOT_FOUND';
     public const STATUS_SELECTION_CATASTRO = 'SELECTION_CATASTRO';
     public const STATUS_SELECTION_RESOLUCION = 'SELECTION_RESOLUCION';
+
+    public const STATUS_MISSING_PERSONA = 'MISSING_PERSONA';
     public const STATUS_ERROR = 'ERROR';
 
     public function __construct(
@@ -38,5 +40,10 @@ class BusquedaExpedienteResult
     public static function requireResolucionSelection(array $data, array $matches): self
     {
         return new self(self::STATUS_SELECTION_RESOLUCION, data: $data, matches: $matches, message: 'Múltiples áreas de resolución.');
+    }
+
+    public static function requirePersonaSearch(array $data): self
+    {
+        return new self(self::STATUS_MISSING_PERSONA, data: $data, message: 'El expediente no tiene una persona vinculada. Debe buscarla manualmente.');
     }
 }

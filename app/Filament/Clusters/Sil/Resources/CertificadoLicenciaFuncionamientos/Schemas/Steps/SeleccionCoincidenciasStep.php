@@ -5,7 +5,14 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 use Filament\Forms\Components\Radio;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Wizard\Step;
-use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\DatosCompletosStep;
+use App\Actions\Sil\SeleccionarAreaResolucionAction;
+use App\Actions\Sil\SeleccionarCatastroAction;
+use Filament\Forms\Components\Select;
+use App\Actions\Sil\VincularPersonaAction;
+use App\Models\Persona;
+use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 
 class SeleccionCoincidenciasStep
 {
@@ -15,167 +22,306 @@ class SeleccionCoincidenciasStep
             ->description(fn($get) => self::getDescription($get))
             ->icon('heroicon-m-clipboard-document-check')
             ->schema(fn($get) => self::generarInterfazSeleccion($get))
-            ->visible(fn($get) => !empty($get('_catastro_coincidencias')) || !empty($get('_resolucion_areas_coincidencias')));
+            // Solo visible si hay coincidencias pendientes
+            ->visible(
+                fn($get) =>
+                !empty($get('_catastro_coincidencias')) ||
+                !empty($get('_resolucion_areas_coincidencias')) ||
+                !empty($get('_persona_requerida'))
+
+            );
+
     }
 
     private static function getDescription(callable $get): string
     {
-        if (!empty($get('_resolucion_areas_coincidencias'))) {
-            return 'Seleccione el área de resolución correcta';
-        }
-        return 'Resolver duplicados de catastro';
+        return !empty($get('_resolucion_areas_coincidencias'))
+            ? 'Seleccione el área de resolución correcta'
+            : 'Resolver duplicados de catastro';
     }
 
     private static function generarInterfazSeleccion(callable $get): array
     {
-        // Detectar qué tipo de selección se necesita
         $areasResolucion = $get('_resolucion_areas_coincidencias') ?? [];
         $catastroCoincidencias = $get('_catastro_coincidencias') ?? [];
 
-        // Prioridad: Si hay áreas de resolución, mostrar eso primero
         if (!empty($areasResolucion)) {
-            return self::generarSeleccionAreas($areasResolucion, $get);
+            return self::schemaAreas($areasResolucion);
         } elseif (!empty($catastroCoincidencias)) {
-            return self::generarSeleccionCatastro($catastroCoincidencias, $get);
+            return self::schemaCatastro($catastroCoincidencias);
+        }
+
+        if ($get('_persona_requerida')) {
+            return self::schemaBuscarPersona();
         }
 
         return [];
     }
 
-    private static function generarSeleccionAreas(array $areas, callable $get): array
+    // --- SECCIÓN 1: Schema de Áreas ---
+    private static function schemaAreas(array $areas): array
     {
-        $cantidad = count($areas);
         $opciones = [];
         $descripciones = [];
 
         foreach ($areas as $item) {
-            $codigoUnico = is_object($item) ? ($item->codigo_unico_tramite ?? null) : ($item['codigo_unico_tramite'] ?? null);
-            $areaCompleta = is_object($item) ? ($item->area_completa ?? 'Sin área') : ($item['area_completa'] ?? 'Sin área');
-
-            if (!$codigoUnico)
-                continue;
-
-            $opciones[$codigoUnico] = "Código: {$codigoUnico}";
-            $descripciones[$codigoUnico] = "Área: {$areaCompleta}";
+            $item = (array) $item; // Cast rápido para lectura
+            $id = $item['codigo_unico_tramite'] ?? null;
+            if ($id) {
+                $opciones[$id] = "Código: {$id}";
+                $descripciones[$id] = "Área: " . ($item['area_completa'] ?? 'Sin área');
+            }
         }
 
         return [
             Section::make('Múltiples áreas de resolución encontradas')
-                ->description("Se encontraron {$cantidad} áreas diferentes para esta resolución. Por favor, seleccione el área correcta.")
+                ->description("Se encontraron " . count($areas) . " áreas. Seleccione la correcta.")
                 ->icon('heroicon-o-building-office')
                 ->schema([
                     Radio::make('codigo_unico_tramite_seleccionado')
-                        ->label('Áreas disponibles')
                         ->hiddenLabel()
                         ->options($opciones)
                         ->descriptions($descripciones)
                         ->required()
                         ->live()
-                        ->afterStateUpdated(function ($state, $set, $get) {
-                            if (!$state)
-                                return;
-
-                            // Buscar el área completa seleccionada
-                            $areas = $get('_resolucion_areas_coincidencias') ?? [];
-                            $areaSeleccionada = null;
-
-                            foreach ($areas as $item) {
-                                $codigoUnico = is_object($item) ? ($item->codigo_unico_tramite ?? null) : ($item['codigo_unico_tramite'] ?? null);
-
-                                if ($codigoUnico == $state) {
-                                    $areaSeleccionada = is_object($item) ? (array) $item : $item;
-                                    break;
-                                }
-                            }
-
-                            if ($areaSeleccionada) {
-                                // Obtener los datos completos actuales
-                                $datosCompletos = $get('_datos_completos') ?? [];
-
-                                // Agregar el codigo_unico_tramite a la resolución
-                                if (!isset($datosCompletos['resolucion'])) {
-                                    $datosCompletos['resolucion'] = [];
-                                }
-                                $datosCompletos['resolucion']['codigo_unico_tramite'] = $areaSeleccionada['codigo_unico_tramite'] ?? '';
-
-                                // Guardar de vuelta
-                                $set('_datos_completos', $datosCompletos);
-
-                                // Llamar al autocompletado
-                                DatosCompletosStep::autocompletarDatos($datosCompletos, $set);
-                            }
-                        })
+                        ->afterStateUpdated(fn($state, $set, $get) => self::procesarSeleccionArea($state, $set, $get))
                         ->columnSpanFull()
                 ])
-                ->collapsible(false)
                 ->compact()
         ];
     }
 
-    private static function generarSeleccionCatastro(array $coincidencias, callable $get): array
+    // --- SECCIÓN 2: Schema de Catastro ---
+    private static function schemaCatastro(array $coincidencias): array
     {
-        $cantidad = count($coincidencias);
         $opciones = [];
         $descripciones = [];
 
         foreach ($coincidencias as $item) {
-            $fiuId = is_object($item) ? ($item->fiu_id ?? null) : ($item['fiu_id'] ?? null);
-            $via = is_object($item) ? ($item->via_completa ?? 'Sin vía') : ($item['via_completa'] ?? 'Sin vía');
-
-            if (!$fiuId)
-                continue;
-
-            $opciones[$fiuId] = "FIU ID: {$fiuId}";
-            $descripciones[$fiuId] = "Dirección: {$via}";
+            $item = (array) $item;
+            $id = $item['fiu_id'] ?? null;
+            if ($id) {
+                $opciones[$id] = "FIU ID: {$id}";
+                $descripciones[$id] = "Dirección: " . ($item['via_completa'] ?? 'Sin vía');
+            }
         }
 
         return [
             Section::make('Múltiples registros catastrales encontrados')
-                ->description("Hemos detectado {$cantidad} ubicaciones similares. Por favor, seleccione el código de identificación único (FIU ID) correcto para continuar.")
+                ->description("Se encontraron " . count($coincidencias) . " ubicaciones. Seleccione la correcta.")
                 ->icon('heroicon-o-exclamation-triangle')
                 ->schema([
                     Radio::make('fiu_id_seleccionado')
-                        ->label('Listado de coincidencias')
                         ->hiddenLabel()
                         ->options($opciones)
                         ->descriptions($descripciones)
                         ->required()
                         ->live()
-                        ->afterStateUpdated(function ($state, $set, $get) {
-                            if (!$state)
-                                return;
-
-                            // Buscar el registro completo por fiu_id
-                            $coincidencias = $get('_catastro_coincidencias') ?? [];
-                            $catastroSeleccionado = null;
-
-                            foreach ($coincidencias as $item) {
-                                $fiuId = is_object($item) ? ($item->fiu_id ?? null) : ($item['fiu_id'] ?? null);
-
-                                if ($fiuId == $state) {
-                                    $catastroSeleccionado = is_object($item) ? (array) $item : $item;
-                                    break;
-                                }
-                            }
-
-                            if ($catastroSeleccionado) {
-                                // Obtener los datos completos actuales
-                                $datosCompletos = $get('_datos_completos') ?? [];
-
-                                // Agregar el catastro seleccionado
-                                $datosCompletos['catastro'] = $catastroSeleccionado;
-
-                                // Guardar de vuelta
-                                $set('_datos_completos', $datosCompletos);
-
-                                // Llamar al autocompletado
-                                DatosCompletosStep::autocompletarDatos($datosCompletos, $set);
-                            }
-                        })
+                        ->afterStateUpdated(fn($state, $set, $get) => self::procesarSeleccionCatastro($state, $set, $get))
                         ->columnSpanFull()
                 ])
-                ->collapsible(false)
                 ->compact()
         ];
+    }
+    //--- SECCIÓN 3: Schema de Persona ---
+    private static function schemaBuscarPersona(): array
+    {
+        return [
+            Section::make('Vincular Persona al Expediente')
+                ->description("El expediente encontrado no tiene un solicitante identificado. Por favor, busque y seleccione la persona correcta.")
+                ->icon('heroicon-o-user-plus')
+                ->schema([
+                    // Campo 1: Nombre y Apellidos
+                    TextInput::make('_temp_nombre_apellidos')
+                        ->label('Nombre y Apellidos')
+                        ->placeholder('Buscar persona...')
+                        ->dehydrated(false)
+                        ->columnSpan(1)
+                        ->suffixAction(
+                            Action::make('buscar_nombre_modal')
+                                ->icon('heroicon-o-magnifying-glass')
+                                ->modalHeading('Buscar Nombre y Apellidos')
+                                ->modalDescription('Seleccione una persona de la lista')
+                                ->modalSubmitActionLabel('Seleccionar')
+                                ->modalWidth('5xl')
+                                ->form([
+                                    Select::make('_persona_nombre_temp')
+                                        ->label('Buscar Persona')
+                                        ->searchable()
+                                        ->getSearchResultsUsing(function (string $search): array {
+                                            return Persona::query()
+                                                ->where('per_nombrerazonsocial', 'like', "%{$search}%")
+                                                ->limit(20)
+                                                ->pluck('per_nombrerazonsocial', 'per_id')
+                                                ->toArray();
+                                        })
+                                        ->getOptionLabelUsing(function ($value): ?string {
+                                            if (!$value || !is_scalar($value)) {
+                                                return null;
+                                            }
+                                            return Persona::find($value)?->per_nombrerazonsocial;
+                                        })
+                                        ->required()
+                                        ->columnSpanFull()
+                                ])
+                                ->action(function (array $data, $set, $get) {
+                                    if (isset($data['_persona_nombre_temp'])) {
+                                        $persona = Persona::find($data['_persona_nombre_temp']);
+                                        if ($persona) {
+                                            $set('_temp_nombre_apellidos', $persona->per_nombrerazonsocial);
+                                            $set('exp_nomrec', $persona->per_nombrerazonsocial);
+                                            $set('exp_nomrec_id', $persona->per_id);
+
+                                            // Actualizar el estado interno
+                                            self::actualizarPersonaEnDatos($get, $set, 'exp_nomrec', $persona->per_nombrerazonsocial, $persona->per_id);
+                                        }
+                                    }
+                                })
+                        ),
+
+                    // Campo 2: Razón Social
+                    TextInput::make('_temp_razon_social')
+                        ->label('Razón Social')
+                        ->placeholder('Buscar razón social...')
+                        ->dehydrated(false)
+                        ->columnSpan(1)
+                        ->suffixAction(
+                            Action::make('buscar_razon_modal')
+                                ->icon('heroicon-o-magnifying-glass')
+                                ->modalHeading('Buscar Razón Social')
+                                ->modalDescription('Seleccione una razón social de la lista')
+                                ->modalSubmitActionLabel('Seleccionar')
+                                ->modalWidth('5xl')
+                                ->form([
+                                    Select::make('_persona_razon_temp')
+                                        ->label('Buscar Razón Social')
+                                        ->searchable()
+                                        ->getSearchResultsUsing(function (string $search): array {
+                                            return Persona::query()
+                                                ->where('per_nombrerazonsocial', 'like', "%{$search}%")
+                                                ->limit(20)
+                                                ->pluck('per_nombrerazonsocial', 'per_id')
+                                                ->toArray();
+                                        })
+                                        ->getOptionLabelUsing(function ($value): ?string {
+                                            if (!$value || !is_scalar($value)) {
+                                                return null;
+                                            }
+                                            return Persona::find($value)?->per_nombrerazonsocial;
+                                        })
+                                        ->required()
+                                        ->columnSpanFull()
+                                ])
+                                ->action(function (array $data, $set, $get) {
+                                    if (isset($data['_persona_razon_temp'])) {
+                                        $persona = Persona::find($data['_persona_razon_temp']);
+                                        if ($persona) {
+                                            $set('_temp_razon_social', $persona->per_nombrerazonsocial);
+                                            $set('exp_razsoc', $persona->per_nombrerazonsocial);
+                                            $set('exp_razsoc_id', $persona->per_id);
+
+                                            // Actualizar el estado interno
+                                            self::actualizarPersonaEnDatos($get, $set, 'exp_razsoc', $persona->per_nombrerazonsocial, $persona->per_id);
+                                        }
+                                    }
+                                })
+                        ),
+                ])->columns(2)->compact()
+        ];
+    }
+
+    private static function actualizarPersonaEnDatos(callable $get, callable $set, string $campo, string $nombre, int $personaId): void
+    {
+        $datosRaw = $get('_datos_completos');
+        $datosCompletos = is_string($datosRaw) ? json_decode($datosRaw, true) : ($datosRaw ?? []);
+
+        if (empty($datosCompletos)) {
+            return;
+        }
+
+        $expediente = $datosCompletos['expediente'] ?? [];
+        if (is_object($expediente)) {
+            $expediente = (array) $expediente;
+        }
+
+        // Actualizar según el campo
+        if ($campo === 'exp_nomrec') {
+            $expediente['exp_nomrec'] = $nombre;
+            $expediente['exp_nomrec_id'] = $personaId;
+        } else {
+            $expediente['exp_razsoc'] = $nombre;
+            $expediente['exp_razsoc_id'] = $personaId;
+        }
+
+        $datosCompletos['expediente'] = $expediente;
+        $set('_datos_completos', $datosCompletos);
+    }
+    private static function procesarVinculacionPersona($state, callable $set, callable $get): void
+    {
+        if (!$state)
+            return;
+
+        // 1. OBTENER Y DECODIFICAR
+        // Como definiste formatStateUsing con json_encode, aquí llega un String.
+        $datosRaw = $get('_datos_completos');
+        $datosCompletos = is_string($datosRaw) ? json_decode($datosRaw, true) : ($datosRaw ?? []);
+
+        // Validación de seguridad para no perder datos previos
+        if (empty($datosCompletos)) {
+            // Si esto ocurre, es mejor detenerse que sobreescribir con vacío
+            Notification::make()->title('Error')->body('No se pudieron recuperar los datos previos.')->danger()->send();
+            return;
+        }
+
+        // 2. EJECUTAR ACTION
+        // Ahora $datosCompletos es un array con Catastro y Resolución intactos
+        $action = app(VincularPersonaAction::class);
+        $nuevosDatos = $action->execute($datosCompletos, $state);
+
+        // 3. ACTUALIZAR ESTADO INTERNO
+        $set('_datos_completos', $nuevosDatos);
+
+        DatosCompletosStep::autocompletarDatos($nuevosDatos, $set);
+    }
+    // --- SECCIÓN 3: Handlers (Puente entre UI y Actions) ---
+
+    private static function procesarSeleccionArea($state, callable $set, callable $get): void
+    {
+        if (!$state)
+            return;
+
+        // 1. Obtener datos crudos del estado
+        $datosCompletos = $get('_datos_completos') ?? [];
+        $coincidencias = $get('_resolucion_areas_coincidencias') ?? [];
+
+        // 2. Llamar a la Action (Lógica Pura)
+        $action = app(SeleccionarAreaResolucionAction::class);
+        $nuevosDatos = $action->execute($datosCompletos, $coincidencias, $state);
+
+        // 3. Actualizar UI
+        self::actualizarEstadoGlobal($nuevosDatos, $set);
+    }
+
+    private static function procesarSeleccionCatastro($state, callable $set, callable $get): void
+    {
+        if (!$state)
+            return;
+
+        $datosCompletos = $get('_datos_completos') ?? [];
+        $coincidencias = $get('_catastro_coincidencias') ?? [];
+
+        $action = app(SeleccionarCatastroAction::class);
+        $nuevosDatos = $action->execute($datosCompletos, $coincidencias, $state);
+
+        self::actualizarEstadoGlobal($nuevosDatos, $set);
+    }
+
+    private static function actualizarEstadoGlobal(array $datos, callable $set): void
+    {
+        // Guardamos el estado actualizado
+        $set('_datos_completos', $datos);
+
+        // Disparamos el autocompletado de los campos visibles
+        DatosCompletosStep::autocompletarDatos($datos, $set);
     }
 }

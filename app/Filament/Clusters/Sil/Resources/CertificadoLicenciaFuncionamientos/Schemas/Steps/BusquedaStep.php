@@ -4,15 +4,8 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Wizard\Step;
-use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
-use App\Services\Sil\Licencias\LicenciaService;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
-use App\Enums\AreaCodigo;
-use App\Actions\Sil\ObtenerDatosCatastroAction;
-use App\DTOs\Sil\CatastroSearchResult;
-use App\Actions\Sil\ObtenerDatosResolucionAction;
-use App\DTOs\Sil\ResolucionSearchResult;
 use App\Actions\Sil\ProcesarBusquedaExpedienteAction;
 use App\DTOs\Sil\BusquedaExpedienteResult;
 class BusquedaStep
@@ -68,6 +61,15 @@ class BusquedaStep
                 case BusquedaExpedienteResult::STATUS_SUCCESS:
                     $set('_datos_completos', $result->data);
                     self::notify('success', 'Éxito', 'Datos recuperados exitosamente.');
+                    self::actualizarFormulario($result->data, $set);
+                    break;
+                case BusquedaExpedienteResult::STATUS_MISSING_PERSONA:
+                    $set('_datos_completos', $result->data);
+                    $set('_persona_requerida', true);
+                    $set('_catastro_coincidencias', null);
+                    $set('_resolucion_areas_coincidencias', null);
+
+                    self::notify('warning', 'Datos Incompletos', $result->message);
                     self::actualizarFormulario($result->data, $set);
                     break;
             }
