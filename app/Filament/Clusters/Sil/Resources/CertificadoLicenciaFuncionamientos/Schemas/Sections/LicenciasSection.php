@@ -27,22 +27,27 @@ class LicenciasSection
             ->icon('heroicon-o-exclamation-triangle')
             ->collapsible()
             ->schema([
-                TextInput::make('proccodigo')->label('Código de Procedimiento')->maxLength(50)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('procnivel')->label('Nivel de Riesgo')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nir_id')->label('ID Nivel de Riesgo')->numeric()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nir_descripcion')->label('Descripción Nivel de Riesgo')->maxLength(255)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('n_resolucion')->label('N° Resolución')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn ($state, callable $set) => $set('fecha_emision', $state))->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn () => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn ($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('proccodigo')->label('Código de Procedimiento')->maxLength(50)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('procnivel')->label('Nivel de Riesgo')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('nir_id')->label('ID Nivel de Riesgo')->numeric()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('nir_descripcion')->label('Descripción Nivel de Riesgo')->maxLength(255)->columnSpanFull()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('n_resolucion')
+                    ->label('N° Resolución')
+                    ->maxLength(255)
+                    ->disabled()
+                    ->dehydrated()
+                    ->helperText('Código único de trámite: RESOLUCIÓN-ÁREA'),
+                DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 //DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
-                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->inline()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nro_compatibilidad')->label('Nro. Compatibilidad')->maxLength(100)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                
+                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('nro_compatibilidad')->label('Nro. Compatibilidad')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+
                 Select::make('horario_atencion')
                     ->label('Horario Atención')
                     ->options(self::horariosAtencion())
@@ -50,28 +55,26 @@ class LicenciasSection
                     ->live() // live() por defecto detecta el cambio ("onChange")
                     ->afterStateUpdated(function ($state, callable $set) {
                         // CORRECCIÓN: Comparar con las llaves (keys) del array
-                        if ($state === 'normal') { 
-                            $set('hora_inicio', '07:00'); 
-                            $set('hora_fin', '23:00'); 
-                        } 
-                        elseif ($state === 'extraordinario') { 
-                            $set('hora_inicio', '23:00'); 
-                            $set('hora_fin', '03:00'); 
-                        } 
-                        elseif ($state === '24_horas') { 
-                            $set('hora_inicio', '00:00'); 
-                            $set('hora_fin', '23:59'); 
+                        if ($state === 'normal') {
+                            $set('hora_inicio', '07:00');
+                            $set('hora_fin', '23:00');
+                        } elseif ($state === 'extraordinario') {
+                            $set('hora_inicio', '23:00');
+                            $set('hora_fin', '03:00');
+                        } elseif ($state === '24_horas') {
+                            $set('hora_inicio', '00:00');
+                            $set('hora_fin', '23:59');
                         }
                     })
-                     ->disabled(fn ($get) => $get('_section_licencias_saved'))
-                     ->dehydrated(),
-                TimePicker::make('hora_inicio')->label('Hora Inicio')->seconds(false)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TimePicker::make('hora_fin')->label('Hora Fin')->seconds(false)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                
-                TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                
-                Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+                TimePicker::make('hora_inicio')->label('Hora Inicio')->seconds(false)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TimePicker::make('hora_fin')->label('Hora Fin')->seconds(false)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+
+                TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+
+                Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+
                 Select::make('giros_seleccionar')
                     ->label('Giros encontrados')
                     ->multiple()
@@ -87,11 +90,11 @@ class LicenciasSection
                             $set('tabla_giros', []);
                             return;
                         }
-                        
+
                         $service = app(GiroLicenciaService::class);
                         $todosLosGiros = $service->buscarGiros('');
                         $mapaGiros = $todosLosGiros->pluck('gir_descripcion', 'gir_id')->toArray();
-                        
+
                         $filas = [];
                         foreach ((array) $state as $giroId) {
                             if (isset($mapaGiros[$giroId])) {
@@ -101,13 +104,13 @@ class LicenciasSection
                                 ];
                             }
                         }
-                        
+
                         $set('tabla_giros', $filas);
                     })
                     ->columnSpanFull()
-                    ->disabled(fn ($get) => $get('_section_licencias_saved'))
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
                     ->dehydrated(),
-                
+
                 Repeater::make('tabla_giros')
                     ->label('Giros Seleccionados')
                     ->schema([
@@ -118,7 +121,7 @@ class LicenciasSection
                         TextInput::make('giro_especifico')
                             ->label('Giro Específico')
                             ->placeholder('Ingrese especificación...')
-                            ->disabled(fn ($get) => $get('../../_section_licencias_saved'))
+                            ->disabled(fn($get) => $get('../../_section_licencias_saved'))
                             ->dehydrated(),
                     ])
                     ->columns(2)
@@ -127,10 +130,10 @@ class LicenciasSection
                     ->deletable(false)
                     ->reorderable(false)
                     ->columnSpanFull()
-                    ->disabled(fn ($get) => $get('_section_licencias_saved'))
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
                     ->dehydrated(),
-                Textarea::make('observaciones')->label('Observaciones')->rows(3)->columnSpanFull()->disabled(fn ($get) => $get('_section_licencias_saved'))->dehydrated(),
-                ])
+                Textarea::make('observaciones')->label('Observaciones')->rows(3)->columnSpanFull()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+            ])
             ->headerActions(SectionHeaderActions::make('licencias'))
             ->columnSpanFull()
             ->columns(3);
@@ -139,12 +142,15 @@ class LicenciasSection
     private static function tiposLicencia(): array
     {
         return self::obtenerOpciones(TipoLicenciaService::class, 'getTipoLicencias', 'tli_descripcion', 'tli_id');
-    }   
+    }
     private static function tiposResolucion(): array
     {
         return self::obtenerOpciones(TipoResolucionService::class, 'getTipoResoluciones', 'tir_descripcion', 'tir_id');
     }
-    private static function horariosAtencion(): array { return ['normal'=>'Normal', 'extraordinario'=>'Extra', '24_horas'=>'24H']; }
+    private static function horariosAtencion(): array
+    {
+        return ['normal' => 'Normal', 'extraordinario' => 'Extra', '24_horas' => '24H'];
+    }
     private static function tiposEstablecimientos(): array
     {
         return self::obtenerOpciones(TipoEstablecimientoService::class, 'getTipoEstablecimiento', 'tes_descripcion', 'tes_id');

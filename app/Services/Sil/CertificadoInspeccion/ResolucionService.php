@@ -42,7 +42,6 @@ class ResolucionService
 
     public function obtenerResolucionMasAreaCompletaPorNumeroResolucion($nu_expe_todo)
     {
-        // Tu consulta SQL exacta, reemplazando el valor fijo por un placeholder (?)
         $query = "
             WITH calculo_previo AS (
                 SELECT 
@@ -70,7 +69,6 @@ class ResolucionService
 
         $resultados = $this->connection->select($query, [$nu_expe_todo]);
 
-        // Retornamos como Colección de Laravel para tener métodos como ->first(), ->map(), etc.
         return collect($resultados);
     }
 
