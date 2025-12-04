@@ -198,9 +198,94 @@ class LicenciaReader
 
     }
 
-    //Paso 1: Datos de Expediente
-    public function obtenerDatosGeneralesDeLicenciaPorExpediente($expnum)
-    {
 
+    public function obtenerDatosDeExpedienteOraclePoRExpediente($expnum)
+    {
+        $exp = $this->db2
+            ->table('DS_VALORES.DUR_EXPEDIENTE')
+            ->select(
+                'exp_codcon',
+                'exp_num',
+                $this->db2->raw("TO_CHAR(exp_fec, 'DD/MM/YYYY') AS exp_fec_formateado")
+            )
+            ->where('EXP_NUM', $expnum)
+            ->first();
+
+        if (!$exp || $exp->exp_codcon === null) {
+            return null;
+        }
+
+        $cod_con = $exp->exp_codcon;
+
+        $datos_contacto = $this->db2
+            ->table('DS_VALORES.VU_PERSONA2')
+            ->select(
+                'nomcom',
+                'domfis',
+                'numtel',
+                'correo',
+                'numdoc',
+                'codcon'
+            )
+            ->where('codcon', $cod_con)
+            ->first();
+        if (!$datos_contacto) {
+            return (object) [
+                'nomcom' => null,
+                'domfis' => null,
+                'numtel' => null,
+                'correo' => null,
+                'numdoc' => null,
+                'codcon' => $cod_con,
+                'exp_num' => $exp->exp_num,
+                'exp_fec' => $exp->exp_fec_formateado,
+            ];
+        }
+        $datos_contacto->exp_num = $exp->exp_num;
+        $datos_contacto->exp_fec = $exp->exp_fec_formateado;
+
+        return $datos_contacto;
     }
+
+    public function obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id)
+    {
+        $licencia = $this->db
+            ->table('licencia.licencia as l')
+            ->leftJoin('licencia.persona as p1', 'p1.per_id', '=', 'l.per_idrazonsocial')
+            ->leftJoin('licencia.persona as p2', 'p2.per_id', '=', 'l.per_idsolicitante')
+            ->select(
+                'l.lic_id',
+                'l.lic_expnum',
+                'l.per_idrazonsocial',
+                'p1.per_nombrerazonsocial as razon_social_nombre',
+                'l.per_idsolicitante',
+                'p2.per_nombrerazonsocial as solicitante_nombre'
+            )
+            ->where('l.lic_id', $lic_id)
+            ->first();
+
+        if (!$licencia) {
+            return null;
+        }
+
+        $datosExpediente = $this->obtenerDatosDeExpedienteOraclePoRExpediente($licencia->lic_expnum);
+
+        return (object) [
+            'lic_id' => $licencia->lic_id,
+            'lic_expnum' => $licencia->lic_expnum,
+            'per_idrazonsocial' => $licencia->per_idrazonsocial,
+            'razon_social_nombre' => $licencia->razon_social_nombre,
+            'per_idsolicitante' => $licencia->per_idsolicitante,
+            'solicitante_nombre' => $licencia->solicitante_nombre,
+
+            'domfis' => $datosExpediente->domfis ?? null,
+            'numtel' => $datosExpediente->numtel ?? null,
+            'correo' => $datosExpediente->correo ?? null,
+            'numdoc' => $datosExpediente->numdoc ?? null,
+            'codcon' => $datosExpediente->codcon ?? null,
+            'exp_fec' => $datosExpediente->exp_fec ?? null,
+        ];
+    }
+
+
 }

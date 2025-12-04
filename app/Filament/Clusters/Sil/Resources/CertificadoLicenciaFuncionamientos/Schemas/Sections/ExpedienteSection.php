@@ -51,7 +51,7 @@ class ExpedienteSection
                                             $service = app(LicenciaPersonaService::class);
                                             $personas = $service->getLicenciaPersonaNombre();
                                             $persona = $personas->firstWhere('per_id', $state);
-                                            
+
                                             if ($persona) {
                                                 $set('preview_nombre', $persona->per_nombrerazonsocial ?? '');
                                                 $set('preview_ruc', $persona->per_ruc ?? '');
@@ -70,7 +70,7 @@ class ExpedienteSection
                                         }
                                     })
                                     ->columnSpanFull(),
-                                
+
                                 Section::make('Datos de la Persona')
                                     ->schema([
                                         TextInput::make('preview_nombre')
@@ -102,14 +102,14 @@ class ExpedienteSection
                                     ])
                                     ->columns(3)
                                     ->columnSpanFull()
-                                    ->visible(fn ($get) => $get('persona_seleccionada') !== null),
+                                    ->visible(fn($get) => $get('persona_seleccionada') !== null),
                             ])
                             ->action(function (array $data, $set) {
                                 if (isset($data['persona_seleccionada'])) {
                                     $service = app(LicenciaPersonaService::class);
                                     $personas = $service->getLicenciaPersonaNombre();
                                     $personaSeleccionada = $personas->firstWhere('per_id', $data['persona_seleccionada']);
-                                    
+
                                     if ($personaSeleccionada) {
                                         $set('exp_nomrec', $personaSeleccionada->per_nombrerazonsocial);
                                         $set('exp_nomrec_id', $personaSeleccionada->per_id);
@@ -124,8 +124,8 @@ class ExpedienteSection
                     ->dehydrated()
                     ->numeric()
                     ->columnSpan(1)
-                    ->visible(fn ($get, $state) => $state !== null || $get('persona_seleccionada') !== null),
-    
+                    ->visible(fn($get, $state) => $state !== null || $get('persona_seleccionada') !== null),
+
                 TextInput::make('exp_razsoc')
                     ->label('Razón Social')
                     ->maxLength(255)
@@ -155,7 +155,7 @@ class ExpedienteSection
                                             $service = app(LicenciaPersonaService::class);
                                             $personas = $service->getLicenciaPersonaNombre();
                                             $persona = $personas->firstWhere('per_id', $state);
-                                            
+
                                             if ($persona) {
                                                 $set('preview_nombre_rs', $persona->per_nombrerazonsocial ?? '');
                                                 $set('preview_ruc_rs', $persona->per_ruc ?? '');
@@ -174,7 +174,7 @@ class ExpedienteSection
                                         }
                                     })
                                     ->columnSpanFull(),
-                                
+
                                 Section::make('Datos de la Razón Social')
                                     ->schema([
                                         TextInput::make('preview_nombre_rs')
@@ -206,14 +206,14 @@ class ExpedienteSection
                                     ])
                                     ->columns(3)
                                     ->columnSpanFull()
-                                    ->visible(fn ($get) => $get('persona_seleccionada_rs') !== null),
+                                    ->visible(fn($get) => $get('persona_seleccionada_rs') !== null),
                             ])
                             ->action(function (array $data, $set) {
                                 if (isset($data['persona_seleccionada_rs'])) {
                                     $service = app(LicenciaPersonaService::class);
                                     $personas = $service->getLicenciaPersonaNombre();
                                     $personaSeleccionada = $personas->firstWhere('per_id', $data['persona_seleccionada_rs']);
-                                    
+
                                     if ($personaSeleccionada) {
                                         $set('exp_razsoc', $personaSeleccionada->per_nombrerazonsocial);
                                         $set('exp_razsoc_id', $personaSeleccionada->per_id);
@@ -229,7 +229,7 @@ class ExpedienteSection
                     ->numeric()
                     ->columnSpan(1),
 
-                    
+
                 TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled()->dehydrated(),
                 TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()->disabled()->dehydrated(),
                 TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255)->disabled()->dehydrated(),
