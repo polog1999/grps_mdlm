@@ -123,8 +123,12 @@ class ExpedienteSection
                     ->disabled()
                     ->dehydrated()
                     ->numeric()
+<<<<<<< HEAD
                     ->columnSpan(1)
                     ->visible(fn($get, $state) => $state !== null || $get('persona_seleccionada') !== null),
+=======
+                    ->columnSpan(1),
+>>>>>>> feature/licencias
 
                 TextInput::make('exp_razsoc')
                     ->label('Razón Social')
@@ -232,7 +236,7 @@ class ExpedienteSection
 
                 TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled()->dehydrated(),
                 TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()->disabled()->dehydrated(),
-                TextInput::make('correo')->label('Correo Electrónico')->email()->maxLength(255)->disabled()->dehydrated(),
+                TextInput::make('correo')->label('Correo Electrónico')->maxLength(255)->disabled()->dehydrated(),
                 TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled()->dehydrated(),
             ])
             ->headerActions(SectionHeaderActions::make('expediente'))

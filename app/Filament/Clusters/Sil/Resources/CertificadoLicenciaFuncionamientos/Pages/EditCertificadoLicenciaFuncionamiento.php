@@ -8,7 +8,11 @@ use Filament\Resources\Pages\EditRecord;
 use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
+<<<<<<< HEAD
 use Illuminate\Database\Eloquent\Model;
+=======
+use Carbon\Carbon;
+>>>>>>> feature/licencias
 class EditCertificadoLicenciaFuncionamiento extends EditRecord
 {
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
@@ -28,6 +32,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             return $data;
         }
 
+<<<<<<< HEAD
         // Expediente
         $data['exp_num'] = $row->lic_expnum;
         $data['exp_fec'] = $row->lic_expfec;
@@ -75,12 +80,80 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         $data['observaciones'] = $row->lic_licobs;
 
         // Tipo Establecimiento Lookup
+=======
+        $mapaSimple = [
+            'exp_num' => 'lic_expnum',
+            'exp_fec' => 'lic_expfec',
+            'exp_nomrec' => 'personasolicitante',
+            'exp_nomrec_id' => 'per_idsolicitante',
+            'exp_razsoc' => 'razonsocial',
+            'exp_razsoc_id' => 'per_idrazonsocial',
+            'numdoc' => 'per_ruc',
+            'numtel' => 'per_telefono',
+            'correo' => 'per_email',
+            'domfis' => 'per_direccion',
+            'direccion' => 'lic_direccion',
+            'nir_id' => 'nir_id',
+            'nir_descripcion' => 'nir_descripcion',
+            'tipo_resolucion' => 'tir_id',
+            'n_resolucion' => 'lic_resnum',
+            'numero_licencia' => 'lic_numlic',
+            'tipo_licencia' => 'tli_id',
+            'compatibilidad' => 'lic_compatibilidad',
+            'nro_compatibilidad' => 'lic_compatibilidadnumero',
+            'hora_inicio' => 'lic_horainicio',
+            'hora_fin' => 'lic_horafin',
+            'observaciones' => 'lic_licobs',
+            'centro_comercial' => 'cec_id',
+            'tipo_local' => 'tlo_id',
+            'local' => 'lcc_local',
+            'observaciones_local' => 'lcc_observacion',
+        ];
+
+        foreach ($mapaSimple as $formField => $dbColumn) {
+            $data[$formField] = $row->$dbColumn ?? null;
+        }
+
+        if (!empty($row->codigocatastral)) {
+            $datosCatastro = $service->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($row->codigocatastral);
+
+            if (!empty($datosCatastro) && isset($datosCatastro[0])) {
+                $catastro = $datosCatastro[0];
+                $data['coduca'] = $catastro->coduca ?? null;
+                $data['codpredio'] = $catastro->codpredio ?? null;
+                $data['descurb'] = $catastro->descurb ?? null;
+                $data['via_completa'] = $catastro->via_completa ?? null;
+                $data['numvia'] = $catastro->numvia ?? null;
+                $data['intdpto'] = $catastro->intdpto ?? null;
+                $data['blockedif'] = $catastro->blockedif ?? null;
+                $data['mz'] = $catastro->mz ?? null;
+                $data['lote'] = $catastro->lote ?? null;
+                $data['zonificacion'] = $catastro->zonificacion ?? null;
+                $data['area_economica'] = $catastro->area_economica ?? null;
+                $data['fiu_id'] = $catastro->fiu_id ?? null;
+            }
+        }
+
+        $data['fecha_resolucion'] = $row->lic_fecharesolucion
+            ? Carbon::createFromFormat('d/m/Y', $row->lic_fecharesolucion)->toDateString()
+            : null;
+        $data['fecha_emision'] = $row->lic_fechaemision
+            ? Carbon::createFromFormat('d/m/Y', $row->lic_fechaemision)->toDateString()
+            : null;
+        $data['fecha_compatibilidad'] = $row->lic_compatibilidadfecha
+            ? Carbon::parse(trim($row->lic_compatibilidadfecha))->toDateString()
+            : null;
+
+        $data['mype'] = ($row->lic_mype ?? false) ? '1' : '0';
+
+>>>>>>> feature/licencias
         if (isset($row->tes_descripcion)) {
             $tesService = app(TipoEstablecimientoService::class);
             $tes = $tesService->getTipoEstablecimiento()->firstWhere('tes_descripcion', $row->tes_descripcion);
             $data['tipo_establecimientos'] = $tes ? $tes->tes_id : null;
         }
 
+<<<<<<< HEAD
         // Giros - Assuming lic_giro contains text description. 
         // If we want to populate the repeater/select, we'd need to match it to IDs or just show it.
         // For now, we'll leave it as is or if there's a specific field for text giro.
@@ -90,9 +163,36 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         return $data;
     }
     protected function handleRecordUpdate(Model $record, array $data): Model
+=======
+        // Cargar Giros asociados a la licencia
+        $giroService = app(GiroLicenciaService::class);
+        $girosLicencia = $giroService->obtenerGirosPorIdLicencia($this->record->lic_id);
+
+        $girosIds = [];
+        $tablaGiros = [];
+
+        foreach ($girosLicencia as $giroLicencia) {
+            // Agregar el ID del giro al array de seleccionados
+            $girosIds[] = $giroLicencia->gir_id;
+
+            // Agregar el giro al repeater con su nombre y específico
+            $tablaGiros[] = [
+                'giro' => $giroLicencia->gir_descripcion ?? '',
+                'giro_especifico' => $giroLicencia->lig_giroespecifico ?? '',
+            ];
+        }
+
+        $data['giros_seleccionar'] = $girosIds;
+        $data['tabla_giros'] = $tablaGiros;
+
+        return $data;
+    }
+
+    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+>>>>>>> feature/licencias
     {
-        // Construct Giros
         $giros = [];
+<<<<<<< HEAD
         // We need to map the selected IDs (giros_seleccionar) to the repeater data (tabla_giros)
         // Assumption: The order in tabla_giros matches the order of selection or we can't easily map without ID in repeater.
         // However, the repeater has 'giro' name. We can try to look up ID by name if needed, 
@@ -102,6 +202,8 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         // Let's try to use the 'giros_seleccionar' array as the source of truth for IDs.
         // And try to find the matching specific text from 'tabla_giros'.
         // This is imperfect if there are duplicate giro names, but best effort.
+=======
+>>>>>>> feature/licencias
 
         $selectedIds = $data['giros_seleccionar'] ?? [];
         $repeaterItems = $data['tabla_giros'] ?? [];
@@ -116,6 +218,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
         // We need a service to map ID -> Name to use the map above
         $giroService = app(GiroLicenciaService::class);
+<<<<<<< HEAD
         // This might be expensive if we fetch all, but let's fetch selected ones if possible or just all.
         // For now, let's assume we can't easily get the name for the ID without a query.
         // A simpler approach: Just iterate the repeater items. 
@@ -128,6 +231,8 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         // But we don't have the Name for the ID here easily without fetching.
 
         // Let's fetch all giros to map ID to Name.
+=======
+>>>>>>> feature/licencias
         $allGiros = $giroService->buscarGiros('');
         $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
 
@@ -137,53 +242,74 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
             $giros[] = [
                 'gir_id' => $girId,
-                'especifico' => $specific,
-                'lig_id' => 0, // We don't have this, treating as new/update without ID tracking
+                'giro_especifico' => $specific,
+                'lig_id' => 0,
                 'estado' => 'M'
             ];
+        }
+        $service = app(LicenciaService::class);
+        $datosCatastroActualizados = [];
+
+        if (!empty($data['coduca'])) {
+            $codigoCatastral = $data['coduca']; // o la lógica que uses para construir el código
+            $datosCatastro = $service->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codigoCatastral);
+
+            if (!empty($datosCatastro) && isset($datosCatastro[0])) {
+                $catastro = $datosCatastro[0];
+
+                // Sobrescribir los datos del formulario con los datos actualizados del catastro
+                $data['codpredio'] = $catastro->codpredio ?? $data['codpredio'];
+                $data['descurb'] = $catastro->descurb ?? $data['descurb'];
+                $data['zonificacion'] = $catastro->zonificacion ?? $data['zonificacion'];
+                $data['area_economica'] = $catastro->area_economica ?? $data['area_economica'];
+                $data['fiu_id'] = $catastro->fiu_id ?? ($data['fiu_id'] ?? 0);
+            }
         }
 
         $params = [
             'lic_id' => $record->lic_id,
             'tli_id' => $data['tipo_licencia'],
             'tes_id' => $data['tipo_establecimientos'],
-            'per_idsolicitante' => $data['exp_nomrec_id'] ?? 0,
-            'per_idrazonsocial' => $data['exp_razsoc_id'] ?? 0,
+            'per_idsolicitante' => $data['exp_nomrec_id'] ?? null,
+            'per_idrazonsocial' => $data['exp_razsoc_id'] ?? null,
             'lic_numlic' => $data['numero_licencia'],
-            'lic_codigopredial' => $data['codpredio'],
+            'lic_codigopredial' => $data['codpredio'] ?? '',
             'lic_expnum' => $data['exp_num'],
             'lic_direccion' => $data['direccion'],
-            'lic_urbanizacion' => $data['descurb'],
-            'lic_area' => $data['area_economica'],
+            'lic_urbanizacion' => $data['descurb'] ?? '',
+            'lic_area' => $data['area_economica'] ?? 0,
             'lic_mype' => $data['mype'] == '1',
             'lic_resnum' => $data['n_resolucion'],
             'lic_fecharesolucion' => $data['fecha_resolucion'],
             'lic_fechaemision' => $data['fecha_emision'],
             'lic_fechavencimiento' => null,
             'lic_licobs' => $data['observaciones'],
+<<<<<<< HEAD
             'lic_giro' => '',
+=======
+>>>>>>> feature/licencias
             'fiu_id' => $data['fiu_id'] ?? 0,
-            'lca_descripcion' => '',
-            'lca_urbanizacion' => $data['descurb'],
-            'lca_zonificacion' => $data['zonificacion'],
-            'lca_origen' => '',
-            'cec_id' => 0,
-            'tlo_id' => 0,
-            'lcc_observacion' => '',
-            'lcc_local' => '',
-            'lic_modidirecc' => false,
+            'lca_urbanizacion' => $data['descurb'] ?? '',
+            'lca_zonificacion' => $data['zonificacion'] ?? '',
+            'cec_id' => $data['centro_comercial'] ?? 0,
+            'tlo_id' => $data['tipo_local'] ?? 0,
+            'lcc_observacion' => $data['observaciones_local'] ?? '',
+            'lcc_local' => $data['local'] ?? '',
             'lic_horainicio' => $data['hora_inicio'],
             'lic_horafin' => $data['hora_fin'],
             'tir_id' => $data['tipo_resolucion'],
-            'lic_nota' => '',
             'compatibilidad' => $data['compatibilidad'],
+            'nir_id' => $data['nir_id'],
+            'lic_giro' => '',
+            'lca_descripcion' => '',
+            'lca_origen' => '',
+            'lic_modidirecc' => false,
+            'lic_nota' => '',
             'rsgparrafo1' => '',
             'rsgparrafo2' => '',
-            'nir_id' => $data['nir_id'],
             'giros' => $giros,
         ];
 
-        $service = app(LicenciaService::class);
         $service->update($params);
 
         return $record;

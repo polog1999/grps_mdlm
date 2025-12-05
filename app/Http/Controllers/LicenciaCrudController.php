@@ -28,4 +28,11 @@ class LicenciaCrudController extends Controller
         $items = $this->service->obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social);
         return response()->json($items);
     }
+
+    //obtenerDatosDeExpedienteParaEditarPorIdLicencia
+    public function obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id)
+    {
+        $items = $this->service->obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id);
+        return response()->json($items);
+    }
 }
