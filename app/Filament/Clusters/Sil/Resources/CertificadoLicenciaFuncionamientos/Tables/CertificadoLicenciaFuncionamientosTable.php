@@ -28,13 +28,11 @@ class CertificadoLicenciaFuncionamientosTable
 
     public static function configure(Table $table): Table
     {
-
         if (!isset(self::$service)) {
             self::$service = new CertificadoLincenciaFuncionamientoService();
         }
 
         return $table
-
             ->modifyQueryUsing(function (Builder $query, $livewire) {
                 /*$hasFilters = false;
                 try {

@@ -41,20 +41,20 @@ class AdminPanelProvider extends PanelProvider
             ->profile()
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
-            ->emailVerification() 
-            //->globalSearch(false)
+            ->emailVerification()
+            ->globalSearch(false)
             ->sidebarFullyCollapsibleOnDesktop()
-                    ->maxContentWidth(Width::Full)
+            ->maxContentWidth(Width::Full)
 
             ->colors([
                 'primary' => Color::Amber,
-                'white'=>'rgba(255, 255, 255, 1)',
+                'white' => 'rgba(255, 255, 255, 1)',
                 'danger-high' => 'rgba(231, 120, 120, 1)',
                 'danger-very-high' => 'rgba(110, 6, 6, 1)',
                 'primary' => Color::Green,
             ])
-             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])
@@ -78,6 +78,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
-        
+
     }
 }
