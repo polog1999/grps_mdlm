@@ -57,16 +57,12 @@ class LicenciasSection
                     ->dehydrated()
                     ->columnSpanFull(),
                 Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-<<<<<<< HEAD
-                TextInput::make('n_resolucion')->label('N° Resolución')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-=======
                 TextInput::make('n_resolucion')
                     ->label('N° Resolución')
                     ->maxLength(255)
                     ->disabled()
                     ->dehydrated()
                     ->helperText('Código único de trámite: RESOLUCIÓN-ÁREA'),
->>>>>>> feature/licencias
                 DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),

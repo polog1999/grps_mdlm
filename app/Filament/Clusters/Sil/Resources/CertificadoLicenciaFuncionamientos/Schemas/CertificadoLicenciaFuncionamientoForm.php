@@ -16,12 +16,7 @@ class CertificadoLicenciaFuncionamientoForm
             Wizard::make([
                 BusquedaStep::make()
                     ->hidden(fn(string $operation) => $operation === 'edit'),
-<<<<<<< HEAD
-
-                SeleccionCatastroStep::make()
-=======
                 SeleccionCoincidenciasStep::make()
->>>>>>> feature/licencias
                     ->hidden(fn(string $operation) => $operation === 'edit'),
                 DatosCompletosStep::make(),
             ])->columnSpanFull()

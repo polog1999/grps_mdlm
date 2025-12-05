@@ -22,10 +22,7 @@ class LicenciaCreator
         try {
             $girosIds = [];
             $girosEspecificos = [];
-<<<<<<< HEAD
-=======
             $girosDescripciones = [];  // Para construir plic_giro
->>>>>>> feature/licencias
 
             if (isset($datos['licencias']['tabla_giros']) && is_array($datos['licencias']['tabla_giros'])) {
                 $girosSeleccionados = $datos['licencias']['giros_seleccionar'] ?? [];

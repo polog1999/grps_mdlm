@@ -27,16 +27,10 @@ class LicenciaService
 
     public function getById($id)
     {
-<<<<<<< HEAD
-        return $this->reader->findById($id);
-    }
-
-=======
         return $this->reader->getById($id);
     }
 
 
->>>>>>> feature/licencias
     public function obtenerDatosDeRazonSocialPorExpediente($expnum)
     {
         return $this->reader->obtenerDatosDeRazonSocialPorExpediente($expnum);

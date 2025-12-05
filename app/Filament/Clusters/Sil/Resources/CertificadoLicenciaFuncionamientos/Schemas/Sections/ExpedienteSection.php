@@ -123,12 +123,7 @@ class ExpedienteSection
                     ->disabled()
                     ->dehydrated()
                     ->numeric()
-<<<<<<< HEAD
-                    ->columnSpan(1)
-                    ->visible(fn($get, $state) => $state !== null || $get('persona_seleccionada') !== null),
-=======
                     ->columnSpan(1),
->>>>>>> feature/licencias
 
                 TextInput::make('exp_razsoc')
                     ->label('Razón Social')

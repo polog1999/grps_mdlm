@@ -3,12 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         // Establecer explícitamente la conexión a la base de datos
-        DB::connection('pgsql_licencias')->unprepared("
+        DB::connection('pgsql')->unprepared("
             CREATE SCHEMA IF NOT EXISTS licencia;
 
             CREATE OR REPLACE FUNCTION licencia.fn_get_next_resolucion_spea()
@@ -45,7 +44,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::connection('pgsql_licencias')->unprepared("
+        DB::connection('pgsql')->unprepared("
             DROP FUNCTION IF EXISTS licencia.fn_get_next_resolucion_spea();
         ");
     }
