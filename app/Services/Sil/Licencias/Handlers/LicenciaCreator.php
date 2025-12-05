@@ -63,10 +63,10 @@ class LicenciaCreator
                 $this->formatDate($datos['licencias']['fecha_emision'] ?? null), // 15 p_lic_fechaemision
                 null, // 16 p_lic_fechavencimiento
                 $datos['licencias']['observaciones'] ?? '', // 17 plic_licobs
-                1, // 18 pcec_id
-                1, // 19 ptlo_id
-                '', // 20 plcc_observacion
-                '', // 21 plcc_local
+                $datos['licencias']['centro_comercial'] ?? null, // 18 pcec_id
+                $datos['licencias']['tipo_local'] ?? null, // 19 ptlo_id
+                $datos['licencias']['observaciones_local'] ?? '', // 20 plcc_observacion
+                $datos['licencias']['local'] ?? '', // 21 plcc_local
                 $datos['licencias']['direccion'] ?? '', // 22 plca_descripcion
                 $datos['catastro']['descurb'] ?? '', // 23 urbanizacion_id
                 $datos['catastro']['zonificacion'] ?? '', // 24 plca_zonificacion
