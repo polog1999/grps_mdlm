@@ -27,7 +27,7 @@ class LicenciaService
 
     public function getById($id)
     {
-        return $this->reader->findById($id);
+        return $this->reader->getById($id);
     }
 
 

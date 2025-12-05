@@ -57,14 +57,14 @@ class LicenciaCreator
                 $datos['catastro']['codpredio'] ?? '', // 9 plic_codigopredial
                 $datos['expediente']['exp_num'] ?? '', // 10 plic_expnum
                 (float) ($datos['catastro']['area_economica'] ?? 0), // 11 plic_area
-                ($datos['licencias']['mype'] ?? '0') === '1', // 12 plic_mype
+                (($datos['licencias']['mype'] ?? '0') === '1' || ($datos['licencias']['mype'] ?? '0') === 1 || ($datos['licencias']['mype'] ?? false) === true), // 12 plic_mype
                 $datos['licencias']['n_resolucion'] ?? '', // 13 plic_resnum
                 $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null), // 14 p_lic_fecharesolucion
                 $this->formatDate($datos['licencias']['fecha_emision'] ?? null), // 15 p_lic_fechaemision
                 null, // 16 p_lic_fechavencimiento
                 $datos['licencias']['observaciones'] ?? '', // 17 plic_licobs
                 $datos['licencias']['centro_comercial'] ?? null, // 18 pcec_id
-                $datos['licencias']['tipo_local'] ?? null, // 19 ptlo_id
+                $datos['licencias']['tipo_local'] ?? 0, // 19 ptlo_id
                 $datos['licencias']['observaciones_local'] ?? '', // 20 plcc_observacion
                 $datos['licencias']['local'] ?? '', // 21 plcc_local
                 $datos['licencias']['direccion'] ?? '', // 22 plca_descripcion

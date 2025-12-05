@@ -24,13 +24,13 @@ class GiroLicenciaService
     {
         try {
             $sql = "SELECT * FROM licencia.spu_giro_sel(0, ?)";
-            
+
             $result = $this->connectionToPostgreSQL->select($sql, [$searchTerm]);
-            return collect($result);            
+            return collect($result);
         } catch (\Exception $e) {
             Log::error("Error al buscar giros con término '{$searchTerm}': " . $e->getMessage());
             return collect();
-        }   
+        }
     }
 
     /**
@@ -63,9 +63,9 @@ class GiroLicenciaService
     {
         try {
             $sql = "SELECT * FROM licencia.spu_giro_sel(?, '')";
-            
+
             $result = $this->connectionToPostgreSQL->select($sql, [$giroId]);
-            return $result; 
+            return $result;
         } catch (\Exception $e) {
             Log::error("Error al buscar giro por ID {$giroId}: " . $e->getMessage());
             return null;
@@ -74,11 +74,11 @@ class GiroLicenciaService
 
     public function obtenerGirosPorIdLicencia(int $lic_id)
     {
-        try{
-            $sql="SELECT* FROM licencia.vu_licenciagiro where lic_id= ?";
+        try {
+            $sql = "SELECT* FROM licencia.vu_licenciagiro where lic_id= ?";
             $result = $this->connectionToPostgreSQL->select($sql, [$lic_id]);
             return collect($result);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             Log::error("Error al obtener giros por ID de licencia {$lic_id}: " . $e->getMessage());
             return collect();
         }

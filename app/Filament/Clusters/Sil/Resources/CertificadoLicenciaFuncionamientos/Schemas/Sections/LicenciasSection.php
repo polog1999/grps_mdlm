@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Actions\SectionHeaderActions;
 use App\Services\Sil\Licencias\TipoCentroComercialService;
 use App\Services\Sil\Licencias\TipoLocalService;
+use App\Services\Sil\Licencias\NivelRiesgoService;
 class LicenciasSection
 {
     public static function make(): Section
@@ -30,8 +31,31 @@ class LicenciasSection
             ->schema([
                 TextInput::make('proccodigo')->label('Código de Procedimiento')->maxLength(50)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('procnivel')->label('Nivel de Riesgo')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nir_id')->label('ID Nivel de Riesgo')->numeric()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nir_descripcion')->label('Descripción Nivel de Riesgo')->maxLength(255)->columnSpanFull()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('nir_id')
+                    ->label('Nivel de Riesgo')
+                    ->options(self::nivelesRiesgo())
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $service = app(NivelRiesgoService::class);
+                            $nivel = $service->getNivelRiesgoPorId($state);
+                            if ($nivel) {
+                                $set('nir_descripcion', $nivel->nir_descripcion);
+                            }
+                        } else {
+                            $set('nir_descripcion', null);
+                        }
+                    })
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                TextInput::make('nir_descripcion')
+                    ->label('Descripción Nivel de Riesgo')
+                    ->maxLength(255)
+                    ->disabled()
+                    ->dehydrated()
+                    ->columnSpanFull(),
                 Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('n_resolucion')
                     ->label('N° Resolución')
@@ -44,9 +68,22 @@ class LicenciasSection
                 Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 //DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
-                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->default('0')->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nro_compatibilidad')->label('Nro. Compatibilidad')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('nro_compatibilidad')
+                    ->label('Nro. Compatibilidad')
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search) {
+                        if (empty($search)) {
+                            return [];
+                        }
+                        $service = app(\App\Services\Sil\CertificadoInspeccion\ResolucionService::class);
+                        $resoluciones = $service->obtenerResoluciones($search);
+                        return array_combine($resoluciones, $resoluciones);
+                    })
+                    ->getOptionLabelUsing(fn($value): ?string => $value)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
                 DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
 
                 Select::make('horario_atencion')
@@ -211,6 +248,11 @@ class LicenciasSection
         return self::obtenerOpciones(TipoEstablecimientoService::class, 'getTipoEstablecimiento', 'tes_descripcion', 'tes_id');
     }
 
+
+    private static function nivelesRiesgo(): array
+    {
+        return self::obtenerOpciones(NivelRiesgoService::class, 'getNivelesRiesgo', 'nir_descripcion', 'nir_id');
+    }
 
     private static function obtenerOpciones(string $serviceClass, string $method, string $labelField, string $valueField): array
     {

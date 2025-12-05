@@ -15,7 +15,7 @@ class LicenciaReader
         $this->db2 = $db2;
     }
 
-    public function findById($licId)
+    public function getById($licId)
     {
         return $this->db
             ->table('licencia.vu_licencia')
@@ -247,6 +247,7 @@ class LicenciaReader
         return $datos_contacto;
     }
 
+    //RECUPERAR DATOS DE EXPEDIENTE PARA EDITAR
     public function obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id)
     {
         $licencia = $this->db
@@ -285,6 +286,12 @@ class LicenciaReader
             'codcon' => $datosExpediente->codcon ?? null,
             'exp_fec' => $datosExpediente->exp_fec ?? null,
         ];
+    }
+
+    //RECUPERAR DATOS DE LICENCIA SECCION PARA EDITAR
+    public function obtenerDatosDeLicenciaSeccionParaEditarPorIdLicencia($lic_id)
+    {
+
     }
 
 

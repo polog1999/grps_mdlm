@@ -155,5 +155,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/buscar-resolucion-por-expnum/{numexp}', [ResolucionController::class, 'obtenerNumeroResolucionPorNumeroExpediente']);
         //obtenerResolucionMasAreaCompletaPorNumeroResolucion
         Route::get('/obtener-area-por-resolucion/{numres}', [ResolucionController::class, 'obtenerResolucionMasAreaCompletaPorNumeroResolucion']);
+        Route::get('/obtener-resoluciones/{numexp}', [ResolucionController::class, 'obtenerResoluciones']);
     });
 });
