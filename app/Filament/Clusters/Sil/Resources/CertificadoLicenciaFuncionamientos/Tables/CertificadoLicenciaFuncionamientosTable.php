@@ -20,6 +20,8 @@ use Illuminate\Support\Collection;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\DatePicker;
 
 class CertificadoLicenciaFuncionamientosTable
 {
@@ -320,6 +322,47 @@ class CertificadoLicenciaFuncionamientosTable
                     ->iconButton()
                     ->tooltip('Modificar certificado')
                     ->color('warning'),
+
+                Action::make('dar_de_baja')
+                    ->icon('heroicon-o-archive-box-arrow-down')
+                    ->iconButton()
+                    ->tooltip('Dar de baja certificado')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Dar de baja certificado')
+                    ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?'))
+                    ->form([
+                        TextInput::make('nro_expediente')
+                            ->label('Nro Expediente')
+                            ->required()
+                            ->maxLength(50),
+
+                        TextInput::make('anexo')
+                            ->label('Anexo')
+                            ->maxLength(50),
+
+                        TextInput::make('nro_resolucion')
+                            ->label('Nro Resolución')
+                            ->required()
+                            ->maxLength(100),
+
+                        DatePicker::make('fecha_baja')
+                            ->label('Fecha Baja')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->default(now()),
+
+                        DatePicker::make('fecha_resolucion')
+                            ->label('Fecha Resolución')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->modalSubmitActionLabel('Sí, dar de baja')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index')),
+
             ], position: RecordActionsPosition::BeforeCells)
 
             ->filtersTriggerAction(
