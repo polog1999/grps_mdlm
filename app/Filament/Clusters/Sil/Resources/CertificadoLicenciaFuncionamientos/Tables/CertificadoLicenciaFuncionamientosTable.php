@@ -326,11 +326,17 @@ class CertificadoLicenciaFuncionamientosTable
                 Action::make('dar_de_baja')
                     ->icon('heroicon-o-archive-box-arrow-down')
                     ->iconButton()
-                    ->tooltip('Dar de baja certificado')
+                    ->tooltip('Dar de baja licencia')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->modalHeading('Dar de baja certificado')
+                    ->modalHeading('Dar de baja licencia')
                     ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?'))
+                    ->fillForm(fn(CertificadoLicenciaFuncionamiento $record): array => [
+                        'nro_expediente' => $record->lic_expnum,
+                        'nro_resolucion' => $record->lic_resnum,
+                        'fecha_resolucion' => $record->lic_fecharesolucion,
+                        'fecha_baja' => now(),
+                    ])
                     ->form([
                         TextInput::make('nro_expediente')
                             ->label('Nro Expediente')
@@ -339,6 +345,7 @@ class CertificadoLicenciaFuncionamientosTable
 
                         TextInput::make('anexo')
                             ->label('Anexo')
+                            ->required()
                             ->maxLength(50),
 
                         TextInput::make('nro_resolucion')
