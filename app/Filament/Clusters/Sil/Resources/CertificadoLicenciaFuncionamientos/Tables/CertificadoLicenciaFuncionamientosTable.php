@@ -22,6 +22,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\DatePicker;
+use Filament\Actions\ReplicateAction;
 
 class CertificadoLicenciaFuncionamientosTable
 {
@@ -368,7 +369,45 @@ class CertificadoLicenciaFuncionamientosTable
                     ])
                     ->modalSubmitActionLabel('Sí, dar de baja')
                     ->modalCancelActionLabel('Cancelar')
-                    ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index')),
+                    ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index'))
+                    ->action(function (Action $action, array $data, CertificadoLicenciaFuncionamiento $record) {
+                        try {
+                            $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
+
+                            $serviceData = [
+                                'lic_id' => $record->lic_id,
+                                'lib_expnum' => $data['nro_expediente'],
+                                'lib_anexo' => $data['anexo'],
+                                'lib_resnum' => $data['nro_resolucion'],
+                                'lib_fecharesolucion' => $data['fecha_resolucion'],
+                                'lib_fechabaja' => $data['fecha_baja'],
+                            ];
+
+                            $resultado = $service->bajaLicencia($serviceData);
+
+                            if ($resultado->error > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Éxito')
+                                    ->body($resultado->mensaje)
+                                    ->success()
+                                    ->send();
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error')
+                                    ->body($resultado->mensaje)
+                                    ->danger()
+                                    ->send();
+                                $action->halt();
+                            }
+                        } catch (\Throwable $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error del Sistema')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    }),
 
             ], position: RecordActionsPosition::BeforeCells)
 
