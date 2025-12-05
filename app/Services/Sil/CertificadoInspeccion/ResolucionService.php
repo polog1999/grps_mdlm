@@ -72,4 +72,37 @@ class ResolucionService
         return collect($resultados);
     }
 
+    public function obtenerResoluciones($nu_expe_todo)
+    {
+        $search = '%' . $nu_expe_todo . '%';
+
+        $sql = "
+        WITH calculo_previo AS (
+            SELECT 
+                t.cdgo_dtos_ntrnos,
+                t.nu_tram_todo,
+                t.cdgo_area,
+                CASE 
+                    WHEN hijo.cdgo_area_prim IS NULL OR hijo.cdgo_area_prim = 0 THEN 
+                        'MDLM-' || REPLACE(hijo.dc_area, '.', '')        
+                    ELSE 
+                        'MDLM-' || REPLACE(padre.dc_area, '.', '') || '/' || REPLACE(hijo.dc_area, '.', '')
+                END as area_completa
+            FROM sistema.p_dtos_ntrnos t
+            INNER JOIN sistema.a_areas hijo ON t.cdgo_area = hijo.cdgo_area
+            LEFT JOIN sistema.a_areas padre ON hijo.cdgo_area_prim = padre.cdgo_area
+            WHERE t.nu_tram_todo LIKE ? AND t.cdgo_area = 29
+        )
+        SELECT 
+            nu_tram_todo || '-' || area_completa as codigo_unico_tramite
+        FROM calculo_previo
+        ORDER BY cdgo_dtos_ntrnos DESC
+        ";
+
+        $resultados = $this->connection->select($sql, [$search]);
+
+
+        return collect($resultados)->pluck('codigo_unico_tramite')->toArray();
+    }
+
 }

@@ -17,7 +17,9 @@ use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use Illuminate\Support\Facades\Log;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Actions\SectionHeaderActions;
-
+use App\Services\Sil\Licencias\TipoCentroComercialService;
+use App\Services\Sil\Licencias\TipoLocalService;
+use App\Services\Sil\Licencias\NivelRiesgoService;
 class LicenciasSection
 {
     public static function make(): Section
@@ -29,27 +31,59 @@ class LicenciasSection
             ->schema([
                 TextInput::make('proccodigo')->label('Código de Procedimiento')->maxLength(50)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('procnivel')->label('Nivel de Riesgo')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nir_id')->label('ID Nivel de Riesgo')->numeric()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nir_descripcion')->label('Descripción Nivel de Riesgo')->maxLength(255)->columnSpanFull()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('nir_id')
+                    ->label('Nivel de Riesgo')
+                    ->options(self::nivelesRiesgo())
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $service = app(NivelRiesgoService::class);
+                            $nivel = $service->getNivelRiesgoPorId($state);
+                            if ($nivel) {
+                                $set('nir_descripcion', $nivel->nir_descripcion);
+                            }
+                        } else {
+                            $set('nir_descripcion', null);
+                        }
+                    })
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                TextInput::make('nir_descripcion')
+                    ->label('Descripción Nivel de Riesgo')
+                    ->maxLength(255)
+                    ->disabled()
+                    ->dehydrated()
+                    ->columnSpanFull(),
                 Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-<<<<<<< HEAD
-                TextInput::make('n_resolucion')->label('N° Resolución')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-=======
                 TextInput::make('n_resolucion')
                     ->label('N° Resolución')
                     ->maxLength(255)
                     ->disabled()
                     ->dehydrated()
                     ->helperText('Código único de trámite: RESOLUCIÓN-ÁREA'),
->>>>>>> feature/licencias
                 DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 //DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
-                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->default('0')->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('nro_compatibilidad')->label('Nro. Compatibilidad')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('nro_compatibilidad')
+                    ->label('Nro. Compatibilidad')
+                    ->searchable()
+                    ->getSearchResultsUsing(function (string $search) {
+                        if (empty($search)) {
+                            return [];
+                        }
+                        $service = app(\App\Services\Sil\CertificadoInspeccion\ResolucionService::class);
+                        $resoluciones = $service->obtenerResoluciones($search);
+                        return array_combine($resoluciones, $resoluciones);
+                    })
+                    ->getOptionLabelUsing(fn($value): ?string => $value)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
                 DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
 
                 Select::make('horario_atencion')
@@ -77,7 +111,61 @@ class LicenciasSection
 
                 TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
 
-                Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('tipo_establecimientos')
+                    ->label('Tipo Establecimientos')
+                    ->options(self::tiposEstablecimientos())
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state != 2) {
+                            $set('centro_comercial', null);
+                            $set('tipo_local', null);
+                            $set('local', null);
+                            $set('observaciones_local', null);
+                        }
+                    })
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                Select::make('centro_comercial')
+                    ->label('Centro Comercial')
+                    ->options(function () {
+                        $service = app(TipoCentroComercialService::class);
+                        $centros = $service->getTipoCentroComercial();
+
+                        return $centros->pluck('cec_descripcion', 'cec_id')
+                            ->filter()
+                            ->toArray();
+                    })
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                Select::make('tipo_local')
+                    ->label('Tipo Local')
+                    ->options(function () {
+                        $service = app(TipoLocalService::class);
+                        $locales = $service->getTipoLocal();
+
+                        return $locales->pluck('tlo_descripcion', 'tlo_id')
+                            ->filter()
+                            ->toArray();
+                    })
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                TextInput::make('local')
+                    ->label('Local')
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                TextInput::make('observaciones_local')
+                    ->label('Observaciones')
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
 
                 Select::make('giros_seleccionar')
                     ->label('Giros encontrados')
@@ -160,6 +248,11 @@ class LicenciasSection
         return self::obtenerOpciones(TipoEstablecimientoService::class, 'getTipoEstablecimiento', 'tes_descripcion', 'tes_id');
     }
 
+
+    private static function nivelesRiesgo(): array
+    {
+        return self::obtenerOpciones(NivelRiesgoService::class, 'getNivelesRiesgo', 'nir_descripcion', 'nir_id');
+    }
 
     private static function obtenerOpciones(string $serviceClass, string $method, string $labelField, string $valueField): array
     {

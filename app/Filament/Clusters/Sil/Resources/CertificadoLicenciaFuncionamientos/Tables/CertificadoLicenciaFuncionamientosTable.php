@@ -32,7 +32,7 @@ class CertificadoLicenciaFuncionamientosTable
         return $table
 
             ->modifyQueryUsing(function (Builder $query, $livewire) {
-                $hasFilters = false;
+                /*$hasFilters = false;
                 try {
                     $filters = $livewire->tableFilters ?? [];
 
@@ -53,7 +53,6 @@ class CertificadoLicenciaFuncionamientosTable
                     $hasFilters = false;
                 }
 
-                // Detect actual search term (Filament's hasTableSearch() only indicates the feature exists)
                 $searchTerm = null;
                 if (isset($livewire->tableSearch)) {
                     $searchTerm = $livewire->tableSearch;
@@ -74,7 +73,10 @@ class CertificadoLicenciaFuncionamientosTable
                     return $query;
                 }
 
-                return $query->whereRaw('1 = 0');
+                return $query->whereRaw('1 = 0');*/
+
+                $query->where('lic_filaeliminada', false);
+                return $query;
             })
 
             ->defaultSort('lic_filafecha', 'desc')

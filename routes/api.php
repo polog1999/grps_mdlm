@@ -56,6 +56,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/persona-razon-social/{nombre_razon_social}', [LicenciaCrudController::class, 'obtenerDatosDePersonaORazonSocialPorNombre']);
         Route::get('/expediente-razon-social/{lic_expnum}', [LicenciaCrudController::class, 'obtenerDatosDeRazonSocialPorExpediente']);
         Route::get('/expediente-catastro/{codcat}', [LicenciaCrudController::class, 'obtenerDatosGeneralesDeCatastroPorCodigoCatastral']);
+
+        //obtenerDatosDeExpedienteParaEditarPorIdLicencia
+        Route::get('/licencia-datos-mostrar-para-editar/{lic_id}', [LicenciaCrudController::class, 'obtenerDatosDeExpedienteParaEditarPorIdLicencia']);
+
     });
 
 
@@ -92,6 +96,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/lista-procedimientos-tupa', [CertificadoLicenciaFuncionamientoController::class, 'obtenerListaDeProcedimientosTupaDeLicencias']);
         Route::get('/nivel-riesgo/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerNivelDeRiesgoPorExpediente']);
         Route::get('/datos-completos/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosCompletosParaRegistrarPorExpediente']);
+
     });
 
     /*
@@ -150,5 +155,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/buscar-resolucion-por-expnum/{numexp}', [ResolucionController::class, 'obtenerNumeroResolucionPorNumeroExpediente']);
         //obtenerResolucionMasAreaCompletaPorNumeroResolucion
         Route::get('/obtener-area-por-resolucion/{numres}', [ResolucionController::class, 'obtenerResolucionMasAreaCompletaPorNumeroResolucion']);
+        Route::get('/obtener-resoluciones/{numexp}', [ResolucionController::class, 'obtenerResoluciones']);
     });
 });

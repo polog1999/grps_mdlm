@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -61,7 +61,7 @@ return [
         ],
         'certificados_externos' => [
             'driver' => 'local',
-            'root' => env('PATH_CERTIFICADOS'), // Leerá la ruta del .env
+            'root' => env('PATH_CERTIFICADOS'),
             'throw' => false,
         ],
 

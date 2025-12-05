@@ -27,8 +27,9 @@ class LicenciaService
 
     public function getById($id)
     {
-        return $this->reader->findById($id);
+        return $this->reader->getById($id);
     }
+
 
     public function obtenerDatosDeRazonSocialPorExpediente($expnum)
     {
@@ -42,6 +43,13 @@ class LicenciaService
     {
         return $this->reader->obtenerDatosDePersonaORazonSocialPorNombre($nombre_razon_social);
     }
+
+    //READER DATOS PARA EDITAR
+    public function obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id)
+    {
+        return $this->reader->obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id);
+    }
+
     //CREATOR
     public function create(array $data)
     {

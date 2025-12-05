@@ -5,7 +5,7 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Wizard;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\BusquedaStep;
-use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\SeleccionCatastroStep;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\SeleccionCoincidenciasStep;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\DatosCompletosStep;
 
 class CertificadoLicenciaFuncionamientoForm
@@ -16,8 +16,7 @@ class CertificadoLicenciaFuncionamientoForm
             Wizard::make([
                 BusquedaStep::make()
                     ->hidden(fn(string $operation) => $operation === 'edit'),
-
-                SeleccionCatastroStep::make()
+                SeleccionCoincidenciasStep::make()
                     ->hidden(fn(string $operation) => $operation === 'edit'),
                 DatosCompletosStep::make(),
             ])->columnSpanFull()

@@ -27,6 +27,12 @@ class DatosCompletosStep
     {
         return [
             Hidden::make('fiu_id')->dehydrated(),
+            Hidden::make('_datos_completos')
+                ->formatStateUsing(fn($state) => is_array($state) ? json_encode($state) : $state)
+                ->dehydrated(false)
+                ->live(),
+
+            Hidden::make('_persona_requerida')->live(),
         ];
     }
 
@@ -42,8 +48,8 @@ class DatosCompletosStep
             $set('exp_razsoc', $exp['exp_nomrec'] ?? null);
 
             // Llenar los IDs
-            $set('exp_nomrec_id', $exp['per_id'] ?? null);
-            $set('exp_razsoc_id', $exp['per_id'] ?? null);
+            $set('exp_nomrec_id', $exp['exp_nomrec_id'] ?? $exp['per_id'] ?? null);
+            $set('exp_razsoc_id', $exp['exp_razsoc_id'] ?? $exp['per_id'] ?? null);
         }
 
         // Catastro
@@ -92,8 +98,8 @@ class DatosCompletosStep
         if (!empty($data['resolucion'])) {
             $res = (array) $data['resolucion'];
 
-            // Si hay codigo_unico_tramite, usarlo; si no, usar numero_resolucion
-            $valorResolucion = $res['codigo_unico_tramite'] ?? $res['numero_resolucion'] ?? null;
+            $valorResolucion = $res['codigo_unico_tramite'] ?? null;
+
             $set('n_resolucion', $valorResolucion);
 
             // Convertir fecha de DD/MM/YYYY a formato que DatePicker entienda (YYYY-MM-DD)
