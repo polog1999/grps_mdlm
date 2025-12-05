@@ -17,7 +17,8 @@ use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use Illuminate\Support\Facades\Log;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Actions\SectionHeaderActions;
-
+use App\Services\Sil\Licencias\TipoCentroComercialService;
+use App\Services\Sil\Licencias\TipoLocalService;
 class LicenciasSection
 {
     public static function make(): Section
@@ -73,7 +74,61 @@ class LicenciasSection
 
                 TextInput::make('direccion')->label('Dirección')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
 
-                Select::make('tipo_establecimientos')->label('Tipo Establecimientos')->options(self::tiposEstablecimientos())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('tipo_establecimientos')
+                    ->label('Tipo Establecimientos')
+                    ->options(self::tiposEstablecimientos())
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state != 2) {
+                            $set('centro_comercial', null);
+                            $set('tipo_local', null);
+                            $set('local', null);
+                            $set('observaciones_local', null);
+                        }
+                    })
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                Select::make('centro_comercial')
+                    ->label('Centro Comercial')
+                    ->options(function () {
+                        $service = app(TipoCentroComercialService::class);
+                        $centros = $service->getTipoCentroComercial();
+
+                        return $centros->pluck('cec_descripcion', 'cec_id')
+                            ->filter()
+                            ->toArray();
+                    })
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                Select::make('tipo_local')
+                    ->label('Tipo Local')
+                    ->options(function () {
+                        $service = app(TipoLocalService::class);
+                        $locales = $service->getTipoLocal();
+
+                        return $locales->pluck('tlo_descripcion', 'tlo_id')
+                            ->filter()
+                            ->toArray();
+                    })
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                TextInput::make('local')
+                    ->label('Local')
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+
+                TextInput::make('observaciones_local')
+                    ->label('Observaciones')
+                    ->visible(fn($get) => $get('tipo_establecimientos') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
 
                 Select::make('giros_seleccionar')
                     ->label('Giros encontrados')
