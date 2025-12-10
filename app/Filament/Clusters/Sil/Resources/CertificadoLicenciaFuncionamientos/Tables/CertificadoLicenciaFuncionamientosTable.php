@@ -25,7 +25,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Actions\ReplicateAction;
 use Filament\Actions\ViewAction;
 use Filament\Schemas\Components\Section;
-
+use Filament\Support\Colors\Color;
 class CertificadoLicenciaFuncionamientosTable
 {
 
@@ -628,7 +628,13 @@ class CertificadoLicenciaFuncionamientosTable
 
                     ])
                     ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Cerrar')
+                    ->modalCancelActionLabel('Cerrar'),
+                Action::make('licencia-duplicar')
+                    ->icon('ionicon-duplicate-outline')
+                    ->iconButton()
+                    ->tooltip('Duplicar licencia')
+                    ->color(Color::Purple),
+
 
             ], position: RecordActionsPosition::BeforeCells)
 
