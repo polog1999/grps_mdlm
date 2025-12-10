@@ -44,6 +44,10 @@ Route::prefix('v1')->group(function () {
     */
     Route::prefix('licencias')->group(function () {
 
+        //getById
+        Route::prefix('id')->group(function () {
+            Route::get('/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia']);
+        });
         Route::get('/expediente/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroExpediente']);
         Route::get('/numero/{lic_numlic}', [LicenciaController::class, 'obtenerPorNumeroLicencia']);
         Route::get('/licencia-expediente/{lic_numlic}/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroLicenciaYExpediente']);

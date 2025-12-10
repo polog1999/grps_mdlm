@@ -37,6 +37,14 @@ Route::get('/', function () {
 })->name('home');
 
 /**
+ * Ruta pública para mostrar el QR de una licencia.
+ *
+ * @param int $idLicencia ID de la licencia.
+ */
+Route::get('/qr-generado/{idLicencia}', [App\Http\Controllers\QrLicenciaController::class, 'mostrarQr'])
+    ->name('qr.mostrar');
+
+/**
  * Grupo de rutas protegidas por autenticación y verificación.
  *
  * Requiere que el usuario esté autenticado y haya verificado su email.
@@ -50,6 +58,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
 
     /**
      * Ruta para obtener la lista de tipos de edificación.
@@ -134,9 +143,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         /**
          * Rutas para Certificado de Licencia de Funcionamiento
          */
-           
+
         Route::get('/certificado-licencia-funcionamiento/obtener-datos/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosLicenciaFuncionamiento'])
-            ->name('certificadoLicenciaFuncionamiento.obtenerDatos');   
+            ->name('certificadoLicenciaFuncionamiento.obtenerDatos');
 
         /*
         Route::get('/certificado-licencia-funcionamiento/obtener-codcat-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerCodCatPorExpediente'])
@@ -148,32 +157,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('certificadoLicenciaFuncionamiento.obtenerDatosPorCodCat');
 
 
-          //obtenerListaDeProcedimientosTupaDeLicencias
+        //obtenerListaDeProcedimientosTupaDeLicencias
         Route::get('/certificado-licencia-funcionamiento/obtener-lista-procedimientos-tupa-licencias', [CertificadoLicenciaFuncionamientoController::class, 'obtenerListaDeProcedimientosTupaDeLicencias'])
             ->name('certificadoLicenciaFuncionamiento.obtenerListaDeProcedimientosTupaDeLicencias');
-        
+
         //obtenerNivelDeRiesgoPorExpediente
         Route::get('/certificado-licencia-funcionamiento/obtener-nivel-riesgo-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerNivelDeRiesgoPorExpediente'])
             ->name('certificadoLicenciaFuncionamiento.obtenerNivelDeRiesgoPorExpediente');
-        
-            //obtenerDatosCompletosParaRegistrarPorExpediente
+
+        //obtenerDatosCompletosParaRegistrarPorExpediente
         Route::get('/certificado-licencia-funcionamiento/obtener-datos-completos-para-registrar-por-expediente/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosCompletosParaRegistrarPorExpediente'])
-        ->name('certificadoLicenciaFuncionamiento.obtenerDatosCompletosParaRegistrarPorExpediente');
-        
+            ->name('certificadoLicenciaFuncionamiento.obtenerDatosCompletosParaRegistrarPorExpediente');
+
         //getTipoLicencias
         Route::get('/tipo-licencia/lista', [TipoLicenciaController::class, 'getTipoLicencias'])
             ->name('tipoLicencia.listar');
 
-        
+
         //public function getGiros($search)
         Route::get('/giros/lista/{search}', [GiroLicenciaController::class, 'buscar'])
             ->name('giros.listar');
 
         Route::get('/giros/listar', [GiroLicenciaController::class, 'obtenerTodosLosGiros'])
             ->name('giros.listarTodos');
-        });
+    });
 });
- 
 
 
-require __DIR__.'/settings.php';
+
+require __DIR__ . '/settings.php';
