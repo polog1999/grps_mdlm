@@ -14,6 +14,7 @@
         "faisal50x/blade-ionicons": "^1.1",
         "filament/filament": "^4.0",
         "inertiajs/inertia-laravel": "^2.0",
+        "jenssegers/agent": "^2.6",
         "knuckleswtf/scribe": "^5.5",
         "kwn/number-to-words": "^2.12",
         "laravel/fortify": "^1.30",
@@ -24,6 +25,7 @@
         "owenvoke/blade-fontawesome": "*",
         "pxlrbt/filament-excel": "3.0",
         "secondnetwork/blade-tabler-icons": "^3.35",
+        "stevebauman/location": "^7.6",
         "yajra/laravel-oci8": "12"
     },
     "require-dev": {

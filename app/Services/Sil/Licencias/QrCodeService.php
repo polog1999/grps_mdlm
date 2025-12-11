@@ -92,14 +92,14 @@ class QrCodeService
      * Inserta un registro de código QR en la base de datos
      *
      * @param int $licenciaId ID de la licencia asociada
-     * @return mixed Resultado del stored procedure
+     * @return int|null ID del código QR insertado (cqr_id)
      */
-    public function insertarCodigoQr(int $licenciaId)
+    public function insertarCodigoQr(int $licenciaId): ?int
     {
         $qrUrl = 'https://grp.munimolina.gob.pe/qr-generado';
 
         $result = $this->connectionToPostgreSQL->select(
-            'SELECT qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?)',
+            'SELECT qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
             [
                 1,                      // p_tqr_id: Tipo de QR (valor fijo)
                 '',                     // p_cqr_descripcion: Descripción vacía
@@ -111,7 +111,32 @@ class QrCodeService
             ]
         );
 
-        return $result;
+        return $result[0]->cqr_id ?? null;
+    }
+
+    /**
+     * Obtiene el cqr_id basado en el ID de licencia
+     *
+     * @param int $licenciaId ID de la licencia asociada
+     * @return int|null ID del código QR (cqr_id)
+     */
+    public function obtenerCqrIdPorLicencia(int $licenciaId): ?int
+    {
+        try {
+            $result = $this->connectionToPostgreSQL->select(
+                'SELECT cqr_id FROM qr.codigoqr WHERE cqr_idasociado = ? AND tqr_id = 1 ORDER BY cqr_id DESC LIMIT 1',
+                [$licenciaId]
+            );
+
+            return $result[0]->cqr_id ?? null;
+        } catch (\Exception $e) {
+            \Log::warning('Error al obtener cqr_id por licencia', [
+                'licenciaId' => $licenciaId,
+                'error' => $e->getMessage()
+            ]);
+
+            return null;
+        }
     }
 
     /**
