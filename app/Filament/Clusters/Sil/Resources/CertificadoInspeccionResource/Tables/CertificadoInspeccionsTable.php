@@ -2,10 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Tables;
 
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Storage;
-=======
->>>>>>> feature/licencias
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -359,11 +356,8 @@ class CertificadoInspeccionsTable
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
-<<<<<<< HEAD
 
 
-=======
->>>>>>> feature/licencias
                 ViewAction::make()
                     ->icon('heroicon-o-eye')
                     ->iconButton()
@@ -375,7 +369,6 @@ class CertificadoInspeccionsTable
                     ->iconButton()
                     ->tooltip('Editar certificado')
                     ->color('warning'),
-<<<<<<< HEAD
 
                 Action::make('ver_original')
                     ->icon('bxs-badge-check')
@@ -507,16 +500,6 @@ class CertificadoInspeccionsTable
                             $action->halt();
                         }
                     }),
-=======
-                Action::make('exportar')
-                    ->label('Exportar')
-                    ->icon('heroicon-o-printer')
-                    ->tooltip('Exportar certificado (PDF)')
-                    ->iconButton()
-                    ->color('success')
-                    ->url(fn($record) => route('test.certificadoInspeccion.exportarPdf', ['certificadoId' => $record->cin_id]))
-                    ->openUrlInNewTab(),
->>>>>>> feature/licencias
                 Action::make('borrar')
                     ->label('Borrar')
                     ->icon('heroicon-o-trash')

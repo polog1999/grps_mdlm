@@ -99,7 +99,7 @@ class QrCodeService
         $qrUrl = 'https://grp.munimolina.gob.pe/qr-generado';
 
         $result = $this->connectionToPostgreSQL->select(
-            'SELECT qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
+            'SELECT * FROM qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
             [
                 1,                      // p_tqr_id: Tipo de QR (valor fijo)
                 '',                     // p_cqr_descripcion: Descripción vacía

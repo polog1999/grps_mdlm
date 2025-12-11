@@ -2,6 +2,8 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Tables;
 
+//Storage
+
 use App\Models\CertificadoLicenciaFuncionamiento;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
