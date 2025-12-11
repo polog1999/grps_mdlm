@@ -16,7 +16,12 @@ use Illuminate\Support\Collection;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Enums\RecordActionsPosition;
-
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\DatePicker;
+use Filament\Actions\ReplicateAction;
+use Filament\Actions\ViewAction;
+use Filament\Schemas\Components\Section;
+use Filament\Support\Colors\Color;
 class CertificadoLicenciaFuncionamientosTable
 {
 
@@ -24,13 +29,11 @@ class CertificadoLicenciaFuncionamientosTable
 
     public static function configure(Table $table): Table
     {
-
         if (!isset(self::$service)) {
             self::$service = new CertificadoLincenciaFuncionamientoService();
         }
 
         return $table
-
             ->modifyQueryUsing(function (Builder $query, $livewire) {
                 /*$hasFilters = false;
                 try {
@@ -313,11 +316,322 @@ class CertificadoLicenciaFuncionamientosTable
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
+                Action::make('notificar_licencia')
+                    ->label('Notificar')
+                    ->icon('heroicon-o-bell-alert')
+                    ->iconButton()
+                    ->tooltip('Notificar licencia de funcionamiento')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalHeading('Notificar Licencia de Funcionamiento')
+                    ->modalDescription('Complete la información de notificación para esta licencia.')
+                    ->modalWidth('4xl')
+                    ->modalIcon('heroicon-o-bell-alert')
+                    ->modalIconColor('warning')
+                    ->fillForm(function (CertificadoLicenciaFuncionamiento $record): array {
+                        $service = new \App\Services\Sil\Licencias\LicenciaNotificacionService();
+                        $datosActuales = $service->datosLicenciaNotificada($record->lic_id);
+
+                        return [
+                            'lic_id' => $record->lic_id,
+                            'numero_licencia' => $record->lic_numlic,
+                            'numero_expediente' => $record->lic_expnum,
+                            'fecha_notificacion' => now()->format('Y-m-d'),
+                            'fecha_limite' => now()->addDays(30)->format('Y-m-d'),
+                            'fecha_notificacion_actual' => $datosActuales->lic_fechanotificacion,
+                            'fecha_limite_actual' => $datosActuales->lic_fechalimite,
+                            'tiene_notificacion' => !is_null($datosActuales->lic_fechanotificacion),
+                        ];
+                    })
+                    ->form([
+                        // Información de la Licencia
+                        TextInput::make('numero_licencia')
+                            ->label('Licencia N°')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->extraInputAttributes(['class' => 'text-lg font-semibold'])
+                            ->columnSpan(1),
+
+                        TextInput::make('numero_expediente')
+                            ->label('Expediente N°')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->extraInputAttributes(['class' => 'text-lg font-semibold'])
+                            ->columnSpan(1),
+
+                        // Alerta informativa si ya está notificada
+                        TextInput::make('alerta_notificacion')
+                            ->label('')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->placeholder('⚠️ Esta licencia ya tiene una notificación registrada. Los nuevos datos reemplazarán los existentes.')
+                            ->extraInputAttributes(['class' => 'text-amber-600 dark:text-amber-400'])
+                            ->hidden(fn($get) => !$get('tiene_notificacion'))
+                            ->columnSpanFull(),
+
+                        Section::make('Nueva Notificación')
+                            ->description('Complete las fechas de notificación')
+                            ->icon('heroicon-o-calendar-days')
+                            ->iconColor('success')
+                            ->schema([
+                                DatePicker::make('fecha_notificacion')
+                                    ->label('Fecha de Notificación')
+                                    ->required()
+                                    ->native(false)
+                                    ->displayFormat('d/m/Y')
+                                    ->maxDate(now())
+                                    ->default(now())
+                                    ->prefixIcon('heroicon-o-calendar')
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        if ($state) {
+                                            $fechaActual = $get('fecha_limite');
+                                            if (!$fechaActual || $fechaActual === now()->addDays(30)->format('Y-m-d')) {
+                                                $set('fecha_limite', \Carbon\Carbon::parse($state)->addDays(30)->format('Y-m-d'));
+                                            }
+                                        }
+                                    })
+                                    ->helperText('Fecha en que se notificó al titular')
+                                    ->columnSpanFull(),
+
+                                DatePicker::make('fecha_limite')
+                                    ->label('Fecha Límite de Subsanación')
+                                    ->required()
+                                    ->native(false)
+                                    ->displayFormat('d/m/Y')
+                                    ->minDate(fn($get) => $get('fecha_notificacion'))
+                                    ->prefixIcon('heroicon-o-clock')
+                                    ->helperText('Fecha límite para cumplir con los requisitos')
+                                    ->live()
+                                    ->columnSpanFull(),
+                            ])
+                            ->columnSpan(1),
+
+                        Section::make('Notificación Actual')
+                            ->description('Datos registrados actualmente')
+                            ->icon('heroicon-o-information-circle')
+                            ->iconColor('gray')
+                            ->collapsed(true)
+                            ->schema([
+                                TextInput::make('fecha_notificacion_actual_display')
+                                    ->label('Fecha de Notificación')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->placeholder(function ($get) {
+                                        $fecha = $get('fecha_notificacion_actual');
+                                        return $fecha ? \Carbon\Carbon::parse($fecha)->format('d/m/Y') : 'No notificada';
+                                    })
+                                    ->prefixIcon(fn($get) => $get('fecha_notificacion_actual') ? 'heroicon-o-calendar' : 'heroicon-o-x-circle')
+                                    ->prefixIconColor(fn($get) => $get('fecha_notificacion_actual') ? 'success' : 'gray')
+                                    ->columnSpanFull(),
+
+                                TextInput::make('fecha_limite_actual_display')
+                                    ->label('Fecha Límite')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->placeholder(function ($get) {
+                                        $fecha = $get('fecha_limite_actual');
+                                        if ($fecha) {
+                                            $carbon = \Carbon\Carbon::parse($fecha);
+                                            $formato = $carbon->format('d/m/Y');
+                                            return $carbon->isPast() ? "{$formato} (Vencida)" : $formato;
+                                        }
+                                        return 'Sin fecha límite';
+                                    })
+                                    ->prefixIcon(function ($get) {
+                                        $fecha = $get('fecha_limite_actual');
+                                        if (!$fecha)
+                                            return 'heroicon-o-x-circle';
+                                        return \Carbon\Carbon::parse($fecha)->isPast() ? 'heroicon-o-exclamation-circle' : 'heroicon-o-clock';
+                                    })
+                                    ->prefixIconColor(function ($get) {
+                                        $fecha = $get('fecha_limite_actual');
+                                        if (!$fecha)
+                                            return 'gray';
+                                        return \Carbon\Carbon::parse($fecha)->isPast() ? 'danger' : 'warning';
+                                    })
+                                    ->columnSpanFull(),
+                            ])
+                            ->columnSpan(1),
+                    ])
+                    ->modalSubmitActionLabel('Confirmar Notificación')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->closeModalByClickingAway(false)
+                    ->action(function (Action $action, array $data, CertificadoLicenciaFuncionamiento $record) {
+                        try {
+                            $service = new \App\Services\Sil\Licencias\LicenciaNotificacionService();
+
+                            $serviceData = [
+                                'lic_id' => $record->lic_id,
+                                'fecha_notificacion' => $data['fecha_notificacion'],
+                                'fecha_limite' => $data['fecha_limite'],
+                            ];
+
+                            $resultado = $service->notificarLicencia($serviceData);
+
+                            if ($resultado) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('¡Notificación registrada!')
+                                    ->body("La licencia {$record->lic_numlic} ha sido notificada correctamente.")
+                                    ->success()
+                                    ->icon('heroicon-o-check-circle')
+                                    ->duration(5000)
+                                    ->send();
+                            } else {
+                                throw new \Exception('No se pudo completar el registro de la notificación.');
+                            }
+                        } catch (\Throwable $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error al notificar')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->icon('heroicon-o-x-circle')
+                                ->persistent()
+                                ->send();
+
+                            \Log::error('Error al notificar licencia', [
+                                'licencia_id' => $record->lic_id,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+
+                            $action->halt();
+                        }
+                    }),
                 EditAction::make()
                     ->icon('heroicon-o-pencil')
                     ->iconButton()
                     ->tooltip('Modificar certificado')
                     ->color('warning'),
+
+                Action::make('dar_de_baja')
+                    ->icon('heroicon-o-archive-box-arrow-down')
+                    ->iconButton()
+                    ->tooltip('Dar de baja licencia')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Dar de baja licencia')
+                    ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?'))
+                    ->fillForm(fn(CertificadoLicenciaFuncionamiento $record): array => [
+                        'nro_expediente' => $record->lic_expnum,
+                        'nro_resolucion' => $record->lic_resnum,
+                        'fecha_resolucion' => $record->lic_fecharesolucion,
+                        'fecha_baja' => now(),
+                    ])
+                    ->form([
+                        TextInput::make('nro_expediente')
+                            ->label('Nro Expediente')
+                            ->required()
+                            ->maxLength(50),
+
+                        TextInput::make('anexo')
+                            ->label('Anexo')
+                            ->required()
+                            ->maxLength(50),
+
+                        TextInput::make('nro_resolucion')
+                            ->label('Nro Resolución')
+                            ->required()
+                            ->maxLength(100),
+
+                        DatePicker::make('fecha_baja')
+                            ->label('Fecha Baja')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->default(now()),
+
+                        DatePicker::make('fecha_resolucion')
+                            ->label('Fecha Resolución')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->modalSubmitActionLabel('Sí, dar de baja')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index'))
+                    ->action(function (Action $action, array $data, CertificadoLicenciaFuncionamiento $record) {
+                        try {
+                            $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
+
+                            $serviceData = [
+                                'lic_id' => $record->lic_id,
+                                'lib_expnum' => $data['nro_expediente'],
+                                'lib_anexo' => $data['anexo'],
+                                'lib_resnum' => $data['nro_resolucion'],
+                                'lib_fecharesolucion' => $data['fecha_resolucion'],
+                                'lib_fechabaja' => $data['fecha_baja'],
+                            ];
+
+                            $resultado = $service->bajaLicencia($serviceData);
+
+                            if ($resultado->error > 0) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Éxito')
+                                    ->body($resultado->mensaje)
+                                    ->success()
+                                    ->send();
+                            } else {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error')
+                                    ->body($resultado->mensaje)
+                                    ->danger()
+                                    ->send();
+                                $action->halt();
+                            }
+                        } catch (\Throwable $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Error del Sistema')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                            $action->halt();
+                        }
+                    }),
+                Action::make('generar-qr')
+                    ->icon('heroicon-o-qr-code')
+                    ->iconButton()
+                    ->tooltip('Generar QR')
+                    ->color('success')
+                    ->modalHeading('Código QR de Licencia')
+                    ->modalDescription('Escanee este código QR para ver los detalles de la licencia')
+                    ->modalWidth('md')
+                    ->modalIcon('heroicon-o-qr-code')
+                    ->modalIconColor('success')
+                    ->fillForm(function (CertificadoLicenciaFuncionamiento $record) {
+                        $qrService = new \App\Services\Sil\Licencias\QrCodeService();
+                        $qrDataUri = $qrService->generarQrDataUri($record->lic_id);
+
+                        return [
+                            'qr_image' => $qrDataUri,
+                            'numero_licencia' => $record->lic_numlic,
+                            'numero_expediente' => $record->lic_expnum,
+                            'url_licencia' => route('qr.mostrar', ['idLicencia' => $record->lic_id]),
+                        ];
+                    })
+                    ->form([
+                        \Filament\Forms\Components\Placeholder::make('qr_display')
+                            ->label('')
+                            ->content(function ($get) {
+                                $qrImage = $get('qr_image');
+                                return new \Illuminate\Support\HtmlString(
+                                    '<div style="text-align: center; padding: 20px;">
+                                        <img src="' . $qrImage . '" alt="Código QR" style="max-width: 300px; width: 100%; height: auto; border: 2px solid #10b981; border-radius: 8px; padding: 10px; background: white;">
+                                    </div>'
+                                );
+                            })
+                            ->columnSpanFull(),
+
+                    ])
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar'),
+                Action::make('licencia-duplicar')
+                    ->icon('ionicon-duplicate-outline')
+                    ->iconButton()
+                    ->tooltip('Duplicar licencia')
+                    ->color(Color::Purple),
+
+
             ], position: RecordActionsPosition::BeforeCells)
 
             ->filtersTriggerAction(

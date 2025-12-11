@@ -33,7 +33,6 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             'exp_num' => 'lic_expnum',
             'exp_fec' => 'lic_expfec',
             'exp_nomrec' => 'personasolicitante',
-            'exp_nomrec_id' => 'per_idsolicitante',
             'exp_razsoc' => 'razonsocial',
             'exp_razsoc_id' => 'per_idrazonsocial',
             'numdoc' => 'per_ruc',
@@ -62,6 +61,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             $data[$formField] = $row->$dbColumn ?? null;
         }
 
+        // Obtener datos de catastro frescos desde Oracle usando el código catastral
         if (!empty($row->codigocatastral)) {
             $datosCatastro = $service->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($row->codigocatastral);
 
@@ -150,70 +150,63 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
             $giros[] = [
                 'gir_id' => $girId,
-                'giro_especifico' => $specific,
-                'lig_id' => 0,
+                'especifico' => $specific,
+                'lig_id' => 0, // We don't have this, treating as new/update without ID tracking
                 'estado' => 'M'
             ];
-        }
-        $service = app(LicenciaService::class);
-        $datosCatastroActualizados = [];
-
-        if (!empty($data['coduca'])) {
-            $codigoCatastral = $data['coduca']; // o la lógica que uses para construir el código
-            $datosCatastro = $service->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($codigoCatastral);
-
-            if (!empty($datosCatastro) && isset($datosCatastro[0])) {
-                $catastro = $datosCatastro[0];
-
-                // Sobrescribir los datos del formulario con los datos actualizados del catastro
-                $data['codpredio'] = $catastro->codpredio ?? $data['codpredio'];
-                $data['descurb'] = $catastro->descurb ?? $data['descurb'];
-                $data['zonificacion'] = $catastro->zonificacion ?? $data['zonificacion'];
-                $data['area_economica'] = $catastro->area_economica ?? $data['area_economica'];
-                $data['fiu_id'] = $catastro->fiu_id ?? ($data['fiu_id'] ?? 0);
-            }
         }
 
         $params = [
             'lic_id' => $record->lic_id,
+            // Datos base del formulario (usando el operador de fusión null '??' y conversiones)
             'tli_id' => $data['tipo_licencia'],
             'tes_id' => $data['tipo_establecimientos'],
-            'per_idsolicitante' => $data['exp_nomrec_id'] ?? null,
-            'per_idrazonsocial' => $data['exp_razsoc_id'] ?? null,
+            'per_idsolicitante' => $data['exp_nomrec_id'] ?? 0,
+            'per_idrazonsocial' => $data['exp_razsoc_id'] ?? 0,
             'lic_numlic' => $data['numero_licencia'],
-            'lic_codigopredial' => $data['codpredio'] ?? '',
+            'lic_codigopredial' => $data['codpredio'],
             'lic_expnum' => $data['exp_num'],
             'lic_direccion' => $data['direccion'],
-            'lic_urbanizacion' => $data['descurb'] ?? '',
-            'lic_area' => $data['area_economica'] ?? 0,
+            'lic_urbanizacion' => $data['descurb'],
+            'lic_area' => $data['area_economica'],
+            // Conversión Booleana
             'lic_mype' => $data['mype'] == '1',
+            // Datos de Resolución y Fechas
             'lic_resnum' => $data['n_resolucion'],
             'lic_fecharesolucion' => $data['fecha_resolucion'],
             'lic_fechaemision' => $data['fecha_emision'],
             'lic_fechavencimiento' => null,
+            // Observaciones y Catastro
             'lic_licobs' => $data['observaciones'],
             'fiu_id' => $data['fiu_id'] ?? 0,
-            'lca_urbanizacion' => $data['descurb'] ?? '',
-            'lca_zonificacion' => $data['zonificacion'] ?? '',
+            'lca_urbanizacion' => $data['descurb'],
+            'lca_zonificacion' => $data['zonificacion'],
+            // Centro Comercial
             'cec_id' => $data['centro_comercial'] ?? 0,
             'tlo_id' => $data['tipo_local'] ?? 0,
             'lcc_observacion' => $data['observaciones_local'] ?? '',
             'lcc_local' => $data['local'] ?? '',
+            // Horario y Compatibilidad
             'lic_horainicio' => $data['hora_inicio'],
             'lic_horafin' => $data['hora_fin'],
             'tir_id' => $data['tipo_resolucion'],
             'compatibilidad' => $data['compatibilidad'],
             'nir_id' => $data['nir_id'],
-            'lic_giro' => '',
+
+            // Valores por defecto/estáticos
+            'lic_giro' => '', // Mantienes esto vacío
             'lca_descripcion' => '',
             'lca_origen' => '',
             'lic_modidirecc' => false,
             'lic_nota' => '',
             'rsgparrafo1' => '',
             'rsgparrafo2' => '',
+
+            // Dato dinámico/construido
             'giros' => $giros,
         ];
 
+        $service = app(LicenciaService::class);
         $service->update($params);
 
         return $record;

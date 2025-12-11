@@ -12,8 +12,8 @@ class ResolucionSearchResult
 
     public function __construct(
         public readonly string $status,
-        public readonly ?array $data = null,       // Datos de la resolución (número, fecha, código único)
-        public readonly ?array $areaMatches = null // Lista de áreas cuando hay múltiples
+        public readonly ?array $data = null,
+        public readonly ?array $areaMatches = null
     ) {
     }
 
