@@ -16,7 +16,6 @@ class QrLicenciaController extends Controller
             abort(404, 'Licencia no encontrada');
         }
 
-        // Solo pasar los datos de la licencia, sin generar QR
         return view('qr-licencia', [
             'licencia' => $licencia
         ]);
