@@ -2,6 +2,7 @@
 
 namespace App\Services\Sil\Licencias;
 
+use Illuminate\Support\Facades\DB;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -10,6 +11,12 @@ use Endroid\QrCode\Writer\PngWriter;
 
 class QrCodeService
 {
+    protected $connectionToPostgreSQL;
+
+    public function __construct()
+    {
+        $this->connectionToPostgreSQL = DB::connection('pgsql_qr');
+    }
     /**
      * Genera un código QR para una licencia
      *
@@ -82,6 +89,32 @@ class QrCodeService
     }
 
     /**
+     * Inserta un registro de código QR en la base de datos
+     *
+     * @param int $licenciaId ID de la licencia asociada
+     * @return mixed Resultado del stored procedure
+     */
+    public function insertarCodigoQr(int $licenciaId)
+    {
+        $qrUrl = 'https://grp.munimolina.gob.pe/qr-generado';
+
+        $result = $this->connectionToPostgreSQL->select(
+            'SELECT qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?)',
+            [
+                1,                      // p_tqr_id: Tipo de QR (valor fijo)
+                '',                     // p_cqr_descripcion: Descripción vacía
+                '',                     // p_cqr_observacion: Observación vacía
+                $licenciaId,            // p_cqr_idasociado: ID de la licencia
+                '',                     // p_cqr_keyasociado: Key asociado vacío
+                $qrUrl,                 // p_cqr_qr: URL del QR
+                0                       // p_usa_id: Usuario por defecto
+            ]
+        );
+
+        return $result;
+    }
+
+    /**
      * Genera un Data URI para usar directamente en un tag <img>
      * Verifica si ya existe el QR en disco antes de generarlo
      *
@@ -119,6 +152,9 @@ class QrCodeService
 
         // Guardar en disco para uso futuro
         \Storage::disk('qr')->put($filename, $pngData);
+
+        // Guardar el registro del QR en la base de datos
+        $this->insertarCodigoQr($licenciaId);
 
         return $result->getDataUri();
     }
