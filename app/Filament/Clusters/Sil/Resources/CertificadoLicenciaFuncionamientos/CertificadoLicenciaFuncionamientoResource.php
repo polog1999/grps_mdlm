@@ -10,7 +10,6 @@ use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Table
 use App\Filament\Clusters\Sil\SilCluster;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use BackedEnum;
-use Filament\Schemas\Components\Section;
 
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

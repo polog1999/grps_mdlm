@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace App\Http\Controllers;
 
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class CertificadoLicenciaFuncionamientoController extends Controller
 {
-   
+
     protected $service;
 
     public function __construct(CertificadoLincenciaFuncionamientoService $service)
@@ -85,7 +85,8 @@ class CertificadoLicenciaFuncionamientoController extends Controller
         ], 404);
     }
 
-    public function obtenerNivelDeRiesgoPorExpediente($exp_num){
+    public function obtenerNivelDeRiesgoPorExpediente($exp_num)
+    {
         $datos = $this->service->obtenerNivelDeRiesgoPorExpediente($exp_num);
 
         if ($datos) {
@@ -102,7 +103,8 @@ class CertificadoLicenciaFuncionamientoController extends Controller
     }
 
     //obtenerDatosCompletosParaRegistrarPorExpediente
-    public function obtenerDatosCompletosParaRegistrarPorExpediente($exp_num){
+    public function obtenerDatosCompletosParaRegistrarPorExpediente($exp_num)
+    {
         $datos = $this->service->obtenerDatosCompletosParaRegistrarPorExpediente($exp_num);
 
         if ($datos) {
@@ -119,8 +121,9 @@ class CertificadoLicenciaFuncionamientoController extends Controller
     }
 
 
-        //obtenerDatosDePersonaPorExpediente
-    public function obtenerDatosDePersonaPorExpediente($expnum){
+    //obtenerDatosDePersonaPorExpediente
+    public function obtenerDatosDePersonaPorExpediente($expnum)
+    {
         $items = $this->service->obtenerDatosDePersonaPorExpediente($expnum);
         return response()->json($items);
     }

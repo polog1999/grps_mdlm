@@ -8,7 +8,7 @@ use Illuminate\Database\Query\Builder;
 class TipoCentroComercialService
 {
     protected $connectionToPostgreSQL;
-      public function __construct()
+    public function __construct()
     {
         $this->connectionToPostgreSQL = DB::connection('pgsql_licencias');
     }
@@ -16,9 +16,9 @@ class TipoCentroComercialService
     public function getTipoCentroComercial()
     {
         return $this->connectionToPostgreSQL
-        ->table('licencia.vu_centrocomercial')
-        ->select('cec_id', 'cec_descripcion')   
-        ->get();
+            ->table('licencia.vu_centrocomercial')
+            ->select('cec_id', 'cec_descripcion')
+            ->get();
 
     }
 }

@@ -27,7 +27,8 @@ class ResetPasswordNotification extends Notification
      * @param string $token Token único generado para el restablecimiento de contraseña.
      */
     public function __construct(private readonly string $token)
-    {}
+    {
+    }
 
     /**
      * Define los canales por los que se enviará la notificación.
@@ -52,8 +53,8 @@ class ResetPasswordNotification extends Notification
      * @param object $notifiable El objeto notifiable (usuario).
      * @return MailMessage Instancia de MailMessage configurada.
      */
-    public function toMail(object $notifiable): MailMessage 
-    { 
+    public function toMail(object $notifiable): MailMessage
+    {
         $resetUrl = Filament::getResetPasswordUrl($this->token, $notifiable);
         $minutes = (int) config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60);
 

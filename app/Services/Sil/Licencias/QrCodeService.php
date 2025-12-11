@@ -83,12 +83,23 @@ class QrCodeService
 
     /**
      * Genera un Data URI para usar directamente en un tag <img>
+     * Verifica si ya existe el QR en disco antes de generarlo
      *
      * @param int $licenciaId ID de la licencia
      * @return string Data URI
      */
     public function generarQrDataUri(int $licenciaId): string
     {
+        $filename = "qr_{$licenciaId}.png";
+
+        // Verificar si ya existe el QR en disco
+        if (\Storage::disk('qr')->exists($filename)) {
+            // Leer el archivo existente
+            $contents = \Storage::disk('qr')->get($filename);
+            return 'data:image/png;base64,' . base64_encode($contents);
+        }
+
+        // Generar nuevo QR si no existe
         $url = route('qr.mostrar', ['idLicencia' => $licenciaId]);
 
         $builder = new Builder(
@@ -104,6 +115,10 @@ class QrCodeService
         );
 
         $result = $builder->build();
+        $pngData = $result->getString();
+
+        // Guardar en disco para uso futuro
+        \Storage::disk('qr')->put($filename, $pngData);
 
         return $result->getDataUri();
     }

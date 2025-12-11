@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class TipoCentroComercialController extends Controller
 {
     protected $service;
-    
+
     public function __construct(TipoCentroComercialService $service)
     {
         $this->service = $service;

@@ -96,7 +96,7 @@ class RequestPasswordReset extends BaseRequestPasswordReset
              */
             function (CanResetPassword $user, string $token): void {
                 // Verificación en tiempo de ejecución (ya presente)
-                if (! method_exists($user, 'notify')) {
+                if (!method_exists($user, 'notify')) {
                     $userClass = get_class($user);
                     throw new Exception("Model [{$userClass}] does not have a [notify()] method.");
                 }

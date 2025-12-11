@@ -58,29 +58,16 @@ class TipoCodigoQR extends Model
         'usa_id' => 'integer',
     ];
 
-    /**
-     * RELACIONES
-     */
 
-    // Relación: Un Tipo de QR tiene muchos Códigos QR generados
     public function codigosQr(): HasMany
     {
         return $this->hasMany(CodigoQr::class, 'tqr_id', 'tqr_id');
     }
 
-    // Relación: Un Tipo de QR puede tener muchas Páginas configuradas
-    // (Asumiendo que crearás el modelo TipoQrPagina más adelante)
+
     public function paginas(): HasMany
     {
         return $this->hasMany(TipoQrPagina::class, 'tqr_id', 'tqr_id');
     }
 
-    // Relación: Objeto de Sistema (Si decides crear el modelo para sic_ssi2.objetosistema)
-    /*
-    public function objetoSistema(): BelongsTo
-    {
-        // Nota: Asegúrate de que el modelo ObjetoSistema tenga protected $table = 'sic_ssi2.objetosistema';
-        return $this->belongsTo(ObjetoSistema::class, 'obs_id', 'obs_id');
-    }
-    */
 }
