@@ -10,6 +10,7 @@ use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Table
 use App\Filament\Clusters\Sil\SilCluster;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use BackedEnum;
+
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
@@ -23,7 +24,11 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     protected static ?string $navigationLabel = 'Certificados de Licencia de Funcionamiento';
     protected static ?string $pluralModelLabel = 'Certificados de Licencia de Funcionamiento';
 
+<<<<<<< HEAD
     protected static string|BackedEnum|null $navigationIcon = 'mdi-storefront-check-outline';
+=======
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+>>>>>>> feature/licencias
     protected static ?string $cluster = SilCluster::class;
 
     public static function form(Schema $schema): Schema

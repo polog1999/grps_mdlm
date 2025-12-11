@@ -11,6 +11,11 @@ class LicenciaCrudController extends Controller
         $this->service = $service;
     }
 
+    public function getById($id)
+    {
+        $items = $this->service->getById($id);
+        return response()->json($items);
+    }
     public function obtenerDatosDeRazonSocialPorExpediente($expnum)
     {
         $items = $this->service->obtenerDatosDeRazonSocialPorExpediente($expnum);

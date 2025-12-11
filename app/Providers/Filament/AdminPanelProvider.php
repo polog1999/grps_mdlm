@@ -42,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
             ->emailVerification()
-            //->globalSearch(false)
+            ->globalSearch(false)
             ->sidebarFullyCollapsibleOnDesktop()
             ->maxContentWidth(Width::Full)
 

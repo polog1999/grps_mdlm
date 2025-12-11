@@ -65,6 +65,12 @@ return [
             'throw' => false,
         ],
 
+        'qr' => [
+            'driver' => 'local',
+            'root' => env('PATH_QR'),
+            'visibility' => 'public',
+            'throw' => false,
+        ],
     ],
 
     /*

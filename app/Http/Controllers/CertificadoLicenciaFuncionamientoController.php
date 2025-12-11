@@ -121,5 +121,11 @@ class CertificadoLicenciaFuncionamientoController extends Controller
     }
 
 
+    //obtenerDatosDePersonaPorExpediente
+    public function obtenerDatosDePersonaPorExpediente($expnum)
+    {
+        $items = $this->service->obtenerDatosDePersonaPorExpediente($expnum);
+        return response()->json($items);
+    }
 
 }
