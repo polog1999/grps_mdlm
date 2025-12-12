@@ -3,6 +3,9 @@
 namespace App\Services\Sil\Licencias;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -17,18 +20,24 @@ class QrCodeService
     {
         $this->connectionToPostgreSQL = DB::connection('pgsql_qr');
     }
-    /**
-     * Genera un código QR para una licencia
-     *
-     * @param int $licenciaId ID de la licencia
-     * @return string Base64 encoded image
-     */
-    public function generarQrLicencia(int $licenciaId): string
-    {
-        // Generar la URL completa a la vista de la licencia
-        $url = route('qr.mostrar', ['idLicencia' => $licenciaId]);
 
-        // Construir el código QR
+    // =========================================================================
+    //  MÉTODOS PRIVADOS / AUXILIARES
+    // =========================================================================
+
+    private function generarKey(): string
+    {
+        return strtoupper(Str::random(9));
+    }
+
+    private function obtenerUrlDestino(int $cqrId, string $key): string
+    {
+        // Ajusta http o https según tu servidor m.munimolina
+        return "https://m.munimolina.gob.pe/m/isi.php?qr={$cqrId}&key={$key}";
+    }
+
+    private function construirImagenQr(string $url): \Endroid\QrCode\Writer\Result\ResultInterface
+    {
         $builder = new Builder(
             writer: new PngWriter(),
             writerOptions: [],
@@ -41,146 +50,130 @@ class QrCodeService
             roundBlockSizeMode: RoundBlockSizeMode::Margin,
         );
 
-        $result = $builder->build();
-
-        // Convertir a base64 para mostrar en la vista
-        return base64_encode($result->getString());
+        return $builder->build();
     }
 
     /**
-     * Genera un código QR y lo guarda en el sistema de archivos
-     *
-     * @param int $licenciaId ID de la licencia
-     * @param string $path Ruta donde guardar el archivo
-     * @return string Ruta del archivo guardado
+     * Busca si ya existe un QR activo para la licencia y retorna sus datos.
+     * Retorna objeto con {cqr_id, cqr_keyasociado, cqr_qr} o null.
      */
-    public function generarYGuardarQr(int $licenciaId, string $path = null): string
+    private function obtenerDatosExistentes(int $licenciaId)
     {
-        $url = route('qr.mostrar', ['idLicencia' => $licenciaId]);
-
-        if (!$path) {
-            $path = storage_path("app/public/qr-codes/licencia-{$licenciaId}.png");
-        }
-
-        // Asegurar que el directorio existe
-        $directory = dirname($path);
-        if (!file_exists($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $builder = new Builder(
-            writer: new PngWriter(),
-            writerOptions: [],
-            validateResult: false,
-            data: $url,
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::High,
-            size: 300,
-            margin: 10,
-            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+        $result = $this->connectionToPostgreSQL->select(
+            'SELECT cqr_id, cqr_keyasociado, cqr_qr 
+             FROM qr.codigoqr 
+             WHERE cqr_idasociado = ? AND tqr_id = 1 AND cqr_filaEliminada = false
+             ORDER BY cqr_id DESC LIMIT 1',
+            [$licenciaId]
         );
 
-        $result = $builder->build();
-
-        // Guardar el archivo
-        $result->saveToFile($path);
-
-        return $path;
+        return $result[0] ?? null;
     }
 
     /**
-     * Inserta un registro de código QR en la base de datos
-     *
-     * @param int $licenciaId ID de la licencia asociada
-     * @return int|null ID del código QR insertado (cqr_id)
+     * Lógica central: Garantiza que exista un registro en BD y devuelve la URL final correcta.
+     * Si ya existe, devuelve la URL guardada.
+     * Si no existe, inserta (temporal), actualiza y devuelve la nueva URL.
      */
-    public function insertarCodigoQr(int $licenciaId): ?int
+    private function obtenerOGenerarUrlFinal(int $licenciaId): string
     {
-        $qrUrl = 'https://grp.munimolina.gob.pe/qr-generado';
+        // 1. Verificar si ya existe en BD para no romper la integridad de la KEY
+        $existente = $this->obtenerDatosExistentes($licenciaId);
+
+        if ($existente) {
+            // Si ya existe, DEBEMOS usar la misma Key y ID para que el link funcione
+            // Si la URL guardada en BD es antigua o incorrecta, la regeneramos aquí basada en ID y Key
+            return $this->obtenerUrlDestino($existente->cqr_id, $existente->cqr_keyasociado);
+        }
+
+        // 2. Si no existe, creamos uno nuevo
+        $newKey = 'HFWZ2AIDI@';
+
+        // Insertamos con texto temporal para pasar la validación "IS NOT NULL" del SP
+        $urlTemporal = 'PENDIENTE_GENERACION';
 
         $result = $this->connectionToPostgreSQL->select(
             'SELECT * FROM qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
             [
-                1,                      // p_tqr_id: Tipo de QR (valor fijo)
-                '',                     // p_cqr_descripcion: Descripción vacía
-                '',                     // p_cqr_observacion: Observación vacía
-                $licenciaId,            // p_cqr_idasociado: ID de la licencia
-                '',                     // p_cqr_keyasociado: Key asociado vacío
-                $qrUrl,                 // p_cqr_qr: URL del QR
-                0                       // p_usa_id: Usuario por defecto
+                1,                              // p_tqr_id
+                'Licencia Nro ' . $licenciaId,  // p_cqr_descripcion
+                '',                             // p_cqr_observacion
+                $licenciaId,                    // p_cqr_idasociado
+                $newKey,                        // p_cqr_keyasociado
+                $urlTemporal,                   // p_cqr_qr (No puede ser vacío por el SP)
+                0                               // p_usa_id
             ]
         );
 
-        return $result[0]->cqr_id ?? null;
-    }
+        $cqrId = $result[0]->cqr_id ?? null;
 
-    /**
-     * Obtiene el cqr_id basado en el ID de licencia
-     *
-     * @param int $licenciaId ID de la licencia asociada
-     * @return int|null ID del código QR (cqr_id)
-     */
-    public function obtenerCqrIdPorLicencia(int $licenciaId): ?int
-    {
-        try {
-            $result = $this->connectionToPostgreSQL->select(
-                'SELECT cqr_id FROM qr.codigoqr WHERE cqr_idasociado = ? AND tqr_id = 1 ORDER BY cqr_id DESC LIMIT 1',
-                [$licenciaId]
-            );
-
-            return $result[0]->cqr_id ?? null;
-        } catch (\Exception $e) {
-            \Log::warning('Error al obtener cqr_id por licencia', [
-                'licenciaId' => $licenciaId,
-                'error' => $e->getMessage()
-            ]);
-
-            return null;
+        if (!$cqrId || $cqrId <= 0) {
+            // Capturar error del SP (ej. duplicado que no detectamos o error -30)
+            throw new \Exception("Error al insertar QR en BD. Código: " . ($result[0]->error ?? 'Desconocido'));
         }
+
+        // 3. Generamos la URL Real usando el ID recién creado
+        $urlFinal = $this->obtenerUrlDestino($cqrId, $newKey);
+
+        // 4. Actualizamos el registro con la URL real
+        $this->connectionToPostgreSQL->statement(
+            'UPDATE qr.codigoqr SET cqr_qr = ? WHERE cqr_id = ?',
+            [$urlFinal, $cqrId]
+        );
+
+        return $urlFinal;
     }
 
+    // =========================================================================
+    //  MÉTODOS PÚBLICOS
+    // =========================================================================
+
     /**
-     * Genera un Data URI para usar directamente en un tag <img>
-     * Verifica si ya existe el QR en disco antes de generarlo
-     *
-     * @param int $licenciaId ID de la licencia
-     * @return string Data URI
+     * Genera un Data URI para usar en <img src="..."> y guarda el archivo físico.
      */
     public function generarQrDataUri(int $licenciaId): string
     {
         $filename = "qr_{$licenciaId}.png";
 
-        // Verificar si ya existe el QR en disco
-        if (\Storage::disk('qr')->exists($filename)) {
-            // Leer el archivo existente
-            $contents = \Storage::disk('qr')->get($filename);
+        // Si el archivo físico existe, lo usamos directamente (caché de disco)
+        if (Storage::disk('qr')->exists($filename)) {
+            $contents = Storage::disk('qr')->get($filename);
             return 'data:image/png;base64,' . base64_encode($contents);
         }
 
-        // Generar nuevo QR si no existe
-        $url = route('qr.mostrar', ['idLicencia' => $licenciaId]);
+        // Si no existe el archivo, obtenemos la URL (recuperando de BD o creando nuevo)
+        $urlFinal = $this->obtenerOGenerarUrlFinal($licenciaId);
 
-        $builder = new Builder(
-            writer: new PngWriter(),
-            writerOptions: [],
-            validateResult: false,
-            data: $url,
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::High,
-            size: 300,
-            margin: 10,
-            roundBlockSizeMode: RoundBlockSizeMode::Margin,
-        );
+        // Generamos la imagen
+        $qrResult = $this->construirImagenQr($urlFinal);
+        $pngData = $qrResult->getString();
 
-        $result = $builder->build();
-        $pngData = $result->getString();
+        // Guardamos en disco
+        Storage::disk('qr')->put($filename, $pngData);
 
-        // Guardar en disco para uso futuro
-        \Storage::disk('qr')->put($filename, $pngData);
+        return $qrResult->getDataUri();
+    }
 
-        // Guardar el registro del QR en la base de datos
-        $this->insertarCodigoQr($licenciaId);
+    /**
+     * Retorna solo el string base64 (para vistas al vuelo o PDFs).
+     * Asegura que exista en BD antes de renderizar.
+     */
+    public function generarQrLicencia(int $licenciaId): string
+    {
+        // Obtenemos la URL correcta (Recuperada o Nueva)
+        $urlFinal = $this->obtenerOGenerarUrlFinal($licenciaId);
 
-        return $result->getDataUri();
+        // Renderizamos
+        $qrResult = $this->construirImagenQr($urlFinal);
+        return base64_encode($qrResult->getString());
+    }
+
+    /**
+     * Obtiene el ID del QR (Legacy helper)
+     */
+    public function obtenerCqrIdPorLicencia(int $licenciaId): ?int
+    {
+        $datos = $this->obtenerDatosExistentes($licenciaId);
+        return $datos ? $datos->cqr_id : null;
     }
 }
