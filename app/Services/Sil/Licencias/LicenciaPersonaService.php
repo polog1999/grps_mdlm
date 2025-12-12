@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Query\Builder;
 use App\Models\Persona;
-
 class LicenciaPersonaService
 {
     protected $connectionToPostgreSQL;
@@ -27,6 +26,7 @@ class LicenciaPersonaService
                 'per_email',
                 'per_expcodcon'
             ])
+            //->with('expedientesGestrad')
             ->orderBy('per_nombrerazonsocial')
             ->orderByDesc('per_id')
             ->get();

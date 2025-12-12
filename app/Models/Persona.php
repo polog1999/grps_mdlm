@@ -41,4 +41,13 @@ class Persona extends Model
             $builder->where('per_filaeliminada', false);
         });
     }
+
+    public function expedientesGestrad()
+    {
+        return $this->hasMany(
+            ExpedienteGestrad::class,
+            'EXP_CODCON',
+            'per_expcodcon'
+        );
+    }
 }

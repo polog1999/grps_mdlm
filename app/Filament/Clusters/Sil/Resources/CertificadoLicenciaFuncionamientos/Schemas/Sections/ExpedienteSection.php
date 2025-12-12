@@ -212,9 +212,17 @@ class ExpedienteSection
                                     $personaSeleccionada = $personas->firstWhere('per_id', $data['persona_seleccionada_rs']);
 
                                     if ($personaSeleccionada) {
+                                        // Actualizar campos de Razón Social
                                         $set('exp_razsoc', $personaSeleccionada->per_nombrerazonsocial);
                                         $set('exp_razsoc_id', $personaSeleccionada->per_id);
-                                        self::notify('success', 'Razón Social seleccionada', 'Se ha actualizado la razón social correctamente');
+
+                                        // Actualizar campos adicionales del formulario
+                                        $set('numdoc', $personaSeleccionada->per_ruc ?? '');
+                                        $set('numtel', $personaSeleccionada->per_telefono ?? '');
+                                        $set('correo', $personaSeleccionada->per_email ?? '');
+                                        $set('domfis', $personaSeleccionada->per_direccion ?? '');
+
+                                        self::notify('success', 'Razón Social seleccionada', 'Se ha actualizado la razón social y los datos asociados correctamente');
                                     }
                                 }
                             })
@@ -228,7 +236,9 @@ class ExpedienteSection
 
 
                 TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled()->dehydrated(),
-                TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()->disabled()->dehydrated(),
+                TextInput::make('numtel')->label('Teléfono')->maxLength(50)->numeric()
+                    ->disabled()
+                    ->dehydrated(),
                 TextInput::make('correo')->label('Correo Electrónico')->maxLength(255)->disabled()->dehydrated(),
                 TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled()->dehydrated(),
             ])
