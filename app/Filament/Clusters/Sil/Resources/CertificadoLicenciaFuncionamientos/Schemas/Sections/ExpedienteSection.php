@@ -39,8 +39,7 @@ class ExpedienteSection
                                     ->label('Buscar Persona')
                                     ->options(function () {
                                         $service = app(LicenciaPersonaService::class);
-                                        $personas = $service->getLicenciaPersonaNombre();
-                                        return $personas->pluck('per_nombrerazonsocial', 'per_id')->toArray();
+                                        return $service->getPersonasFormateadas();
                                     })
                                     ->searchable()
                                     ->required()
@@ -142,8 +141,7 @@ class ExpedienteSection
                                     ->label('Buscar Razón Social')
                                     ->options(function () {
                                         $service = app(LicenciaPersonaService::class);
-                                        $personas = $service->getLicenciaPersonaNombre();
-                                        return $personas->pluck('per_nombrerazonsocial', 'per_id')->toArray();
+                                        return $service->getPersonasFormateadas();
                                     })
                                     ->searchable()
                                     ->required()
