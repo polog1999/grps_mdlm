@@ -50,6 +50,11 @@ class LicenciaService
         return $this->reader->obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id);
     }
 
+    public function obtenerDatosPorIdLicenciaDirecta($licId)
+    {
+        return $this->reader->obtenerDatosPorIdLicenciaDirecta($licId);
+    }
+
     //CREATOR
     public function create(array $data)
     {

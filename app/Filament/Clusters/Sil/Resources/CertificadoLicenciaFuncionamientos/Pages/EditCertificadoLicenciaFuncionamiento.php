@@ -5,7 +5,6 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
 use Carbon\Carbon;
@@ -22,34 +21,53 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $service = app(LicenciaService::class);
-        $row = $service->getById($this->record->lic_id);
+        $row = $service->obtenerDatosPorIdLicenciaDirecta($this->record->lic_id);
 
         if (!$row) {
             return $data;
         }
 
+        // Mapeo de campos usando los nombres de columna del stored procedure
+        // El SP retorna columnas en MAYÚSCULAS
         $mapaSimple = [
-            'exp_num' => 'lic_expnum',
+            // Expediente
+            'exp_num' => 'EXPEDIENTE_NRO',
             'exp_fec' => 'lic_expfec',
-            'exp_nomrec' => 'personasolicitante',
-            'exp_razsoc' => 'razonsocial',
-            'exp_razsoc_id' => 'per_idrazonsocial',
-            'numdoc' => 'per_ruc',
-            'numtel' => 'per_telefono',
-            'correo' => 'per_email',
-            'domfis' => 'per_direccion',
-            'direccion' => 'lic_direccion',
+            'exp_nomrec' => 'PERSONA_SOLICITANTE',
+            'exp_nomrec_id' => 'PERSONA_SOLICITANTE_ID',
+            'exp_razsoc' => 'RAZON_SOCIAL',
+            'exp_razsoc_id' => 'PERSONA_RAZON_SOCIAL_ID',
+            'numdoc' => 'RUC',
+            'numtel' => 'TELEFONO',
+            'correo' => 'EMAIL',
+            'domfis' => 'UBICACION',
+
+            // Catastro - El SP ya incluye estos datos
+            'codpredio' => 'CODIGO_PREDIAL',
+            'descurb' => 'URBANIZACION',
+            'direccion' => 'LIC_DIRECCION',
+            'via_completa' => 'CALLE',
+            'numvia' => 'N',
+            'blockedif' => 'blockedif',
+            'mz' => 'MZ',
+            'lote' => 'LT',
+            'zonificacion' => 'ZONIFICACION',
+            'area_economica' => 'AREA',
+            'fiu_id' => 'fiu_id',
+            'coduca' => 'CODIGO_CATASTRAL',
+
+            // Licencia
             'nir_id' => 'nir_id',
             'nir_descripcion' => 'nir_descripcion',
             'tipo_resolucion' => 'tir_id',
-            'n_resolucion' => 'lic_resnum',
-            'numero_licencia' => 'lic_numlic',
-            'tipo_licencia' => 'tli_id',
+            'n_resolucion' => 'RESOLUCION_NRO',
+            'numero_licencia' => 'NUMERO_LICENCIA',
+            'tipo_licencia' => 'CODIGO_TIPO',
             'compatibilidad' => 'lic_compatibilidad',
             'nro_compatibilidad' => 'lic_compatibilidadnumero',
             'hora_inicio' => 'lic_horainicio',
             'hora_fin' => 'lic_horafin',
-            'observaciones' => 'lic_licobs',
+            'observaciones' => 'OBSERVACIONES',
             'centro_comercial' => 'cec_id',
             'tipo_local' => 'tlo_id',
             'local' => 'lcc_local',
@@ -60,44 +78,27 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             $data[$formField] = $row->$dbColumn ?? null;
         }
 
-        // Obtener datos de catastro frescos desde Oracle usando el código catastral
-        if (!empty($row->codigocatastral)) {
-            $datosCatastro = $service->obtenerDatosGeneralesDeCatastroPorCodigoCatastral($row->codigocatastral);
-
-            if (!empty($datosCatastro) && isset($datosCatastro[0])) {
-                $catastro = $datosCatastro[0];
-                $data['coduca'] = $catastro->coduca ?? null;
-                $data['codpredio'] = $catastro->codpredio ?? null;
-                $data['descurb'] = $catastro->descurb ?? null;
-                $data['via_completa'] = $catastro->via_completa ?? null;
-                $data['numvia'] = $catastro->numvia ?? null;
-                $data['intdpto'] = $catastro->intdpto ?? null;
-                $data['blockedif'] = $catastro->blockedif ?? null;
-                $data['mz'] = $catastro->mz ?? null;
-                $data['lote'] = $catastro->lote ?? null;
-                $data['zonificacion'] = $catastro->zonificacion ?? null;
-                $data['area_economica'] = $catastro->area_economica ?? null;
-                $data['fiu_id'] = $catastro->fiu_id ?? null;
-            }
+        // Tipo de establecimiento
+        if (isset($row->tes_id)) {
+            $data['tipo_establecimientos'] = $row->tes_id;
         }
 
-        $data['fecha_resolucion'] = $row->lic_fecharesolucion
-            ? Carbon::createFromFormat('d/m/Y', $row->lic_fecharesolucion)->toDateString()
+        // Manejo de fechas - El SP retorna fechas como objetos date o null
+        // RESOLUCION_FECHA, FECHA_EMISION, FECHA_VENCIMIENTO vienen del SP
+        $data['fecha_resolucion'] = $row->RESOLUCION_FECHA
+            ? Carbon::parse($row->RESOLUCION_FECHA)->toDateString()
             : null;
-        $data['fecha_emision'] = $row->lic_fechaemision
-            ? Carbon::createFromFormat('d/m/Y', $row->lic_fechaemision)->toDateString()
+
+        $data['fecha_emision'] = $row->FECHA_EMISION
+            ? Carbon::parse($row->FECHA_EMISION)->toDateString()
             : null;
+
         $data['fecha_compatibilidad'] = $row->lic_compatibilidadfecha
-            ? Carbon::parse(trim($row->lic_compatibilidadfecha))->toDateString()
+            ? Carbon::parse($row->lic_compatibilidadfecha)->toDateString()
             : null;
 
-        $data['mype'] = ($row->lic_mype ?? false) ? '1' : '0';
-
-        if (isset($row->tes_descripcion)) {
-            $tesService = app(TipoEstablecimientoService::class);
-            $tes = $tesService->getTipoEstablecimiento()->firstWhere('tes_descripcion', $row->tes_descripcion);
-            $data['tipo_establecimientos'] = $tes ? $tes->tes_id : null;
-        }
+        // Convertir MYPE a string para el componente Radio
+        $data['mype'] = ($row->MYPE ?? '0') === '1' ? '1' : '0';
 
         // Cargar Giros asociados a la licencia
         $giroService = app(GiroLicenciaService::class);

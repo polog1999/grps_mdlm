@@ -40,4 +40,11 @@ class LicenciaCrudController extends Controller
         $items = $this->service->obtenerDatosDeExpedienteParaEditarPorIdLicencia($lic_id);
         return response()->json($items);
     }
+
+    //obtenerDatosPorIdLicenciaDirecta
+    public function obtenerDatosPorIdLicenciaDirecta($lic_id)
+    {
+        $items = $this->service->obtenerDatosPorIdLicenciaDirecta($lic_id);
+        return response()->json($items);
+    }
 }
