@@ -7,12 +7,14 @@ use App\Services\Sil\Licencias\Handlers\LicenciaReader;
 use App\Services\Sil\Licencias\Handlers\LicenciaCreator;
 use App\Services\Sil\Licencias\Handlers\LicenciaUpdater;
 use App\Services\Sil\Licencias\Handlers\LicenciaDuplicator;
+use App\Services\Sil\Licencias\Handlers\LicenciaTransferor;
 class LicenciaService
 {
     protected $reader;
     protected $creator;
     protected $updater;
     protected $duplicator;
+    protected $transferor;
     protected $connection;
     protected $connection2;
 
@@ -25,6 +27,7 @@ class LicenciaService
         $this->creator = new LicenciaCreator($this->connection);
         $this->updater = new LicenciaUpdater($this->connection);
         $this->duplicator = new LicenciaDuplicator($this->connection);
+        $this->transferor = new LicenciaTransferor($this->connection);
     }
     //READER
 
@@ -72,5 +75,10 @@ class LicenciaService
     public function duplicate(array $data)
     {
         return $this->duplicator->execute($data);
+    }
+
+    public function transfer(array $data)
+    {
+        return $this->transferor->execute($data);
     }
 }

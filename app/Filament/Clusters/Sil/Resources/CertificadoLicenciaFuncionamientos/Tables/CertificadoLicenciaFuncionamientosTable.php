@@ -639,6 +639,15 @@ class CertificadoLicenciaFuncionamientosTable
                         fn(CertificadoLicenciaFuncionamiento $record): string =>
                         CertificadoLicenciaFuncionamientoResource::getUrl('duplicate', ['record' => $record])
                     ),
+                Action::make('licencia-transferir')
+                    ->icon('lineawesome-handshake')
+                    ->iconButton()
+                    ->tooltip('Transferir licencia')
+                    ->color(Color::Teal)
+                    ->url(
+                        fn(CertificadoLicenciaFuncionamiento $record): string =>
+                        CertificadoLicenciaFuncionamientoResource::getUrl('transfer', ['record' => $record])
+                    ),
 
 
             ], position: RecordActionsPosition::BeforeCells)
