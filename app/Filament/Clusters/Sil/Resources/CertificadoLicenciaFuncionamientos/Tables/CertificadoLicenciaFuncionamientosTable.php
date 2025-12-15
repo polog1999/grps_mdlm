@@ -26,6 +26,7 @@ use Filament\Actions\ReplicateAction;
 use Filament\Actions\ViewAction;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Colors\Color;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
 class CertificadoLicenciaFuncionamientosTable
 {
 
@@ -633,7 +634,11 @@ class CertificadoLicenciaFuncionamientosTable
                     ->icon('ionicon-duplicate-outline')
                     ->iconButton()
                     ->tooltip('Duplicar licencia')
-                    ->color(Color::Purple),
+                    ->color(Color::Purple)
+                    ->url(
+                        fn(CertificadoLicenciaFuncionamiento $record): string =>
+                        CertificadoLicenciaFuncionamientoResource::getUrl('duplicate', ['record' => $record])
+                    ),
 
 
             ], position: RecordActionsPosition::BeforeCells)

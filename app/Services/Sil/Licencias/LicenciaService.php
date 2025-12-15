@@ -6,11 +6,13 @@ use Illuminate\Support\Facades\DB;
 use App\Services\Sil\Licencias\Handlers\LicenciaReader;
 use App\Services\Sil\Licencias\Handlers\LicenciaCreator;
 use App\Services\Sil\Licencias\Handlers\LicenciaUpdater;
+use App\Services\Sil\Licencias\Handlers\LicenciaDuplicator;
 class LicenciaService
 {
     protected $reader;
     protected $creator;
     protected $updater;
+    protected $duplicator;
     protected $connection;
     protected $connection2;
 
@@ -22,6 +24,7 @@ class LicenciaService
         $this->reader = new LicenciaReader($this->connection, $this->connection2);
         $this->creator = new LicenciaCreator($this->connection);
         $this->updater = new LicenciaUpdater($this->connection);
+        $this->duplicator = new LicenciaDuplicator($this->connection);
     }
     //READER
 
@@ -64,5 +67,10 @@ class LicenciaService
     public function update(array $data)
     {
         return $this->updater->execute($data);
+    }
+
+    public function duplicate(array $data)
+    {
+        return $this->duplicator->execute($data);
     }
 }
