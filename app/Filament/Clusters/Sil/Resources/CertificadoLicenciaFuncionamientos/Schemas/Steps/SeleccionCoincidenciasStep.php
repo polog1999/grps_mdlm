@@ -13,6 +13,7 @@ use App\Models\Persona;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\Placeholder;
 
 class SeleccionCoincidenciasStep
 {
@@ -131,6 +132,13 @@ class SeleccionCoincidenciasStep
                 ->description("El expediente encontrado no tiene un solicitante identificado...")
                 ->icon('heroicon-o-user-plus')
                 ->schema([
+                    // Información del nombre buscado desde Oracle
+                    Placeholder::make('_info_nombre_oracle')
+                        ->label('Nombre buscado')
+                        ->content(fn($get) => $get('exp_nomrec') ?? 'No disponible')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
                     // Campo 1: Nombre y Apellidos
                     TextInput::make('_temp_nombre_apellidos')
                         ->label('Nombre y Apellidos')
