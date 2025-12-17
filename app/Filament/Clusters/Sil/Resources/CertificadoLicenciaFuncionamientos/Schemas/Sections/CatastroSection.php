@@ -20,7 +20,7 @@ class CatastroSection
                     ->maxLength(50)
                     ->extraAttributes(['inputmode' => 'numeric'])
                     ->rule('regex:/^[0-9]+$/')
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
                 TextInput::make('codpredio')->label('Código Predial')
                     ->maxLength(50)
@@ -28,31 +28,31 @@ class CatastroSection
                     //->disabled()
                     ->dehydrated(),
                 TextInput::make('descurb')->label('Urbanización')->maxLength(255)->columnSpanFull()
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('via_completa')->label('Vía')->maxLength(255)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('numvia')->label('Número')->maxLength(20)->numeric()
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('intdpto')->label('Dpto.')->maxLength(20)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('blockedif')->label('Bloque')->maxLength(20)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('mz')->label('Manzana')->maxLength(20)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('lote')->label('Lote')->maxLength(20)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('zonificacion')->label('Zonificación')->maxLength(100)->disabled()->dehydrated(),
@@ -60,7 +60,7 @@ class CatastroSection
                     //->disabled()
                     ->dehydrated(),
                 TextInput::make('fiu_id')->label('')->maxLength(20)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
             ])
             ->headerActions(SectionHeaderActions::make('catastro'))
