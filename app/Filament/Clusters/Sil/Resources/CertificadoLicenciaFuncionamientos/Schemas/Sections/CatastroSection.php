@@ -46,8 +46,14 @@ class CatastroSection
                     ->dehydrated(),
 
                 TextInput::make('zonificacion')->label('Zonificación')->maxLength(100)->disabled()->dehydrated(),
+<<<<<<< HEAD
                 TextInput::make('area_economica')->label('Área Económica')->numeric()->step(0.01)->suffix('m²')->formatStateUsing(fn($state) => $state ? number_format((float) $state, 2, '.', '') : null)->extraInputAttributes(['onchange' => "if(this.value) this.value = parseFloat(this.value).toFixed(2)"])->disabled()->dehydrated(),
 
+=======
+                TextInput::make('area_economica')->label('Área Económica')->numeric()->step(0.01)->suffix('m²')->formatStateUsing(fn($state) => $state ? number_format((float) $state, 2, '.', '') : null)->extraInputAttributes(['onchange' => "if(this.value) this.value = parseFloat(this.value).toFixed(2)"])
+                    //->disabled()
+                    ->dehydrated(),
+>>>>>>> feature/licencias
                 TextInput::make('fiu_id')->label('')->maxLength(20)->disabled()->dehydrated(),
             ])
             ->headerActions(SectionHeaderActions::make('catastro'))

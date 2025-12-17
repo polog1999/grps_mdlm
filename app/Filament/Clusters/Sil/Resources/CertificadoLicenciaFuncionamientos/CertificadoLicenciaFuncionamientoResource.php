@@ -4,6 +4,8 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CreateCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\EditCertificadoLicenciaFuncionamiento;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\DuplicateCertificadoLicenciaFuncionamiento;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\ListCertificadoLicenciaFuncionamientos;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\CertificadoLicenciaFuncionamientoForm;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Tables\CertificadoLicenciaFuncionamientosTable;
@@ -71,6 +73,8 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
             'index' => ListCertificadoLicenciaFuncionamientos::route('/'),
             'create' => CreateCertificadoLicenciaFuncionamiento::route('/create'),
             'edit' => EditCertificadoLicenciaFuncionamiento::route('/{record}/edit'),
+            'duplicate' => DuplicateCertificadoLicenciaFuncionamiento::route('/{record}/duplicate'),
+            'transfer' => TransferirCertificadoLicenciaFuncionamiento::route('/{record}/transfer'),
         ];
     }
 

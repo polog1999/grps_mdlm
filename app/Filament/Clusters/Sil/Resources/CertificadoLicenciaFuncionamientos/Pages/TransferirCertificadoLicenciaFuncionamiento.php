@@ -3,22 +3,25 @@
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages;
 
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
-use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
-class EditCertificadoLicenciaFuncionamiento extends EditRecord
+use Filament\Notifications\Notification;
+
+class TransferirCertificadoLicenciaFuncionamiento extends EditRecord
 {
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
+
+    protected static ?string $title = 'Transferir Certificado de Licencia de Funcionamiento';
 
     protected function getHeaderActions(): array
     {
         return [
-            //DeleteAction::make(),
+            // No actions needed for transfer page
         ];
     }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $service = app(LicenciaService::class);
@@ -85,7 +88,6 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         }
 
         // Manejo de fechas - El SP retorna fechas como objetos date o null
-        // RESOLUCION_FECHA, FECHA_EMISION, FECHA_VENCIMIENTO vienen del SP
         $data['fecha_resolucion'] = $row->RESOLUCION_FECHA
             ? Carbon::parse($row->RESOLUCION_FECHA)->toDateString()
             : null;
@@ -109,10 +111,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         $tablaGiros = [];
 
         foreach ($girosLicencia as $giroLicencia) {
-            // Agregar el ID del giro al array de seleccionados
             $girosIds[] = $giroLicencia->gir_id;
-
-            // Agregar el giro al repeater con su nombre y específico
             $tablaGiros[] = [
                 'giro' => $giroLicencia->gir_descripcion ?? '',
                 'giro_especifico' => $giroLicencia->lig_giroespecifico ?? '',
@@ -127,8 +126,8 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
     protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
+        // Preparar giros para transferencia
         $giros = [];
-
         $selectedIds = $data['giros_seleccionar'] ?? [];
         $repeaterItems = $data['tabla_giros'] ?? [];
 
@@ -140,7 +139,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             }
         }
 
-        // We need a service to map ID -> Name to use the map above
+        // Map ID -> Name
         $giroService = app(GiroLicenciaService::class);
         $allGiros = $giroService->buscarGiros('');
         $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
@@ -152,64 +151,112 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             $giros[] = [
                 'gir_id' => $girId,
                 'especifico' => $specific,
-                'lig_id' => 0, // We don't have this, treating as new/update without ID tracking
-                'estado' => 'M'
             ];
         }
 
+        // Preparar datos para el servicio de transferencia
+        // Este servicio usa spu_licencia_upd_transferir2
         $params = [
-            'lic_id' => $record->lic_id,
-            // Datos base del formulario (usando el operador de fusión null '??' y conversiones)
+            // ID de la licencia original (importante para el SP)
+            'lic_id_ori' => $record->lic_id,
+
+            // Datos base del formulario
             'tli_id' => $data['tipo_licencia'],
             'tes_id' => $data['tipo_establecimientos'],
             'per_idsolicitante' => $data['exp_nomrec_id'] ?? 0,
             'per_idrazonsocial' => $data['exp_razsoc_id'] ?? 0,
-            'lic_numlic' => $data['numero_licencia'],
-            'lic_codigopredial' => $data['codpredio'],
+            'lic_numlic' => $data['numero_licencia'] ?? '',
+            'lic_codigopredial' => $data['codpredio'] ?? '',
             'lic_expnum' => $data['exp_num'],
-            'lic_direccion' => $data['direccion'],
-            'lic_urbanizacion' => $data['descurb'],
-            'lic_area' => $data['area_economica'],
+            'lic_area' => $data['area_economica'] ?? 0,
+
             // Conversión Booleana
             'lic_mype' => $data['mype'] == '1',
+
             // Datos de Resolución y Fechas
-            'lic_resnum' => $data['n_resolucion'],
+            'lic_resnum' => $data['n_resolucion'] ?? '',
             'lic_fecharesolucion' => $data['fecha_resolucion'],
             'lic_fechaemision' => $data['fecha_emision'],
             'lic_fechavencimiento' => null,
+
             // Observaciones y Catastro
-            'lic_licobs' => $data['observaciones'],
+            'lic_licobs' => $data['observaciones'] ?? '',
             'fiu_id' => $data['fiu_id'] ?? 0,
-            'lca_urbanizacion' => $data['descurb'],
-            'lca_zonificacion' => $data['zonificacion'],
+            'lca_descripcion' => $data['direccion'] ?? '',
+            'urbanizacion_id' => $data['coduca'] ?? '', // Código de urbanización
+            'lca_zonificacion' => $data['zonificacion'] ?? '',
+
             // Centro Comercial
             'cec_id' => $data['centro_comercial'] ?? 0,
             'tlo_id' => $data['tipo_local'] ?? 0,
             'lcc_observacion' => $data['observaciones_local'] ?? '',
             'lcc_local' => $data['local'] ?? '',
+
             // Horario y Compatibilidad
-            'lic_horainicio' => $data['hora_inicio'],
-            'lic_horafin' => $data['hora_fin'],
-            'tir_id' => $data['tipo_resolucion'],
-            'compatibilidad' => $data['compatibilidad'],
-            'nir_id' => $data['nir_id'],
+            'lic_horainicio' => $data['hora_inicio'] ?? '09:00',
+            'lic_horafin' => $data['hora_fin'] ?? '18:00',
+            'tir_id' => $data['tipo_resolucion'] ?? 2,
+            'lic_nota' => $data['observaciones'] ?? '',
+            'nir_id' => $data['nir_id'] ?? 0,
 
             // Valores por defecto/estáticos
-            'lic_giro' => '', // Mantienes esto vacío
-            'lca_descripcion' => '',
-            'lca_origen' => '',
+            'lic_giro' => '', // Se mantiene vacío
             'lic_modidirecc' => false,
-            'lic_nota' => '',
-            'rsgparrafo1' => '',
-            'rsgparrafo2' => '',
 
-            // Dato dinámico/construido
+            // Giros
             'giros' => $giros,
         ];
 
-        $service = app(LicenciaService::class);
-        $service->update($params);
+        try {
+            $service = app(LicenciaService::class);
+            $resultado = $service->transfer($params);
+
+            // El SP retorna error > 0 para éxito (el nuevo lic_id)
+            if (!empty($resultado) && isset($resultado[0])) {
+                $spResult = $resultado[0];
+                $nuevoLicId = $spResult->error ?? 0;
+
+                if ($nuevoLicId > 0) {
+                    Notification::make()
+                        ->title('Licencia transferida exitosamente')
+                        ->body("Nueva licencia creada con ID: {$nuevoLicId}. La licencia original ha sido marcada como transferida.")
+                        ->success()
+                        ->send();
+
+                    // Redirigir a la lista
+                    $this->redirect(CertificadoLicenciaFuncionamientoResource::getUrl('index'));
+                } else {
+                    throw new \Exception($spResult->mensaje ?? 'Error desconocido al transferir');
+                }
+            } else {
+                throw new \Exception('No se recibió respuesta del servidor');
+            }
+
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error al transferir licencia')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
+
+            throw $e;
+        }
 
         return $record;
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction()
+                ->label('Transferir Licencia')
+                ->icon('heroicon-o-arrow-path'),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

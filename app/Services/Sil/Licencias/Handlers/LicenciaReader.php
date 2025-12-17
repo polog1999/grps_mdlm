@@ -294,5 +294,21 @@ class LicenciaReader
 
     }
 
+    /**
+     * Obtener datos completos de licencia usando stored procedure directo
+     * Llama a: licencia.spu_licencia_sel_idlicencia_directa
+     * 
+     * @param int $licId
+     * @return object|null
+     */
+    public function obtenerDatosPorIdLicenciaDirecta($licId)
+    {
+        $result = $this->db->select(
+            'SELECT * FROM licencia.spu_licencia_sel_idlicencia_directa(?)',
+            [$licId]
+        );
+
+        return !empty($result) ? $result[0] : null;
+    }
 
 }

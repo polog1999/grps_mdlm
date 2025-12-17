@@ -60,7 +60,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/persona-razon-social/{nombre_razon_social}', [LicenciaCrudController::class, 'obtenerDatosDePersonaORazonSocialPorNombre']);
         Route::get('/expediente-razon-social/{lic_expnum}', [LicenciaCrudController::class, 'obtenerDatosDeRazonSocialPorExpediente']);
         Route::get('/expediente-catastro/{codcat}', [LicenciaCrudController::class, 'obtenerDatosGeneralesDeCatastroPorCodigoCatastral']);
-
+        //obtenerDatosPorIdLicenciaDirecta
+        Route::get('/directa/id/{lic_id}', [LicenciaCrudController::class, 'obtenerDatosPorIdLicenciaDirecta']);
         //obtenerDatosDeExpedienteParaEditarPorIdLicencia
         Route::get('/licencia-datos-mostrar-para-editar/{lic_id}', [LicenciaCrudController::class, 'obtenerDatosDeExpedienteParaEditarPorIdLicencia']);
 
