@@ -13,6 +13,8 @@ use App\Models\Persona;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\Placeholder;
+use App\Services\Sil\Licencias\LicenciaPersonaService;
 
 class SeleccionCoincidenciasStep
 {
@@ -131,6 +133,13 @@ class SeleccionCoincidenciasStep
                 ->description("El expediente encontrado no tiene un solicitante identificado...")
                 ->icon('heroicon-o-user-plus')
                 ->schema([
+                    // Información del nombre buscado desde Oracle
+                    Placeholder::make('_info_nombre_oracle')
+                        ->label('Nombre buscado')
+                        ->content(fn($get) => $get('exp_nomrec') ?? 'No disponible')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
                     // Campo 1: Nombre y Apellidos
                     TextInput::make('_temp_nombre_apellidos')
                         ->label('Nombre y Apellidos')
@@ -146,39 +155,91 @@ class SeleccionCoincidenciasStep
                             Action::make('buscar_nombre_modal')
                                 ->icon('heroicon-o-magnifying-glass')
                                 ->modalHeading('Buscar Nombre y Apellidos')
-                                ->modalDescription('Seleccione una persona de la lista')
+                                ->modalDescription('Seleccione una persona de la lista y visualice sus datos')
                                 ->modalSubmitActionLabel('Seleccionar')
                                 ->modalWidth('5xl')
                                 ->form([
                                     Select::make('_persona_nombre_temp')
                                         ->label('Buscar Persona')
+                                        ->options(function () {
+                                            $service = app(LicenciaPersonaService::class);
+                                            return $service->getPersonasFormateadas();
+                                        })
                                         ->searchable()
-                                        ->getSearchResultsUsing(function (string $search): array {
-                                            return Persona::query()
-                                                ->where('per_nombrerazonsocial', 'like', "%{$search}%")
-                                                ->limit(20)
-                                                ->pluck('per_nombrerazonsocial', 'per_id')
-                                                ->toArray();
-                                        })
-                                        ->getOptionLabelUsing(function ($value): ?string {
-                                            return Persona::find($value)?->per_nombrerazonsocial;
-                                        })
                                         ->required()
+                                        ->placeholder('Busque por nombre o razón social...')
+                                        ->live(onBlur: false)
+                                        ->afterStateUpdated(function ($state, callable $set) {
+                                            if ($state) {
+                                                $service = app(LicenciaPersonaService::class);
+                                                $personas = $service->getLicenciaPersonaNombre();
+                                                $persona = $personas->firstWhere('per_id', $state);
+
+                                                if ($persona) {
+                                                    $set('preview_nombre', $persona->per_nombrerazonsocial ?? '');
+                                                    $set('preview_ruc', $persona->per_ruc ?? '');
+                                                    $set('preview_direccion', $persona->per_direccion ?? '');
+                                                    $set('preview_telefono', $persona->per_telefono ?? '');
+                                                    $set('preview_email', $persona->per_email ?? '');
+                                                    $set('preview_expediente', $persona->per_expcodcon ?? '');
+                                                }
+                                            } else {
+                                                $set('preview_nombre', '');
+                                                $set('preview_ruc', '');
+                                                $set('preview_direccion', '');
+                                                $set('preview_telefono', '');
+                                                $set('preview_email', '');
+                                                $set('preview_expediente', '');
+                                            }
+                                        })
+                                        ->columnSpanFull(),
+
+                                    Section::make('Datos de la Persona')
+                                        ->schema([
+                                            TextInput::make('preview_nombre')
+                                                ->label('Nombre / Razón Social')
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->columnSpan(2),
+                                            TextInput::make('preview_ruc')
+                                                ->label('RUC/DNI')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                            TextInput::make('preview_expediente')
+                                                ->label('Expediente')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                            TextInput::make('preview_direccion')
+                                                ->label('Dirección')
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->columnSpan(2),
+                                            TextInput::make('preview_telefono')
+                                                ->label('Teléfono')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                            TextInput::make('preview_email')
+                                                ->label('Email')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                        ])
+                                        ->columns(3)
                                         ->columnSpanFull()
+                                        ->visible(fn($get) => $get('_persona_nombre_temp') !== null),
                                 ])
                                 ->action(function (array $data, $set, $get) {
                                     if (isset($data['_persona_nombre_temp'])) {
-                                        $persona = Persona::find($data['_persona_nombre_temp']);
-                                        if ($persona) {
-                                            $set('_temp_nombre_apellidos', $persona->per_nombrerazonsocial);
+                                        $service = app(LicenciaPersonaService::class);
+                                        $personas = $service->getLicenciaPersonaNombre();
+                                        $personaSeleccionada = $personas->firstWhere('per_id', $data['_persona_nombre_temp']);
 
-                                            // IMPORTANTE: HE BORRADO LA LÍNEA QUE LIMPIABA LA RAZÓN SOCIAL
-                                            // $set('_temp_razon_social', null); <--- ELIMINADO
-                        
-                                            $set('exp_nomrec', $persona->per_nombrerazonsocial);
-                                            $set('exp_nomrec_id', $persona->per_id);
+                                        if ($personaSeleccionada) {
+                                            $set('_temp_nombre_apellidos', $personaSeleccionada->per_nombrerazonsocial);
 
-                                            self::actualizarPersonaEnDatos($get, $set, 'exp_nomrec', $persona->per_nombrerazonsocial, $persona->per_id);
+                                            $set('exp_nomrec', $personaSeleccionada->per_nombrerazonsocial);
+                                            $set('exp_nomrec_id', $personaSeleccionada->per_id);
+
+                                            self::actualizarPersonaEnDatos($get, $set, 'exp_nomrec', $personaSeleccionada->per_nombrerazonsocial, $personaSeleccionada->per_id);
                                         }
                                     }
                                 })
@@ -199,39 +260,91 @@ class SeleccionCoincidenciasStep
                             Action::make('buscar_razon_modal')
                                 ->icon('heroicon-o-magnifying-glass')
                                 ->modalHeading('Buscar Razón Social')
-                                ->modalDescription('Seleccione una razón social de la lista')
+                                ->modalDescription('Seleccione una razón social de la lista y visualice sus datos')
                                 ->modalSubmitActionLabel('Seleccionar')
                                 ->modalWidth('5xl')
                                 ->form([
                                     Select::make('_persona_razon_temp')
                                         ->label('Buscar Razón Social')
+                                        ->options(function () {
+                                            $service = app(LicenciaPersonaService::class);
+                                            return $service->getPersonasFormateadas();
+                                        })
                                         ->searchable()
-                                        ->getSearchResultsUsing(function (string $search): array {
-                                            return Persona::query()
-                                                ->where('per_nombrerazonsocial', 'like', "%{$search}%")
-                                                ->limit(20)
-                                                ->pluck('per_nombrerazonsocial', 'per_id')
-                                                ->toArray();
-                                        })
-                                        ->getOptionLabelUsing(function ($value): ?string {
-                                            return Persona::find($value)?->per_nombrerazonsocial;
-                                        })
                                         ->required()
+                                        ->placeholder('Busque por razón social...')
+                                        ->live(onBlur: false)
+                                        ->afterStateUpdated(function ($state, callable $set) {
+                                            if ($state) {
+                                                $service = app(LicenciaPersonaService::class);
+                                                $personas = $service->getLicenciaPersonaNombre();
+                                                $persona = $personas->firstWhere('per_id', $state);
+
+                                                if ($persona) {
+                                                    $set('preview_nombre_rs', $persona->per_nombrerazonsocial ?? '');
+                                                    $set('preview_ruc_rs', $persona->per_ruc ?? '');
+                                                    $set('preview_direccion_rs', $persona->per_direccion ?? '');
+                                                    $set('preview_telefono_rs', $persona->per_telefono ?? '');
+                                                    $set('preview_email_rs', $persona->per_email ?? '');
+                                                    $set('preview_expediente_rs', $persona->per_expcodcon ?? '');
+                                                }
+                                            } else {
+                                                $set('preview_nombre_rs', '');
+                                                $set('preview_ruc_rs', '');
+                                                $set('preview_direccion_rs', '');
+                                                $set('preview_telefono_rs', '');
+                                                $set('preview_email_rs', '');
+                                                $set('preview_expediente_rs', '');
+                                            }
+                                        })
+                                        ->columnSpanFull(),
+
+                                    Section::make('Datos de la Razón Social')
+                                        ->schema([
+                                            TextInput::make('preview_nombre_rs')
+                                                ->label('Nombre / Razón Social')
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->columnSpan(2),
+                                            TextInput::make('preview_ruc_rs')
+                                                ->label('RUC/DNI')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                            TextInput::make('preview_expediente_rs')
+                                                ->label('Expediente')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                            TextInput::make('preview_direccion_rs')
+                                                ->label('Dirección')
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->columnSpan(2),
+                                            TextInput::make('preview_telefono_rs')
+                                                ->label('Teléfono')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                            TextInput::make('preview_email_rs')
+                                                ->label('Email')
+                                                ->disabled()
+                                                ->dehydrated(false),
+                                        ])
+                                        ->columns(3)
                                         ->columnSpanFull()
+                                        ->visible(fn($get) => $get('_persona_razon_temp') !== null),
                                 ])
                                 ->action(function (array $data, $set, $get) {
                                     if (isset($data['_persona_razon_temp'])) {
-                                        $persona = Persona::find($data['_persona_razon_temp']);
-                                        if ($persona) {
-                                            $set('_temp_razon_social', $persona->per_nombrerazonsocial);
+                                        $service = app(LicenciaPersonaService::class);
+                                        $personas = $service->getLicenciaPersonaNombre();
+                                        $personaSeleccionada = $personas->firstWhere('per_id', $data['_persona_razon_temp']);
 
-                                            // IMPORTANTE: HE BORRADO LA LÍNEA QUE LIMPIABA EL NOMBRE
-                                            // $set('_temp_nombre_apellidos', null); <--- ELIMINADO
-                        
-                                            $set('exp_razsoc', $persona->per_nombrerazonsocial);
-                                            $set('exp_razsoc_id', $persona->per_id);
+                                        if ($personaSeleccionada) {
+                                            $set('_temp_razon_social', $personaSeleccionada->per_nombrerazonsocial);
 
-                                            self::actualizarPersonaEnDatos($get, $set, 'exp_razsoc', $persona->per_nombrerazonsocial, $persona->per_id);
+                                            $set('exp_razsoc', $personaSeleccionada->per_nombrerazonsocial);
+                                            $set('exp_razsoc_id', $personaSeleccionada->per_id);
+
+                                            self::actualizarPersonaEnDatos($get, $set, 'exp_razsoc', $personaSeleccionada->per_nombrerazonsocial, $personaSeleccionada->per_id);
                                         }
                                     }
                                 })
