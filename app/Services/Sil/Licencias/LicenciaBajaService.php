@@ -16,26 +16,63 @@ class LicenciaBajaService
 
     public function bajaLicencia(array $data)
     {
-        $sql = "SELECT * FROM licencia.spu_licenciabaja_ins2(
-            :lic_id,
-            :p_lib_expnum,
-            :p_lib_anexo,
-            :p_lib_resnum,
-            :p_lib_fecharesolucion,
-            :p_lib_fechabaja,
-            :p_lib_id
-        )";
+        \Log::info('LicenciaBajaService::bajaLicencia - Iniciando proceso de baja de licencia', [
+            'lic_id' => $data['lic_id'] ?? null,
+            'lib_expnum' => $data['lib_expnum'] ?? null,
+            'lib_anexo' => $data['lib_anexo'] ?? null,
+            'lib_resnum' => $data['lib_resnum'] ?? null,
+            'lib_fecharesolucion' => $data['lib_fecharesolucion'] ?? null,
+            'lib_fechabaja' => $data['lib_fechabaja'] ?? null,
+            'lib_id' => $data['lib_id'] ?? 0,
+        ]);
 
-        $bindings = [
-            'lic_id' => $data['lic_id'],
-            'p_lib_expnum' => $data['lib_expnum'],
-            'p_lib_anexo' => $data['lib_anexo'],
-            'p_lib_resnum' => $data['lib_resnum'],
-            'p_lib_fecharesolucion' => Carbon::parse($data['lib_fecharesolucion'])->format('d/m/Y'),
-            'p_lib_fechabaja' => Carbon::parse($data['lib_fechabaja'])->format('d/m/Y'),
-            'p_lib_id' => $data['lib_id'] ?? 0,
-        ];
+        try {
+            $sql = "SELECT * FROM licencia.spu_licenciabaja_ins2(
+                :lic_id,
+                :p_lib_expnum,
+                :p_lib_anexo,
+                :p_lib_resnum,
+                :p_lib_fecharesolucion,
+                :p_lib_fechabaja,
+                :p_lib_id
+            )";
 
-        return $this->connectionToPostgreSQL->selectOne($sql, $bindings);
+            $bindings = [
+                'lic_id' => $data['lic_id'],
+                'p_lib_expnum' => $data['lib_expnum'],
+                'p_lib_anexo' => $data['lib_anexo'],
+                'p_lib_resnum' => $data['lib_resnum'],
+                'p_lib_fecharesolucion' => Carbon::parse($data['lib_fecharesolucion'])->format('d/m/Y'),
+                'p_lib_fechabaja' => Carbon::parse($data['lib_fechabaja'])->format('d/m/Y'),
+                'p_lib_id' => $data['lib_id'] ?? 0,
+            ];
+
+            \Log::info('LicenciaBajaService::bajaLicencia - Ejecutando stored procedure', [
+                'sql' => $sql,
+                'bindings' => $bindings
+            ]);
+
+            $resultado = $this->connectionToPostgreSQL->selectOne($sql, $bindings);
+
+            \Log::info('LicenciaBajaService::bajaLicencia - Resultado del stored procedure', [
+                'resultado' => $resultado,
+                'error' => $resultado->error ?? null,
+                'mensaje' => $resultado->mensaje ?? null
+            ]);
+
+            return $resultado;
+
+        } catch (\Exception $e) {
+            \Log::error('LicenciaBajaService::bajaLicencia - Error en el proceso', [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data
+            ]);
+
+            throw $e;
+        }
     }
 }

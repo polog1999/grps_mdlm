@@ -554,6 +554,14 @@ class CertificadoLicenciaFuncionamientosTable
                     ->modalCancelActionLabel('Cancelar')
                     ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index'))
                     ->action(function (Action $action, array $data, CertificadoLicenciaFuncionamiento $record) {
+                        \Log::info('Action dar_de_baja - Iniciando proceso', [
+                            'lic_id' => $record->lic_id,
+                            'lic_numlic' => $record->lic_numlic,
+                            'form_data' => $data,
+                            'user_id' => auth()->id(),
+                            'user_email' => auth()->user()->email ?? 'N/A'
+                        ]);
+
                         try {
                             $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
 
@@ -566,15 +574,38 @@ class CertificadoLicenciaFuncionamientosTable
                                 'lib_fechabaja' => $data['fecha_baja'],
                             ];
 
+                            \Log::info('Action dar_de_baja - Datos preparados para el servicio', [
+                                'service_data' => $serviceData
+                            ]);
+
                             $resultado = $service->bajaLicencia($serviceData);
 
+                            \Log::info('Action dar_de_baja - Respuesta del servicio recibida', [
+                                'resultado' => $resultado,
+                                'error_code' => $resultado->error ?? null,
+                                'mensaje' => $resultado->mensaje ?? null
+                            ]);
+
                             if ($resultado->error > 0) {
+                                \Log::info('Action dar_de_baja - Baja exitosa', [
+                                    'lic_id' => $record->lic_id,
+                                    'error_code' => $resultado->error,
+                                    'mensaje' => $resultado->mensaje
+                                ]);
+
                                 \Filament\Notifications\Notification::make()
                                     ->title('Éxito')
                                     ->body($resultado->mensaje)
                                     ->success()
                                     ->send();
                             } else {
+                                \Log::warning('Action dar_de_baja - Error reportado por el stored procedure', [
+                                    'lic_id' => $record->lic_id,
+                                    'error_code' => $resultado->error,
+                                    'mensaje' => $resultado->mensaje,
+                                    'service_data' => $serviceData
+                                ]);
+
                                 \Filament\Notifications\Notification::make()
                                     ->title('Error')
                                     ->body($resultado->mensaje)
@@ -583,6 +614,17 @@ class CertificadoLicenciaFuncionamientosTable
                                 $action->halt();
                             }
                         } catch (\Throwable $e) {
+                            \Log::error('Action dar_de_baja - Excepción capturada', [
+                                'lic_id' => $record->lic_id,
+                                'error_message' => $e->getMessage(),
+                                'error_code' => $e->getCode(),
+                                'error_file' => $e->getFile(),
+                                'error_line' => $e->getLine(),
+                                'trace' => $e->getTraceAsString(),
+                                'form_data' => $data,
+                                'service_data' => $serviceData ?? null
+                            ]);
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Error del Sistema')
                                 ->body($e->getMessage())

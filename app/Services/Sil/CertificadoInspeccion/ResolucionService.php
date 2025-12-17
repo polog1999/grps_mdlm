@@ -40,7 +40,7 @@ class ResolucionService
     }
 
 
-    public function obtenerResolucionMasAreaCompletaPorNumeroResolucion($nu_expe_todo)
+    public function obtenerResolucionMasAreaCompletaPorNumeroResolucion($nu_tram_todo)
     {
         $query = "
             WITH calculo_previo AS (
@@ -67,7 +67,7 @@ class ResolucionService
             ORDER BY cdgo_dtos_ntrnos DESC;
         ";
 
-        $resultados = $this->connection->select($query, [$nu_expe_todo]);
+        $resultados = $this->connection->select($query, [$nu_tram_todo]);
 
         return collect($resultados);
     }
