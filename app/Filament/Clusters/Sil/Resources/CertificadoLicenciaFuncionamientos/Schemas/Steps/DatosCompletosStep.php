@@ -41,15 +41,52 @@ class DatosCompletosStep
         // Expediente
         if (isset($data['expediente'])) {
             $exp = (array) $data['expediente'];
-            foreach (['exp_num', 'exp_fec', 'exp_nomrec', 'numdoc', 'numtel', 'correo', 'domfis'] as $field) {
+
+            // Campos básicos del expediente
+            foreach (['exp_num', 'exp_fec', 'exp_nomrec'] as $field) {
                 $set($field, $exp[$field] ?? null);
             }
+
             // Llenar también exp_razsoc con el mismo valor de exp_nomrec
             $set('exp_razsoc', $exp['exp_nomrec'] ?? null);
 
             // Llenar los IDs
-            $set('exp_nomrec_id', $exp['exp_nomrec_id'] ?? $exp['per_id'] ?? null);
-            $set('exp_razsoc_id', $exp['exp_razsoc_id'] ?? $exp['per_id'] ?? null);
+            $personaId = $exp['exp_nomrec_id'] ?? $exp['per_id'] ?? null;
+            $set('exp_nomrec_id', $personaId);
+            $set('exp_razsoc_id', $exp['exp_razsoc_id'] ?? $personaId);
+
+            // Si tenemos un ID de persona, obtener datos de contacto desde PostgreSQL
+            if ($personaId) {
+                try {
+                    $service = app(\App\Services\Sil\Licencias\LicenciaPersonaService::class);
+                    $personas = $service->getLicenciaPersonaNombre();
+                    $persona = $personas->firstWhere('per_id', $personaId);
+
+                    if ($persona) {
+                        // Usar datos de PostgreSQL en lugar de Oracle
+                        $set('numdoc', $persona->per_ruc ?? '');
+                        $set('numtel', $persona->per_telefono ?? '');
+                        $set('correo', $persona->per_email ?? '');
+                        $set('domfis', $persona->per_direccion ?? '');
+                    } else {
+                        // Si no se encuentra en PostgreSQL, usar datos de Oracle como fallback
+                        foreach (['numdoc', 'numtel', 'correo', 'domfis'] as $field) {
+                            $set($field, $exp[$field] ?? null);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // En caso de error, usar datos de Oracle como fallback
+                    \Log::warning('Error al obtener datos de persona desde PostgreSQL: ' . $e->getMessage());
+                    foreach (['numdoc', 'numtel', 'correo', 'domfis'] as $field) {
+                        $set($field, $exp[$field] ?? null);
+                    }
+                }
+            } else {
+                // Si no hay ID de persona, usar datos de Oracle
+                foreach (['numdoc', 'numtel', 'correo', 'domfis'] as $field) {
+                    $set($field, $exp[$field] ?? null);
+                }
+            }
         }
 
         // Catastro
