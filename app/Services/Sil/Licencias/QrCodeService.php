@@ -64,18 +64,6 @@ class QrCodeService
     {
         // AQUÍ ESTÁ EL FILTRO CLAVE: "AND tqr_id = 1"
         $result = $this->connectionToPostgreSQL->select(
-<<<<<<< HEAD
-            'SELECT * FROM qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
-            [
-                1,                      // p_tqr_id: Tipo de QR (valor fijo)
-                '',                     // p_cqr_descripcion: Descripción vacía
-                '',                     // p_cqr_observacion: Observación vacía
-                $licenciaId,            // p_cqr_idasociado: ID de la licencia
-                '',                     // p_cqr_keyasociado: Key asociado vacío
-                $qrUrl,                 // p_cqr_qr: URL del QR
-                0                       // p_usa_id: Usuario por defecto
-            ]
-=======
             'SELECT cqr_id, cqr_keyasociado, cqr_qr 
              FROM qr.codigoqr 
              WHERE cqr_idasociado = ? 
@@ -83,7 +71,6 @@ class QrCodeService
                AND cqr_filaEliminada = false
              ORDER BY cqr_id DESC LIMIT 1',
             [$licenciaId, self::TIPO_QR_LICENCIA]
->>>>>>> feature/licencias
         );
 
         return $result[0] ?? null;
