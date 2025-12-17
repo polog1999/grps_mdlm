@@ -341,8 +341,15 @@ class SeleccionCoincidenciasStep
                                         if ($personaSeleccionada) {
                                             $set('_temp_razon_social', $personaSeleccionada->per_nombrerazonsocial);
 
+                                            // Actualizar campos de Razón Social
                                             $set('exp_razsoc', $personaSeleccionada->per_nombrerazonsocial);
                                             $set('exp_razsoc_id', $personaSeleccionada->per_id);
+
+                                            // Actualizar campos adicionales del formulario
+                                            $set('numdoc', $personaSeleccionada->per_ruc ?? '');
+                                            $set('numtel', $personaSeleccionada->per_telefono ?? '');
+                                            $set('correo', $personaSeleccionada->per_email ?? '');
+                                            $set('domfis', $personaSeleccionada->per_direccion ?? '');
 
                                             self::actualizarPersonaEnDatos($get, $set, 'exp_razsoc', $personaSeleccionada->per_nombrerazonsocial, $personaSeleccionada->per_id);
                                         }
