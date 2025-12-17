@@ -20,7 +20,73 @@ class ExpedienteSection
             ->icon('heroicon-o-archive-box')
             ->collapsible()
             ->schema([
-                TextInput::make('exp_num')->label('Número de Expediente')->disabled()->dehydrated(),
+                TextInput::make('exp_num')
+                    ->label('Número de Expediente')
+                    ->disabled()
+                    ->dehydrated()
+                    ->suffixAction(
+                        Action::make('editar_expediente')
+                            ->icon('heroicon-o-pencil-square')
+                            ->color('warning')
+                            ->tooltip('Editar/Buscar otro expediente')
+                            ->modalHeading('Buscar Nuevo Expediente')
+                            ->modalWidth('7xl')
+                            ->steps([
+                                \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\BusquedaStep::make(),
+                                \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\SeleccionCoincidenciasStep::make(),
+                                \Filament\Schemas\Components\Wizard\Step::make('Confirmación')
+                                    ->description('Confirme los datos seleccionados')
+                                    ->schema([
+                                        \Filament\Forms\Components\Placeholder::make('confirmation_text')
+                                            ->content('Por favor revise los datos seleccionados en los pasos anteriores. Al hacer clic en "Confirmar", se actualizarán los datos del formulario principal.'),
+                                        \Filament\Forms\Components\Hidden::make('_datos_completos')
+                                            ->dehydrated()
+                                    ]),
+                            ])
+                            ->action(function (array $data, $set) {
+                                // Hydrate main form with data from the wizard (which effectively comes from _datos_completos populated by BusquedaStep)
+                                // We need to check if we have the full structure or need to rely on what DatosCompletosStep expects
+                    
+                                // BusquedaStep populates '_datos_completos' in the form state.
+                                // However, in an Action, the $data array contains the values of the fields in the Action's form.
+                                // Since '_datos_completos' is a hidden field in DatosCompletosStep but NOT explicitly added to Busqueda/Seleccion steps as a field returned in $data by default unless dehydrated.
+                    
+                                // Let's check BusquedaStep implementation. It uses $set('_datos_completos', $result->data).
+                                // We need to ensure we can access this.
+                    
+                                // Ideally, we should use the same logic as DatosCompletosStep::autocompletarDatos.
+                                // We can pass $data directly if it contains the necessary keys, but typically the Wizard steps might structure data differently or flat.
+                                // But wait, BusquedaStep and SeleccionCoincidenciasStep primarily manipulate internal state variables like '_datos_completos'.
+                    
+                                // IMPORTANT: The $data passed to this action() will contain the dehydrated values of the fields inside the wizard steps.
+                                // We need to make sure '_datos_completos' is accessible. It is populated in the state.
+                                // If it is not a form field, it might not be in $data.
+                                // However, SeleccionCoincidenciasStep likely deals with '_datos_completos' via state.
+                    
+                                // Re-reading BusquedaStep: it calls $set('_datos_completos', ...).
+                                // If we don't have a Hidden field for it in the Action's form schema, it won't be in $data.
+                                // We should probably add it to the schema of the last step or ensure it's returned.
+                    
+                                // Alternatively, we can assume that if the user passed the steps, the state has the data.
+                                // But $data in action() is strictly validated data from fields.
+                    
+                                // We will trust that the fields we manually mapped in DatosCompletosStep exist in $data IF we had mapped them? 
+                                // No, DatosCompletosStep::autocompletarDatos TAKES the source structure (from Oracle/Service) and SETS the form fields.
+                                // We need that SOURCE structure (the array usually called $data in that method).
+                    
+                                // Quick fix: Add a hidden field for '_datos_completos' in the last step of this Wizard to capture the state.
+                                // OR rely on the fact that we can just re-compose it? No, that's hard.
+                    
+                                // Let's assume there is a hidden field in the wizard. I will add it to the Confirmation step I just created.
+                    
+                                \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Steps\DatosCompletosStep::autocompletarDatos($data['_datos_completos'] ?? [], $set);
+
+                                Notification::make()
+                                    ->title('Expediente actualizado')
+                                    ->success()
+                                    ->send();
+                            })
+                    ),
                 DatePicker::make('exp_fec')->label('Fecha de Expediente')->displayFormat('d/m/Y')->native(false)->disabled()->dehydrated(),
                 TextInput::make('exp_nomrec')
                     ->label('Nombre y Apellidos')
