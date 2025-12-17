@@ -30,6 +30,30 @@ class CertificadoLicenciaFuncionamientosTable
 
     protected static $service;
 
+    private static function getDatoDirecto($record, $key)
+    {
+        if (!$record || !$record->lic_id)
+            return null;
+
+        // Cache simple en propiedad dinámica del modelo para el ciclo de vida de la request
+        if (!isset($record->datos_directos_cache)) {
+            try {
+                $service = app(\App\Services\Sil\Licencias\LicenciaService::class);
+                $record->datos_directos_cache = $service->obtenerDatosPorIdLicenciaDirecta($record->lic_id);
+            } catch (\Throwable $e) {
+                Log::error('Error obteniendo datos directos para licencia ' . $record->lic_id, ['error' => $e->getMessage()]);
+                $record->datos_directos_cache = null;
+            }
+        }
+
+        if (!$record->datos_directos_cache)
+            return null;
+
+        // El resultado es un objeto, acceder a la propiedad
+        // Nota: Los keys del SP suelen ser mayúsculas, asegurar coincidencia
+        return $record->datos_directos_cache->{$key} ?? null;
+    }
+
     public static function configure(Table $table): Table
     {
         if (!isset(self::$service)) {
@@ -89,49 +113,40 @@ class CertificadoLicenciaFuncionamientosTable
             ->defaultPaginationPageOption(10)
             ->columns([
                 //TextColumn::make('lic_id')->label('ID')->sortable()->searchable(),
-                TextColumn::make('lic_numlic')->label('Licencia')->sortable()->searchable(),
-                TextColumn::make('lic_expnum')->label('Expediente')->sortable()->searchable(),
+                TextColumn::make('lic_numlic')
+                    ->label('Licencia')
+                    ->sortable()
+                    ->searchable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'NUMERO_LICENCIA')),
+
+                TextColumn::make('lic_expnum')
+                    ->label('Expediente')
+                    ->sortable()
+                    ->searchable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'EXPEDIENTE_NRO')),
 
                 TextColumn::make('codcat')
                     ->label('CodCat')
-                    ->getStateUsing(function ($record) {
-                        $lic_id = $record->lic_id ?? null;
-                        if (!$lic_id) {
-                            return null;
-                        }
-
-                        try {
-                            return self::$service->obtenerCodCatPorExpedienteConVuLicencias($lic_id);
-                        } catch (\Throwable $e) {
-                            Log::error('Error obteniendo codcat para expediente ' . $lic_id, ['error' => $e->getMessage()]);
-                            return null;
-                        }
-                    })
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'CODIGO_CATASTRAL'))
                     ->sortable(),
 
-                TextColumn::make('lic_razonsocial')->label('Razón Social')->sortable()->searchable(),
-                TextColumn::make('tipoLicencia.tli_descripcion')->label('Tipo Licencia')->sortable(),
-                TextColumn::make('tipoEstadoLicencia.esl_descripcion')->label('Estado')->sortable(),
-                /* 
-             TextColumn::make('lic_direccion')->label('Dirección Lic.')->sortable()->searchable(),
-             TextColumn::make('lic_direccion_sol')
-             ->label('Dirección Sol.')
-             ->getStateUsing(function ($record) {
-                 $lic_id = $record->lic_id ?? null;
-                 if (! $lic_id) {
-                     return null;
-                 }
+                TextColumn::make('lic_razonsocial')
+                    ->label('Razón Social')
+                    ->sortable()
+                    ->searchable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'RAZON_SOCIAL')),
 
-                 try {
-                     return self::$service->obtenerDireccionSolicitantePorIdLicencia($lic_id);
-                 } catch (\Throwable $e) {
-                     Log::error('Error obteniendo codcat para expediente ' . $lic_id, ['error' => $e->getMessage()]);
-                     return null;
-                 }
-             })
-             ->sortable(),
-             */
+                TextColumn::make('tipoLicencia.tli_descripcion')
+                    ->label('Tipo Licencia')
+                    ->sortable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'TIPO_LICENCIA')),
+
+                TextColumn::make('tipoEstadoLicencia.esl_descripcion')
+                    ->label('Estado')
+                    ->sortable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'esl_descripcion')),
             ])
+
             ->filters([
                 //Razon Social
                 SelectFilter::make('lic_razonsocial')
