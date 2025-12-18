@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
 use Carbon\Carbon;
@@ -124,7 +125,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         return $data;
     }
 
-    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $giros = [];
 
@@ -195,8 +196,8 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
             // Valores por defecto/estáticos
             'lic_giro' => '', // Mantienes esto vacío
-            'lca_descripcion' => '',
-            'lca_origen' => '',
+            'lca_descripcion' => $data['direccion'] ?? '',
+            'lca_origen' => 'S',
             'lic_modidirecc' => false,
             'lic_nota' => '',
             'rsgparrafo1' => '',
