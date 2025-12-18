@@ -82,7 +82,7 @@ class TransferirCertificadoLicenciaFuncionamiento extends EditRecord
         foreach ($mapaSimple as $formField => $dbColumn) {
             $data[$formField] = $row->$dbColumn ?? null;
         }
-
+        $data['numero_licencia'] = '';
         // Tipo de establecimiento
         if (isset($row->tes_id)) {
             $data['tipo_establecimientos'] = $row->tes_id;
