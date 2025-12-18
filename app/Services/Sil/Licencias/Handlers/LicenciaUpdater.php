@@ -123,6 +123,7 @@ class LicenciaUpdater
                 $data['nir_id'] ?? null,                                           // 41 p_nir_id
             ];
 
+            Log::info('Datos de entrada para actualización (data):', $data);
             Log::info('Ejecutando spu_licencia_upd3 con parámetros:', $parametros);
 
             $result = $this->db->select($sql, $parametros);
