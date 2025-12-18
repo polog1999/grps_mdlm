@@ -146,16 +146,46 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         $allGiros = $giroService->buscarGiros('');
         $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
 
+        // Obtener giros existentes en la BD para validar cambios
+        $existingGiros = $giroService->obtenerLicenciaGiros($record->lic_id);
+        $existingByGirId = $existingGiros->keyBy('gir_id');
+        $processedGirIds = [];
+
         foreach ($selectedIds as $girId) {
             $name = $idToName[$girId] ?? '';
             $specific = $specificMap[$name] ?? '';
 
-            $giros[] = [
-                'gir_id' => $girId,
-                'especifico' => $specific,
-                'lig_id' => 0, // We don't have this, treating as new/update without ID tracking
-                'estado' => 'M'
-            ];
+            if ($existingByGirId->has($girId)) {
+                // Actualizar existente
+                $existingRecord = $existingByGirId->get($girId);
+                $giros[] = [
+                    'lig_id' => $existingRecord->lig_id,
+                    'gir_id' => $girId,
+                    'especifico' => $specific,
+                    'estado' => 'M'
+                ];
+            } else {
+                // Insertar nuevo
+                $giros[] = [
+                    'lig_id' => 0,
+                    'gir_id' => $girId,
+                    'especifico' => $specific,
+                    'estado' => 'I'
+                ];
+            }
+            $processedGirIds[] = $girId;
+        }
+
+        // Identificar eliminados (Existen en BD pero no en la selección actual)
+        foreach ($existingByGirId as $girId => $record) {
+            if (!in_array($girId, $processedGirIds)) {
+                $giros[] = [
+                    'lig_id' => $record->lig_id,
+                    'gir_id' => $girId,
+                    'especifico' => $record->lig_giroespecifico ?? '',
+                    'estado' => 'E'
+                ];
+            }
         }
 
         $params = [

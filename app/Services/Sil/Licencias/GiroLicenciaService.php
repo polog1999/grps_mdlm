@@ -83,4 +83,22 @@ class GiroLicenciaService
             return collect();
         }
     }
+
+    /**
+     * Obtiene los registros de la tabla licencia.licenciagiro para una licencia
+     * 
+     * @param int $lic_id
+     * @return \Illuminate\Support\Collection
+     */
+    public function obtenerLicenciaGiros(int $lic_id)
+    {
+        try {
+            return $this->connectionToPostgreSQL->table('licencia.licenciagiro')
+                ->where('lic_id', $lic_id)
+                ->get();
+        } catch (\Exception $e) {
+            Log::error("Error al obtener licenciagiro por ID de licencia {$lic_id}: " . $e->getMessage());
+            return collect();
+        }
+    }
 }
