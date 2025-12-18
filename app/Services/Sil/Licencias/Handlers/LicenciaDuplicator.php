@@ -48,30 +48,30 @@ class LicenciaDuplicator
                 ?::integer,      -- 5  p_tes_id
                 ?::integer,      -- 6  p_per_idsolicitante
                 ?::integer,      -- 7  p_per_idrazonsocial
-                ?,               -- 8  p_lic_numlic
-                ?,               -- 9  p_lic_codigopredial
-                ?,               -- 10 p_lic_expnum
+                ?::varchar,      -- 8  p_lic_numlic
+                ?::varchar,      -- 9  p_lic_codigopredial
+                ?::varchar,      -- 10 p_lic_expnum
                 ?::numeric,      -- 11 p_lic_area
                 ?::boolean,      -- 12 p_lic_mype
-                ?,               -- 13 p_lic_resnum
-                ?,               -- 14 p_lic_fecharesolucion (character)
-                ?,               -- 15 p_lic_fechaemision (character)
-                ?,               -- 16 p_lic_fechavencimiento (character)
-                ?,               -- 17 p_lic_licobs
+                ?::varchar,      -- 13 p_lic_resnum
+                ?::varchar,      -- 14 p_lic_fecharesolucion (character)
+                ?::varchar,      -- 15 p_lic_fechaemision (character)
+                ?::varchar,      -- 16 p_lic_fechavencimiento (character)
+                ?::varchar,      -- 17 p_lic_licobs
                 ?::integer,      -- 18 p_cec_id
                 ?::integer,      -- 19 p_tlo_id
-                ?,               -- 20 p_lcc_observacion
-                ?,               -- 21 p_lcc_local
-                ?,               -- 22 p_lca_descripcion
-                ?,               -- 23 p_urbanizacion_id
-                ?,               -- 24 p_lca_zonificacion
-                ?,               -- 25 p_lic_giro
+                ?::varchar,      -- 20 p_lcc_observacion
+                ?::varchar,      -- 21 p_lcc_local
+                ?::varchar,      -- 22 p_lca_descripcion
+                ?::varchar,      -- 23 p_urbanizacion_id
+                ?::varchar,      -- 24 p_lca_zonificacion
+                ?::varchar,      -- 25 p_lic_giro
                 ?::integer,      -- 26 p_lic_id_ori (ID de la licencia original)
                 ?::boolean,      -- 27 p_lic_modidirecc
-                ?,               -- 28 p_lic_horainicio (character)
-                ?,               -- 29 p_lic_horafin (character)
+                ?::varchar,      -- 28 p_lic_horainicio (character)
+                ?::varchar,      -- 29 p_lic_horafin (character)
                 ?::integer,      -- 30 p_tir_id
-                ?,               -- 31 p_lic_nota
+                ?::text,         -- 31 p_lic_nota
                 ?::bigint,       -- 32 p_usa_id
                 ?::integer       -- 33 p_nir_id
             )";

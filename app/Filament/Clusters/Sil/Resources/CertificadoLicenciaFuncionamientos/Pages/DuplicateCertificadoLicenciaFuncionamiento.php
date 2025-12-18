@@ -8,6 +8,7 @@ use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
 {
@@ -215,6 +216,11 @@ class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
 
         try {
             $service = app(LicenciaService::class);
+            Log::info('Iniciando proceso de duplicación de licencia', [
+                'lic_id_original' => $record->lic_id,
+                'params' => $params
+            ]);
+
             $resultado = $service->duplicate($params);
 
             // El SP retorna error > 0 para éxito (el nuevo lic_id)
@@ -235,10 +241,15 @@ class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
                     throw new \Exception($spResult->mensaje ?? 'Error desconocido al duplicar');
                 }
             } else {
+                Log::error('No se recibió respuesta del servidor al duplicar licencia', ['resultado' => $resultado]);
                 throw new \Exception('No se recibió respuesta del servidor');
             }
 
         } catch (\Exception $e) {
+            Log::error('Excepción al duplicar licencia', [
+                'mensaje' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             Notification::make()
                 ->title('Error al duplicar licencia')
                 ->body($e->getMessage())
