@@ -8,6 +8,7 @@ use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 class TransferirCertificadoLicenciaFuncionamiento extends EditRecord
 {
@@ -212,6 +213,11 @@ class TransferirCertificadoLicenciaFuncionamiento extends EditRecord
 
         try {
             $service = app(LicenciaService::class);
+            Log::info('Iniciando proceso de transferencia de licencia', [
+                'lic_id_original' => $record->lic_id,
+                'params' => $params
+            ]);
+
             $resultado = $service->transfer($params);
 
             // El SP retorna error > 0 para éxito (el nuevo lic_id)
@@ -232,10 +238,15 @@ class TransferirCertificadoLicenciaFuncionamiento extends EditRecord
                     throw new \Exception($spResult->mensaje ?? 'Error desconocido al transferir');
                 }
             } else {
+                Log::error('No se recibió respuesta del servidor al transferir licencia', ['resultado' => $resultado]);
                 throw new \Exception('No se recibió respuesta del servidor');
             }
 
         } catch (\Exception $e) {
+            Log::error('Excepción al transferir licencia', [
+                'mensaje' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             Notification::make()
                 ->title('Error al transferir licencia')
                 ->body($e->getMessage())

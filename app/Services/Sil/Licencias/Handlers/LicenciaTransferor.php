@@ -41,39 +41,39 @@ class LicenciaTransferor
             // SQL para llamar al stored procedure de transferencia
             // RETURNS TABLE(error integer, mensaje character varying)
             $sql = "SELECT * FROM licencia.spu_licencia_upd_transferir2(
-                ?::integer,      -- 1  p_fiu_id
-                ?::integer[],    -- 2  p_gir_id
-                ?::text[],       -- 3  p_lig_giroespecifico
-                ?::integer,      -- 4  p_tli_id
-                ?::integer,      -- 5  p_tes_id
-                ?::integer,      -- 6  p_per_idsolicitante
-                ?::integer,      -- 7  p_per_idrazonsocial
-                ?,               -- 8  p_lic_numlic
-                ?,               -- 9  p_lic_codigopredial
-                ?,               -- 10 p_lic_expnum
-                ?::numeric,      -- 11 p_lic_area
-                ?::boolean,      -- 12 p_lic_mype
-                ?,               -- 13 p_lic_resnum
-                ?,               -- 14 p_lic_fecharesolucion (character)
-                ?,               -- 15 p_lic_fechaemision (character)
-                ?,               -- 16 p_lic_fechavencimiento (character)
-                ?,               -- 17 p_lic_licobs
-                ?::integer,      -- 18 p_cec_id
-                ?::integer,      -- 19 p_tlo_id
-                ?,               -- 20 p_lcc_observacion
-                ?,               -- 21 p_lcc_local
-                ?,               -- 22 p_lca_descripcion
-                ?,               -- 23 p_urbanizacion_id
-                ?,               -- 24 p_lca_zonificacion
-                ?,               -- 25 p_lic_giro
-                ?::integer,      -- 26 p_lic_id_ori (ID de la licencia original)
-                ?::boolean,      -- 27 p_lic_modidirecc
-                ?,               -- 28 p_lic_horainicio (character)
-                ?,               -- 29 p_lic_horafin (character)
-                ?::integer,      -- 30 p_tir_id
-                ?,               -- 31 p_lic_nota
-                ?::bigint,       -- 32 p_usa_id
-                ?::integer       -- 33 p_nir_id
+                ?::integer,     -- 1
+                ?::integer[],   -- 2
+                ?::text[],      -- 3
+                ?::integer,     -- 4
+                ?::integer,     -- 5
+                ?::integer,     -- 6
+                ?::integer,     -- 7
+                ?::varchar,     -- 8
+                ?::varchar,     -- 9
+                ?::varchar,     -- 10
+                ?::numeric,     -- 11
+                ?::boolean,     -- 12
+                ?::varchar,     -- 13
+                ?::varchar,     -- 14
+                ?::varchar,     -- 15
+                ?::varchar,     -- 16
+                ?::varchar,     -- 17
+                ?::integer,     -- 18
+                ?::integer,     -- 19
+                ?::varchar,     -- 20
+                ?::varchar,     -- 21
+                ?::varchar,     -- 22
+                ?::varchar,     -- 23 (Urbanización como texto)
+                ?::varchar,     -- 24
+                ?::varchar,     -- 25
+                ?::integer,     -- 26
+                ?::boolean,     -- 27 (p_lic_modidirecc)
+                ?::varchar,     -- 28
+                ?::varchar,     -- 29
+                ?::integer,     -- 30
+                ?::text,        -- 31
+                ?::bigint,      -- 32
+                ?::integer      -- 33
             )";
 
             $parametros = [
