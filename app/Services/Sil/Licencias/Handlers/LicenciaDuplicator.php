@@ -34,7 +34,7 @@ class LicenciaDuplicator
             if (isset($data['giros']) && is_array($data['giros'])) {
                 foreach ($data['giros'] as $giro) {
                     $girosIds[] = $giro['gir_id'] ?? 0;
-                    $girosEspecificos[] = $giro['especifico'] ?? '';
+                    $girosEspecificos[] = $giro['giro_especifico'] ?? '';
                 }
             }
 
