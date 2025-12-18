@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Services\Sil\Licencias\GiroLicenciaService;
 use App\Services\Sil\Licencias\LicenciaService;
 use Carbon\Carbon;
+use App\Models\CertificadoLicenciaFuncionamiento;
 class EditCertificadoLicenciaFuncionamiento extends EditRecord
 {
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
@@ -160,7 +161,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
                 $giros[] = [
                     'lig_id' => $existingRecord->lig_id,
                     'gir_id' => $girId,
-                    'especifico' => $specific,
+                    'giro_especifico' => $specific,
                     'estado' => 'M'
                 ];
             } else {
@@ -168,7 +169,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
                 $giros[] = [
                     'lig_id' => 0,
                     'gir_id' => $girId,
-                    'especifico' => $specific,
+                    'giro_especifico' => $specific,
                     'estado' => 'I'
                 ];
             }
@@ -181,7 +182,7 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
                 $giros[] = [
                     'lig_id' => $record->lig_id,
                     'gir_id' => $girId,
-                    'especifico' => $record->lig_giroespecifico ?? '',
+                    'giro_especifico' => $recordLoop->lig_giroespecifico ?? '',
                     'estado' => 'E'
                 ];
             }
@@ -240,6 +241,6 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         $service = app(LicenciaService::class);
         $service->update($params);
 
-        return $record;
+        return CertificadoLicenciaFuncionamiento::find($record->lic_id);
     }
 }
