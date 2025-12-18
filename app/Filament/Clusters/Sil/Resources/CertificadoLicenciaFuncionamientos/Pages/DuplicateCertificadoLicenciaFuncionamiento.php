@@ -104,7 +104,10 @@ class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
             : null;
 
         // Convertir MYPE a string para el componente Radio
-        $data['mype'] = ($row->MYPE ?? '0') === '1' ? '1' : '0';
+        $valorMype = strtolower((string) ($row->MYPE ?? 'false'));
+        $esMype = in_array($valorMype, ['true', 't', '1', 'on', 's', 'si'], true);
+
+        $data['mype'] = $esMype ? '1' : '0';
 
         // Cargar Giros asociados a la licencia
         $giroService = app(GiroLicenciaService::class);
@@ -153,7 +156,7 @@ class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
 
             $giros[] = [
                 'gir_id' => $girId,
-                'especifico' => $specific,
+                'giro_especifico' => $specific,
             ];
         }
 

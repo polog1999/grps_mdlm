@@ -100,7 +100,10 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             : null;
 
         // Convertir MYPE a string para el componente Radio
-        $data['mype'] = ($row->MYPE ?? '0') === '1' ? '1' : '0';
+        $valorMype = strtolower((string) ($row->MYPE ?? 'false'));
+        $esMype = in_array($valorMype, ['true', 't', '1', 'on', 's', 'si'], true);
+
+        $data['mype'] = $esMype ? '1' : '0';
 
         // Cargar Giros asociados a la licencia
         $giroService = app(GiroLicenciaService::class);
@@ -177,12 +180,13 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         }
 
         // Identificar eliminados (Existen en BD pero no en la selección actual)
-        foreach ($existingByGirId as $girId => $record) {
+        // Identificar eliminados (Existen en BD pero no en la selección actual)
+        foreach ($existingByGirId as $girId => $existingGiroRecord) {
             if (!in_array($girId, $processedGirIds)) {
                 $giros[] = [
-                    'lig_id' => $record->lig_id,
+                    'lig_id' => $existingGiroRecord->lig_id,
                     'gir_id' => $girId,
-                    'giro_especifico' => $recordLoop->lig_giroespecifico ?? '',
+                    'giro_especifico' => $existingGiroRecord->lig_giroespecifico ?? '',
                     'estado' => 'E'
                 ];
             }
