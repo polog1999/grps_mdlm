@@ -51,29 +51,30 @@ class LicenciaTransferor
                 ?::varchar,     -- 8
                 ?::varchar,     -- 9
                 ?::varchar,     -- 10
-                ?::numeric,     -- 11
-                ?::boolean,     -- 12
-                ?::varchar,     -- 13
+                ?::varchar,     -- 11
+                ?::numeric,     -- 12
+                ?::boolean,     -- 13
                 ?::varchar,     -- 14
                 ?::varchar,     -- 15
                 ?::varchar,     -- 16
                 ?::varchar,     -- 17
-                ?::integer,     -- 18
+                ?::varchar,     -- 18
                 ?::integer,     -- 19
-                ?::varchar,     -- 20
+                ?::integer,     -- 20
                 ?::varchar,     -- 21
                 ?::varchar,     -- 22
-                ?::varchar,     -- 23 (Urbanización como texto)
-                ?::varchar,     -- 24
+                ?::varchar,     -- 23
+                ?::varchar,     -- 24 (Urbanización como texto)
                 ?::varchar,     -- 25
-                ?::integer,     -- 26
-                ?::boolean,     -- 27 (p_lic_modidirecc)
-                ?::varchar,     -- 28
+                ?::varchar,     -- 26
+                ?::integer,     -- 27
+                ?::boolean,     -- 28 (p_lic_modidirecc)
                 ?::varchar,     -- 29
-                ?::integer,     -- 30
-                ?::text,        -- 31
-                ?::bigint,      -- 32
-                ?::integer      -- 33
+                ?::varchar,     -- 30
+                ?::integer,     -- 31
+                ?::text,        -- 32
+                ?::bigint,      -- 33
+                ?::integer      -- 34
             )";
 
             $parametros = [
@@ -86,7 +87,8 @@ class LicenciaTransferor
                 $data['per_idrazonsocial'] ?? null,                                // 7  p_per_idrazonsocial
                 $data['lic_numlic'] ?? '',                                         // 8  p_lic_numlic
                 $data['lic_codigopredial'] ?? '',                                  // 9  p_lic_codigopredial
-                $data['lic_expnum'] ?? '',                                         // 10 p_lic_expnum
+                $data['lic_expnum'] ?? '',                                          // 10 p_lic_expnum
+                $this->formatDate($data['lic_expfec'] ?? null),                    // 11 p_lic_expfec
                 (float) ($data['lic_area'] ?? 0),                                  // 11 p_lic_area
                 ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 12 p_lic_mype
                 $data['lic_resnum'] ?? '',                                         // 13 p_lic_resnum
