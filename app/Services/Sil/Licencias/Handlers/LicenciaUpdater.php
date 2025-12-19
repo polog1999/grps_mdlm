@@ -46,6 +46,7 @@ class LicenciaUpdater
                 ?,
                 ?,
                 ?,
+                ?,
                 ?::numeric,
                 ?::boolean,
                 ?,
@@ -87,7 +88,8 @@ class LicenciaUpdater
                 $data['per_idrazonsocial'] ?? null,                                // 5 p_per_idrazonsocial
                 $data['lic_numlic'] ?? '',                                         // 6 p_lic_numlic
                 $data['lic_codigopredial'] ?? '',                                  // 7 p_lic_codigopredial
-                $data['lic_expnum'] ?? '',                                         // 8 p_lic_expnum
+                $data['lic_expnum'] ?? '',                                          // 8 p_lic_expnum
+                $this->formatDate($data['lic_expfec'] ?? null),                // 9 p_lic_expfec (NUEVO)
                 $data['lic_direccion'] ?? '',                                      // 9 p_lic_direccion
                 $data['lic_urbanizacion'] ?? '',                                   // 10 p_lic_urbanizacion
                 (float) ($data['lic_area'] ?? 0),                                  // 11 p_lic_area
