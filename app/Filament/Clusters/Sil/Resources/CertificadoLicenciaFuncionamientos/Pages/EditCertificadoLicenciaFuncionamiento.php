@@ -12,6 +12,8 @@ use Carbon\Carbon;
 use App\Models\CertificadoLicenciaFuncionamiento;
 class EditCertificadoLicenciaFuncionamiento extends EditRecord
 {
+    use \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Traits\HasLicenciaFormHandling;
+
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
 
     protected function getHeaderActions(): array
@@ -20,228 +22,25 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
             //DeleteAction::make(),
         ];
     }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $service = app(LicenciaService::class);
-        $row = $service->obtenerDatosPorIdLicenciaDirecta($this->record->lic_id);
-
-        if (!$row) {
-            return $data;
-        }
-
-        // Mapeo de campos usando los nombres de columna del stored procedure
-        // El SP retorna columnas en MAYÚSCULAS
-        $mapaSimple = [
-            // Expediente
-            'exp_num' => 'EXPEDIENTE_NRO',
-            'exp_fec' => 'lic_expfec',
-            'exp_nomrec' => 'PERSONA_SOLICITANTE',
-            'exp_nomrec_id' => 'PERSONA_SOLICITANTE_ID',
-            'exp_razsoc' => 'RAZON_SOCIAL',
-            'exp_razsoc_id' => 'PERSONA_RAZON_SOCIAL_ID',
-            'numdoc' => 'RUC',
-            'numtel' => 'TELEFONO',
-            'correo' => 'EMAIL',
-            'domfis' => 'UBICACION',
-
-            // Catastro - El SP ya incluye estos datos
-            'codpredio' => 'CODIGO_PREDIAL',
-            'descurb' => 'URBANIZACION',
-            'direccion' => 'LIC_DIRECCION',
-            'via_completa' => 'CALLE',
-            'numvia' => 'N',
-            'blockedif' => 'blockedif',
-            'mz' => 'MZ',
-            'lote' => 'LT',
-            'zonificacion' => 'ZONIFICACION',
-            'area_economica' => 'AREA',
-            'fiu_id' => 'fiu_id',
-            'coduca' => 'CODIGO_CATASTRAL',
-
-            // Licencia
-            'nir_id' => 'nir_id',
-            'nir_descripcion' => 'nir_descripcion',
-            'tipo_resolucion' => 'tir_id',
-            'n_resolucion' => 'RESOLUCION_NRO',
-            'numero_licencia' => 'NUMERO_LICENCIA',
-            'tipo_licencia' => 'CODIGO_TIPO',
-            'compatibilidad' => 'lic_compatibilidad',
-            'nro_compatibilidad' => 'lic_compatibilidadnumero',
-            'hora_inicio' => 'lic_horainicio',
-            'hora_fin' => 'lic_horafin',
-            'observaciones' => 'OBSERVACIONES',
-            'centro_comercial' => 'cec_id',
-            'tipo_local' => 'tlo_id',
-            'local' => 'lcc_local',
-            'observaciones_local' => 'lcc_observacion',
-        ];
-
-        foreach ($mapaSimple as $formField => $dbColumn) {
-            $data[$formField] = $row->$dbColumn ?? null;
-        }
-
-        // Tipo de establecimiento
-        if (isset($row->tes_id)) {
-            $data['tipo_establecimientos'] = $row->tes_id;
-        }
-
-        // Manejo de fechas - El SP retorna fechas como objetos date o null
-        // RESOLUCION_FECHA, FECHA_EMISION, FECHA_VENCIMIENTO vienen del SP
-        $data['fecha_resolucion'] = $row->RESOLUCION_FECHA
-            ? Carbon::parse($row->RESOLUCION_FECHA)->toDateString()
-            : null;
-
-        $data['fecha_emision'] = $row->FECHA_EMISION
-            ? Carbon::parse($row->FECHA_EMISION)->toDateString()
-            : null;
-
-        $data['fecha_compatibilidad'] = $row->lic_compatibilidadfecha
-            ? Carbon::parse($row->lic_compatibilidadfecha)->toDateString()
-            : null;
-
-        // Convertir MYPE a string para el componente Radio
-        $valorMype = strtolower((string) ($row->MYPE ?? 'false'));
-        $esMype = in_array($valorMype, ['true', 't', '1', 'on', 's', 'si'], true);
-
-        $data['mype'] = $esMype ? '1' : '0';
-
-        // Cargar Giros asociados a la licencia
-        $giroService = app(GiroLicenciaService::class);
-        $girosLicencia = $giroService->obtenerGirosPorIdLicencia($this->record->lic_id);
-
-        $girosIds = [];
-        $tablaGiros = [];
-
-        foreach ($girosLicencia as $giroLicencia) {
-            // Agregar el ID del giro al array de seleccionados
-            $girosIds[] = $giroLicencia->gir_id;
-
-            // Agregar el giro al repeater con su nombre y específico
-            $tablaGiros[] = [
-                'giro' => $giroLicencia->gir_descripcion ?? '',
-                'giro_especifico' => $giroLicencia->lig_giroespecifico ?? '',
-            ];
-        }
-
-        $data['giros_seleccionar'] = $girosIds;
-        $data['tabla_giros'] = $tablaGiros;
-
-        return $data;
+        return $this->fillLicenciaFormData($data, $this->record);
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $giros = [];
+        $params = $this->getCommonLicenciaParams($data);
 
-        $selectedIds = $data['giros_seleccionar'] ?? [];
-        $repeaterItems = $data['tabla_giros'] ?? [];
+        // Parametros específicos para Update
+        $params['lic_id'] = $record->lic_id;
+        $params['lca_urbanizacion'] = $data['descurb'] ?? '';
+        $params['compatibilidad'] = $data['compatibilidad'] ?? '';
+        $params['lca_origen'] = 'S';
+        $params['rsgparrafo1'] = '';
+        $params['rsgparrafo2'] = '';
 
-        // Create a map of Giro Name -> Specifico from repeater
-        $specificMap = [];
-        foreach ($repeaterItems as $item) {
-            if (isset($item['giro'])) {
-                $specificMap[$item['giro']] = $item['giro_especifico'] ?? '';
-            }
-        }
-
-        // We need a service to map ID -> Name to use the map above
-        $giroService = app(GiroLicenciaService::class);
-        $allGiros = $giroService->buscarGiros('');
-        $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
-
-        // Obtener giros existentes en la BD para validar cambios
-        $existingGiros = $giroService->obtenerLicenciaGiros($record->lic_id);
-        $existingByGirId = $existingGiros->keyBy('gir_id');
-        $processedGirIds = [];
-
-        foreach ($selectedIds as $girId) {
-            $name = $idToName[$girId] ?? '';
-            $specific = $specificMap[$name] ?? '';
-
-            if ($existingByGirId->has($girId)) {
-                // Actualizar existente
-                $existingRecord = $existingByGirId->get($girId);
-                $giros[] = [
-                    'lig_id' => $existingRecord->lig_id,
-                    'gir_id' => $girId,
-                    'giro_especifico' => $specific,
-                    'estado' => 'M'
-                ];
-            } else {
-                // Insertar nuevo
-                $giros[] = [
-                    'lig_id' => 0,
-                    'gir_id' => $girId,
-                    'giro_especifico' => $specific,
-                    'estado' => 'I'
-                ];
-            }
-            $processedGirIds[] = $girId;
-        }
-
-        // Identificar eliminados (Existen en BD pero no en la selección actual)
-        // Identificar eliminados (Existen en BD pero no en la selección actual)
-        foreach ($existingByGirId as $girId => $existingGiroRecord) {
-            if (!in_array($girId, $processedGirIds)) {
-                $giros[] = [
-                    'lig_id' => $existingGiroRecord->lig_id,
-                    'gir_id' => $girId,
-                    'giro_especifico' => $existingGiroRecord->lig_giroespecifico ?? '',
-                    'estado' => 'E'
-                ];
-            }
-        }
-
-        $params = [
-            'lic_id' => $record->lic_id,
-            // Datos base del formulario (usando el operador de fusión null '??' y conversiones)
-            'tli_id' => $data['tipo_licencia'],
-            'tes_id' => $data['tipo_establecimientos'],
-            'per_idsolicitante' => $data['exp_nomrec_id'] ?? 0,
-            'per_idrazonsocial' => $data['exp_razsoc_id'] ?? 0,
-            'lic_numlic' => $data['numero_licencia'],
-            'lic_codigopredial' => $data['codpredio'],
-            'lic_expnum' => $data['exp_num'],
-            'lic_expfec' => $data['exp_fec'],
-            'lic_direccion' => $data['direccion'],
-            'lic_urbanizacion' => $data['descurb'],
-            'lic_area' => $data['area_economica'],
-            // Conversión Booleana
-            'lic_mype' => $data['mype'] == '1',
-            // Datos de Resolución y Fechas
-            'lic_resnum' => $data['n_resolucion'],
-            'lic_fecharesolucion' => $data['fecha_resolucion'],
-            'lic_fechaemision' => $data['fecha_emision'],
-            'lic_fechavencimiento' => null,
-            // Observaciones y Catastro
-            'lic_licobs' => $data['observaciones'],
-            'fiu_id' => $data['fiu_id'] ?? 0,
-            'lca_urbanizacion' => $data['descurb'],
-            'lca_zonificacion' => $data['zonificacion'],
-            // Centro Comercial
-            'cec_id' => $data['centro_comercial'] ?? 0,
-            'tlo_id' => $data['tipo_local'] ?? 0,
-            'lcc_observacion' => $data['observaciones_local'] ?? '',
-            'lcc_local' => $data['local'] ?? '',
-            // Horario y Compatibilidad
-            'lic_horainicio' => $data['hora_inicio'],
-            'lic_horafin' => $data['hora_fin'],
-            'tir_id' => $data['tipo_resolucion'],
-            'compatibilidad' => $data['compatibilidad'],
-            'nir_id' => $data['nir_id'],
-
-            // Valores por defecto/estáticos
-            'lic_giro' => '', // Mantienes esto vacío
-            'lca_descripcion' => $data['direccion'] ?? '',
-            'lca_origen' => 'S',
-            'lic_modidirecc' => false,
-            'lic_nota' => '',
-            'rsgparrafo1' => '',
-            'rsgparrafo2' => '',
-
-            // Dato dinámico/construido
-            'giros' => $giros,
-        ];
+        $params['giros'] = $this->getGirosForUpdate($record, $data);
 
         $service = app(LicenciaService::class);
         $service->update($params);
