@@ -175,6 +175,7 @@ class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
             'lic_numlic' => $data['numero_licencia'] ?? '',
             'lic_codigopredial' => $data['codpredio'] ?? '',
             'lic_expnum' => $data['exp_num'],
+            'lic_expfec' => $data['exp_fec'],
             'lic_area' => $data['area_economica'] ?? 0,
 
             // Conversión Booleana
