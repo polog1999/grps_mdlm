@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8bf38ccaf33d1010f1c881d8dc7165d6",
+    "content-hash": "024ee6ef829794515e6998a39a2120f3",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -641,6 +641,78 @@
                 }
             ],
             "time": "2024-07-16T11:13:48+00:00"
+        },
+        {
+            "name": "codeat3/blade-ikonate",
+            "version": "1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/codeat3/blade-ikonate.git",
+                "reference": "366446f53781d738b2da9d3320d49553decfecc9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/codeat3/blade-ikonate/zipball/366446f53781d738b2da9d3320d49553decfecc9",
+                "reference": "366446f53781d738b2da9d3320d49553decfecc9",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.1",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "codeat3/blade-icon-generation-helpers": "^0.10",
+                "codeat3/phpcs-styles": "^1.0",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^9.0|^10.5|^11.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Codeat3\\BladeIkonate\\BladeIkonateServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Codeat3\\BladeIkonate\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Swapnil Sarwe",
+                    "homepage": "https://swapnilsarwe.com"
+                },
+                {
+                    "name": "Dries Vints",
+                    "homepage": "https://driesvints.com"
+                }
+            ],
+            "description": "A package to easily make use of Ikonate Icons in your Laravel Blade views.",
+            "homepage": "https://github.com/codeat3/blade-ikonate",
+            "keywords": [
+                "blade",
+                "icons",
+                "ikonate",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/codeat3/blade-ikonate/issues",
+                "source": "https://github.com/codeat3/blade-ikonate/tree/1.6.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/swapnilsarwe",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-02-26T08:13:04+00:00"
         },
         {
             "name": "codeat3/blade-line-awesome-icons",
