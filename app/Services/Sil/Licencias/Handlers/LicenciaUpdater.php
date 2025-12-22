@@ -17,6 +17,30 @@ class LicenciaUpdater
         $this->db = $db;
     }
 
+    /**
+     * Obtiene el valor actual de lic_giro para preservarlo durante la actualización
+     */
+    protected function getCurrentLicGiro(?int $licId): string
+    {
+        if (!$licId) {
+            return '';
+        }
+
+        try {
+            $result = $this->db->table('licencia.licencia')
+                ->where('lic_id', $licId)
+                ->value('lic_giro');
+
+            return $result ?? '';
+        } catch (\Exception $e) {
+            Log::warning('No se pudo obtener lic_giro actual', [
+                'lic_id' => $licId,
+                'error' => $e->getMessage()
+            ]);
+            return '';
+        }
+    }
+
     public function execute(array $data)
     {
         try {
@@ -103,7 +127,7 @@ class LicenciaUpdater
                 $this->formatDate($data['lic_fechaemision'] ?? null),             // 15 p_lic_fechaemision
                 $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 16 p_lic_fechavencimiento
                 $data['lic_licobs'] ?? '',                                         // 17 p_lic_licobs
-                $data['lic_giro'] ?? '',                                           // 18 p_lic_giro
+                $this->getCurrentLicGiro($data['lic_id'] ?? null),                // 18 p_lic_giro (preserve existing)
                 $data['fiu_id'] ?? null,                                           // 19 p_fiu_id
                 $data['lca_descripcion'] ?? '',                                    // 20 p_lca_descripcion
                 $data['lca_urbanizacion'] ?? '',                                   // 21 p_lca_urbanizacion
