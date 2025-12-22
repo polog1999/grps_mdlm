@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "024ee6ef829794515e6998a39a2120f3",
-=======
     "content-hash": "6741ec3ea34385319f2f91f21f43d425",
->>>>>>> feature/certificadoinspeccion
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -719,7 +715,6 @@
             "time": "2025-02-26T08:13:04+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "codeat3/blade-line-awesome-icons",
             "version": "1.5.0",
             "source": {
@@ -864,8 +859,6 @@
             "time": "2025-12-08T15:06:51+00:00"
         },
         {
-=======
->>>>>>> feature/certificadoinspeccion
             "name": "composer/pcre",
             "version": "3.3.2",
             "source": {
