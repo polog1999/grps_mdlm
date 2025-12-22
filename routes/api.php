@@ -16,6 +16,7 @@ use App\Http\Controllers\LicenciaPersonaController;
 use App\Http\Controllers\LicenciaUpdateController;
 use App\Http\Controllers\LicenciaCrudController;
 use App\Http\Controllers\ResolucionController;
+use App\Http\Controllers\ExpedienteGestradController;
 
 /*
 |--------------------------------------------------------------------------
@@ -161,5 +162,11 @@ Route::prefix('v1')->group(function () {
         //obtenerResolucionMasAreaCompletaPorNumeroResolucion
         Route::get('/obtener-area-por-resolucion/{numres}', [ResolucionController::class, 'obtenerResolucionMasAreaCompletaPorNumeroResolucion']);
         Route::get('/obtener-resoluciones/{numexp}', [ResolucionController::class, 'obtenerResoluciones']);
+    });
+
+    Route::prefix('expediente-gestrad')->group(function () {
+        Route::get('/datos-persona/{search}', [ExpedienteGestradController::class, 'searchByNombre']);
+        //get persona
+        Route::get('/persona/{term?}', [ExpedienteGestradController::class, 'getPersona']);
     });
 });
