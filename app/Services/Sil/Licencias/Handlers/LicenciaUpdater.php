@@ -18,23 +18,37 @@ class LicenciaUpdater
     }
 
     /**
-     * Obtiene el valor actual de lic_giro para preservarlo durante la actualización
+     * Construye el resumen de giros para el campo lic_giro basado en la selección actual
      */
-    protected function getCurrentLicGiro(?int $licId): string
+    protected function buildLicGiroSummary(array $data): string
     {
-        if (!$licId) {
+        if (!isset($data['giros']) || empty($data['giros'])) {
+            return '';
+        }
+
+        $giroIds = [];
+        foreach ($data['giros'] as $giro) {
+            // Solo incluir giros que no están eliminados
+            if (($giro['estado'] ?? 'I') !== 'E') {
+                $giroIds[] = $giro['gir_id'] ?? 0;
+            }
+        }
+
+        if (empty($giroIds)) {
             return '';
         }
 
         try {
-            $result = $this->db->table('licencia.licencia')
-                ->where('lic_id', $licId)
-                ->value('lic_giro');
+            $giros = $this->db->table('licencia.giro')
+                ->whereIn('gir_id', $giroIds)
+                ->orderBy('gir_id')
+                ->pluck('gir_descripcion')
+                ->toArray();
 
-            return $result ?? '';
+            return implode(', ', $giros);
         } catch (\Exception $e) {
-            Log::warning('No se pudo obtener lic_giro actual', [
-                'lic_id' => $licId,
+            Log::warning('No se pudo construir lic_giro', [
+                'giro_ids' => $giroIds,
                 'error' => $e->getMessage()
             ]);
             return '';
@@ -127,7 +141,7 @@ class LicenciaUpdater
                 $this->formatDate($data['lic_fechaemision'] ?? null),             // 15 p_lic_fechaemision
                 $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 16 p_lic_fechavencimiento
                 $data['lic_licobs'] ?? '',                                         // 17 p_lic_licobs
-                $this->getCurrentLicGiro($data['lic_id'] ?? null),                // 18 p_lic_giro (preserve existing)
+                $this->buildLicGiroSummary($data),                                 // 18 p_lic_giro (rebuild from current)
                 $data['fiu_id'] ?? null,                                           // 19 p_fiu_id
                 $data['lca_descripcion'] ?? '',                                    // 20 p_lca_descripcion
                 $data['lca_urbanizacion'] ?? '',                                   // 21 p_lca_urbanizacion
