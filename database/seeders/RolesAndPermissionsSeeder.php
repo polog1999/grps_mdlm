@@ -26,6 +26,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'create_certificado_licencia_funcionamiento',
             'update_certificado_licencia_funcionamiento',
             'delete_certificado_licencia_funcionamiento',
+
+            // Permisos para LicenciaRelacionResource
+            'view_licencia_relacion',
+            'create_licencia_relacion',
+            'update_licencia_relacion',
+            'delete_licencia_relacion',
         ];
 
         foreach ($permissions as $permission) {
