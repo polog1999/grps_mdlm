@@ -35,7 +35,9 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
         // Parametros específicos para Update
         $params['lic_id'] = $record->lic_id;
         $params['lca_urbanizacion'] = $data['descurb'] ?? '';
-        $params['compatibilidad'] = $data['compatibilidad'] ?? '';
+        $params['lic_compatibilidad'] = $data['compatibilidad'] ?? '';
+        $params['lic_compatibilidadnumero'] = $data['nro_compatibilidad'] ?? '';
+        $params['lic_compatibilidadfecha'] = $data['fecha_compatibilidad'];
         $params['lca_origen'] = 'S';
         $params['rsgparrafo1'] = '';
         $params['rsgparrafo2'] = '';
