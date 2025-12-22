@@ -18,6 +18,30 @@ class LicenciaTransferor
     }
 
     /**
+     * Obtiene el valor actual de lic_giro para preservarlo durante la transferencia
+     */
+    protected function getCurrentLicGiro(?int $licId): string
+    {
+        if (!$licId) {
+            return '';
+        }
+
+        try {
+            $result = $this->db->table('licencia.licencia')
+                ->where('lic_id', $licId)
+                ->value('lic_giro');
+
+            return $result ?? '';
+        } catch (\Exception $e) {
+            Log::warning('No se pudo obtener lic_giro actual para transferencia', [
+                'lic_id' => $licId,
+                'error' => $e->getMessage()
+            ]);
+            return '';
+        }
+    }
+
+    /**
      * Ejecuta el procedimiento almacenado para transferir una licencia
      * 
      * @param array $data Datos de la licencia a transferir
@@ -108,7 +132,7 @@ class LicenciaTransferor
                 $data['lca_descripcion'] ?? '',                                    // 24 p_lca_descripcion
                 $data['urbanizacion_id'] ?? '',                                    // 25 p_urbanizacion_id
                 $data['lca_zonificacion'] ?? '',                                   // 26 p_lca_zonificacion
-                $data['lic_giro'] ?? '',                                           // 27 p_lic_giro
+                $this->getCurrentLicGiro($data['lic_id_ori'] ?? null),        // 27 p_lic_giro (preserve from original)
                 $data['lic_id_ori'] ?? null,                                       // 28 p_lic_id_ori (ID original)
                 ($data['lic_modidirecc'] ?? false) === true,                       // 29 p_lic_modidirecc
                 $data['lic_horainicio'] ?? '09:00',                                // 30 p_lic_horainicio
