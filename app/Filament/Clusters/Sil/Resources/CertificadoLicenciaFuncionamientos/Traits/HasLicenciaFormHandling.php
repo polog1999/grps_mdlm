@@ -133,6 +133,8 @@ trait HasLicenciaFormHandling
             'lic_codigopredial' => $data['codpredio'] ?? '',
             'lic_expnum' => $data['exp_num'],
             'lic_expfec' => $data['exp_fec'],
+            'lic_direccion' => $data['direccion'] ?? '',
+            'lic_urbanizacion' => $data['urbanizacion'] ?? '',
             'lic_area' => $data['area_economica'] ?? 0,
             'lic_mype' => $data['mype'] == '1',
             'lic_resnum' => $data['n_resolucion'] ?? '',
@@ -148,11 +150,16 @@ trait HasLicenciaFormHandling
             'lcc_local' => $data['local'] ?? '',
             'lic_horainicio' => $data['hora_inicio'] ?? '09:00',
             'lic_horafin' => $data['hora_fin'] ?? '18:00',
+            'lic_compatibilidad' => $data['compatibilidad'] ?? '',
+            'lic_compatibilidadnumero' => $data['nro_compatibilidad'] ?? '',
+            'lic_compatibilidadfecha' => $data['fecha_compatibilidad'],
             'tir_id' => $data['tipo_resolucion'] ?? 2,
             'nir_id' => $data['nir_id'] ?? 0,
             'lic_giro' => '',
-            'lic_modidirecc' => false,
+            'lic_modidirecc' => true,
             'lic_nota' => $data['observaciones'] ?? '', // Many use observations as note too
+
+
         ];
     }
 
