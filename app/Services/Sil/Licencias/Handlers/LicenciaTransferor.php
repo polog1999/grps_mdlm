@@ -52,29 +52,33 @@ class LicenciaTransferor
                 ?::varchar,     -- 9
                 ?::varchar,     -- 10
                 ?::varchar,     -- 11
-                ?::numeric,     -- 12
-                ?::boolean,     -- 13
-                ?::varchar,     -- 14
+                ?::varchar,     -- 12 p_lic_direccion
+                ?::numeric,     -- 13
+                ?::boolean,     -- 14
                 ?::varchar,     -- 15
                 ?::varchar,     -- 16
                 ?::varchar,     -- 17
                 ?::varchar,     -- 18
-                ?::integer,     -- 19
+                ?::varchar,     -- 19
                 ?::integer,     -- 20
-                ?::varchar,     -- 21
+                ?::integer,     -- 21
                 ?::varchar,     -- 22
                 ?::varchar,     -- 23
-                ?::varchar,     -- 24 (Urbanización como texto)
-                ?::varchar,     -- 25
+                ?::varchar,     -- 24
+                ?::varchar,     -- 25 (Urbanización como texto)
                 ?::varchar,     -- 26
-                ?::integer,     -- 27
-                ?::boolean,     -- 28 (p_lic_modidirecc)
-                ?::varchar,     -- 29
+                ?::varchar,     -- 27
+                ?::integer,     -- 28
+                ?::boolean,     -- 29 (p_lic_modidirecc)
                 ?::varchar,     -- 30
-                ?::integer,     -- 31
-                ?::text,        -- 32
-                ?::bigint,      -- 33
-                ?::integer      -- 34
+                ?::varchar,     -- 31
+                ?::integer,     -- 32
+                ?::text,        -- 33
+                ?::bigint,      -- 34
+                ?::varchar,     -- 35 p_compatibilidad
+                ?::varchar,     -- 36 p_compatibilidadnumero
+                ?::varchar,     -- 37 p_compatibilidadfecha
+                ?::integer      -- 38
             )";
 
             $parametros = [
@@ -89,30 +93,33 @@ class LicenciaTransferor
                 $data['lic_codigopredial'] ?? '',                                  // 9  p_lic_codigopredial
                 $data['lic_expnum'] ?? '',                                          // 10 p_lic_expnum
                 $this->formatDate($data['lic_expfec'] ?? null),                    // 11 p_lic_expfec
-                (float) ($data['lic_area'] ?? 0),                                  // 11 p_lic_area
-                ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 12 p_lic_mype
-                $data['lic_resnum'] ?? '',                                         // 13 p_lic_resnum
-                $this->formatDate($data['lic_fecharesolucion'] ?? null),          // 14 p_lic_fecharesolucion
-                $this->formatDate($data['lic_fechaemision'] ?? null),             // 15 p_lic_fechaemision
-                $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 16 p_lic_fechavencimiento
-                $data['lic_licobs'] ?? '',                                         // 17 p_lic_licobs
-                $data['cec_id'] ?? 0,                                              // 18 p_cec_id
-                $data['tlo_id'] ?? 0,                                              // 19 p_tlo_id
-                $data['lcc_observacion'] ?? '',                                    // 20 p_lcc_observacion
-                $data['lcc_local'] ?? '',                                          // 21 p_lcc_local
-                $data['lca_descripcion'] ?? '',                                    // 22 p_lca_descripcion
-                $data['urbanizacion_id'] ?? '',                                    // 23 p_urbanizacion_id
-                $data['lca_zonificacion'] ?? '',                                   // 24 p_lca_zonificacion
-                $data['lic_giro'] ?? '',                                           // 25 p_lic_giro
-                $data['lic_id_ori'] ?? null,                                       // 26 p_lic_id_ori (ID original)
-                ($data['lic_modidirecc'] ?? false) === true,                       // 27 p_lic_modidirecc
-                $data['lic_horainicio'] ?? '09:00',
-                // 28 p_lic_horainicio
-                $data['lic_horafin'] ?? '18:00',                                   // 29 p_lic_horafin
-                $data['tir_id'] ?? 2,                                              // 30 p_tir_id
-                $data['lic_nota'] ?? '',                                           // 31 p_lic_nota
-                auth()->id() ?? 0,                                                 // 32 p_usa_id
-                $data['nir_id'] ?? null,                                           // 33 p_nir_id
+                $data['lic_direccion'] ?? '',                                      // 12 p_lic_direccion
+                (float) ($data['lic_area'] ?? 0),                                  // 13 p_lic_area
+                ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 14 p_lic_mype
+                $data['lic_resnum'] ?? '',                                         // 15 p_lic_resnum
+                $this->formatDate($data['lic_fecharesolucion'] ?? null),          // 16 p_lic_fecharesolucion
+                $this->formatDate($data['lic_fechaemision'] ?? null),             // 17 p_lic_fechaemision
+                $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 18 p_lic_fechavencimiento
+                $data['lic_licobs'] ?? '',                                         // 19 p_lic_licobs
+                $data['cec_id'] ?? 0,                                              // 20 p_cec_id
+                $data['tlo_id'] ?? 0,                                              // 21 p_tlo_id
+                $data['lcc_observacion'] ?? '',                                    // 22 p_lcc_observacion
+                $data['lcc_local'] ?? '',                                          // 23 p_lcc_local
+                $data['lca_descripcion'] ?? '',                                    // 24 p_lca_descripcion
+                $data['urbanizacion_id'] ?? '',                                    // 25 p_urbanizacion_id
+                $data['lca_zonificacion'] ?? '',                                   // 26 p_lca_zonificacion
+                $data['lic_giro'] ?? '',                                           // 27 p_lic_giro
+                $data['lic_id_ori'] ?? null,                                       // 28 p_lic_id_ori (ID original)
+                ($data['lic_modidirecc'] ?? false) === true,                       // 29 p_lic_modidirecc
+                $data['lic_horainicio'] ?? '09:00',                                // 30 p_lic_horainicio
+                $data['lic_horafin'] ?? '18:00',                                   // 31 p_lic_horafin
+                $data['tir_id'] ?? 2,                                              // 32 p_tir_id
+                $data['lic_nota'] ?? '',                                           // 33 p_lic_nota
+                auth()->id() ?? 0,                                                 // 34 p_usa_id
+                $data['lic_compatibilidad'] ?? '',                                 // 35 p_compatibilidad
+                $data['lic_compatibilidadnumero'] ?? '',                          // 36 p_compatibilidadnumero
+                $this->formatDate($data['lic_compatibilidadfecha'] ?? null),      // 37 p_compatibilidadfecha
+                $data['nir_id'] ?? null,                                           // 38 p_nir_id
             ];
 
             Log::info('Ejecutando spu_licencia_upd_transferir2', [
