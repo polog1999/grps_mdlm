@@ -18,23 +18,37 @@ class LicenciaDuplicator
     }
 
     /**
-     * Obtiene el valor actual de lic_giro para preservarlo durante la duplicación
+     * Construye el resumen de giros para el campo lic_giro basado en la selección actual
      */
-    protected function getCurrentLicGiro(?int $licId): string
+    protected function buildLicGiroSummary(array $data): string
     {
-        if (!$licId) {
+        if (!isset($data['giros']) || empty($data['giros'])) {
+            return '';
+        }
+
+        $giroIds = [];
+        foreach ($data['giros'] as $giro) {
+            // Solo incluir giros que no están eliminados
+            if (($giro['estado'] ?? 'I') !== 'E') {
+                $giroIds[] = $giro['gir_id'] ?? 0;
+            }
+        }
+
+        if (empty($giroIds)) {
             return '';
         }
 
         try {
-            $result = $this->db->table('licencia.licencia')
-                ->where('lic_id', $licId)
-                ->value('lic_giro');
+            $giros = $this->db->table('licencia.giro')
+                ->whereIn('gir_id', $giroIds)
+                ->orderBy('gir_id')
+                ->pluck('gir_descripcion')
+                ->toArray();
 
-            return $result ?? '';
+            return implode(', ', $giros);
         } catch (\Exception $e) {
-            Log::warning('No se pudo obtener lic_giro actual para duplicación', [
-                'lic_id' => $licId,
+            Log::warning('No se pudo construir lic_giro para duplicación', [
+                'giro_ids' => $giroIds,
                 'error' => $e->getMessage()
             ]);
             return '';
@@ -132,7 +146,7 @@ class LicenciaDuplicator
                 $data['lca_descripcion'] ?? '',                                    // 24 p_lca_descripcion
                 $data['urbanizacion_id'] ?? '',                                    // 25 p_urbanizacion_id
                 $data['lca_zonificacion'] ?? '',                                   // 26 p_lca_zonificacion
-                $this->getCurrentLicGiro($data['lic_id_ori'] ?? null),        // 27 p_lic_giro (preserve from original)
+                $this->buildLicGiroSummary($data),                             // 27 p_lic_giro (rebuild from current)
                 $data['lic_id_ori'] ?? null,                                       // 28 p_lic_id_ori (ID original)
                 ($data['lic_modidirecc'] ?? false) === true,                       // 29 p_lic_modidirecc
                 $data['lic_horainicio'] ?? '09:00',                                // 30 p_lic_horainicio
