@@ -77,6 +77,8 @@ class LicenciaUpdater
                 ?,
                 ?,
                 ?,
+                ?,
+                ?,
                 ?::integer
             )";
 
@@ -86,11 +88,13 @@ class LicenciaUpdater
                 $data['tes_id'] ?? null,                                           // 3 p_tes_id
                 $data['per_idsolicitante'] ?? null,                                // 4 p_per_idsolicitante
                 $data['per_idrazonsocial'] ?? null,                                // 5 p_per_idrazonsocial
+
                 $data['lic_numlic'] ?? '',                                         // 6 p_lic_numlic
                 $data['lic_codigopredial'] ?? '',                                  // 7 p_lic_codigopredial
                 $data['lic_expnum'] ?? '',                                          // 8 p_lic_expnum
                 $this->formatDate($data['lic_expfec'] ?? null),                // 9 p_lic_expfec (NUEVO)
                 $data['lic_direccion'] ?? '',                                      // 9 p_lic_direccion
+
                 $data['lic_urbanizacion'] ?? '',                                   // 10 p_lic_urbanizacion
                 (float) ($data['lic_area'] ?? 0),                                  // 11 p_lic_area
                 ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 12 p_lic_mype
@@ -119,10 +123,12 @@ class LicenciaUpdater
                 $data['tir_id'] ?? 2,                                              // 35 p_tir_id
                 $data['lic_nota'] ?? '',                                           // 36 p_lic_nota
                 auth()->id() ?? 0,                                                 // 37 p_usa_id
-                $data['compatibilidad'] ?? '',                                     // 38 p_compatibilidad
-                $data['rsgparrafo1'] ?? '',                                        // 39 p_rsgparrafo1
-                $data['rsgparrafo2'] ?? '',                                        // 40 p_rsgparrafo2
-                $data['nir_id'] ?? null,                                           // 41 p_nir_id
+                $data['lic_compatibilidad'] ?? '',                                     // 39 p_compatibilidad
+                $data['lic_compatibilidadnumero'] ?? '',                          // 40 p_lic_compatibilidadnumero
+                $this->formatDate($data['lic_compatibilidadfecha'] ?? null),     // 41 p_lic_compatibilidadfecha
+                $data['rsgparrafo1'] ?? '',                                        // 42 p_rsgparrafo1
+                $data['rsgparrafo2'] ?? '',                                        // 43 p_rsgparrafo2
+                $data['nir_id'] ?? null,                                           // 44 p_nir_id
             ];
 
             Log::info('Datos de entrada para actualización (data):', $data);
