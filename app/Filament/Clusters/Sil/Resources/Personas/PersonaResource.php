@@ -19,7 +19,7 @@ class PersonaResource extends Resource
 {
     protected static ?string $model = Persona::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'ik-person';
 
     protected static ?string $cluster = SilCluster::class;
 
