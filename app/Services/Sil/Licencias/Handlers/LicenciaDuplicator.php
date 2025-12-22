@@ -52,29 +52,33 @@ class LicenciaDuplicator
                 ?::varchar,      -- 9  p_lic_codigopredial
                 ?::varchar,      -- 10 p_lic_expnum
                 ?::varchar,      -- 11 p_lic_expfec
-                ?::numeric,      -- 12 p_lic_area
-                ?::boolean,      -- 13 p_lic_mype
-                ?::varchar,      -- 14 p_lic_resnum
-                ?::varchar,      -- 15 p_lic_fecharesolucion (character)
-                ?::varchar,      -- 16 p_lic_fechaemision (character)
-                ?::varchar,      -- 17 p_lic_fechavencimiento (character)
-                ?::varchar,      -- 18 p_lic_licobs
-                ?::integer,      -- 19 p_cec_id
-                ?::integer,      -- 20 p_tlo_id
-                ?::varchar,      -- 21 p_lcc_observacion
-                ?::varchar,      -- 22 p_lcc_local
-                ?::varchar,      -- 23 p_lca_descripcion
-                ?::varchar,      -- 24 p_urbanizacion_id
-                ?::varchar,      -- 25 p_lca_zonificacion
-                ?::varchar,      -- 26 p_lic_giro
-                ?::integer,      -- 27 p_lic_id_ori (ID de la licencia original)
-                ?::boolean,      -- 28 p_lic_modidirecc
-                ?::varchar,      -- 29 p_lic_horainicio (character)
-                ?::varchar,      -- 30 p_lic_horafin (character)
-                ?::integer,      -- 31 p_tir_id
-                ?::text,         -- 32 p_lic_nota
-                ?::bigint,       -- 33 p_usa_id
-                ?::integer       -- 34 p_nir_id
+                ?::varchar,      -- 12 p_lic_direccion
+                ?::numeric,      -- 13 p_lic_area
+                ?::boolean,      -- 14 p_lic_mype
+                ?::varchar,      -- 15 p_lic_resnum
+                ?::varchar,      -- 16 p_lic_fecharesolucion (character)
+                ?::varchar,      -- 17 p_lic_fechaemision (character)
+                ?::varchar,      -- 18 p_lic_fechavencimiento (character)
+                ?::varchar,      -- 19 p_lic_licobs
+                ?::integer,      -- 20 p_cec_id
+                ?::integer,      -- 21 p_tlo_id
+                ?::varchar,      -- 22 p_lcc_observacion
+                ?::varchar,      -- 23 p_lcc_local
+                ?::varchar,      -- 24 p_lca_descripcion
+                ?::varchar,      -- 25 p_urbanizacion_id
+                ?::varchar,      -- 26 p_lca_zonificacion
+                ?::varchar,      -- 27 p_lic_giro
+                ?::integer,      -- 28 p_lic_id_ori (ID de la licencia original)
+                ?::boolean,      -- 29 p_lic_modidirecc
+                ?::varchar,      -- 30 p_lic_horainicio (character)
+                ?::varchar,      -- 31 p_lic_horafin (character)
+                ?::integer,      -- 32 p_tir_id
+                ?::text,         -- 33 p_lic_nota
+                ?::bigint,       -- 34 p_usa_id
+                ?::varchar,      -- 35 p_compatibilidad
+                ?::varchar,      -- 36 p_compatibilidadnumero
+                ?::varchar,      -- 37 p_compatibilidadfecha
+                ?::integer       -- 38 p_nir_id
             )";
 
             $parametros = [
@@ -89,29 +93,33 @@ class LicenciaDuplicator
                 $data['lic_codigopredial'] ?? '',                                  // 9  p_lic_codigopredial
                 $data['lic_expnum'] ?? '',                                         // 10 p_lic_expnum
                 $this->formatDate($data['lic_expfec'] ?? null),                    // 11 p_lic_expfec
-                (float) ($data['lic_area'] ?? 0),                                  // 12 p_lic_area
-                ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 13 p_lic_mype
-                $data['lic_resnum'] ?? '',                                         // 14 p_lic_resnum
-                $this->formatDate($data['lic_fecharesolucion'] ?? null),          // 15 p_lic_fecharesolucion
-                $this->formatDate($data['lic_fechaemision'] ?? null),             // 16 p_lic_fechaemision
-                $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 17 p_lic_fechavencimiento
-                $data['lic_licobs'] ?? '',                                         // 18 p_lic_licobs
-                $data['cec_id'] ?? 0,                                              // 19 p_cec_id
-                $data['tlo_id'] ?? 0,                                              // 20 p_tlo_id
-                $data['lcc_observacion'] ?? '',                                    // 21 p_lcc_observacion
-                $data['lcc_local'] ?? '',                                          // 22 p_lcc_local
-                $data['lca_descripcion'] ?? '',                                    // 23 p_lca_descripcion
-                $data['urbanizacion_id'] ?? '',                                    // 24 p_urbanizacion_id
-                $data['lca_zonificacion'] ?? '',                                   // 25 p_lca_zonificacion
-                $data['lic_giro'] ?? '',                                           // 26 p_lic_giro
-                $data['lic_id_ori'] ?? null,                                       // 27 p_lic_id_ori (ID original)
-                ($data['lic_modidirecc'] ?? false) === true,                       // 28 p_lic_modidirecc
-                $data['lic_horainicio'] ?? '09:00',                                // 29 p_lic_horainicio
-                $data['lic_horafin'] ?? '18:00',                                   // 30 p_lic_horafin
-                $data['tir_id'] ?? 2,                                              // 31 p_tir_id
-                $data['lic_nota'] ?? '',                                           // 32 p_lic_nota
-                auth()->id() ?? 0,                                                 // 33 p_usa_id
-                $data['nir_id'] ?? null,                                           // 34 p_nir_id
+                $data['lic_direccion'] ?? '',                                      // 12 p_lic_direccion
+                (float) ($data['lic_area'] ?? 0),                                  // 13 p_lic_area
+                ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 14 p_lic_mype
+                $data['lic_resnum'] ?? '',                                         // 15 p_lic_resnum
+                $this->formatDate($data['lic_fecharesolucion'] ?? null),          // 16 p_lic_fecharesolucion
+                $this->formatDate($data['lic_fechaemision'] ?? null),             // 17 p_lic_fechaemision
+                $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 18 p_lic_fechavencimiento
+                $data['lic_licobs'] ?? '',                                         // 19 p_lic_licobs
+                $data['cec_id'] ?? 0,                                              // 20 p_cec_id
+                $data['tlo_id'] ?? 0,                                              // 21 p_tlo_id
+                $data['lcc_observacion'] ?? '',                                    // 22 p_lcc_observacion
+                $data['lcc_local'] ?? '',                                          // 23 p_lcc_local
+                $data['lca_descripcion'] ?? '',                                    // 24 p_lca_descripcion
+                $data['urbanizacion_id'] ?? '',                                    // 25 p_urbanizacion_id
+                $data['lca_zonificacion'] ?? '',                                   // 26 p_lca_zonificacion
+                $data['lic_giro'] ?? '',                                           // 27 p_lic_giro
+                $data['lic_id_ori'] ?? null,                                       // 28 p_lic_id_ori (ID original)
+                ($data['lic_modidirecc'] ?? false) === true,                       // 29 p_lic_modidirecc
+                $data['lic_horainicio'] ?? '09:00',                                // 30 p_lic_horainicio
+                $data['lic_horafin'] ?? '18:00',                                   // 31 p_lic_horafin
+                $data['tir_id'] ?? 2,                                              // 32 p_tir_id
+                $data['lic_nota'] ?? '',                                           // 33 p_lic_nota
+                auth()->id() ?? 0,                                                 // 34 p_usa_id
+                $data['lic_compatibilidad'] ?? '',                                 // 35 p_compatibilidad
+                $data['lic_compatibilidadnumero'] ?? '',                          // 36 p_compatibilidadnumero
+                $this->formatDate($data['lic_compatibilidadfecha'] ?? null),      // 37 p_compatibilidadfecha
+                $data['nir_id'] ?? null,                                           // 38 p_nir_id
             ];
 
             Log::info('Ejecutando spu_licencia_upd_duplicar2', [
