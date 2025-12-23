@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | QR Code API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for the QR code signed URL generation API.
+    |
+    */
+    'qr_api' => [
+        'base_url' => env('QR_API_BASE_URL', 'http://localhost:8000'),
+        'timeout' => env('QR_API_TIMEOUT', 10),
+        'retry_times' => env('QR_API_RETRY_TIMES', 3),
+        'retry_delay' => env('QR_API_RETRY_DELAY', 100),
+    ],
+
 ];
