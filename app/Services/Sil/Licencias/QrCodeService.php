@@ -55,7 +55,7 @@ class QrCodeService
         try {
             $response = Http::timeout($timeout)
                 ->retry($retryTimes, $retryDelay)
-                ->get("{$baseUrl}/api/generate-url/{$licenciaId}");
+                ->get("{$baseUrl}/api/generate-qr-url/{$licenciaId}");
 
             if (!$response->successful()) {
                 Log::error('API returned error status', [
@@ -73,21 +73,21 @@ class QrCodeService
                 throw new \RuntimeException("API no retornó success=true");
             }
 
-            if (empty($data['signed_url'])) {
-                throw new \RuntimeException("API no retornó signed_url");
+            if (empty($data['qr_url'])) {
+                throw new \RuntimeException("API no retornó qr_url");
             }
 
             // Validar formato de URL
-            if (!filter_var($data['signed_url'], FILTER_VALIDATE_URL)) {
-                throw new \RuntimeException("signed_url tiene formato inválido");
+            if (!filter_var($data['qr_url'], FILTER_VALIDATE_URL)) {
+                throw new \RuntimeException("qr_url tiene formato inválido");
             }
 
-            Log::info('Signed URL obtenida exitosamente', [
+            Log::info('QR URL obtenida exitosamente', [
                 'licencia_id' => $licenciaId,
-                'expiration_seconds' => $data['expiration_seconds'] ?? 'N/A'
+                'expires' => $data['expires'] ?? 'N/A'
             ]);
 
-            return $data['signed_url'];
+            return $data['qr_url'];
 
         } catch (\Illuminate\Http\Client\RequestException $e) {
             Log::error('Error de conexión al API de QR', [
