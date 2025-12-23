@@ -5,7 +5,7 @@ namespace App\Services\Sil\Licencias;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -28,18 +28,79 @@ class QrCodeService
     //  MÉTODOS PRIVADOS / AUXILIARES
     // =========================================================================
 
-    private function generarKey(): string
+    /**
+     * Obtiene una URL firmada desde el API para la licencia especificada.
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return string URL firmada con expiración
+     * @throws \Exception Si no se puede obtener la URL
+     */
+    private function obtenerSignedUrl(int $licenciaId): string
     {
-        // Usamos bin2hex(random_bytes) que genera 32 caracteres.
-        // Es seguro y cabe en columnas VARCHAR(50) sin dar error de longitud.
-        return bin2hex(random_bytes(16));
+        $baseUrl = config('services.qr_api.base_url');
+        $timeout = config('services.qr_api.timeout', 10);
+        $retryTimes = config('services.qr_api.retry_times', 3);
+        $retryDelay = config('services.qr_api.retry_delay', 100);
+
+        if (empty($baseUrl)) {
+            throw new \RuntimeException('QR_API_BASE_URL no está configurado');
+        }
+
+        // Sanitizar entrada
+        $licenciaId = (int) $licenciaId;
+        if ($licenciaId <= 0) {
+            throw new \InvalidArgumentException('ID de licencia inválido');
+        }
+
+        try {
+            $response = Http::timeout($timeout)
+                ->retry($retryTimes, $retryDelay)
+                ->get("{$baseUrl}/api/generate-url/{$licenciaId}");
+
+            if (!$response->successful()) {
+                Log::error('API returned error status', [
+                    'licencia_id' => $licenciaId,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                throw new \RuntimeException("API retornó error: HTTP " . $response->status());
+            }
+
+            $data = $response->json();
+
+            // Validar respuesta
+            if (!isset($data['success']) || $data['success'] !== true) {
+                throw new \RuntimeException("API no retornó success=true");
+            }
+
+            if (empty($data['signed_url'])) {
+                throw new \RuntimeException("API no retornó signed_url");
+            }
+
+            // Validar formato de URL
+            if (!filter_var($data['signed_url'], FILTER_VALIDATE_URL)) {
+                throw new \RuntimeException("signed_url tiene formato inválido");
+            }
+
+            Log::info('Signed URL obtenida exitosamente', [
+                'licencia_id' => $licenciaId,
+                'expiration_seconds' => $data['expiration_seconds'] ?? 'N/A'
+            ]);
+
+            return $data['signed_url'];
+
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            Log::error('Error de conexión al API de QR', [
+                'licencia_id' => $licenciaId,
+                'error' => $e->getMessage()
+            ]);
+            throw new \RuntimeException("Error de conexión al API: " . $e->getMessage(), 0, $e);
+        }
     }
 
-    private function obtenerUrlDestino(int $cqrId, string $key): string
-    {
-        return "https://m.munimolina.gob.pe/m/isi.php?qr={$cqrId}&key={$key}";
-    }
-
+    /**
+     * Construye la imagen QR a partir de una URL
+     */
     private function construirImagenQr(string $url): \Endroid\QrCode\Writer\Result\ResultInterface
     {
         $builder = new Builder(
@@ -62,7 +123,6 @@ class QrCodeService
      */
     private function obtenerDatosExistentes(int $licenciaId)
     {
-        // AQUÍ ESTÁ EL FILTRO CLAVE: "AND tqr_id = 1"
         $result = $this->connectionToPostgreSQL->select(
             'SELECT cqr_id, cqr_keyasociado, cqr_qr 
              FROM qr.codigoqr 
@@ -80,111 +140,81 @@ class QrCodeService
     //  LÓGICA CENTRAL
     // =========================================================================
 
+    /**
+     * Obtiene o genera la URL final para el código QR.
+     * Ahora usa el API de URLs firmadas.
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return string URL firmada para el QR
+     */
     private function obtenerOGenerarUrlFinal(int $licenciaId): string
     {
-        // 1. Buscamos si existe registro para esta Licencia Y que sea Tipo 1
+        // Obtener URL firmada desde el API
+        $signedUrl = $this->obtenerSignedUrl($licenciaId);
+
+        // Verificar si existe registro en BD y actualizarlo
         $existente = $this->obtenerDatosExistentes($licenciaId);
 
-        // Variable para decidir si creamos uno nuevo o actualizamos el existente
-        $idParaActualizar = null;
-        $necesitaNuevaKey = false;
-
         if ($existente) {
-            $idParaActualizar = $existente->cqr_id;
-            $keyActual = (string) $existente->cqr_keyasociado;
+            // Actualizar URL en el registro existente
+            $this->connectionToPostgreSQL->update(
+                'UPDATE qr.codigoqr 
+                 SET cqr_qr = ? 
+                 WHERE cqr_idasociado = ? AND tqr_id = ?',
+                [$signedUrl, $licenciaId, self::TIPO_QR_LICENCIA]
+            );
 
-            Log::info("QR Encontrado (ID: $idParaActualizar) para Licencia $licenciaId y TIPO " . self::TIPO_QR_LICENCIA);
-
-            // Verificamos si la key está vacía o es inválida (menor a 15 chars)
-            if (empty($keyActual) || strlen($keyActual) < 15) {
-                Log::warning("La key actual ('$keyActual') es vacía o antigua. Se generará una nueva.");
-                $necesitaNuevaKey = true;
-            } else {
-                // Si todo está bien, retornamos la URL tal cual está en BD
-                return $this->obtenerUrlDestino($idParaActualizar, $keyActual);
-            }
+            Log::info("QR actualizado con nueva signed URL", [
+                'cqr_id' => $existente->cqr_id,
+                'licencia_id' => $licenciaId
+            ]);
         } else {
-            Log::info("No se encontró QR tipo " . self::TIPO_QR_LICENCIA . " para Licencia $licenciaId. Se creará uno nuevo.");
-            $necesitaNuevaKey = true; // Si no existe, obviamente necesitamos key nueva
-        }
+            // Crear nuevo registro
+            $result = $this->connectionToPostgreSQL->select(
+                'SELECT * FROM qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
+                [
+                    self::TIPO_QR_LICENCIA,         // p_tqr_id = 1
+                    'Licencia Nro ' . $licenciaId,  // descripcion
+                    '',                             // observacion
+                    $licenciaId,                    // idasociado
+                    '',                             // key (ya no se usa, pero el SP lo requiere)
+                    $signedUrl,                     // url
+                    0                               // usuario
+                ]
+            );
 
-        // 2. Si llegamos aquí, necesitamos generar una key (ya sea para UPDATE o INSERT)
-        if ($necesitaNuevaKey) {
-
-            $nuevaKey = $this->generarKey();
-            $urlFinal = '';
-
-            if ($idParaActualizar) {
-                // --- CAMINO A: ACTUALIZAR (UPDATE) ---
-                // Solo entramos aquí si existe Y coincide el tqr_id (validado en obtenerDatosExistentes)
-
-                $urlFinal = $this->obtenerUrlDestino($idParaActualizar, $nuevaKey);
-
-                // Ejecutamos el UPDATE reforzando el WHERE por seguridad
-                $updated = $this->connectionToPostgreSQL->update(
-                    'UPDATE qr.codigoqr 
-                     SET cqr_keyasociado = ?, cqr_qr = ? 
-                     WHERE cqr_idasociado = ? AND tqr_id = ?',
-                    [
-                        $nuevaKey,
-                        $urlFinal,
-                        $licenciaId,
-                        self::TIPO_QR_LICENCIA
-                    ]
-                );
-
-                Log::info("Registro actualizado. Filas afectadas: $updated");
-
-                // Borramos caché física para forzar regeneración de imagen
-                Storage::disk('qr')->delete("qr_{$licenciaId}.png");
-
-            } else {
-                // --- CAMINO B: INSERTAR (INSERT) ---
-
-                $urlTemporal = 'PENDIENTE_GENERACION';
-
-                // Usamos el SP para insertar asegurando el TIPO 1
-                $result = $this->connectionToPostgreSQL->select(
-                    'SELECT * FROM qr.spu_codigoqr_ins(?, ?, ?, ?, ?, ?, ?) as cqr_id',
-                    [
-                        self::TIPO_QR_LICENCIA,         // p_tqr_id = 1
-                        'Licencia Nro ' . $licenciaId,  // descripcion
-                        '',                             // observacion
-                        $licenciaId,                    // idasociado
-                        $nuevaKey,                      // key generada
-                        $urlTemporal,                   // url temporal
-                        0                               // usuario
-                    ]
-                );
-
-                $cqrId = $result[0]->cqr_id ?? null;
-                if (!$cqrId)
-                    throw new \Exception("Error al insertar QR.");
-
-                // Actualizamos con la URL final
-                $urlFinal = $this->obtenerUrlDestino($cqrId, $nuevaKey);
-
-                $this->connectionToPostgreSQL->statement(
-                    'UPDATE qr.codigoqr SET cqr_qr = ? WHERE cqr_id = ?',
-                    [$urlFinal, $cqrId]
-                );
+            $cqrId = $result[0]->cqr_id ?? null;
+            if (!$cqrId) {
+                throw new \RuntimeException("Error al insertar registro QR");
             }
 
-            return $urlFinal;
+            Log::info("Nuevo registro QR creado", [
+                'cqr_id' => $cqrId,
+                'licencia_id' => $licenciaId
+            ]);
         }
 
-        return ''; // Fallback (no debería llegar aquí)
+        // Invalidar caché de imagen
+        Storage::disk('qr')->delete("qr_{$licenciaId}.png");
+
+        return $signedUrl;
     }
 
     // =========================================================================
     //  MÉTODOS PÚBLICOS
     // =========================================================================
 
+    /**
+     * Genera el código QR y retorna como Data URI (base64)
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return string Data URI de la imagen PNG
+     */
     public function generarQrDataUri(int $licenciaId): string
     {
         $filename = "qr_{$licenciaId}.png";
 
-        // NOTA: Si siempre tienes problemas con keys viejas, comenta este IF temporalmente
+        // Verificar caché (comentar si hay problemas con URLs expiradas)
         if (Storage::disk('qr')->exists($filename)) {
             $contents = Storage::disk('qr')->get($filename);
             return 'data:image/png;base64,' . base64_encode($contents);
@@ -193,11 +223,18 @@ class QrCodeService
         $urlFinal = $this->obtenerOGenerarUrlFinal($licenciaId);
         $qrResult = $this->construirImagenQr($urlFinal);
 
+        // Guardar en caché
         Storage::disk('qr')->put($filename, $qrResult->getString());
 
         return $qrResult->getDataUri();
     }
 
+    /**
+     * Genera el código QR y retorna como string base64
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return string Imagen PNG codificada en base64
+     */
     public function generarQrLicencia(int $licenciaId): string
     {
         $urlFinal = $this->obtenerOGenerarUrlFinal($licenciaId);
@@ -205,9 +242,30 @@ class QrCodeService
         return base64_encode($qrResult->getString());
     }
 
+    /**
+     * Obtiene el ID del registro QR para una licencia
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return int|null ID del registro QR o null si no existe
+     */
     public function obtenerCqrIdPorLicencia(int $licenciaId): ?int
     {
         $datos = $this->obtenerDatosExistentes($licenciaId);
         return $datos ? $datos->cqr_id : null;
+    }
+
+    /**
+     * Fuerza la regeneración del QR invalidando la caché
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return string Data URI de la nueva imagen
+     */
+    public function regenerarQr(int $licenciaId): string
+    {
+        // Eliminar caché existente
+        Storage::disk('qr')->delete("qr_{$licenciaId}.png");
+
+        // Generar nuevo QR con URL firmada actualizada
+        return $this->generarQrDataUri($licenciaId);
     }
 }
