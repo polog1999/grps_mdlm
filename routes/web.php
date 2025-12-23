@@ -46,6 +46,14 @@ Route::get('/qr-generado/{idLicencia}', [App\Http\Controllers\QrLicenciaControll
     ->name('qr.mostrar');
 
 /**
+ * Ruta pública para mostrar el certificado de licencia en formato PDF.
+ *
+ * @param int $licenciaId ID de la licencia.
+ */
+Route::get('/certificado-licencia/{licenciaId}', [App\Http\Controllers\CertificadoLicenciaPdfController::class, 'mostrar'])
+    ->name('certificado-licencia.mostrar');
+
+/**
  * Grupo de rutas protegidas por autenticación y verificación.
  *
  * Requiere que el usuario esté autenticado y haya verificado su email.
