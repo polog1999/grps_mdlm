@@ -666,10 +666,11 @@ class CertificadoInspeccionForm
                     ->maxLength(1000)
                     ->helperText('Información adicional sobre el certificado (máx. 1000 caracteres)')
                     ->columnSpanFull(),
-                Toggle::make('cin_consello')
+
+                /*    Toggle::make('cin_consello')
                     ->label('¿Tiene Sello?')
                     ->default(false)
-                    ->inline(false),
+                    ->inline(false),*/
             ])
             ->collapsible()
             //>collapsed()
@@ -961,8 +962,8 @@ class CertificadoInspeccionForm
             $servicePersona = app(PersonaSolicitante::class);
             $respuesta = $servicePersona->obtenerPorIdSolicitante($idSolicitante);
 
-            if (isset($respuesta['status']) && $respuesta['status'] === 'ok') {
-                return $respuesta['data']->personasolicitante ?? 'No disponible';
+            if (isset($respuesta['status']) && $respuesta['status'] === 'ok' && $respuesta['data']) {
+                return $respuesta['data']->per_nombrerazonsocial ?? 'No disponible';
             }
         } catch (\Throwable $e) {
             logger()->warning('Error al obtener solicitante', [
