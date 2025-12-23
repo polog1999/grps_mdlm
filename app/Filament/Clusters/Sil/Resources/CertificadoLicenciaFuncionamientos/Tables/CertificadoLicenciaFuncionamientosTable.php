@@ -674,7 +674,7 @@ class CertificadoLicenciaFuncionamientosTable
                             ->label('')
                             ->content(function ($get) {
                                 $qrImage = $get('qr_image');
-                                return new \Illuminate\Support\HtmlString(
+                                return new HtmlString(
                                     '<div style="text-align: center; padding: 20px;">
                                         <img src="' . $qrImage . '" alt="Código QR" style="max-width: 300px; width: 100%; height: auto; border: 2px solid #10b981; border-radius: 8px; padding: 10px; background: white;">
                                     </div>'
@@ -685,6 +685,17 @@ class CertificadoLicenciaFuncionamientosTable
                     ])
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
+                Action::make('certificado-licencia')
+                    ->icon('heroicon-o-document-text')
+                    ->iconButton()
+                    ->tooltip('Generar certificado')
+                    ->color(Color::Stone)
+                    ->url(
+                        fn(CertificadoLicenciaFuncionamiento $record): string =>
+                        route('certificado-licencia.mostrar', ['licenciaId' => $record->lic_id])
+                    )
+                    ->openUrlInNewTab(),
+
                 Action::make('licencia-duplicar')
                     ->icon('ionicon-duplicate-outline')
                     ->iconButton()
