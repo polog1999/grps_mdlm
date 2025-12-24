@@ -24,7 +24,8 @@ class PersonaResource extends Resource
     protected static ?string $cluster = SilCluster::class;
 
     protected static ?string $recordTitleAttribute = 'Persona';
-
+    protected static ?string $navigationLabel = 'Personas y Razones Sociales';
+    protected static ?string $pluralModelLabel = 'Personas y Razones Sociales';
     public static function form(Schema $schema): Schema
     {
         return PersonaForm::configure($schema);

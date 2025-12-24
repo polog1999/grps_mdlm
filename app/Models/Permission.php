@@ -42,6 +42,7 @@ class Permission extends Model
     protected $fillable = [
         'name',
         'guard_name',
+        'module_id',
     ];
 
     /**
@@ -53,4 +54,9 @@ class Permission extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class);
+    }
 }

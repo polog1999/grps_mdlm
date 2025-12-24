@@ -19,11 +19,14 @@ class PermissionResource extends Resource
 {
     protected static ?string $model = Permission::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-key';
 
     protected static ?string $cluster = SistemasCluster::class;
 
     protected static ?string $recordTitleAttribute = 'Permission';
+
+    protected static ?string $navigationLabel = 'Permisos del sistema';
+    protected static ?string $pluralModelLabel = 'Permisos del sistema';
 
     public static function form(Schema $schema): Schema
     {
@@ -46,8 +49,8 @@ class PermissionResource extends Resource
     {
         return [
             'index' => ListPermissions::route('/'),
-            'create' => CreatePermission::route('/create'),
-            'edit' => EditPermission::route('/{record}/edit'),
+            //'create' => CreatePermission::route('/create'),
+            //'edit' => EditPermission::route('/{record}/edit'),
         ];
     }
 }
