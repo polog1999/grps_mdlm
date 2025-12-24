@@ -7,6 +7,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
@@ -23,7 +24,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Indicator;
 use App\Models\CertificadoInspeccion;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
-use Filament\Actions\Action;
+
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -371,7 +372,7 @@ class CertificadoInspeccionsTable
                     ->color('warning'),
 
                 Action::make('ver_original')
-                    ->icon('bxs-badge-check')
+                    ->icon('heroicon-c-check-badge')
                     ->color('gray')
                     ->iconButton()
                     ->tooltip('Ver el PDF original generado por el sistema')

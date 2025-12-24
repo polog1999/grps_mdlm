@@ -38,7 +38,10 @@ class LicenciaRelacionResource extends Resource
     {
         return LicenciaRelacionsTable::configure($table);
     }
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view_licencia_relacion') ?? false;
+    }
     public static function getRelations(): array
     {
         return [

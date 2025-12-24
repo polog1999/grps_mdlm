@@ -34,7 +34,10 @@ class PersonaResource extends Resource
     {
         return PersonasTable::configure($table);
     }
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view_persona') ?? false;
+    }
     public static function getRelations(): array
     {
         return [

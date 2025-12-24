@@ -17,21 +17,21 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             // Permisos para CertificadoInspeccionResource
             'view_certificado_inspeccion',
-            'create_certificado_inspeccion',
-            'update_certificado_inspeccion',
-            'delete_certificado_inspeccion',
 
             // Permisos para CertificadoLicenciaFuncionamientoResource
             'view_certificado_licencia_funcionamiento',
-            'create_certificado_licencia_funcionamiento',
-            'update_certificado_licencia_funcionamiento',
-            'delete_certificado_licencia_funcionamiento',
 
             // Permisos para LicenciaRelacionResource
             'view_licencia_relacion',
-            'create_licencia_relacion',
-            'update_licencia_relacion',
-            'delete_licencia_relacion',
+
+            //Permisos para Persona
+            'view_persona',
+
+            //Permisos para Roles
+            'view_roles',
+
+            //Permisos para Usuarios
+            'view_usuarios',
         ];
 
         foreach ($permissions as $permission) {
@@ -46,9 +46,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin->givePermissionTo(Permission::all());
         $spea_user->givePermissionTo([
             'view_certificado_inspeccion',
-            'create_certificado_inspeccion',
-            'update_certificado_inspeccion',
-            'delete_certificado_inspeccion',
+            'view_certificado_licencia_funcionamiento',
+            'view_licencia_relacion',
+            'view_persona',
         ]);
+
     }
 }
