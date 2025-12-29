@@ -102,8 +102,13 @@ class ExportCertificadoAction
 
         // Filtros simples (comparación exacta)
         $simpleFilters = [
-            'tie_id', 'cin_anio', 'cin_numero', 'cin_solicitante',
-            'cin_ubicacion', 'cin_giro', 'cin_expediente'
+            'tie_id',
+            'cin_anio',
+            'cin_numero',
+            'cin_solicitante',
+            'cin_ubicacion',
+            'cin_giro',
+            'cin_expediente'
         ];
 
         foreach ($simpleFilters as $filter) {
@@ -121,8 +126,8 @@ class ExportCertificadoAction
         }
 
         return $query->orderBy('cin_fecha', 'desc')
-                    ->with('tipoEdificacion')
-                    ->get();
+            ->with('tipoEdificacion')
+            ->get();
     }
 
     /**
@@ -432,7 +437,7 @@ class ExportCertificadoAction
 
             // Verificar si existe una fila plantilla con estilos
             $templateRowExists = !empty($sheet->getCell($col . $startRow)->getValue()) ||
-                                $sheet->getStyle($col . $startRow)->getFont()->getSize() > 0;
+                $sheet->getStyle($col . $startRow)->getFont()->getSize() > 0;
 
             foreach ($data as $i => $value) {
                 $currentRow = $startRow + $i;

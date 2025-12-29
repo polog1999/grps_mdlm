@@ -68,8 +68,13 @@ class CertificadoLicenciaFuncionamiento extends Model
     }
 
     /**
-     * Relación con la persona solicitante
+     * Relación con los giros de la licencia
      */
+    public function giros()
+    {
+        return $this->hasMany(LicenciaGiro::class, 'lic_id', 'lic_id');
+    }
+
     public function personaSolicitante()
     {
         return $this->belongsTo(Persona::class, 'per_idsolicitante', 'per_id');
