@@ -80,7 +80,7 @@ class CertificadoInspeccionResource extends Resource
      */
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_certificado_inspeccion') ?? false;
+        return auth()->user()?->can('view::certificado_inspeccion') ?? false;
     }
 
 
