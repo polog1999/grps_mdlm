@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 class LicenciaRelacionResource extends Resource
 {
     protected static ?string $model = LicenciaRelacion::class;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'Licencias Relacionadas';
     protected static ?string $navigationLabel = 'Licencias Relacionadas';

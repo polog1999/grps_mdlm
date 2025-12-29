@@ -22,13 +22,15 @@ use Illuminate\Database\Eloquent\Builder;
 class CertificadoLicenciaFuncionamientoResource extends Resource
 {
     protected static ?string $model = CertificadoLicenciaFuncionamiento::class;
-
+    protected static ?int $navigationSort = 1;
     protected static ?string $recordTitleAttribute = 'Certificado Licencia de Funcionamiento';
     protected static ?string $navigationLabel = 'Certificados de Licencia de Funcionamiento';
     protected static ?string $pluralModelLabel = 'Certificados de Licencia de Funcionamiento';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $cluster = SilCluster::class;
+
+
 
     public static function form(Schema $schema): Schema
     {

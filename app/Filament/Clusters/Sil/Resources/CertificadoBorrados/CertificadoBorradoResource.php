@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 class CertificadoBorradoResource extends Resource
 {
     protected static ?string $model = CertificadoBorrado::class;
+    protected static ?int $navigationSort = 5;
 
     protected static string|BackedEnum|null $navigationIcon = 'eos-folder-delete-o';
 
