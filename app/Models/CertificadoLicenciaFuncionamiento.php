@@ -65,4 +65,12 @@ class CertificadoLicenciaFuncionamiento extends Model
     {
         return $this->belongsTo(TipoEstadoLicencia::class, 'esl_id');
     }
+
+    /**
+     * Relación con los giros de la licencia
+     */
+    public function giros()
+    {
+        return $this->hasMany(LicenciaGiro::class, 'lic_id', 'lic_id');
+    }
 }

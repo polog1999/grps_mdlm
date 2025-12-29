@@ -524,132 +524,6 @@ class CertificadoLicenciaFuncionamientosTable
                     ->tooltip('Modificar certificado')
                     ->color('warning'),
 
-                Action::make('dar_de_baja')
-                    ->icon('heroicon-o-archive-box-arrow-down')
-                    ->iconButton()
-                    ->tooltip('Dar de baja licencia')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading('Dar de baja licencia')
-                    ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?'))
-                    ->fillForm(fn(CertificadoLicenciaFuncionamiento $record): array => [
-                        'nro_expediente' => $record->lic_expnum,
-                        'nro_resolucion' => $record->lic_resnum,
-                        'fecha_resolucion' => $record->lic_fecharesolucion,
-                        'fecha_baja' => now(),
-                    ])
-                    ->form([
-                        TextInput::make('nro_expediente')
-                            ->label('Nro Expediente')
-                            ->required()
-                            ->maxLength(50),
-
-                        TextInput::make('anexo')
-                            ->label('Anexo')
-                            ->required()
-                            ->maxLength(50),
-
-                        TextInput::make('nro_resolucion')
-                            ->label('Nro Resolución')
-                            ->required()
-                            ->maxLength(100),
-
-                        DatePicker::make('fecha_baja')
-                            ->label('Fecha Baja')
-                            ->required()
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->default(now()),
-
-                        DatePicker::make('fecha_resolucion')
-                            ->label('Fecha Resolución')
-                            ->required()
-                            ->native(false)
-                            ->displayFormat('d/m/Y'),
-                    ])
-                    ->modalSubmitActionLabel('Sí, dar de baja')
-                    ->modalCancelActionLabel('Cancelar')
-                    ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index'))
-                    ->action(function (Action $action, array $data, CertificadoLicenciaFuncionamiento $record) {
-                        \Log::info('Action dar_de_baja - Iniciando proceso', [
-                            'lic_id' => $record->lic_id,
-                            'lic_numlic' => $record->lic_numlic,
-                            'form_data' => $data,
-                            'user_id' => auth()->id(),
-                            'user_email' => auth()->user()->email ?? 'N/A'
-                        ]);
-
-                        try {
-                            $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
-
-                            $serviceData = [
-                                'lic_id' => $record->lic_id,
-                                'lib_expnum' => $data['nro_expediente'],
-                                'lib_anexo' => $data['anexo'],
-                                'lib_resnum' => $data['nro_resolucion'],
-                                'lib_fecharesolucion' => $data['fecha_resolucion'],
-                                'lib_fechabaja' => $data['fecha_baja'],
-                            ];
-
-                            \Log::info('Action dar_de_baja - Datos preparados para el servicio', [
-                                'service_data' => $serviceData
-                            ]);
-
-                            $resultado = $service->bajaLicencia($serviceData);
-
-                            \Log::info('Action dar_de_baja - Respuesta del servicio recibida', [
-                                'resultado' => $resultado,
-                                'error_code' => $resultado->error ?? null,
-                                'mensaje' => $resultado->mensaje ?? null
-                            ]);
-
-                            if ($resultado->error > 0) {
-                                \Log::info('Action dar_de_baja - Baja exitosa', [
-                                    'lic_id' => $record->lic_id,
-                                    'error_code' => $resultado->error,
-                                    'mensaje' => $resultado->mensaje
-                                ]);
-
-                                \Filament\Notifications\Notification::make()
-                                    ->title('Éxito')
-                                    ->body($resultado->mensaje)
-                                    ->success()
-                                    ->send();
-                            } else {
-                                \Log::warning('Action dar_de_baja - Error reportado por el stored procedure', [
-                                    'lic_id' => $record->lic_id,
-                                    'error_code' => $resultado->error,
-                                    'mensaje' => $resultado->mensaje,
-                                    'service_data' => $serviceData
-                                ]);
-
-                                \Filament\Notifications\Notification::make()
-                                    ->title('Error')
-                                    ->body($resultado->mensaje)
-                                    ->danger()
-                                    ->send();
-                                $action->halt();
-                            }
-                        } catch (\Throwable $e) {
-                            \Log::error('Action dar_de_baja - Excepción capturada', [
-                                'lic_id' => $record->lic_id,
-                                'error_message' => $e->getMessage(),
-                                'error_code' => $e->getCode(),
-                                'error_file' => $e->getFile(),
-                                'error_line' => $e->getLine(),
-                                'trace' => $e->getTraceAsString(),
-                                'form_data' => $data,
-                                'service_data' => $serviceData ?? null
-                            ]);
-
-                            \Filament\Notifications\Notification::make()
-                                ->title('Error del Sistema')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                            $action->halt();
-                        }
-                    }),
                 Action::make('generar-qr')
                     ->icon('heroicon-o-qr-code')
                     ->iconButton()
@@ -698,25 +572,104 @@ class CertificadoLicenciaFuncionamientosTable
                     )
                     ->openUrlInNewTab(),
 
-                Action::make('licencia-duplicar')
-                    ->icon('ionicon-duplicate-outline')
-                    ->iconButton()
-                    ->tooltip('Duplicar licencia')
-                    ->color(Color::Purple)
-                    ->url(
-                        fn(CertificadoLicenciaFuncionamiento $record): string =>
-                        CertificadoLicenciaFuncionamientoResource::getUrl('duplicate', ['record' => $record])
-                    ),
-                Action::make('licencia-transferir')
-                    ->icon('lineawesome-handshake')
-                    ->iconButton()
-                    ->tooltip('Transferir licencia')
-                    ->color(Color::Teal)
-                    ->url(
-                        fn(CertificadoLicenciaFuncionamiento $record): string =>
-                        CertificadoLicenciaFuncionamientoResource::getUrl('transfer', ['record' => $record])
-                    ),
-
+                \Filament\Actions\ActionGroup::make([
+                    Action::make('licencia-duplicar')
+                        ->label('Duplicar licencia')
+                        ->icon('ionicon-duplicate-outline')
+                        ->tooltip('Duplicar licencia')
+                        ->color(Color::Purple)
+                        ->url(
+                            fn(CertificadoLicenciaFuncionamiento $record): string =>
+                            CertificadoLicenciaFuncionamientoResource::getUrl('duplicate', ['record' => $record])
+                        ),
+                    Action::make('licencia-transferir')
+                        ->label('Transferir licencia')
+                        ->icon('lineawesome-handshake')
+                        ->tooltip('Transferir licencia')
+                        ->color(Color::Teal)
+                        ->url(
+                            fn(CertificadoLicenciaFuncionamiento $record): string =>
+                            CertificadoLicenciaFuncionamientoResource::getUrl('transfer', ['record' => $record])
+                        ),
+                    Action::make('dar_de_baja')
+                        ->label('Dar de baja')
+                        ->icon('heroicon-o-archive-box-arrow-down')
+                        ->tooltip('Dar de baja licencia')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Dar de baja licencia')
+                        ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?'))
+                        ->fillForm(fn(CertificadoLicenciaFuncionamiento $record): array => [
+                            'nro_expediente' => $record->lic_expnum,
+                            'nro_resolucion' => $record->lic_resnum,
+                            'fecha_resolucion' => $record->lic_fecharesolucion,
+                            'fecha_baja' => now(),
+                        ])
+                        ->form([
+                            TextInput::make('nro_expediente')
+                                ->label('Nro Expediente')
+                                ->required()
+                                ->maxLength(50),
+                            TextInput::make('anexo')
+                                ->label('Anexo')
+                                ->required()
+                                ->maxLength(50),
+                            TextInput::make('nro_resolucion')
+                                ->label('Nro Resolución')
+                                ->required()
+                                ->maxLength(100),
+                            DatePicker::make('fecha_baja')
+                                ->label('Fecha Baja')
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y')
+                                ->default(now()),
+                            DatePicker::make('fecha_resolucion')
+                                ->label('Fecha Resolución')
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y'),
+                        ])
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data, Action $action) {
+                            try {
+                                $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
+                                $serviceData = [
+                                    'lic_id' => $record->lic_id,
+                                    'lib_expnum' => $data['nro_expediente'],
+                                    'lib_anexo' => $data['anexo'],
+                                    'lib_resnum' => $data['nro_resolucion'],
+                                    'lib_fecharesolucion' => $data['fecha_resolucion'],
+                                    'lib_fechabaja' => $data['fecha_baja'],
+                                ];
+                                $resultado = $service->bajaLicencia($serviceData);
+                                if ($resultado->error > 0) {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Éxito')
+                                        ->body($resultado->mensaje)
+                                        ->success()
+                                        ->send();
+                                } else {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Error')
+                                        ->body($resultado->mensaje)
+                                        ->danger()
+                                        ->send();
+                                    $action->halt();
+                                }
+                            } catch (\Throwable $e) {
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Error del Sistema')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                                $action->halt();
+                            }
+                        }),
+                ])->label('Estado')
+                    ->icon('gmdi-manage-history-o')
+                    ->color(Color::Indigo)
+                    ->outlined()
+                    ->button(),
 
             ], position: RecordActionsPosition::BeforeCells)
 

@@ -45,10 +45,21 @@ class CertificadoLicenciaPdfController extends Controller
             ]);
         }
 
+        // Obtener giros de la licencia con sus descripciones
+        $giros = \App\Models\LicenciaGiro::where('lic_id', $licenciaId)
+            ->with('giro')
+            ->get()
+            ->map(function ($licenciaGiro) {
+                return $licenciaGiro->giro->gir_descripcion ?? $licenciaGiro->lig_giroespecifico;
+            })
+            ->filter()
+            ->toArray();
+
         // Renderizar la vista Blade a HTML
         $html = view('certificado-licencia', [
             'licencia' => $datosLicencia,
             'qrImage' => $qrDataUri,
+            'giros' => $giros,
         ])->render();
 
         // Configurar opciones de Dompdf
@@ -98,10 +109,21 @@ class CertificadoLicenciaPdfController extends Controller
             ]);
         }
 
+        // Obtener giros de la licencia con sus descripciones
+        $giros = \App\Models\LicenciaGiro::where('lic_id', $licenciaId)
+            ->with('giro')
+            ->get()
+            ->map(function ($licenciaGiro) {
+                return $licenciaGiro->giro->gir_descripcion ?? $licenciaGiro->lig_giroespecifico;
+            })
+            ->filter()
+            ->toArray();
+
         // Renderizar la vista Blade a HTML
         $html = view('certificado-licencia', [
             'licencia' => $datosLicencia,
             'qrImage' => $qrDataUri,
+            'giros' => $giros,
         ])->render();
 
         // Configurar opciones de Dompdf
