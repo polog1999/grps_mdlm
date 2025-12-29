@@ -19,7 +19,7 @@ class CertificadoBorradoResource extends Resource
 {
     protected static ?string $model = CertificadoBorrado::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'eos-folder-delete-o';
 
     protected static ?string $cluster = SilCluster::class;
 
