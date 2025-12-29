@@ -6,9 +6,12 @@ use App\Services\Sil\CertificadoInspeccion\LicenciaService;
 use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
 use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
-
+use App\Services\Sil\CertificadoInspeccion\ResolucionService;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep;
+use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -24,6 +27,8 @@ use Filament\Support\Enums\IconPosition;
 use Carbon\Carbon;
 use Filament\Tables\Grouping\Group;
 use Filament\Forms\Components\Hidden;
+use Illuminate\Support\HtmlString;
+
 
 /**
  * Esquema del formulario para Certificado de Inspección.
@@ -51,7 +56,7 @@ class CertificadoInspeccionForm
      *
      * @return array Lista de componentes Hidden con valores por defecto.
      */
-    private static function camposOcultosSistema(): array
+    public static function camposOcultosSistema(): array
     {
         return [
             Hidden::make('cin_filafecha')
@@ -79,7 +84,8 @@ class CertificadoInspeccionForm
             Hidden::make('cin_licencia_autofilled')->default(false),
             Hidden::make('cin_expediente_autofilled')->default(false),
             Hidden::make('cin_solicitante_autofilled')->default(false),
-
+            Hidden::make('cin_resolucion_autofilled')->default(false),
+            Hidden::make('cin_es_temporal')->default(false),
 
         ];
     }
@@ -90,17 +96,11 @@ class CertificadoInspeccionForm
     public static function make(): array
     {
         return [
-            self::botonBusquedaAutocompletado(),
-            self::seccionInformacionGeneral(),
-            self::seccionDatosEstablecimiento(),
-            self::seccionDimensiones(),
-            self::seccionVigencia(),
-            self::seccionResolucion(),
-            self::seccionLicencia(),
-            self::seccionInformacionAdicional(),
-            //self::seccionSistema(),
-            ...self::camposOcultosSistema(),
-
+            Wizard::make([
+                BusquedaStep::make()
+                    ->hidden(fn(string $operation) => $operation === 'edit'),
+                DatosCompletosStep::make(),
+            ])->columnSpanFull(),
         ];
     }
 
@@ -113,43 +113,7 @@ class CertificadoInspeccionForm
      *
      * @return Action Acción de Filament configurada.
      */
-    private static function botonBusquedaAutocompletado(): Action
-    {
-        return Action::make('buscar_por_licencia')
-            ->label('Buscar y autocompletar')
-            ->icon('heroicon-o-magnifying-glass')
-            //->iconPosition(IconPosition::Before)
-            ->color('success')
-            ->modalHeading('Búsqueda de Licencia')
-            ->modalDescription('Ingrese el número de expediente, licencia o ambos para buscar')
-            ->modalIcon('heroicon-o-magnifying-glass')
-            ->modalWidth(Width::Large)
-            ->modalSubmitActionLabel('Buscar Licencia')
-            ->modalCancelActionLabel('Cancelar')
-            ->form([
-                Grid::make(2)
-                    ->schema([
-                        TextInput::make('search_expediente')
-                            ->label('Número de Expediente')
-                            ->placeholder('Ej: 2025-001234')
-                            ->suffixIcon('heroicon-o-folder-open')
-                            ->helperText('Ingrese el expediente administrativo'),
 
-                        TextInput::make('search_licencia')
-                            ->label('Número de Licencia')
-                            ->placeholder('Ej: 2024-12345')
-                            ->suffixIcon('heroicon-o-document-check')
-                            ->helperText('Ingrese el número de licencia'),
-                    ]),
-            ])
-            ->action(function (array $data, Action $action) {
-                $livewire = $action->getLivewire();
-                $set = function (string $field, $value) use ($livewire) {
-                    data_set($livewire, "data.{$field}", $value);
-                };
-                self::manejarBusquedaLicencia($data, $set);
-            });
-    }
 
 
     /**
@@ -168,7 +132,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Componente Section con campos de número y año.
      */
-    private static function seccionInformacionGeneral(): Section
+    public static function seccionInformacionGeneral(): Section
     {
         // Obtener el siguiente número de certificado disponible para mostrarlo en el label
         $siguiente = null;
@@ -229,7 +193,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos del establecimiento.
      */
-    private static function seccionDatosEstablecimiento(): Section
+    public static function seccionDatosEstablecimiento(): Section
     {
         return Section::make('Datos del Establecimiento')
             ->description('Información del local o establecimiento a certificar')
@@ -351,7 +315,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos numéricos para área y capacidad.
      */
-    private static function seccionDimensiones(): Section
+    public static function seccionDimensiones(): Section
     {
         return Section::make('Dimensiones')
             ->description('Características físicas del establecimiento')
@@ -409,7 +373,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con DatePickers y toggles relacionados.
      */
-    private static function seccionVigencia(): Section
+    public static function seccionVigencia(): Section
     {
         return Section::make('Vigencia del Certificado')
             ->description('Período de validez del certificado de inspección')
@@ -451,7 +415,7 @@ class CertificadoInspeccionForm
                                 }
                             })
                             ->suffixIcon('heroicon-o-play')
-                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_inicio_autofilled'))
+                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
                             ->dehydrated()
 
                             ->extraInputAttributes(fn(callable $get) => [
@@ -478,7 +442,7 @@ class CertificadoInspeccionForm
                             ->hidden(fn(callable $get) => $get('cin_indeterminado'))
                             ->dehydrated()
                             ->suffixIcon('heroicon-o-stop')
-                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_fin_autofilled'))
+                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_fin_autofilled') && !$get('cin_es_temporal'))
                             ->dehydrated()
 
                             ->extraInputAttributes(fn(callable $get) => [
@@ -510,7 +474,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos de resolución y sigla.
      */
-    private static function seccionResolucion(): Section
+    public static function seccionResolucion(): Section
     {
         return Section::make('Resolución Municipal')
             ->description('Datos de la resolución que respalda el certificado')
@@ -523,10 +487,23 @@ class CertificadoInspeccionForm
                             ->placeholder('1942-2025')
                             ->required()
                             ->maxLength(10)
-                            ->helperText('Formato: #####-YYYY (1 a 5 dígitos, guion, año)')
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_resolucion_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Formato: #####-YYYY (1 a 5 dígitos, guion, año)'
+                            )
                             ->rule('regex:/^\d{1,5}-\d{4}$/')
                             ->validationMessages([
                                 'regex' => 'El formato debe ser: números-año (Ej: 1942-2025)',
+                            ])
+                            ->disabled(fn(callable $get) => (bool) $get('cin_resolucion_autofilled'))
+                            ->dehydrated()
+                            ->extraInputAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('cin_resolucion_autofilled') ? '1' : '0',
+                                'style' => $get('cin_resolucion_autofilled')
+                                    ? 'border-color: #00491bff !important; background-color: #ccecd6ff !important;'
+                                    : '',
                             ]),
 
                         TextInput::make('cin_resolucion_sigla')
@@ -552,7 +529,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos relacionados a la licencia.
      */
-    private static function seccionLicencia(): Section
+    public static function seccionLicencia(): Section
     {
         return Section::make('Información de Licencia')
             ->description('Datos relacionados con la licencia de funcionamiento')
@@ -626,7 +603,7 @@ class CertificadoInspeccionForm
      *
      * @return Section Sección con campos de texto y toggles complementarios.
      */
-    private static function seccionInformacionAdicional(): Section
+    public static function seccionInformacionAdicional(): Section
     {
         return Section::make('Información Adicional')
             ->description('Detalles complementarios del certificado')
@@ -689,10 +666,11 @@ class CertificadoInspeccionForm
                     ->maxLength(1000)
                     ->helperText('Información adicional sobre el certificado (máx. 1000 caracteres)')
                     ->columnSpanFull(),
-                Toggle::make('cin_consello')
+
+                /*    Toggle::make('cin_consello')
                     ->label('¿Tiene Sello?')
                     ->default(false)
-                    ->inline(false),
+                    ->inline(false),*/
             ])
             ->collapsible()
             //>collapsed()
@@ -764,12 +742,13 @@ class CertificadoInspeccionForm
     {
         $expediente = trim($data['search_expediente'] ?? '');
         $licencia = trim($data['search_licencia'] ?? '');
+        $resolucion = trim($data['search_resolucion'] ?? '');
 
         // Validación de campos
-        if (empty($expediente) && empty($licencia)) {
+        if (empty($expediente) && empty($licencia) && empty($resolucion)) {
             Notification::make()
                 ->title('Campos requeridos')
-                ->body('Debe ingresar al menos un número de expediente o licencia para realizar la búsqueda.')
+                ->body('Debe ingresar al menos un número de expediente, licencia o resolución para realizar la búsqueda.')
                 ->warning()
                 ->duration(5000)
                 ->send();
@@ -777,6 +756,30 @@ class CertificadoInspeccionForm
         }
 
         try {
+            // Si se proporcionó resolución, buscar expediente primero
+            if (!empty($resolucion)) {
+                $serviceResolucion = app(ResolucionService::class);
+                $resultadoResolucion = $serviceResolucion->obtenerNumeroExpedientePorNumeroResolucion($resolucion);
+
+                if (!$resultadoResolucion || empty($resultadoResolucion->numero_expediente)) {
+                    Notification::make()
+                        ->title('Resolución no encontrada')
+                        ->body("No se encontró ningún expediente asociado a la resolución: {$resolucion}")
+                        ->warning()
+                        ->duration(5000)
+                        ->send();
+                    return;
+                }
+
+                // Usar el expediente encontrado
+                $expediente = $resultadoResolucion->numero_expediente;
+
+                logger()->info('CertificadoInspeccionForm: Expediente obtenido desde resolución', [
+                    'resolucion' => $resolucion,
+                    'expediente' => $expediente,
+                ]);
+            }
+
             // Determinar tipo de búsqueda
             $tipoBusqueda = self::determinarTipoBusqueda($expediente, $licencia);
 
@@ -796,7 +799,7 @@ class CertificadoInspeccionForm
             }
 
             // Procesar resultado
-            self::procesarResultadoBusqueda($respuesta, $set, $expediente, $licencia);
+            self::procesarResultadoBusqueda($respuesta, $set, $expediente, $licencia, $resolucion);
 
         } catch (\Throwable $e) {
             logger()->error('CertificadoInspeccionForm: Error en búsqueda', [
@@ -864,17 +867,19 @@ class CertificadoInspeccionForm
      * @param callable $set Callback para asignar valores en el formulario.
      * @param string|null $expediente Valor de expediente buscado.
      * @param string|null $licencia Valor de licencia buscado.
+     * @param string|null $resolucion Valor de resolución buscado.
      * @return void
      */
     private static function procesarResultadoBusqueda(
         array $respuesta,
         callable $set,
         ?string $expediente,
-        ?string $licencia
+        ?string $licencia,
+        ?string $resolucion = null
     ): void {
         switch ($respuesta['status']) {
             case 'ok':
-                self::procesarLicenciaEncontrada($respuesta['data'], $set, $expediente, $licencia);
+                self::procesarLicenciaEncontrada($respuesta['data'], $set, $expediente, $licencia, $resolucion);
                 break;
 
             case 'duplicado':
@@ -909,13 +914,15 @@ class CertificadoInspeccionForm
      * @param callable $set Callback para setear campos del formulario.
      * @param string|null $expediente Número de expediente usado en la búsqueda.
      * @param string|null $licencia Número de licencia usado en la búsqueda.
+     * @param string|null $resolucion Número de resolución usado en la búsqueda.
      * @return void
      */
     private static function procesarLicenciaEncontrada(
         $licenciaData,
         callable $set,
         ?string $expediente,
-        ?string $licencia
+        ?string $licencia,
+        ?string $resolucion = null
     ): void {
         if (!$licenciaData) {
             throw new \Exception('Los datos de la licencia están vacíos.');
@@ -925,7 +932,10 @@ class CertificadoInspeccionForm
         $nombreSolicitante = self::obtenerNombreSolicitante($licenciaData->per_idsolicitante ?? null);
 
         // Setear valores en el formulario
-        self::setearDatosLicencia($set, $licenciaData, $nombreSolicitante, $expediente, $licencia);
+        self::setearDatosLicencia($set, $licenciaData, $nombreSolicitante, $expediente, $licencia, $resolucion);
+
+        // Mark search as completed successfully
+        $set('search_completed', true);
 
         // Mostrar notificación de éxito
         Notification::make()
@@ -952,8 +962,8 @@ class CertificadoInspeccionForm
             $servicePersona = app(PersonaSolicitante::class);
             $respuesta = $servicePersona->obtenerPorIdSolicitante($idSolicitante);
 
-            if (isset($respuesta['status']) && $respuesta['status'] === 'ok') {
-                return $respuesta['data']->personasolicitante ?? 'No disponible';
+            if (isset($respuesta['status']) && $respuesta['status'] === 'ok' && $respuesta['data']) {
+                return $respuesta['data']->per_nombrerazonsocial ?? 'No disponible';
             }
         } catch (\Throwable $e) {
             logger()->warning('Error al obtener solicitante', [
@@ -973,6 +983,7 @@ class CertificadoInspeccionForm
      * @param string $nombreSolicitante Nombre resuelto del solicitante.
      * @param string|null $expediente Número de expediente original de búsqueda.
      * @param string|null $licencia Número de licencia original de búsqueda.
+     * @param string|null $resolucion Número de resolución original de búsqueda.
      * @return void
      */
     private static function setearDatosLicencia(
@@ -980,7 +991,8 @@ class CertificadoInspeccionForm
         $licenciaData,
         string $nombreSolicitante,
         ?string $expediente,
-        ?string $licencia
+        ?string $licencia,
+        ?string $resolucion = null
     ): void {
         // Datos principales
         $set('lic_id', $licenciaData->lic_id ?? null);
@@ -1010,6 +1022,58 @@ class CertificadoInspeccionForm
                 ->toDateString();
             $set('cin_fec_fin', $fechaFin);
             $set('cin_fecha_fin_autofilled', !empty($licenciaData->lic_fechaemision));
+        }
+
+        // Verificar si es licencia temporal
+        $esTemporal = false;
+        try {
+            $serviceLicencia = app(LicenciaService::class);
+            $tipoLicencia = null;
+
+            if (!empty($licenciaData->lic_numlic)) {
+                $tipoLicencia = $serviceLicencia->obtenerTipoLicenciaPorNumeroLicencia($licenciaData->lic_numlic);
+            } elseif (!empty($licenciaData->lic_expnum)) {
+                $tipoLicencia = $serviceLicencia->obtenerTipoLicenciaPorExpediente($licenciaData->lic_expnum);
+            }
+
+            if ($tipoLicencia && isset($tipoLicencia->tli_descripcion)) {
+                // Buscar palabras clave como TEMPORAL, PROVISIONAL, etc.
+                if (stripos($tipoLicencia->tli_descripcion, 'TEMPORAL') !== false) {
+                    $esTemporal = true;
+                }
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('Error verificando tipo de licencia temporal', ['error' => $e->getMessage()]);
+        }
+
+        $set('cin_es_temporal', $esTemporal);
+
+        if ($esTemporal) {
+            $set('cin_indeterminado', false);
+            // Si es temporal, aseguramos que las fechas se puedan editar (la lógica disabled lo manejará)
+            // y tal vez queramos notificar al usuario o simplemente dejarlo editar.
+        }
+
+        // Fetch and set resolution number
+        if (!empty($expediente) && empty($resolucion)) {
+            try {
+                $serviceResolucion = app(ResolucionService::class);
+                $resultadoResolucion = $serviceResolucion->obtenerNumeroResolucionPorNumeroExpediente($expediente);
+
+                if ($resultadoResolucion && !empty($resultadoResolucion->numero_resolucion)) {
+                    $set('cin_resolucion', $resultadoResolucion->numero_resolucion);
+                    $set('cin_resolucion_autofilled', true);
+                }
+            } catch (\Throwable $e) {
+                logger()->warning('No se pudo obtener resolución', [
+                    'expediente' => $expediente,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        } elseif (!empty($resolucion)) {
+            // If searched by resolution, use that value
+            $set('cin_resolucion', $resolucion);
+            $set('cin_resolucion_autofilled', true);
         }
     }
 

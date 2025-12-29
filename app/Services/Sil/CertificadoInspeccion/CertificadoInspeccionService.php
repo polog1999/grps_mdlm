@@ -112,4 +112,60 @@ class CertificadoInspeccionService
         }
     }
 
+    /**
+     * Sube un certificado actualizado al almacenamiento externo.
+     * Permite sobrescribir el archivo si ya existe.
+     *
+     * @param int $certificadoId ID del certificado.
+     * @param \Illuminate\Http\UploadedFile $file Archivo PDF a subir.
+     * @return array Resultado de la operación.
+     */
+    public function subirPdfActualizado($certificadoId, $file)
+    {
+        $fileName = "certificado_inspeccion_actualizado_id_{$certificadoId}.pdf";
+        $filePath = "actualizados/{$fileName}";
+        $disk = \Illuminate\Support\Facades\Storage::disk('certificados_externos');
+
+        // Verificar si ya existe para informar al usuario
+        $existeArchivo = $disk->exists($filePath);
+
+        // Guardar archivo (sobrescribe si existe)
+        $disk->put($filePath, file_get_contents($file->getRealPath()));
+
+        $mensaje = $existeArchivo
+            ? 'Certificado actualizado reemplazado exitosamente'
+            : 'Certificado actualizado subido exitosamente';
+
+        return [
+            'success' => true,
+            'message' => $mensaje,
+            'file_name' => $fileName,
+            'status_code' => 200,
+            'was_overwritten' => $existeArchivo
+        ];
+    }
+
+    /**
+     * Reemplaza (sobrescribe) un certificado actualizado existente.
+     *
+     * @param int $certificadoId ID del certificado.
+     * @param \Illuminate\Http\UploadedFile $file Archivo PDF a subir.
+     * @return array Resultado de la operación.
+     */
+    public function reemplazarPdfActualizado($certificadoId, $file)
+    {
+        $fileName = "certificado_inspeccion_actualizado_id_{$certificadoId}.pdf";
+        $filePath = "actualizados/{$fileName}";
+        $disk = \Illuminate\Support\Facades\Storage::disk('certificados_externos');
+
+        // No verificamos existencia, sobrescribimos directamente
+        $disk->put($filePath, file_get_contents($file->getRealPath()));
+
+        return [
+            'success' => true,
+            'message' => 'Certificado actualizado reemplazado exitosamente',
+            'file_name' => $fileName,
+            'status_code' => 200
+        ];
+    }
 }

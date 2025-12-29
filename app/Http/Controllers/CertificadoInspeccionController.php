@@ -131,9 +131,86 @@ class CertificadoInspeccionController extends Controller
         ]);
     }
 
+    public function subirPdfActualizado($certificadoId)
+    {
+        $request = request();
+
+        // Validar que se haya enviado un archivo
+        $request->validate([
+            'certificado_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
+        ], [
+            'certificado_file.required' => 'Debe seleccionar un archivo PDF',
+            'certificado_file.mimes' => 'El archivo debe ser un PDF',
+            'certificado_file.max' => 'El archivo no debe superar los 10MB',
+        ]);
+
+        try {
+            $file = $request->file('certificado_file');
+            $result = $this->service->subirPdfActualizado($certificadoId, $file);
+
+            if (!$result['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message'],
+                ], $result['status_code'] ?? 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'file_name' => $result['file_name'],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al subir el certificado: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function reemplazarPdfActualizado($certificadoId)
+    {
+        $request = request();
+
+        // Validar que se haya enviado un archivo
+        $request->validate([
+            'certificado_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
+        ], [
+            'certificado_file.required' => 'Debe seleccionar un archivo PDF',
+            'certificado_file.mimes' => 'El archivo debe ser un PDF',
+            'certificado_file.max' => 'El archivo no debe superar los 10MB',
+        ]);
+
+        try {
+            $file = $request->file('certificado_file');
+            $result = $this->service->reemplazarPdfActualizado($certificadoId, $file);
+
+            if (!$result['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message'],
+                ], $result['status_code'] ?? 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'file_name' => $result['file_name'],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al reemplazar el certificado: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function obtenerSiguienteNumero()
     {
         $siguiente = $this->service->obtenerSiguienteNumero();
         return response()->json(['siguiente_numero' => $siguiente]);
     }
+
 }

@@ -3,14 +3,14 @@
     use NumberToWords\NumberToWords;
 
     $tipoEdificacion = $record->tie_id;
-    if($tipoEdificacion==5 || $tipoEdificacion==6){
+    if ($tipoEdificacion == 5 || $tipoEdificacion == 6) {
         $textoTipoEdificacion = "DE RIESGO BAJO O RIESGO MEDIO";
-        $numeroAnexo=13;
-    }else if($tipoEdificacion==7 || $tipoEdificacion==8){
+        $numeroAnexo = 13;
+    } else if ($tipoEdificacion == 7 || $tipoEdificacion == 8) {
         $textoTipoEdificacion = "DE RIESGO ALTO O RIESGO MUY ALTO";
-        $numeroAnexo=14;
+        $numeroAnexo = 14;
     }
-    
+
     $numberToWords = new NumberToWords();
     $numberTransformer = $numberToWords->getNumberTransformer('es');
     $fechaCaducidad = Carbon::parse($record->cin_fec_fin);
@@ -25,270 +25,264 @@
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <style>
-      * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body { 
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 11px; 
-    color: #000; 
-    margin: 49px;
-    line-height: 1.4;
-}
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            margin: 49px;
+            line-height: 1.4;
+        }
 
-/* === Encabezados === */
-.top-header {
-    text-align: left;
-    font-size: 7px;
-}
+        /* === Encabezados === */
+        .top-header {
+            text-align: left;
+            font-size: 7px;
+        }
 
-.anexo {
-    text-align: center; 
-    font-size: 17px; 
-    font-weight: bold; 
-    padding-top: 130px;
-}
+        .anexo {
+            text-align: center;
+            font-size: 17px;
+            font-weight: bold;
+            padding-top: 130px;
+        }
 
-.main-header { 
-    text-align: center; 
-    justify-content: center;
-}
+        .main-header {
+            text-align: center;
+            justify-content: center;
+        }
 
-.main-header h1 {
-    font-size: 17px;
-    margin-bottom: 8px;
-    line-height: 1.3;
-}
+        .main-header h1 {
+            font-size: 17px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
 
-.main-header .numero {
-    font-size: 19px;
-    margin-top: 8px;
-    font-weight: bold;
-}
+        .main-header .numero {
+            font-size: 19px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
 
-.intro-text {
-    text-align: justify;
-    margin-bottom: 15px;
-    font-size: 15px;
-}
+        .intro-text {
+            text-align: justify;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
 
-.establecimiento-nombre {
-    text-align: center;
-    font-weight: bold;
-    font-size: 16px;
-    margin: 10px 0;
-    border-bottom: 1px solid #000;
-    padding-bottom: 0;    
-    line-height: 1;  
-    width: 100%;
-}
+        .establecimiento-nombre {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 10px 0;
+            border-bottom: 1px solid #000;
+            padding-bottom: 0;
+            line-height: 1;
+            width: 100%;
+        }
 
-/* === Tablas base === */
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin-bottom: 12px;
-    font-size: 15px;
-}
+        /* === Tablas base === */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
 
-/* === Celdas base === */
-table td {
-    vertical-align: top;
-    border: none;
-    line-height: 1;
-    padding-left: 0;
-}
+        /* === Celdas base === */
+        table td {
+            vertical-align: top;
+            border: none;
+            line-height: 1;
+            padding-left: 0;
+        }
 
-/* === Ubicación === */
-table.ubicacion-table {
-    border: none;
-}
+        /* === Ubicación === */
+        table.ubicacion-table {
+            border: none;
+        }
 
-table.ubicacion-table td {
-    padding: 5px 8px;
-    padding-top: 20px;   
-    padding-bottom: 0; 
-}
+        table.ubicacion-table td {
+            padding: 5px 8px;
+            padding-top: 20px;
+            padding-bottom: 0;
+        }
 
-table.ubicacion-table td.value {
-    border-bottom: 1px solid #000;
-    width: 32%;
-    text-align: center;
-}
+        table.ubicacion-table td.value {
+            border-bottom: 1px solid #000;
+            width: 32%;
+            text-align: center;
+        }
 
-table.ubicacion-table td.label {
-    width: 18%;
-    background-color: #fff;
-}
+        table.ubicacion-table td.label {
+            width: 18%;
+            background-color: #fff;
+        }
 
-/* === Texto de certificación === */
-.certificacion-text {
-    text-align: justify;
-    margin: 10px 0;
-    font-size: 15px;
-}
+        /* === Texto de certificación === */
+        .certificacion-text {
+            text-align: justify;
+            margin: 10px 0;
+            font-size: 15px;
+        }
 
-.certificacion-text strong {
-    font-style: italic;
-}
+        .certificacion-text strong {
+            font-style: italic;
+        }
 
-/* === Tablas estructuradas (info, giro, expediente, fecha) === */
-table.info-table,
-table.giro-table,
-table.expediente-table,
-table.fecha-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 8px 0;
-    font-size: 15px;
-}
+        /* === Tablas estructuradas (info, giro, expediente, fecha) === */
+        table.info-table,
+        table.giro-table,
+        table.expediente-table,
+        table.fecha-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 15px;
+        }
 
-/* === Celdas comunes === */
-table.info-table td,
-table.giro-table td,
-table.expediente-table td,
-table.fecha-table td {
-    border: none;
-    line-height: 1;
-    padding-top: 20px;
-    padding-bottom: 0;
-}
+        /* === Celdas comunes === */
+        table.info-table td,
+        table.giro-table td,
+        table.expediente-table td,
+        table.fecha-table td {
+            border: none;
+            line-height: 1;
+            padding-top: 20px;
+            padding-bottom: 0;
+        }
 
-/* === Info table === */
-table.info-table td.label {
-    width: 36%; 
-}
+        /* === Info table === */
+        table.info-table td.label {
+            width: 36%;
+        }
 
-table.info-table td.numero {
-    text-align: center;
-    width: 10%;
-    border-bottom: 1px solid #000;
-    border-right: 5px solid #fff; 
-}
+        table.info-table td.numero {
+            text-align: center;
+            width: 10%;
+            border-bottom: 1px solid #000;
+            border-right: 5px solid #fff;
+        }
 
-table.info-table td.texto {
-    text-align: center;
-    width: 35%;
-    border-bottom: 1px solid #000;
-}
+        table.info-table td.texto {
+            text-align: center;
+            width: 35%;
+            border-bottom: 1px solid #000;
+        }
 
-table.info-table td.unidad {
-    text-align: right;
-    width: 15%;
-}
+        table.info-table td.unidad {
+            text-align: right;
+            width: 15%;
+        }
 
-/* === Giro table === */
-table.giro-table td {
-    padding: 0;
-    margin: 0;
-}
+        /* === Giro table === */
+        table.giro-table td {
+            padding: 0;
+            margin: 0;
+        }
 
-table.giro-table td.label {
-    width: 35%;
-    font-weight: normal;
-    padding-right: 2px;
-}
+        table.giro-table td.label {
+            width: 35%;
+            font-weight: normal;
+            padding-right: 2px;
+        }
 
-table.giro-table td.value {
-    border-bottom: 1px solid #000;
-    font-weight: bold;
-    padding-left: 0;
-}
+        table.giro-table td.value {
+            border-bottom: 1px solid #000;
+            font-weight: bold;
+            padding-left: 0;
+        }
 
-/* === Expediente table === */
-table.expediente-table td.label {
-    width: 15%;
-}
+        /* === Expediente table === */
+        table.expediente-table td.label {
+            width: 15%;
+        }
 
-table.expediente-table td.value {
-    border-bottom: 1px solid #000;
-    text-align: center;
-}
+        table.expediente-table td.value {
+            border-bottom: 1px solid #000;
+            text-align: center;
+        }
 
-table.expediente-table td.numero {
-    width: 25%;
-}
+        table.expediente-table td.numero {
+            width: 25%;
+        }
 
-table.expediente-table td.resolucion {
-    width: 35%;
-}
+        table.expediente-table td.resolucion {
+            width: 35%;
+        }
 
-/* === Vigencia === */
-.vigencia-section {
-    margin: 12px 0;
-    font-weight: bold;
-    font-size: 15px;
-}
+        /* === Vigencia === */
+        .vigencia-section {
+            margin: 12px 0;
+            font-weight: bold;
+            font-size: 15px;
+        }
 
-/* === Fecha table === */
-table.fecha-table td.label {
-    width: 45%;
-    font-weight: bold;
-}
+        /* === Fecha table === */
+        table.fecha-table td.label {
+            width: 45%;
+            font-weight: bold;
+        }
 
-table.fecha-table td.value {
-    text-decoration: underline;
-}
+        table.fecha-table td.value {
+            text-decoration: underline;
+        }
 
-table.fecha-table td.nota {
-    font-size: 10px;
-    text-align: left;
-    font-weight: bold;
-    padding-top: 0;
-    padding-bottom: 5px;
-}
+        table.fecha-table td.nota {
+            font-size: 10px;
+            text-align: left;
+            font-weight: bold;
+            padding-top: 0;
+            padding-bottom: 5px;
+        }
 
-/* === Footer === */
-.footer-note {
-    margin-top: 5px;
-    font-size: 9px;
-    line-height: 1.3;
-    color: #000;
-}
+        /* === Footer === */
+        .footer-note {
+            margin-top: 5px;
+            font-size: 9px;
+            line-height: 1.3;
+            color: #000;
+        }
 
-.footer-note > div {
-    margin-bottom: 8px;
-}
+        .footer-note>div {
+            margin-bottom: 8px;
+        }
 
-.footer-note ul {
-    list-style: none;
-    margin: 0;
-}
+        .footer-note ul {
+            list-style: none;
+            margin: 0;
+        }
 
-.footer-note ul li {
-    text-align: justify;
-    position: relative;
-    padding-left: 10px;
-}
+        .footer-note ul li {
+            text-align: justify;
+            position: relative;
+            padding-left: 10px;
+        }
 
-/* Guion al inicio */
-.footer-note ul li::before {
-    content: "-";
-    position: absolute;
-    left: 0;
-}
-
-
+        /* Guion al inicio */
+        .footer-note ul li::before {
+            content: "-";
+            position: absolute;
+            left: 0;
+        }
     </style>
 </head>
+
 <body>
     <!-- Anexo Encabezado arriba -->
     <div class="anexo">
         ANEXO {{$numeroAnexo}}
     </div>
-    
-    <div class="top-header">
-        GERENCIA DE DESARROLLO ECONÓMICO E INVERSIÓN PRIVADA<br>
-        SUBGERENCIA DE PROMOCIÓN EMPRESARIAL Y AUTORIZACIONES
-    </div>
 
- 
 
     <!-- Título principal -->
     <div class="main-header">
@@ -316,7 +310,9 @@ table.fecha-table td.nota {
     <table class="ubicacion-table">
         <tr>
             <td class="label" style="width: 28%;">Ubicado en</td>
-            <td class="value" style="text-align: left;" colspan="6">{{ $record->cin_ubicacion ?? 'AV. LA MOLINA N°864, MZ. A1, LT. 03, URB. AMPLIACION RESIDENCIAL MONTERRICO, DISTRITO DE LA MOLINA' }}</td>
+            <td class="value" style="text-align: left;" colspan="6">
+                {{ $record->cin_ubicacion ?? 'AV. LA MOLINA N°864, MZ. A1, LT. 03, URB. AMPLIACION RESIDENCIAL MONTERRICO, DISTRITO DE LA MOLINA' }}
+            </td>
         </tr>
         <tr>
             <td class="label" style="width: 28%;">Distrito</td>
@@ -334,7 +330,8 @@ table.fecha-table td.nota {
 
     <!-- Certificación -->
     <div class="certificacion-text">
-        El que suscribe <strong>CERTIFICA</strong> que el Establecimiento Objeto antes señalado <strong>CUMPLE CON LAS CONDICIONES DE SEGURIDAD.</strong>
+        El que suscribe <strong>CERTIFICA</strong> que el Establecimiento Objeto antes señalado <strong>CUMPLE CON LAS
+            CONDICIONES DE SEGURIDAD.</strong>
     </div>
 
     <!-- Capacidad -->
@@ -391,31 +388,35 @@ table.fecha-table td.nota {
         </tr>
     </table>
     @if(filled($record->cin_nota))
-            <div>
-                <div style="text-decoration: underline;font-weight: bold">
-                    Nota:
-                </div>
-                <div>
-                    {!! nl2br(e($record->cin_nota)) !!}
-                </div>
+        <div>
+            <div style="text-decoration: underline;font-weight: bold">
+                Nota:
             </div>
+            <div>
+                {!! nl2br(e($record->cin_nota)) !!}
+            </div>
+        </div>
     @endif
     <!-- Notas al pie -->
     <div class="footer-note">
         <div style="margin-bottom: 0px;font-style:normal;">
-            "El presente Certificado de ITSE no constituye autorización alguna para el funcionamiento del objeto de la presente inspección"
+            "El presente Certificado de ITSE no constituye autorización alguna para el funcionamiento del objeto de la
+            presente inspección"
         </div>
         <div style="margin-bottom: 8px; font-style:normal;">
             NOTA:
         </div>
         <ul>
-            <li>DE ACUERDO A LO ESTABLECIDO EN EL REGLAMENTO DE INSPECCIONES TECNICAS DE SEGURIDAD EN EDIFICACIONES APROBADO POR DECRETO SUPREMO Nº 002-2018-PCM., EL PRESENTE CERTIFICADO DEBERÁ SER FIMADO POR EL RESPONSABLE DEL ÓRGANO EJECUTANTE.
-</li>
-            <li>ESTE CERTIFICADO DEBERÁ COLOCARSE EN UN LUGAR VISIBLE DENTRO DEL ESTABLECIMIENTO O OBJETO DE INSPECCION.</li>
+            <li>DE ACUERDO A LO ESTABLECIDO EN EL REGLAMENTO DE INSPECCIONES TECNICAS DE SEGURIDAD EN EDIFICACIONES
+                APROBADO POR DECRETO SUPREMO Nº 002-2018-PCM., EL PRESENTE CERTIFICADO DEBERÁ SER FIMADO POR EL
+                RESPONSABLE DEL ÓRGANO EJECUTANTE.
+            </li>
+            <li>ESTE CERTIFICADO DEBERÁ COLOCARSE EN UN LUGAR VISIBLE DENTRO DEL ESTABLECIMIENTO O OBJETO DE INSPECCION.
+            </li>
             <li>CUALQUIER TACHA O ENMENDADURA INVALIDA EL PRESENTE CERTIFICADO</li>
         </ul>
     </div>
 
 </body>
-</html>
 
+</html>

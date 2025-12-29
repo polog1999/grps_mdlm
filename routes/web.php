@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
@@ -22,7 +23,6 @@ use App\Http\Controllers\GiroLicenciaController;
  * Rutas principales:
  * - Página de inicio (home): Muestra la vista de bienvenida con opción de registro.
  * - Dashboard: Página protegida para usuarios autenticados.
- * - Rutas de prueba: Endpoints para consultar datos de licencias, personas y certificados.
  */
 
 /**
@@ -35,6 +35,7 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
 
 /**
  * Ruta pública para mostrar el QR de una licencia.
@@ -67,6 +68,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
+    /**
+     * Ruta para ver archivos de certificados (original, actualizado, firmado).
+     *
+     * @param int $id ID del certificado
+     * @param string $tipo Tipo de certificado (original, actualizado, firmado)
+     */
+    Route::get('/certificado/ver/{id}/{tipo}', function ($id, $tipo) {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        // Usamos el disco personalizado configurado anteriormente
+        $disk = Storage::disk('certificados_externos');
+
+        // Definimos el nombre del archivo según el tipo
+        if ($tipo === 'original') {
+            $filename = "originales/certificado_inspeccion_id_{$id}.pdf";
+            $downloadName = "Certificado_Original_{$id}.pdf";
+        } elseif ($tipo === 'actualizado') {
+            $filename = "actualizados/certificado_inspeccion_actualizado_id_{$id}.pdf";
+            $downloadName = "Certificado_Actualizado_{$id}.pdf";
+        } elseif ($tipo === 'firmado') {
+            $filename = "firmados/{$id}_firmado.pdf";
+            $downloadName = "Certificado_Oficial_{$id}.pdf";
+        } else {
+            abort(404);
+        }
+
+        if (!$disk->exists($filename)) {
+            abort(404, "El archivo no se encuentra: " . $filename);
+        }
+
+        return $disk->response($filename, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline'
+        ]);
+    })->name('certificado.ver-archivo');
 
     /**
      * Ruta para obtener la lista de tipos de edificación.
@@ -77,52 +115,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('tipoEdificacion.listar');
 
     /**
-     * Grupo de rutas de prueba para consultas a la base de datos de licencias.
+     * Grupo de rutas de prueba para consultas a la base de datos.
      *
      * Prefijo 'test' y nombre base 'test.'. Todas requieren autenticación.
      */
     Route::prefix('test')->name('test.')->group(function () {
-        /**
-         * Obtener licencia por número de expediente.
-         *
-         * @param string $lic_expnum Número de expediente.
-         */
-        Route::get('/licencias/expediente/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroExpediente'])
-            ->name('licencias.obtenerPorNumeroExpediente');
-
-        /**
-         * Obtener licencia por número de licencia.
-         *
-         * @param string $lic_numlic Número de licencia.
-         */
-        Route::get('/licencias/licencia/{lic_numlic}', [LicenciaController::class, 'obtenerPorNumeroLicencia'])
-            ->name('licencias.obtenerPorNumeroLicencia');
-
-        /**
-         * Obtener licencia por número de licencia y expediente combinados.
-         *
-         * @param string $lic_numlic Número de licencia.
-         * @param string $lic_expnum Número de expediente.
-         */
-        Route::get('/licencias/licencia-expediente/{lic_numlic}/{lic_expnum}', [LicenciaController::class, 'obtenerPorNumeroLicenciaYExpediente'])
-            ->name('licencias.obtenerPorNumeroLicenciaYExpediente');
-
-        /**
-         * Obtener persona solicitante por ID.
-         *
-         * @param int $per_idsolicitante ID del solicitante.
-         */
-        Route::get('/persona-solicitante/{per_idsolicitante}', [PersonaSolicitanteController::class, 'obtenerPorIdSolicitante'])
-            ->name('personaSolicitante.obtenerPorIdSolicitante');
-
-        /**
-         * Obtener licencia por ID.
-         *
-         * @param int $lic_id ID de la licencia.
-         */
-        Route::get('/licencia/licencia_id/{lic_id}', [LicenciaController::class, 'obtenerPorIdLicencia'])
-            ->name('licencia.obtenerPorIdLicencia');
-
         /**
          * Buscar ubicaciones para certificados de inspección.
          *
@@ -147,11 +144,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/certificado-inspeccion/eliminar/{certificadoId}', [CertificadoInspeccionController::class, 'borrarCertificado'])
             ->name('certificadoInspeccion.borrarCertificado');
 
-
         /**
          * Rutas para Certificado de Licencia de Funcionamiento
          */
-
         Route::get('/certificado-licencia-funcionamiento/obtener-datos/{expnum}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosLicenciaFuncionamiento'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatos');
 
@@ -163,7 +158,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         //obtenerDatosPorCodCat
         Route::get('/certificado-licencia-funcionamiento/obtener-datos-por-codcat/{codcat}', [CertificadoLicenciaFuncionamientoController::class, 'obtenerDatosPorCodCat'])
             ->name('certificadoLicenciaFuncionamiento.obtenerDatosPorCodCat');
-
 
         //obtenerListaDeProcedimientosTupaDeLicencias
         Route::get('/certificado-licencia-funcionamiento/obtener-lista-procedimientos-tupa-licencias', [CertificadoLicenciaFuncionamientoController::class, 'obtenerListaDeProcedimientosTupaDeLicencias'])
@@ -180,7 +174,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         //getTipoLicencias
         Route::get('/tipo-licencia/lista', [TipoLicenciaController::class, 'getTipoLicencias'])
             ->name('tipoLicencia.listar');
-
 
         //public function getGiros($search)
         Route::get('/giros/lista/{search}', [GiroLicenciaController::class, 'buscar'])

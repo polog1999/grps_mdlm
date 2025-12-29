@@ -3,6 +3,7 @@
 namespace App\Models;
 use App\Models\TipoLicencia;
 use App\Models\TipoEstadoLicencia;
+use App\Models\Persona;
 use Illuminate\Database\Eloquent\Model;
 class CertificadoLicenciaFuncionamiento extends Model
 {
@@ -72,5 +73,18 @@ class CertificadoLicenciaFuncionamiento extends Model
     public function giros()
     {
         return $this->hasMany(LicenciaGiro::class, 'lic_id', 'lic_id');
+    }
+
+    public function personaSolicitante()
+    {
+        return $this->belongsTo(Persona::class, 'per_idsolicitante', 'per_id');
+    }
+
+    /**
+     * Relación con la persona razón social
+     */
+    public function personaRazonSocial()
+    {
+        return $this->belongsTo(Persona::class, 'per_idrazonsocial', 'per_id');
     }
 }

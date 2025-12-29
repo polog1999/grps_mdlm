@@ -16,7 +16,6 @@ use BackedEnum;
 
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -35,6 +34,17 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     {
         return CertificadoLicenciaFuncionamientoForm::configure($schema);
     }
+
+    /**
+     * Determina si el usuario actual puede acceder a este recurso.
+     * 
+     * @return bool
+     */
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::certificado_licencia_funcionamiento') ?? false;
+    }
+
 
     public static function infolist(Schema $schema): Schema
     {

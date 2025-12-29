@@ -3,12 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
- 
+return new class extends Migration {
+
     public function up(): void
     {
-        DB::connection('pgsql_licencias')->unprepared("
+        DB::connection('pgsql')->unprepared("
             CREATE OR REPLACE FUNCTION licencia.fn_get_next_lic_numlic()
             RETURNS VARCHAR(6)
             LANGUAGE plpgsql

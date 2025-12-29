@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,25 +13,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Crear o recuperar el usuario
-        // Guardamos el resultado en la variable $user
+        // 1. Ejecutar el seeder de Roles y Permisos primero
+        $this->call(RolesAndPermissionsSeeder::class);
+
+        // 2. Crear usuario administrador de prueba
         $user = User::firstOrCreate(
-            ['email' => 'test@example.com'],
+            ['email' => 'admin@example.com'],
             [
-                'name' => 'Test User',
-                'password' => bcrypt('password'), // Es mejor encriptarla aquí
+                'name' => 'Administrador',
+                'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]
         );
 
-        // 2. Asegurarse de que el Rol existe en la BD
-        // Esto evita errores si el rol aún no ha sido creado por otro seeder
-        $role = Role::firstOrCreate(['name' => 'Administrador']);
-
         // 3. Asignar el rol de Administrador
         if (!$user->hasRole('Administrador')) {
             $user->assignRole('Administrador');
-            $this->command->info('Rol Administrador asignado al usuario test@example.com');
         }
     }
 }

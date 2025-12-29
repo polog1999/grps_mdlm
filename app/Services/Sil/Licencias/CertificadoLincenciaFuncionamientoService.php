@@ -388,6 +388,7 @@ class CertificadoLincenciaFuncionamientoService
             // Obtener el primer registro del expediente
             $expediente = $expedienteData->first();
 
+
             // 2. Datos de catastro ya no se obtienen aquí
             // Se deben obtener por separado usando el servicio de LicenciaService
             $catastroData = null;

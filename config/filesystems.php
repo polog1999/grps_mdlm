@@ -59,6 +59,11 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        'certificados_externos' => [
+            'driver' => 'local',
+            'root' => env('PATH_CERTIFICADOS'),
+            'throw' => false,
+        ],
 
         'qr' => [
             'driver' => 'local',

@@ -2,32 +2,39 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Filament\Panel;
+use Spatie\Permission\Traits\HasRoles; // <-- 1. Importar el Trait de Spatie
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, HasRoles; // <-- 2. Usar el Trait HasRoles
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = ['name','email','password'];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
      */
-     protected $hidden = [
-        'password','two_factor_secret','two_factor_recovery_codes','remember_token',
+    protected $hidden = [
+        'password',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'remember_token',
     ];
 
     /**
@@ -44,26 +51,21 @@ class User extends Authenticatable
         ];
     }
 
-     public function canAccessPanel(Panel $panel): bool
+
+    public function canAccessPanel(Panel $panel): bool
     {
-        // Ejemplo seguro: permite siempre en local, y en otros entornos exige email verificado.
+        // 1. **Verificación de Entorno (como ya tenías)**
         if (app()->isLocal()) {
             return true;
         }
 
-        // Si quieres además restringir por dominio, descomenta y ajusta:
-        // if (! str_ends_with($this->email, '@tu-dominio.com')) {
-        //     return false;
-        // }
+        // 2. **Integración con Spatie (Verifica si el usuario tiene algún rol asignado)**
+        // Esto previene que usuarios sin roles puedan iniciar sesión en el panel.
+        if ($this->roles->isEmpty()) {
+            return false;
+        }
 
-        // Si no usas MustVerifyEmail, basta revisar el timestamp:
-        return ! is_null($this->email_verified_at);
-        // Si implementas MustVerifyEmail, puedes usar:
-        // return $this->hasVerifiedEmail();
+        // 3. **Verificación de Email (como ya tenías)**
+        return !is_null($this->email_verified_at);
     }
-    
-
-
-
-
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Query\Builder;
 class TipoLocalService
 {
     protected $connectionToPostgreSQL;
-      public function __construct()
+    public function __construct()
     {
         $this->connectionToPostgreSQL = DB::connection('pgsql_licencias');
     }
@@ -16,9 +16,9 @@ class TipoLocalService
     public function getTipoLocal()
     {
         return $this->connectionToPostgreSQL
-        ->table('licencia.vu_tipolocal')
-        ->select('tlo_id', 'tlo_descripcion')   
-        ->get();
+            ->table('licencia.vu_tipolocal')
+            ->select('tlo_id', 'tlo_descripcion')
+            ->get();
 
     }
 }
