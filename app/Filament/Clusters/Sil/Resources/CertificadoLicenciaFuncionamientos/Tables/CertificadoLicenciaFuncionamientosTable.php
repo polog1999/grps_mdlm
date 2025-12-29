@@ -591,6 +591,16 @@ class CertificadoLicenciaFuncionamientosTable
                             fn(CertificadoLicenciaFuncionamiento $record): string =>
                             CertificadoLicenciaFuncionamientoResource::getUrl('transfer', ['record' => $record])
                         ),
+                    Action::make('licencia-cesionario')
+                        ->label('Cesionario licencia')
+                        ->icon('gmdi-account-tree-o')
+                        ->tooltip('Cesionario licencia')
+                        ->color(Color::Yellow)
+                        ->url(
+                            fn(CertificadoLicenciaFuncionamiento $record): string =>
+                            CertificadoLicenciaFuncionamientoResource::getUrl('cesionario', ['record' => $record])
+                        ),
+
                     Action::make('dar_de_baja')
                         ->label('Dar de baja')
                         ->icon('heroicon-o-archive-box-arrow-down')

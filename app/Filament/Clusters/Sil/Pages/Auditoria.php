@@ -19,4 +19,5 @@ class Auditoria extends Page
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
+
 }
