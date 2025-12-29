@@ -81,5 +81,10 @@ class CertificadoLicenciaFuncionamiento extends Model
     public function personaRazonSocial()
     {
         return $this->belongsTo(Persona::class, 'per_idrazonsocial', 'per_id');
+
+    }
+    public function giros()
+    {
+        return $this->hasMany(LicenciaGiro::class, 'lic_id', 'lic_id');
     }
 }

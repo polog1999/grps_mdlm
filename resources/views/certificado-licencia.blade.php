@@ -327,7 +327,7 @@
                 </tr>
                 <tr>
                     <td class="data-label">Giro(s)................ :</td>
-                    <td class="data-value">{{ $licencia->GIRO ?? '' }}</td>
+                    <td class="data-value">{{ !empty($giros) ? implode(', ', $giros) : ($licencia->GIRO ?? '') }}</td>
                 </tr>
                 <tr>
                     <td class="data-label">Horario Atención :</td>

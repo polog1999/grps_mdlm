@@ -643,6 +643,7 @@
             "time": "2024-07-16T11:13:48+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "codeat3/blade-grommet-icons",
             "version": "1.10.0",
             "source": {
@@ -654,6 +655,19 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/codeat3/blade-grommet-icons/zipball/e42d314355523d6e04c641f4de133f5a9c9dfe02",
                 "reference": "e42d314355523d6e04c641f4de133f5a9c9dfe02",
+=======
+            "name": "codeat3/blade-google-material-design-icons",
+            "version": "1.20.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/codeat3/blade-google-material-design-icons.git",
+                "reference": "15fe382419813293a052ffe08c646d3eadfbd195"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/codeat3/blade-google-material-design-icons/zipball/15fe382419813293a052ffe08c646d3eadfbd195",
+                "reference": "15fe382419813293a052ffe08c646d3eadfbd195",
+>>>>>>> feature/licencias
                 "shasum": ""
             },
             "require": {
@@ -671,12 +685,17 @@
             "extra": {
                 "laravel": {
                     "providers": [
+<<<<<<< HEAD
                         "Codeat3\\BladeGrommetIcons\\BladeGrommetIconsServiceProvider"
+=======
+                        "Codeat3\\BladeGoogleMaterialDesignIcons\\BladeGoogleMaterialDesignIconsServiceProvider"
+>>>>>>> feature/licencias
                     ]
                 }
             },
             "autoload": {
                 "psr-4": {
+<<<<<<< HEAD
                     "Codeat3\\BladeGrommetIcons\\": "src"
                 }
             },
@@ -744,6 +763,9 @@
             "autoload": {
                 "psr-4": {
                     "Codeat3\\BladeIkonate\\": "src"
+=======
+                    "Codeat3\\BladeGoogleMaterialDesignIcons\\": "src"
+>>>>>>> feature/licencias
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -760,6 +782,7 @@
                     "homepage": "https://driesvints.com"
                 }
             ],
+<<<<<<< HEAD
             "description": "A package to easily make use of Ikonate Icons in your Laravel Blade views.",
             "homepage": "https://github.com/codeat3/blade-ikonate",
             "keywords": [
@@ -771,6 +794,20 @@
             "support": {
                 "issues": "https://github.com/codeat3/blade-ikonate/issues",
                 "source": "https://github.com/codeat3/blade-ikonate/tree/1.6.0"
+=======
+            "description": "A package to easily make use of \"Google Fonts Material Icons\" in your Laravel Blade views.",
+            "homepage": "https://github.com/codeat3/blade-google-material-design-icons",
+            "keywords": [
+                "blade",
+                "google",
+                "icons",
+                "laravel",
+                "material"
+            ],
+            "support": {
+                "issues": "https://github.com/codeat3/blade-google-material-design-icons/issues",
+                "source": "https://github.com/codeat3/blade-google-material-design-icons/tree/1.20.0"
+>>>>>>> feature/licencias
             },
             "funding": [
                 {
@@ -778,7 +815,11 @@
                     "type": "github"
                 }
             ],
+<<<<<<< HEAD
             "time": "2025-02-26T08:13:04+00:00"
+=======
+            "time": "2025-02-25T06:49:30+00:00"
+>>>>>>> feature/licencias
         },
         {
             "name": "codeat3/blade-line-awesome-icons",
