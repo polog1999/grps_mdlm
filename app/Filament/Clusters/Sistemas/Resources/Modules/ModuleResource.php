@@ -36,7 +36,10 @@ class ModuleResource extends Resource
     {
         return ModulesTable::configure($table);
     }
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::modules') ?? false;
+    }
     public static function getRelations(): array
     {
         return [

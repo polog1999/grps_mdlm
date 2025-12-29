@@ -44,7 +44,10 @@ class PermissionResource extends Resource
             //
         ];
     }
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::permissions') ?? false;
+    }
     public static function getPages(): array
     {
         return [

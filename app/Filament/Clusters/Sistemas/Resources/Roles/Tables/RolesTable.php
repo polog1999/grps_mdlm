@@ -14,6 +14,8 @@ use Illuminate\Support\HtmlString;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Builder;
 
 class RolesTable
 {
@@ -52,21 +54,22 @@ class RolesTable
                 //Action para ver los permisos del rol 
                 Action::make('ver_permisos')
                     ->label('Ver permisos')
-                    ->icon('heroicon-o-key')
+                    ->icon('heroicon-o-eye')
                     ->tooltip('Ver permisos del rol')
                     ->iconButton()
-                    ->color('primary')
+                    ->color('info')
                     ->modalWidth('4xl')
                     ->modalHeading(fn($record) => "Permisos del rol: {$record->name}")
                     ->modalDescription(fn($record) => 'Lista completa de permisos asignados a este rol')
                     ->infolist(function ($record) {
+                        // Obtener permisos con su módulo relacionado
                         $permissions = RoleHasPermission::where('role_id', $record->id)
-                            ->with('permission')
+                            ->with(['permission.module'])
                             ->get()
-                            ->pluck('permission.name')
-                            ->toArray();
-
-                        if (empty($permissions)) {
+                            ->pluck('permission')
+                            ->filter(); // Eliminar nulls
+            
+                        if ($permissions->isEmpty()) {
                             return [
                                 Section::make()
                                     ->schema([
@@ -82,18 +85,17 @@ class RolesTable
                         }
 
                         // Agrupar permisos por módulo
-                        $groupedPermissions = [];
+                        $groupedByModule = [];
                         foreach ($permissions as $permission) {
-                            $parts = explode('.', $permission);
-                            $module = $parts[0] ?? 'general';
+                            $moduleName = $permission->module->name ?? 'Sin módulo';
 
-                            if (!isset($groupedPermissions[$module])) {
-                                $groupedPermissions[$module] = [];
+                            if (!isset($groupedByModule[$moduleName])) {
+                                $groupedByModule[$moduleName] = [];
                             }
-                            $groupedPermissions[$module][] = $permission;
+                            $groupedByModule[$moduleName][] = $permission->name;
                         }
 
-                        ksort($groupedPermissions);
+                        ksort($groupedByModule);
 
                         // Construir secciones dinámicamente
                         $sections = [];
@@ -105,7 +107,7 @@ class RolesTable
                             ->schema([
                                 TextEntry::make('total')
                                     ->label('Total Permisos')
-                                    ->state(count($permissions))
+                                    ->state($permissions->count())
                                     ->badge()
                                     ->color('primary')
                                     ->icon('heroicon-o-shield-check')
@@ -115,51 +117,39 @@ class RolesTable
                             ->collapsed(false);
 
                         // Secciones por módulo
-                        foreach ($groupedPermissions as $module => $perms) {
-                            $moduleTitle = ucfirst(str_replace(['_', '-'], ' ', $module));
-
-                            // Determinar color del módulo
-                            $moduleColor = 'gray';
-                            if (str_contains($module, 'user'))
-                                $moduleColor = 'blue';
-                            elseif (str_contains($module, 'role'))
-                                $moduleColor = 'purple';
-                            elseif (str_contains($module, 'setting'))
-                                $moduleColor = 'orange';
-                            elseif (str_contains($module, 'report'))
-                                $moduleColor = 'green';
-
+                        foreach ($groupedByModule as $moduleName => $perms) {
                             $permissionEntries = [];
-                            foreach ($perms as $perm) {
+
+                            foreach ($perms as $permName) {
                                 // Determinar color según tipo de acción
                                 $color = 'gray';
                                 $icon = 'heroicon-o-key';
 
-                                if (str_contains($perm, 'create') || str_contains($perm, 'add')) {
+                                if (str_contains($permName, 'create') || str_contains($permName, 'add')) {
                                     $color = 'success';
                                     $icon = 'heroicon-o-plus-circle';
-                                } elseif (str_contains($perm, 'edit') || str_contains($perm, 'update')) {
+                                } elseif (str_contains($permName, 'edit') || str_contains($permName, 'update')) {
                                     $color = 'info';
                                     $icon = 'heroicon-o-pencil-square';
-                                } elseif (str_contains($perm, 'delete') || str_contains($perm, 'remove')) {
+                                } elseif (str_contains($permName, 'delete') || str_contains($permName, 'remove')) {
                                     $color = 'danger';
                                     $icon = 'heroicon-o-trash';
-                                } elseif (str_contains($perm, 'view') || str_contains($perm, 'read') || str_contains($perm, 'list')) {
+                                } elseif (str_contains($permName, 'view') || str_contains($permName, 'read') || str_contains($permName, 'list')) {
                                     $color = 'warning';
                                     $icon = 'heroicon-o-eye';
                                 }
 
-                                $permissionEntries[] = TextEntry::make('perm_' . md5($perm))
-                                    ->label('')
-                                    ->state($perm)
+                                $permissionEntries[] = TextEntry::make($permName)
+                                    ->state($permName)
                                     ->badge()
                                     ->color($color)
-                                    ->icon($icon);
+                                    ->icon($icon)
+                                    ->hiddenLabel();
                             }
 
-                            $sections[] = Section::make($moduleTitle)
+                            $sections[] = Section::make($moduleName)
                                 ->icon('heroicon-o-folder-open')
-                                ->description(count($perms) . ' permiso(s) en este módulo')
+                                ->description(count($perms) . ' permiso(s)')
                                 ->schema([
                                     Grid::make([
                                         'default' => 1,
@@ -176,6 +166,57 @@ class RolesTable
                     })
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
+                Action::make('editar_permisos')
+                    ->label('Editar permisos')
+                    ->icon('heroicon-o-key')
+                    ->tooltip('Editar permisos')
+                    ->iconButton()
+                    ->color('primary')
+                    ->modalWidth('5xl')
+                    ->modalHeading(fn($record) => "Editar permisos del rol: {$record->name}")
+                    ->modalDescription('Selecciona los permisos que deseas asignar a este rol. Puedes buscar escribiendo.')
+                    ->form([
+                        Select::make('permissions')
+                            ->label('Permisos del rol')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->options(function () {
+                                return \App\Models\Permission::with('module')
+                                    ->get()
+                                    ->mapWithKeys(function ($permission) {
+                                        $moduleName = $permission->module->name ?? 'Sin módulo';
+                                        return [$permission->id => "{$permission->name} ({$moduleName})"];
+                                    });
+                            })
+                            ->default(function ($record) {
+                                return RoleHasPermission::where('role_id', $record->id)
+                                    ->pluck('permission_id')
+                                    ->toArray();
+                            })
+                            ->helperText('Escribe para buscar permisos. Se muestra el módulo entre paréntesis.')
+                            ->columnSpanFull(),
+                    ])
+                    ->action(function (array $data, $record) {
+                        // Eliminar todas las asignaciones actuales
+                        RoleHasPermission::where('role_id', $record->id)->delete();
+
+                        // Crear nuevas asignaciones
+                        if (!empty($data['permissions'])) {
+                            foreach ($data['permissions'] as $permissionId) {
+                                RoleHasPermission::create([
+                                    'role_id' => $record->id,
+                                    'permission_id' => $permissionId,
+                                ]);
+                            }
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Permisos actualizados correctamente')
+                            ->success()
+                            ->send();
+                    }),
+
                 Action::make('borrar')
                     ->label('Borrar')
                     ->icon('heroicon-o-trash')

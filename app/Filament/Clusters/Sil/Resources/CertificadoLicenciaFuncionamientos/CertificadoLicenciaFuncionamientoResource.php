@@ -41,7 +41,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
      */
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_certificado_licencia_funcionamiento') ?? false;
+        return auth()->user()?->can('view::certificado_licencia_funcionamiento') ?? false;
     }
 
 

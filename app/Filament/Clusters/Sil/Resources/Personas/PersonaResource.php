@@ -37,7 +37,7 @@ class PersonaResource extends Resource
     }
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_persona') ?? false;
+        return auth()->user()?->can('view::persona') ?? false;
     }
     public static function getRelations(): array
     {

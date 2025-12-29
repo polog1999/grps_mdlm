@@ -40,7 +40,7 @@ class LicenciaRelacionResource extends Resource
     }
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_licencia_relacion') ?? false;
+        return auth()->user()?->can('view::licencia_relacion') ?? false;
     }
     public static function getRelations(): array
     {

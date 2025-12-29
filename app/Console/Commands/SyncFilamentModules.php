@@ -18,7 +18,17 @@ class SyncFilamentModules extends Command
     {
         $this->info('⏳ Iniciando sincronización de módulos y permisos...');
 
-        // 1. Obtener recursos del panel 'admin'
+        // ======================================================
+        // 1. EJECUTAR SEEDER DE PERMISOS (PRIMERO)
+        // ======================================================
+        if ($this->confirm('¿Deseas ejecutar el seeder de permisos primero?', true)) {
+            $this->newLine();
+            $this->info('📦 Ejecutando RolesAndPermissionsSeeder...');
+            $this->call('db:seed', ['--class' => 'RolesAndPermissionsSeeder']);
+            $this->newLine();
+        }
+
+        // 2. Obtener recursos del panel 'admin'
         $resources = Filament::getPanel('admin')->getResources();
 
         $countModules = 0;
@@ -76,10 +86,22 @@ class SyncFilamentModules extends Command
                         // Ej: "App\Models\User" -> "user"
                         $modelKey = Str::snake(class_basename($modelClass));
 
-                        // Buscamos permisos que terminen con ese key (Ej: 'create_user', 'view_any_user')
-                        // Y les asignamos el ID de este módulo de golpe.
-                        Permission::where('name', 'LIKE', "%_{$modelKey}")
-                            ->update(['module_id' => $module->id]);
+                        // Buscamos permisos con el nuevo formato (view::user, create::user, etc.)
+                        // O el formato antiguo (view_user, create_user, etc.)
+                        $permissions = Permission::where(function ($query) use ($modelKey) {
+                            $query->where('name', 'LIKE', "%::{$modelKey}")
+                                ->orWhere('name', 'LIKE', "%::{$modelKey}s")
+                                ->orWhere('name', 'LIKE', "%_{$modelKey}");
+                        })->get();
+
+                        if ($permissions->count() > 0) {
+                            foreach ($permissions as $permission) {
+                                $permission->module_id = $module->id;
+                                $permission->save();
+
+                                $this->line("   🔗 <fg=cyan>{$permission->name}</> → <fg=green>{$name}</>");
+                            }
+                        }
                     }
                 }
             } catch (\Exception $e) {

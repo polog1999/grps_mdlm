@@ -16,22 +16,21 @@ class RolesAndPermissionsSeeder extends Seeder
         // 2. Definir Permisos específicos por Resource
         $permissions = [
             // Permisos para CertificadoInspeccionResource
-            'view_certificado_inspeccion',
-
+            'view::certificado_inspeccion',
             // Permisos para CertificadoLicenciaFuncionamientoResource
-            'view_certificado_licencia_funcionamiento',
-
+            'view::certificado_licencia_funcionamiento',
             // Permisos para LicenciaRelacionResource
-            'view_licencia_relacion',
-
+            'view::licencia_relacion',
             //Permisos para Persona
-            'view_persona',
-
+            'view::persona',
             //Permisos para Roles
-            'view_roles',
-
+            'view::roles',
+            //Permisos para Modulos
+            'view::modules',
             //Permisos para Usuarios
-            'view_usuarios',
+            'view::users',
+
+            'view::permissions',
         ];
 
         foreach ($permissions as $permission) {
@@ -44,12 +43,6 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // 4. Asignar todos los permisos para administrador
         $admin->givePermissionTo(Permission::all());
-        $spea_user->givePermissionTo([
-            'view_certificado_inspeccion',
-            'view_certificado_licencia_funcionamiento',
-            'view_licencia_relacion',
-            'view_persona',
-        ]);
 
     }
 }

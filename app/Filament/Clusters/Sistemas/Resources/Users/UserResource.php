@@ -39,7 +39,7 @@ class UserResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_usuarios') ?? false;
+        return auth()->user()?->can('view::users') ?? false;
     }
     public static function getRelations(): array
     {

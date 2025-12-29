@@ -38,7 +38,7 @@ class RoleResource extends Resource
     }
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_roles') ?? false;
+        return auth()->user()?->can('view::roles') ?? false;
     }
     public static function getRelations(): array
     {
