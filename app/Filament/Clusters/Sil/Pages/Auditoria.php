@@ -19,5 +19,8 @@ class Auditoria extends Page
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::auditoria') ?? false;
+    }
 }
