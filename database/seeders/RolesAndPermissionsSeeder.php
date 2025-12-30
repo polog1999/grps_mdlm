@@ -30,7 +30,11 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para Usuarios
             'view::users',
 
+            //Permisos para Permisos
             'view::permissions',
+
+            //Permisos para CertificadoBorrado
+            'view::certificado_borrado',
         ];
 
         foreach ($permissions as $permission) {

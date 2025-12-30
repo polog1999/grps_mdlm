@@ -19,7 +19,6 @@ class CertificadoBorradoResource extends Resource
 {
     protected static ?string $model = CertificadoBorrado::class;
     protected static ?int $navigationSort = 5;
-
     protected static string|BackedEnum|null $navigationIcon = 'eos-folder-delete-o';
 
     protected static ?string $cluster = SilCluster::class;
@@ -31,6 +30,10 @@ class CertificadoBorradoResource extends Resource
         return CertificadoBorradoForm::configure($schema);
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::certificado_borrado') ?? false;
+    }
     public static function table(Table $table): Table
     {
         return CertificadoBorradosTable::configure($table);
