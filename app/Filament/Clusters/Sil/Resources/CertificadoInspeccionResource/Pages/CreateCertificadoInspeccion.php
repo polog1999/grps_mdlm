@@ -35,4 +35,12 @@ class CreateCertificadoInspeccion extends CreateRecord
                 ->send();
         }
     }
+
+    /**
+     * Redirige a la vista de lista después de crear el certificado.
+     */
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
