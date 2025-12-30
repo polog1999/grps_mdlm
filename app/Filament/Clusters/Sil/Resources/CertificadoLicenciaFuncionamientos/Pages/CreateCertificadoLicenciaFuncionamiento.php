@@ -52,6 +52,25 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
             }
         }
 
+        // LOG: Verificar tipo y valor del campo mype antes de enviar al servicio
+        \Log::info('=== DEBUG MYPE FIELD ===', [
+            'mype_value' => $datosOrganizados['licencias']['mype'] ?? 'NOT_SET',
+            'mype_type' => gettype($datosOrganizados['licencias']['mype'] ?? null),
+            'mype_is_string' => is_string($datosOrganizados['licencias']['mype'] ?? null),
+            'mype_is_bool' => is_bool($datosOrganizados['licencias']['mype'] ?? null),
+            'mype_strict_equals_1' => ($datosOrganizados['licencias']['mype'] ?? null) === '1',
+            'mype_strict_equals_true' => ($datosOrganizados['licencias']['mype'] ?? null) === true,
+            'mype_loose_equals_1' => ($datosOrganizados['licencias']['mype'] ?? null) == '1',
+            'mype_loose_equals_true' => ($datosOrganizados['licencias']['mype'] ?? null) == true,
+        ]);
+
+        // LOG: Datos completos organizados
+        \Log::info('Datos organizados antes de enviar al servicio', [
+            'expediente' => $datosOrganizados['expediente'],
+            'catastro' => $datosOrganizados['catastro'],
+            'licencias' => $datosOrganizados['licencias'],
+        ]);
+
         $service = app(LicenciaService::class);
 
         try {
@@ -134,5 +153,9 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
 
             $this->halt();
         }
+    }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

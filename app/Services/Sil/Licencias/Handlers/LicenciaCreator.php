@@ -87,7 +87,7 @@ class LicenciaCreator
                 $datos['catastro']['codpredio'] ?? '',                   // 9 plic_codigopredial
                 $datos['expediente']['exp_num'] ?? '',                   // 10 plic_expnum
                 (float) ($datos['catastro']['area_economica'] ?? 0),     // 11 plic_area
-                (($datos['licencias']['mype'] ?? '0') === '1'),          // 12 plic_mype (boolean)
+                (($datos['licencias']['mype'] ?? 0) == 1),               // 12 plic_mype (boolean)
                 $datos['licencias']['n_resolucion'] ?? '',               // 13 plic_resnum
                 $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null),  // 14 p_lic_fecharesolucion
                 $this->formatDate($datos['licencias']['fecha_emision'] ?? null),     // 15 p_lic_fechaemision

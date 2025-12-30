@@ -49,4 +49,8 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
 
         return CertificadoLicenciaFuncionamiento::find($record->lic_id);
     }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
