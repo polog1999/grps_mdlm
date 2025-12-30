@@ -31,12 +31,18 @@ class LicenciaRelacionsTable
                 TextColumn::make('licencia.tipoEstadoLicencia.esl_descripcion')
                     ->label('Estado Licencia')
                     ->sortable(),
+                TextColumn::make('licencia.tipoLicencia.tli_descripcion')
+                    ->label('Tipo Licencia')
+                    ->sortable(),
                 TextColumn::make('licenciaDependencia.lic_numlic')
                     ->label('Licencia Dependencia')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('licenciaDependencia.tipoEstadoLicencia.esl_descripcion')
                     ->label('Estado Dependencia')
+                    ->sortable(),
+                TextColumn::make('licenciaDependencia.tipoLicencia.tli_descripcion')
+                    ->label('Tipo Dependencia')
                     ->sortable(),
                 TextColumn::make('lil_fecha')
                     ->label('Fecha de Relación')
