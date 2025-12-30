@@ -34,7 +34,7 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
         // Reorganizar datos por secciones
         $camposExpediente = ['exp_num', 'exp_fec', 'exp_nomrec', 'numdoc', 'numtel', 'correo', 'domfis', 'exp_nomrec_id', 'exp_razsoc_id', 'exp_razsoc'];
         $camposCatastro = ['fiu_id', 'coduca', 'codpredio', 'descurb', 'via_completa', 'numvia', 'intdpto', 'blockedif', 'mz', 'lote', 'zonificacion', 'area_economica'];
-        $camposLicencias = ['proccodigo', 'procnivel', 'nir_id', 'nir_descripcion', 'tipo_resolucion', 'n_resolucion', 'fecha_resolucion', 'numero_licencia', 'tipo_licencia', 'fecha_emision', 'mype', 'compatibilidad', 'nro_compatibilidad', 'fecha_compatibilidad', 'horario_atencion', 'hora_inicio', 'hora_fin', 'direccion', 'tipo_establecimientos', 'centro_comercial', 'tipo_local', 'local', 'observaciones_local', 'giros_seleccionar', 'tabla_giros', 'observaciones'];
+        $camposLicencias = ['proccodigo', 'procnivel', 'nir_id', 'nir_descripcion', 'tipo_resolucion', 'n_resolucion', 'fecha_resolucion', 'numero_licencia', 'tipo_licencia', 'fecha_emision', 'fecha_vencimiento', 'mype', 'compatibilidad', 'nro_compatibilidad', 'fecha_compatibilidad', 'horario_atencion', 'hora_inicio', 'hora_fin', 'direccion', 'tipo_establecimientos', 'centro_comercial', 'tipo_local', 'local', 'observaciones_local', 'giros_seleccionar', 'tabla_giros', 'observaciones'];
 
         $datosOrganizados = [
             'expediente' => [],

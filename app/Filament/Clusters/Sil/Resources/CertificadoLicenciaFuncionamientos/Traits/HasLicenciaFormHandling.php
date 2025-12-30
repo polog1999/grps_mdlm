@@ -89,6 +89,10 @@ trait HasLicenciaFormHandling
             ? Carbon::parse($row->FECHA_EMISION)->toDateString()
             : null;
 
+        $data['fecha_vencimiento'] = $row->FECHA_VENCIMIENTO
+            ? Carbon::parse($row->FECHA_VENCIMIENTO)->toDateString()
+            : null;
+
         $data['fecha_compatibilidad'] = $row->lic_compatibilidadfecha
             ? Carbon::parse($row->lic_compatibilidadfecha)->toDateString()
             : null;
@@ -140,7 +144,7 @@ trait HasLicenciaFormHandling
             'lic_resnum' => $data['n_resolucion'] ?? '',
             'lic_fecharesolucion' => $data['fecha_resolucion'],
             'lic_fechaemision' => $data['fecha_emision'],
-            'lic_fechavencimiento' => null,
+            'lic_fechavencimiento' => $data['fecha_vencimiento'] ?? null,
             'lic_licobs' => $data['observaciones'] ?? '',
             'fiu_id' => $data['fiu_id'] ?? 0,
             'lca_zonificacion' => $data['zonificacion'] ?? '',

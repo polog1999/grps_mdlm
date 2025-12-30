@@ -65,9 +65,26 @@ class LicenciasSection
                     ->helperText('Código único de trámite: RESOLUCIÓN-ÁREA'),
                 DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                Select::make('tipo_licencia')->label('Tipo Licencia')->options(self::tiposLicencia())->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('tipo_licencia')
+                    ->label('Tipo Licencia')
+                    ->options(self::tiposLicencia())
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state != 2) {
+                            $set('fecha_vencimiento', null);
+                        }
+                    })
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
                 DatePicker::make('fecha_emision')->label('Fecha Emisión')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_resolucion', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                //DatePicker::make('fecha_vencimiento')->label('Fecha Vencimiento')->displayFormat('d/m/Y')->native(false)->disabled(fn ($get) => $get('_section_licencias_saved')),
+                DatePicker::make('fecha_vencimiento')
+                    ->label('Fecha Vencimiento')
+                    ->displayFormat('d/m/Y')
+                    ->native(false)
+                    ->visible(fn($get) => $get('tipo_licencia') == 2)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
                 Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->default('0')->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 Select::make('nro_compatibilidad')
