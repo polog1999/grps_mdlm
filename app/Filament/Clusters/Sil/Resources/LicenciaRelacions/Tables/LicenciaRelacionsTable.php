@@ -30,25 +30,32 @@ class LicenciaRelacionsTable
                     ->searchable(),
                 TextColumn::make('licencia.tipoEstadoLicencia.esl_descripcion')
                     ->label('Estado Licencia')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('licencia.tipoLicencia.tli_descripcion')
                     ->label('Tipo Licencia')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('licenciaDependencia.lic_numlic')
                     ->label('Licencia Dependencia')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('licenciaDependencia.tipoEstadoLicencia.esl_descripcion')
                     ->label('Estado Dependencia')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('licenciaDependencia.tipoLicencia.tli_descripcion')
                     ->label('Tipo Dependencia')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('lil_fecha')
                     ->label('Fecha de Relación')
                     ->date('d/m/Y')
-                    ->sortable(),
-
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 SelectFilter::make('lic_id')
@@ -65,12 +72,33 @@ class LicenciaRelacionsTable
                     ->preload()
                     ->indicator('Licencia Dependencia'),
 
-                SelectFilter::make('esl_id')
-                    ->label('Estado')
-                    ->relationship('licenciaEstado', 'esl_descripcion')
+                SelectFilter::make('estado_licencia')
+                    ->label('Estado Licencia')
+                    ->relationship('licencia.tipoEstadoLicencia', 'esl_descripcion')
                     ->searchable()
                     ->preload()
-                    ->indicator('Estado'),
+                    ->indicator('Estado Licencia'),
+
+                SelectFilter::make('estado_dependencia')
+                    ->label('Estado Dependencia')
+                    ->relationship('licenciaDependencia.tipoEstadoLicencia', 'esl_descripcion')
+                    ->searchable()
+                    ->preload()
+                    ->indicator('Estado Dependencia'),
+
+                SelectFilter::make('tipo_licencia')
+                    ->label('Tipo Licencia')
+                    ->relationship('licencia.tipoLicencia', 'tli_descripcion')
+                    ->searchable()
+                    ->preload()
+                    ->indicator('Tipo Licencia'),
+
+                SelectFilter::make('tipo_dependencia')
+                    ->label('Tipo Dependencia')
+                    ->relationship('licenciaDependencia.tipoLicencia', 'tli_descripcion')
+                    ->searchable()
+                    ->preload()
+                    ->indicator('Tipo Dependencia'),
 
                 Filter::make('lil_fecha')
                     ->form([
