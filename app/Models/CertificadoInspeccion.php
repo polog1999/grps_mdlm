@@ -47,4 +47,8 @@ class CertificadoInspeccion extends Model
         return $this->belongsTo(TipoEdificacion::class, 'tie_id');
     }
 
+    public function licencia()
+    {
+        return $this->belongsTo(CertificadoLicenciaFuncionamiento::class, 'lic_id');
+    }
 }
