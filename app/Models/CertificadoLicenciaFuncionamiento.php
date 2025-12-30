@@ -87,4 +87,9 @@ class CertificadoLicenciaFuncionamiento extends Model
     {
         return $this->belongsTo(Persona::class, 'per_idrazonsocial', 'per_id');
     }
+
+    public function nivelRiesgo()
+    {
+        return $this->belongsTo(NivelRiesgo::class, 'nir_id');
+    }
 }
