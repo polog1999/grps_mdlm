@@ -45,6 +45,7 @@ class CertificadoInspeccionResource extends Resource
      */
     protected static ?string $model = CertificadoInspeccion::class;
 
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'Certificado Inspeccion';
 
