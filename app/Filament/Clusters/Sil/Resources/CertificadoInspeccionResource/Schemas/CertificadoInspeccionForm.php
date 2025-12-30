@@ -7,6 +7,7 @@ use App\Services\Sil\CertificadoInspeccion\PersonaSolicitante;
 use App\Services\Sil\CertificadoInspeccion\TipoEdificacionService;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use App\Services\Sil\CertificadoInspeccion\ResolucionService;
+use App\Models\NivelRiesgo;
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep;
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep;
 use Filament\Forms\Components\DatePicker;
@@ -214,7 +215,11 @@ class CertificadoInspeccionForm
                 Grid::make(2)
                     ->schema([
                         Select::make('tie_id')
-                            ->label('Tipo de Edificación')
+                            ->label(
+                                fn(callable $get) => $get('nir_id')
+                                ? 'Tipo de Edificación (Nivel de Riesgo: ' . ' - ' . $get('nir_descripcion') . ')'
+                                : 'Tipo de Edificación'
+                            )
                             ->options(fn() => self::obtenerTiposEdificacion())
                             ->required()
                             ->searchable()
@@ -243,6 +248,12 @@ class CertificadoInspeccionForm
                                 : 'Ingrese manualmente'
                             ),
                         Hidden::make('lic_id')
+                            ->dehydrated(),
+                        Hidden::make('nir_id')
+                            ->live()
+                            ->dehydrated(),
+                        Hidden::make('nir_descripcion')
+                            ->live()
                             ->dehydrated(),
 
                     ]),
@@ -979,6 +990,38 @@ class CertificadoInspeccionForm
     ): void {
         // Datos principales
         $set('lic_id', $licenciaData->lic_id ?? null);
+        $set('nir_id', $licenciaData->nir_id ?? null);
+
+        // Recuperar descripción del nivel de riesgo
+        if (!empty($licenciaData->nir_id)) {
+            try {
+                $nivelRiesgo = NivelRiesgo::where('nir_id', $licenciaData->nir_id)
+                    ->where('nir_activo', true)
+                    ->where('nir_filaeliminada', false)
+                    ->first();
+
+                if ($nivelRiesgo) {
+                    $set('nir_descripcion', $nivelRiesgo->nir_descripcion);
+                    // tie_id es igual a nir_id, autocompletar el Select
+                    $set('tie_id', $licenciaData->nir_id);
+                    logger()->info('Nivel de riesgo encontrado y tie_id asignado', [
+                        'nir_id' => $licenciaData->nir_id,
+                        'nir_descripcion' => $nivelRiesgo->nir_descripcion,
+                        'tie_id' => $licenciaData->nir_id,
+                    ]);
+                } else {
+                    logger()->warning('Nivel de riesgo no encontrado o inactivo', [
+                        'nir_id' => $licenciaData->nir_id,
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                logger()->error('Error al obtener nivel de riesgo', [
+                    'nir_id' => $licenciaData->nir_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $set('cin_licencia', $licenciaData->lic_numlic ?? null);
         $set('cin_licencia_autofilled', !empty($licenciaData->lic_numlic));
         $set('cin_giro', $licenciaData->lic_giro ?? null);
