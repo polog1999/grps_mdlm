@@ -100,6 +100,7 @@ class CertificadoInspeccionForm
             Hidden::make('cin_expediente_autofilled')->default(false),
             Hidden::make('cin_solicitante_autofilled')->default(false),
             Hidden::make('cin_resolucion_autofilled')->default(false),
+            Hidden::make('tie_id_autofilled')->default(false),
             Hidden::make('cin_es_temporal')->default(false),
 
         ];
@@ -217,7 +218,7 @@ class CertificadoInspeccionForm
                         Select::make('tie_id')
                             ->label(
                                 fn(callable $get) => $get('nir_id')
-                                ? 'Tipo de Edificación (Nivel de Riesgo: ' . ' - ' . $get('nir_descripcion') . ')'
+                                ? 'Tipo de Edificación (Nivel de Riesgo: ' . $get('nir_id') . ' - ' . $get('nir_descripcion') . ')'
                                 : 'Tipo de Edificación'
                             )
                             ->options(fn() => self::obtenerTiposEdificacion())
@@ -226,7 +227,20 @@ class CertificadoInspeccionForm
                             ->preload()
                             ->native(false)
                             ->placeholder('Seleccione el tipo de edificación')
-                            ->helperText('Clasificación según uso del inmueble'),
+                            ->disabled(fn(callable $get) => (bool) $get('tie_id_autofilled'))
+                            ->extraInputAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('tie_id_autofilled') ? '1' : '0',
+                                'style' => self::getAutofilledStyle($get, 'tie_id_autofilled'),
+                            ])
+                            ->extraAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('tie_id_autofilled') ? '1' : '0',
+                            ])
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('tie_id_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Clasificación según uso del inmueble'
+                            ),
                         TextInput::make('cin_establecimiento')
                             ->label('Nombre del Establecimiento')
                             ->placeholder('Ej. Empresa XYZ S.A.C.')
@@ -1004,6 +1018,7 @@ class CertificadoInspeccionForm
                     $set('nir_descripcion', $nivelRiesgo->nir_descripcion);
                     // tie_id es igual a nir_id, autocompletar el Select
                     $set('tie_id', $licenciaData->nir_id);
+                    $set('tie_id_autofilled', true);
                     logger()->info('Nivel de riesgo encontrado y tie_id asignado', [
                         'nir_id' => $licenciaData->nir_id,
                         'nir_descripcion' => $nivelRiesgo->nir_descripcion,
