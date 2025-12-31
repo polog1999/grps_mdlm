@@ -323,7 +323,7 @@
                 </tr>
                 <tr>
                     <td class="data-label">Ubicado en......... :</td>
-                    <td class="data-value">{{ $licencia->UBICACION ?? '' }}</td>
+                    <td class="data-value">{{ $licencia->LIC_DIRECCION ?? '' }}</td>
                 </tr>
                 <tr>
                     <td class="data-label">Giro(s)................ :</td>
