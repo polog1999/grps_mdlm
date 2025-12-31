@@ -39,7 +39,7 @@ trait HasLicenciaFormHandling
             'codpredio' => 'CODIGO_PREDIAL',
             'descurb' => 'URBANIZACION',
             'direccion' => 'LIC_DIRECCION',
-            'via_completa' => 'CALLE',
+            'via_completa' => 'VIA',
             'numvia' => 'N',
             'blockedif' => 'blockedif',
             'mz' => 'MZ',
