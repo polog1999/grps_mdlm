@@ -145,36 +145,43 @@ class CatastroSection
                 TextInput::make('descurb')->label('Urbanización')->maxLength(255)->columnSpanFull()
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('via_completa')->label('Vía')->maxLength(255)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('numvia')->label('Número')->maxLength(20)->numeric()
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('intdpto')->label('Dpto.')->maxLength(20)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('blockedif')->label('Bloque')->maxLength(20)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('mz')->label('Manzana')->maxLength(20)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('lote')->label('Lote')->maxLength(20)
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn(callable $set, callable $get) => $set('direccion', self::buildDireccionCompleta($get)))
+                    ->disabled()
                     ->dehydrated(),
 
                 TextInput::make('zonificacion')->label('Zonificación')->maxLength(100)->dehydrated(),
@@ -182,7 +189,7 @@ class CatastroSection
                     //->disabled()
                     ->dehydrated(),
                 TextInput::make('fiu_id')->label('')->maxLength(20)
-                    //->disabled()
+                    ->disabled()
                     ->dehydrated(),
             ])
             ->headerActions(SectionHeaderActions::make('catastro'))
