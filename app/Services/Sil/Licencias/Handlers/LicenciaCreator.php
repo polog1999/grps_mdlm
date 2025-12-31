@@ -91,7 +91,7 @@ class LicenciaCreator
                 $datos['licencias']['n_resolucion'] ?? '',               // 13 plic_resnum
                 $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null),  // 14 p_lic_fecharesolucion
                 $this->formatDate($datos['licencias']['fecha_emision'] ?? null),     // 15 p_lic_fechaemision
-                $this->formatDate(null),                                 // 16 p_lic_fechavencimiento (NULL)
+                $this->formatDate($datos['licencias']['fecha_vencimiento'] ?? null),  // 16 p_lic_fechavencimiento
                 $datos['licencias']['observaciones'] ?? '',              // 17 plic_licobs
                 $datos['licencias']['centro_comercial'] ?? 0,            // 18 pcec_id (no puede ser null)
                 $datos['licencias']['tipo_local'] ?? 0,                  // 19 ptlo_id
