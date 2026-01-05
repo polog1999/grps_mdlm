@@ -56,6 +56,21 @@ class CertificadoLicenciaFuncionamiento extends Model
         'lic_compatibilidadfecha',
     ];
 
+    protected $casts = [
+        'lic_fecharesolucion' => 'date',
+        'lic_fechaemision' => 'date',
+        'lic_fechavencimiento' => 'date',
+        'lic_fechanotificacion' => 'date',
+        'lic_fechalimite' => 'date',
+        'lic_expfec' => 'date',
+        'lic_compatibilidadfecha' => 'date',
+        'lic_filafecha' => 'datetime',
+        'lic_mype' => 'boolean',
+        'lic_filaoriginal' => 'boolean',
+        'lic_filaeliminada' => 'boolean',
+        'lic_cerrado' => 'boolean',
+    ];
+
     public function tipoLicencia()
     {
         return $this->belongsTo(TipoLicencia::class, 'tli_id');
