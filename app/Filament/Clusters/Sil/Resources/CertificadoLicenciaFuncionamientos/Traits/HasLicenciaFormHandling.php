@@ -97,6 +97,15 @@ trait HasLicenciaFormHandling
             ? Carbon::parse($row->lic_compatibilidadfecha)->toDateString()
             : null;
 
+        // Limpiar campos de compatibilidad al duplicar/transferir
+        if ($clearLicenseNumber) {
+            $data['compatibilidad'] = null;
+            $data['nro_compatibilidad'] = null;
+            $data['fecha_compatibilidad'] = null;
+            $data['observaciones'] = null;
+        }
+
+
         // Convertir MYPE
         $valorMype = strtolower((string) ($row->MYPE ?? 'false'));
         $esMype = in_array($valorMype, ['true', 't', '1', 'on', 's', 'si'], true);
