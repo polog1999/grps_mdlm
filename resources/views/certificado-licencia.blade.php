@@ -249,7 +249,7 @@
             <!-- Primera fila: Certificado Nº -->
             <tr>
                 <td colspan="2" style="text-align: left; vertical-align: top;">
-                    <div class="certificate-header">Certificado Nº {{ $licencia->NUMERO_LICENCIA ?? '' }}</div>
+                    <div class="certificate-header">{{ $licencia->NUMERO_LICENCIA ?? '' }}</div>
                 </td>
             </tr>
             <!-- Espaciador vertical -->
