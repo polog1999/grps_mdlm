@@ -249,7 +249,7 @@
             <!-- Primera fila: Certificado Nº -->
             <tr>
                 <td colspan="2" style="text-align: left; vertical-align: top;">
-                    <div class="certificate-header">Certificado Nº {{ $licencia->NUMERO_LICENCIA ?? '' }}</div>
+                    <div class="certificate-header">{{ $licencia->NUMERO_LICENCIA ?? '' }}</div>
                 </td>
             </tr>
             <!-- Espaciador vertical -->
@@ -323,7 +323,7 @@
                 </tr>
                 <tr>
                     <td class="data-label">Ubicado en......... :</td>
-                    <td class="data-value">{{ $licencia->UBICACION ?? '' }}</td>
+                    <td class="data-value">{{ $licencia->LIC_DIRECCION ?? '' }}</td>
                 </tr>
                 <tr>
                     <td class="data-label">Giro(s)................ :</td>

@@ -5,6 +5,7 @@ namespace App\Services\Sil\Licencias\Handlers;
 use Illuminate\Database\ConnectionInterface;
 use App\Services\Sil\Licencias\Concerns\PostgresHelpers;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class LicenciaCreator
 {
@@ -72,52 +73,93 @@ class LicenciaCreator
             // SQL para llamar al stored procedure
             // El SP retorna: TABLE(status integer, message text, new_id integer)
             $sql = "SELECT * FROM licencia.spu_licencia_ins4(
-                ?, ?::integer[], ?::text[], ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                :p_fiu_id::integer,
+                :p_gir_id::integer[],
+                :p_lig_giroespecifico::text[],
+                :p_tli_id::integer,
+                :p_tes_id::integer,
+                :p_per_idsolicitante::integer,
+                :p_per_idrazonsocial::integer,
+                :p_lic_numlic::varchar,
+                :p_lic_codigopredial::varchar,
+                :p_lic_expnum::varchar,
+                :p_lic_area::numeric,
+                :p_lic_mype::boolean,
+                :p_lic_resnum::varchar,
+                :p_lic_fecharesolucion::varchar,
+                :p_lic_fechaemision::varchar,
+                :p_lic_fechavencimiento::varchar,
+                :p_lic_licobs::varchar,
+                :p_cec_id::integer,
+                :p_tlo_id::integer,
+                :p_lcc_observacion::varchar,
+                :p_lcc_local::varchar,
+                :p_lca_descripcion::varchar,
+                :p_urbanizacion_id::varchar,
+                :p_lca_zonificacion::varchar,
+                :p_lic_giro::varchar,
+                :p_lic_modidirecc::boolean,
+                :p_lic_horainicio::varchar,
+                :p_lic_horafin::varchar,
+                :p_tir_id::integer,
+                :p_lic_nota::text,
+                :p_usa_id::integer,
+                :p_compatibilidad::varchar,
+                :p_nir_id::integer,
+                :p_cin_id::integer,
+                :p_lic_expfec::varchar,
+                :p_lic_compatibilidadnumero::varchar,
+                :p_lic_compatibilidadfecha::varchar,
+                :p_user_id::integer,
+                :p_fecha_operacion::timestamp
             )";
 
             $parametros = [
-                $datos['catastro']['fiu_id'] ?? null,                    // 1 pfiu_id
-                $this->formatPostgresArray($girosIds),                   // 2 giros_id
-                $this->formatPostgresArray($girosEspecificos, true),     // 3 giros_especificos
-                $datos['licencias']['tipo_licencia'] ?? null,            // 4 ptli_id
-                $datos['licencias']['tipo_establecimientos'] ?? null,    // 5 ptes_id
-                $datos['expediente']['exp_nomrec_id'] ?? null,           // 6 pper_idsolicitante
-                $datos['expediente']['exp_razsoc_id'] ?? null,           // 7 pper_idrazonsocial
-                $datos['licencias']['numero_licencia'] ?? '',            // 8 plic_numlic
-                $datos['catastro']['codpredio'] ?? '',                   // 9 plic_codigopredial
-                $datos['expediente']['exp_num'] ?? '',                   // 10 plic_expnum
-                (float) ($datos['catastro']['area_economica'] ?? 0),     // 11 plic_area
-                (($datos['licencias']['mype'] ?? 0) == 1),               // 12 plic_mype (boolean)
-                $datos['licencias']['n_resolucion'] ?? '',               // 13 plic_resnum
-                $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null),  // 14 p_lic_fecharesolucion
-                $this->formatDate($datos['licencias']['fecha_emision'] ?? null),     // 15 p_lic_fechaemision
-                $this->formatDate(null),                                 // 16 p_lic_fechavencimiento (NULL)
-                $datos['licencias']['observaciones'] ?? '',              // 17 plic_licobs
-                $datos['licencias']['centro_comercial'] ?? 0,            // 18 pcec_id (no puede ser null)
-                $datos['licencias']['tipo_local'] ?? 0,                  // 19 ptlo_id
-                $datos['licencias']['observaciones_local'] ?? '',        // 20 plcc_observacion
-                $datos['licencias']['local'] ?? '',                      // 21 plcc_local
-                $datos['licencias']['direccion'] ?? '',                  // 22 plca_descripcion
-                $datos['catastro']['descurb'] ?? '',                     // 23 urbanizacion_id
-                $datos['catastro']['zonificacion'] ?? '',                // 24 plca_zonificacion
-                $plicGiro,                                               // 25 plic_giro
-                false,                                                   // 26 p_lic_modidirecc
-                $horaInicio,                                             // 27 p_lic_horainicio (character)
-                $horaFin,                                                // 28 p_lic_horafin (character)
-                $datos['licencias']['tipo_resolucion'] ?? 2,             // 29 p_tir_id
-                $datos['licencias']['observaciones'] ?? '',              // 30 p_lic_nota (text)
-                auth()->id() ?? 0,                                       // 31 p_usa_id
-                $datos['licencias']['compatibilidad'] ?? '',             // 32 p_compatibilidad
-                $datos['licencias']['nir_id'] ?? 0,                      // 33 p_nir_id
-                0,                                                       // 34 p_cin_id (ITSE)
-                $this->formatDate($datos['expediente']['exp_fec'] ?? null),          // 35 p_lic_expfec
-                $datos['licencias']['nro_compatibilidad'] ?? '',         // 36 p_lic_compatibilidadnumero
-                $this->formatDate($datos['licencias']['fecha_compatibilidad'] ?? null) // 37 p_lic_compatibilidadfecha
+                'p_fiu_id' => $datos['catastro']['fiu_id'] ?? null,
+                'p_gir_id' => $this->formatPostgresArray($girosIds),
+                'p_lig_giroespecifico' => $this->formatPostgresArray($girosEspecificos, true),
+                'p_tli_id' => $datos['licencias']['tipo_licencia'] ?? null,
+                'p_tes_id' => $datos['licencias']['tipo_establecimientos'] ?? null,
+                'p_per_idsolicitante' => $datos['expediente']['exp_nomrec_id'] ?? null,
+                'p_per_idrazonsocial' => $datos['expediente']['exp_razsoc_id'] ?? null,
+                'p_lic_numlic' => $datos['licencias']['numero_licencia'] ?? '',
+                'p_lic_codigopredial' => $datos['catastro']['codpredio'] ?? '',
+                'p_lic_expnum' => $datos['expediente']['exp_num'] ?? '',
+                'p_lic_area' => (float) ($datos['catastro']['area_economica'] ?? 0),
+                'p_lic_mype' => (($datos['licencias']['mype'] ?? 0) == 1),
+                'p_lic_resnum' => $datos['licencias']['n_resolucion'] ?? '',
+                'p_lic_fecharesolucion' => $this->formatDate($datos['licencias']['fecha_resolucion'] ?? null),
+                'p_lic_fechaemision' => $this->formatDate($datos['licencias']['fecha_emision'] ?? null),
+                'p_lic_fechavencimiento' => $this->formatDate($datos['licencias']['fecha_vencimiento'] ?? null),
+                'p_lic_licobs' => $datos['licencias']['observaciones'] ?? '',
+                'p_cec_id' => $datos['licencias']['centro_comercial'] ?? 0,
+                'p_tlo_id' => $datos['licencias']['tipo_local'] ?? 0,
+                'p_lcc_observacion' => $datos['licencias']['observaciones_local'] ?? '',
+                'p_lcc_local' => $datos['licencias']['local'] ?? '',
+                'p_lca_descripcion' => $datos['licencias']['direccion'] ?? '',
+                'p_urbanizacion_id' => $datos['catastro']['descurb'] ?? '',
+                'p_lca_zonificacion' => $datos['catastro']['zonificacion'] ?? '',
+                'p_lic_giro' => $plicGiro,
+                'p_lic_modidirecc' => false,
+                'p_lic_horainicio' => $horaInicio,
+                'p_lic_horafin' => $horaFin,
+                'p_tir_id' => $datos['licencias']['tipo_resolucion'] ?? 2,
+                'p_lic_nota' => $datos['licencias']['observaciones'] ?? '',
+                'p_usa_id' => auth()->id() ?? 0,
+                'p_compatibilidad' => $datos['licencias']['compatibilidad'] ?? '',
+                'p_nir_id' => $datos['licencias']['nir_id'] ?? 0,
+                'p_cin_id' => 0,
+                'p_lic_expfec' => $this->formatDate($datos['expediente']['exp_fec'] ?? null),
+                'p_lic_compatibilidadnumero' => $datos['licencias']['nro_compatibilidad'] ?? '',
+                'p_lic_compatibilidadfecha' => $this->formatDate($datos['licencias']['fecha_compatibilidad'] ?? null),
+                'p_user_id' => Auth::id() ?? 0,
+                'p_fecha_operacion' => now()->format('Y-m-d H:i:s'),
             ];
 
             Log::info('Ejecutando spu_licencia_ins4', [
                 'parametros' => $parametros,
-                'usuario_id' => auth()->id()
+                'usuario_id' => Auth::id(),
+                'usuario_name' => Auth::user()?->name ?? 'N/A'
             ]);
 
             // Ejecutar stored procedure

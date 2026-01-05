@@ -4,7 +4,10 @@ namespace App\Models;
 use App\Models\TipoLicencia;
 use App\Models\TipoEstadoLicencia;
 use App\Models\Persona;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+
 class CertificadoLicenciaFuncionamiento extends Model
 {
     protected $connection = 'pgsql_licencias';
@@ -54,6 +57,31 @@ class CertificadoLicenciaFuncionamiento extends Model
         'lic_expfec',
         'lic_compatibilidadnumero',
         'lic_compatibilidadfecha',
+        // Auditoría
+        'lic_creado_por',
+        'lic_creado_en',
+        'lic_actualizado_por',
+        'lic_actualizado_en',
+    ];
+
+    protected $casts = [
+        'lic_fecharesolucion' => 'date',
+        'lic_fechaemision' => 'date',
+        'lic_fechavencimiento' => 'date',
+        'lic_fechanotificacion' => 'date',
+        'lic_fechalimite' => 'date',
+        'lic_expfec' => 'date',
+        'lic_compatibilidadfecha' => 'date',
+        'lic_filafecha' => 'datetime',
+        'lic_mype' => 'boolean',
+        'lic_filaoriginal' => 'boolean',
+        'lic_filaeliminada' => 'boolean',
+        'lic_cerrado' => 'boolean',
+        // Auditoría
+        'lic_creado_por' => 'integer',
+        'lic_creado_en' => 'datetime',
+        'lic_actualizado_por' => 'integer',
+        'lic_actualizado_en' => 'datetime',
     ];
 
     public function tipoLicencia()
@@ -91,5 +119,43 @@ class CertificadoLicenciaFuncionamiento extends Model
     public function nivelRiesgo()
     {
         return $this->belongsTo(NivelRiesgo::class, 'nir_id');
+    }
+
+    /**
+     * Usuario que creó el registro
+     */
+    public function creadoPor()
+    {
+        return $this->belongsTo(User::class, 'lic_creado_por');
+    }
+
+    /**
+     * Usuario que actualizó el registro
+     */
+    public function actualizadoPor()
+    {
+        return $this->belongsTo(User::class, 'lic_actualizado_por');
+    }
+
+    // ==========================================
+    // MÉTODOS DE AUDITORÍA
+    // ==========================================
+
+    /**
+     * Registra la auditoría de creación
+     */
+    public function registrarCreacion(): void
+    {
+        $this->lic_creado_por = Auth::id();
+        $this->lic_creado_en = now();
+    }
+
+    /**
+     * Registra la auditoría de actualización
+     */
+    public function registrarActualizacion(): void
+    {
+        $this->lic_actualizado_por = Auth::id();
+        $this->lic_actualizado_en = now();
     }
 }

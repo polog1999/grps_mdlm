@@ -50,7 +50,7 @@ class CertificadoInspeccionForm
     private const DEPARTAMENTO_DEFAULT = 'Lima';
     private const PROVINCIA_DEFAULT = 'Lima';
     private const DISTRITO_DEFAULT = 'La Molina';
-    private const SIGLA_RESOLUCION = '-MDLM-GDEIP-SGRD';
+    private const SIGLA_RESOLUCION = '-MDLM-GSCV-SGRD';
 
     /**
      * Retorna el estilo CSS para campos autocompletados

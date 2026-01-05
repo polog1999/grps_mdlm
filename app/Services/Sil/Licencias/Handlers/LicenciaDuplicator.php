@@ -5,6 +5,7 @@ namespace App\Services\Sil\Licencias\Handlers;
 use Illuminate\Database\ConnectionInterface;
 use App\Services\Sil\Licencias\Concerns\PostgresHelpers;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class LicenciaDuplicator
 {
@@ -79,91 +80,96 @@ class LicenciaDuplicator
             // SQL para llamar al stored procedure de duplicación
             // RETURNS SETOF resultado (error integer, mensaje text)
             $sql = "SELECT * FROM licencia.spu_licencia_upd_duplicar2(
-                ?::integer,      -- 1  p_fiu_id
-                ?::integer[],    -- 2  p_gir_id
-                ?::text[],       -- 3  p_lig_giroespecifico
-                ?::integer,      -- 4  p_tli_id
-                ?::integer,      -- 5  p_tes_id
-                ?::integer,      -- 6  p_per_idsolicitante
-                ?::integer,      -- 7  p_per_idrazonsocial
-                ?::varchar,      -- 8  p_lic_numlic
-                ?::varchar,      -- 9  p_lic_codigopredial
-                ?::varchar,      -- 10 p_lic_expnum
-                ?::varchar,      -- 11 p_lic_expfec
-                ?::varchar,      -- 12 p_lic_direccion
-                ?::numeric,      -- 13 p_lic_area
-                ?::boolean,      -- 14 p_lic_mype
-                ?::varchar,      -- 15 p_lic_resnum
-                ?::varchar,      -- 16 p_lic_fecharesolucion (character)
-                ?::varchar,      -- 17 p_lic_fechaemision (character)
-                ?::varchar,      -- 18 p_lic_fechavencimiento (character)
-                ?::varchar,      -- 19 p_lic_licobs
-                ?::integer,      -- 20 p_cec_id
-                ?::integer,      -- 21 p_tlo_id
-                ?::varchar,      -- 22 p_lcc_observacion
-                ?::varchar,      -- 23 p_lcc_local
-                ?::varchar,      -- 24 p_lca_descripcion
-                ?::varchar,      -- 25 p_urbanizacion_id
-                ?::varchar,      -- 26 p_lca_zonificacion
-                ?::varchar,      -- 27 p_lic_giro
-                ?::integer,      -- 28 p_lic_id_ori (ID de la licencia original)
-                ?::boolean,      -- 29 p_lic_modidirecc
-                ?::varchar,      -- 30 p_lic_horainicio (character)
-                ?::varchar,      -- 31 p_lic_horafin (character)
-                ?::integer,      -- 32 p_tir_id
-                ?::text,         -- 33 p_lic_nota
-                ?::bigint,       -- 34 p_usa_id
-                ?::varchar,      -- 35 p_compatibilidad
-                ?::varchar,      -- 36 p_compatibilidadnumero
-                ?::varchar,      -- 37 p_compatibilidadfecha
-                ?::integer       -- 38 p_nir_id
+                :p_fiu_id::integer,
+                :p_gir_id::integer[],
+                :p_lig_giroespecifico::text[],
+                :p_tli_id::integer,
+                :p_tes_id::integer,
+                :p_per_idsolicitante::integer,
+                :p_per_idrazonsocial::integer,
+                :p_lic_numlic::varchar,
+                :p_lic_codigopredial::varchar,
+                :p_lic_expnum::varchar,
+                :p_lic_expfec::varchar,
+                :p_lic_direccion::varchar,
+                :p_lic_area::numeric,
+                :p_lic_mype::boolean,
+                :p_lic_resnum::varchar,
+                :p_lic_fecharesolucion::varchar,
+                :p_lic_fechaemision::varchar,
+                :p_lic_fechavencimiento::varchar,
+                :p_lic_licobs::varchar,
+                :p_cec_id::integer,
+                :p_tlo_id::integer,
+                :p_lcc_observacion::varchar,
+                :p_lcc_local::varchar,
+                :p_lca_descripcion::varchar,
+                :p_urbanizacion_id::varchar,
+                :p_lca_zonificacion::varchar,
+                :p_lic_giro::varchar,
+                :p_lic_id_ori::integer,
+                :p_lic_modidirecc::boolean,
+                :p_lic_horainicio::varchar,
+                :p_lic_horafin::varchar,
+                :p_tir_id::integer,
+                :p_lic_nota::text,
+                :p_usa_id::bigint,
+                :p_compatibilidad::varchar,
+                :p_compatibilidadnumero::varchar,
+                :p_compatibilidadfecha::varchar,
+                :p_nir_id::integer,
+                :p_user_id::integer,
+                :p_fecha_operacion::timestamp
             )";
 
             $parametros = [
-                $data['fiu_id'] ?? null,                                           // 1  p_fiu_id
-                $this->formatPostgresArray($girosIds),                             // 2  p_gir_id
-                $this->formatPostgresArray($girosEspecificos, true),               // 3  p_lig_giroespecifico
-                $data['tli_id'] ?? null,                                           // 4  p_tli_id
-                $data['tes_id'] ?? null,                                           // 5  p_tes_id
-                $data['per_idsolicitante'] ?? null,                                // 6  p_per_idsolicitante
-                $data['per_idrazonsocial'] ?? null,                                // 7  p_per_idrazonsocial
-                $data['lic_numlic'] ?? '',                                         // 8  p_lic_numlic
-                $data['lic_codigopredial'] ?? '',                                  // 9  p_lic_codigopredial
-                $data['lic_expnum'] ?? '',                                         // 10 p_lic_expnum
-                $this->formatDate($data['lic_expfec'] ?? null),                    // 11 p_lic_expfec
-                $data['lic_direccion'] ?? '',                                      // 12 p_lic_direccion
-                (float) ($data['lic_area'] ?? 0),                                  // 13 p_lic_area
-                ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1', // 14 p_lic_mype
-                $data['lic_resnum'] ?? '',                                         // 15 p_lic_resnum
-                $this->formatDate($data['lic_fecharesolucion'] ?? null),          // 16 p_lic_fecharesolucion
-                $this->formatDate($data['lic_fechaemision'] ?? null),             // 17 p_lic_fechaemision
-                $this->formatDate($data['lic_fechavencimiento'] ?? null),         // 18 p_lic_fechavencimiento
-                $data['lic_licobs'] ?? '',                                         // 19 p_lic_licobs
-                $data['cec_id'] ?? 0,                                              // 20 p_cec_id
-                $data['tlo_id'] ?? 0,                                              // 21 p_tlo_id
-                $data['lcc_observacion'] ?? '',                                    // 22 p_lcc_observacion
-                $data['lcc_local'] ?? '',                                          // 23 p_lcc_local
-                $data['lca_descripcion'] ?? '',                                    // 24 p_lca_descripcion
-                $data['urbanizacion_id'] ?? '',                                    // 25 p_urbanizacion_id
-                $data['lca_zonificacion'] ?? '',                                   // 26 p_lca_zonificacion
-                $this->buildLicGiroSummary($data),                             // 27 p_lic_giro (rebuild from current)
-                $data['lic_id_ori'] ?? null,                                       // 28 p_lic_id_ori (ID original)
-                ($data['lic_modidirecc'] ?? false) === true,                       // 29 p_lic_modidirecc
-                $data['lic_horainicio'] ?? '09:00',                                // 30 p_lic_horainicio
-                $data['lic_horafin'] ?? '18:00',                                   // 31 p_lic_horafin
-                $data['tir_id'] ?? 2,                                              // 32 p_tir_id
-                $data['lic_nota'] ?? '',                                           // 33 p_lic_nota
-                auth()->id() ?? 0,                                                 // 34 p_usa_id
-                $data['lic_compatibilidad'] ?? '',                                 // 35 p_compatibilidad
-                $data['lic_compatibilidadnumero'] ?? '',                          // 36 p_compatibilidadnumero
-                $this->formatDate($data['lic_compatibilidadfecha'] ?? null),      // 37 p_compatibilidadfecha
-                $data['nir_id'] ?? null,                                           // 38 p_nir_id
+                'p_fiu_id' => $data['fiu_id'] ?? null,
+                'p_gir_id' => $this->formatPostgresArray($girosIds),
+                'p_lig_giroespecifico' => $this->formatPostgresArray($girosEspecificos, true),
+                'p_tli_id' => $data['tli_id'] ?? null,
+                'p_tes_id' => $data['tes_id'] ?? null,
+                'p_per_idsolicitante' => $data['per_idsolicitante'] ?? null,
+                'p_per_idrazonsocial' => $data['per_idrazonsocial'] ?? null,
+                'p_lic_numlic' => $data['lic_numlic'] ?? '',
+                'p_lic_codigopredial' => $data['lic_codigopredial'] ?? '',
+                'p_lic_expnum' => $data['lic_expnum'] ?? '',
+                'p_lic_expfec' => $this->formatDate($data['lic_expfec'] ?? null),
+                'p_lic_direccion' => $data['lic_direccion'] ?? '',
+                'p_lic_area' => (float) ($data['lic_area'] ?? 0),
+                'p_lic_mype' => ($data['lic_mype'] ?? false) === true || ($data['lic_mype'] ?? '') === '1',
+                'p_lic_resnum' => $data['lic_resnum'] ?? '',
+                'p_lic_fecharesolucion' => $this->formatDate($data['lic_fecharesolucion'] ?? null),
+                'p_lic_fechaemision' => $this->formatDate($data['lic_fechaemision'] ?? null),
+                'p_lic_fechavencimiento' => $this->formatDate($data['lic_fechavencimiento'] ?? null),
+                'p_lic_licobs' => $data['lic_licobs'] ?? '',
+                'p_cec_id' => $data['cec_id'] ?? 0,
+                'p_tlo_id' => $data['tlo_id'] ?? 0,
+                'p_lcc_observacion' => $data['lcc_observacion'] ?? '',
+                'p_lcc_local' => $data['lcc_local'] ?? '',
+                'p_lca_descripcion' => $data['lca_descripcion'] ?? '',
+                'p_urbanizacion_id' => $data['urbanizacion_id'] ?? '',
+                'p_lca_zonificacion' => $data['lca_zonificacion'] ?? '',
+                'p_lic_giro' => $this->buildLicGiroSummary($data),
+                'p_lic_id_ori' => $data['lic_id_ori'] ?? null,
+                'p_lic_modidirecc' => ($data['lic_modidirecc'] ?? false) === true,
+                'p_lic_horainicio' => $data['lic_horainicio'] ?? '09:00',
+                'p_lic_horafin' => $data['lic_horafin'] ?? '18:00',
+                'p_tir_id' => $data['tir_id'] ?? 2,
+                'p_lic_nota' => $data['lic_nota'] ?? '',
+                'p_usa_id' => auth()->id() ?? 0,
+                'p_compatibilidad' => $data['lic_compatibilidad'] ?? '',
+                'p_compatibilidadnumero' => $data['lic_compatibilidadnumero'] ?? '',
+                'p_compatibilidadfecha' => $this->formatDate($data['lic_compatibilidadfecha'] ?? null),
+                'p_nir_id' => $data['nir_id'] ?? null,
+                'p_user_id' => Auth::id() ?? 0,
+                'p_fecha_operacion' => now()->format('Y-m-d H:i:s'),
             ];
 
             Log::info('Ejecutando spu_licencia_upd_duplicar2', [
                 'parametros' => $parametros,
                 'lic_id_original' => $data['lic_id_ori'] ?? null,
-                'usuario_id' => auth()->id()
+                'usuario_id' => Auth::id(),
+                'usuario_name' => Auth::user()?->name ?? 'N/A'
             ]);
 
             // Ejecutar stored procedure
