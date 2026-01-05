@@ -107,6 +107,73 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('certificado.ver-archivo');
 
     /**
+     * Ruta para ver archivos de certificados de licencia actualizados.
+     *
+     * @param int $id ID de la licencia
+     */
+    Route::get('/certificado-licencia/ver-actualizado/{id}', function ($id) {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        // Usamos el disco de licencias externas
+        $disk = Storage::disk('licencias_externas');
+
+        // Obtenemos el número de licencia para construir el nombre del archivo
+        $licencia = \App\Models\CertificadoLicenciaFuncionamiento::find($id);
+        if (!$licencia) {
+            abort(404, "Licencia no encontrada");
+        }
+
+        $service = app(\App\Services\Sil\Licencias\CertificadoLicenciaPdfService::class);
+        $filePath = $service->obtenerRutaPdf($licencia->lic_numlic ?? '', $id);
+        $downloadName = "Certificado_Licencia_Actualizado_{$id}.pdf";
+
+        if (!$disk->exists($filePath)) {
+            abort(404, "El archivo no se encuentra: " . $filePath);
+        }
+
+        return $disk->response($filePath, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline'
+        ]);
+    })->name('certificado-licencia.ver-actualizado');
+
+    /**
+     * Ruta para ver archivos de certificados de compatibilidad actualizados.
+     *
+     * @param int $id ID de la licencia
+     */
+    Route::get('/certificado-licencia/ver-compatibilidad/{id}', function ($id) {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        // Usamos el disco de licencias externas
+        $disk = Storage::disk('licencias_externas');
+
+        // Obtenemos el número de licencia para construir el nombre del archivo
+        $licencia = \App\Models\CertificadoLicenciaFuncionamiento::find($id);
+        if (!$licencia) {
+            abort(404, "Licencia no encontrada");
+        }
+
+        $service = app(\App\Services\Sil\Licencias\CompatibilidadCertificadoPdfService::class);
+        $filePath = $service->obtenerRutaPdf($licencia->lic_numlic ?? '', $id);
+        $downloadName = "Certificado_Compatibilidad_{$id}.pdf";
+
+        if (!$disk->exists($filePath)) {
+            abort(404, "El archivo no se encuentra: " . $filePath);
+        }
+
+        return $disk->response($filePath, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline'
+        ]);
+    })->name('certificado-licencia.ver-compatibilidad');
+
+
+    /**
      * Ruta para obtener la lista de tipos de edificación.
      *
      * Endpoint protegido que delega al controlador TipoEdificacionController.

@@ -71,6 +71,12 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+
+        'licencias_externas' => [
+            'driver' => 'local',
+            'root' => env('PATH_LICENCIAS'),
+            'throw' => false,
+        ],
     ],
 
     /*
