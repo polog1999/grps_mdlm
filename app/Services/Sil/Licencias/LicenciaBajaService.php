@@ -5,6 +5,8 @@ namespace App\Services\Sil\Licencias;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\Auth;
+
 class LicenciaBajaService
 {
     protected $connectionToPostgreSQL;
@@ -24,6 +26,7 @@ class LicenciaBajaService
             'lib_fecharesolucion' => $data['lib_fecharesolucion'] ?? null,
             'lib_fechabaja' => $data['lib_fechabaja'] ?? null,
             'lib_id' => $data['lib_id'] ?? 0,
+            'user_id' => Auth::id(),
         ]);
 
         try {
@@ -34,7 +37,9 @@ class LicenciaBajaService
                 :p_lib_resnum,
                 :p_lib_fecharesolucion,
                 :p_lib_fechabaja,
-                :p_lib_id
+                :p_lib_id,
+                :p_user_id::integer,
+                :p_fecha_operacion::timestamp
             )";
 
             $bindings = [
@@ -45,6 +50,8 @@ class LicenciaBajaService
                 'p_lib_fecharesolucion' => Carbon::parse($data['lib_fecharesolucion'])->format('d/m/Y'),
                 'p_lib_fechabaja' => Carbon::parse($data['lib_fechabaja'])->format('d/m/Y'),
                 'p_lib_id' => $data['lib_id'] ?? 0,
+                'p_user_id' => Auth::id() ?? 0,
+                'p_fecha_operacion' => now()->format('Y-m-d H:i:s'),
             ];
 
             \Log::info('LicenciaBajaService::bajaLicencia - Ejecutando stored procedure', [

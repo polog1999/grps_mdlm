@@ -9,6 +9,8 @@ use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schem
 use Filament\Actions\Action;
 use App\Services\Sil\Syscat\FichaUbicacionService;
 use App\Services\Sil\Syscat\ViaService;
+use App\Services\Sil\Licencias\TipoEstablecimientoService;
+use Illuminate\Support\Facades\Log;
 
 class CatastroSection
 {
@@ -133,6 +135,28 @@ class CatastroSection
 
                                     // Actualizar dirección completa
                                     $set('direccion', self::buildDireccionCompleta($get));
+
+                                    // Autocompletar Tipo Establecimiento desde CODUCA
+                                    Log::info('CatastroSection: Iniciando autocompletado de Tipo Establecimiento', [
+                                        'fiu_coduca' => $ficha->fiu_coduca,
+                                        'fiu_id' => $ficha->fiu_id
+                                    ]);
+
+                                    $tipoEstService = app(TipoEstablecimientoService::class);
+                                    $tesId = $tipoEstService->obtenerTipoEstablecimientoPorCoduca($ficha->fiu_coduca);
+
+                                    if ($tesId) {
+                                        $set('tipo_establecimientos', $tesId);
+                                        Log::info('CatastroSection: Tipo Establecimiento autocompletado exitosamente', [
+                                            'fiu_coduca' => $ficha->fiu_coduca,
+                                            'tes_id' => $tesId
+                                        ]);
+                                    } else {
+                                        Log::warning('CatastroSection: No se pudo autocompletar Tipo Establecimiento', [
+                                            'fiu_coduca' => $ficha->fiu_coduca,
+                                            'razon' => 'No se encontró correspondencia CODUCA -> CODUSO -> TipoEstablecimiento'
+                                        ]);
+                                    }
                                 }
                             })
                     )
