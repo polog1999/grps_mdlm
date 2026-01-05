@@ -9,7 +9,7 @@ class TipoLicencia extends Model
     protected $connection = 'pgsql_licencias';
     protected $table = 'tipolicencia';
     protected $primaryKey = 'tli_id';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = [
         'tli_descripcion',
