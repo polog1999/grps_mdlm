@@ -103,6 +103,7 @@ trait HasLicenciaFormHandling
             $data['nro_compatibilidad'] = null;
             $data['fecha_compatibilidad'] = null;
             $data['observaciones'] = null;
+            $data['nir_id'] = null;
         }
 
 
