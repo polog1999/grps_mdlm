@@ -6,6 +6,9 @@ namespace App\Filament\Clusters\Sil\Resources\Personas\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Actions\EditAction;
+use Filament\Tables\Enums\RecordActionsPosition;
+
 class PersonasTable
 {
     public static function configure(Table $table): Table
@@ -39,6 +42,7 @@ class PersonasTable
                     ->searchable(),
                 TextColumn::make('per_expcodcon')
                     ->label('Cód. Constribuyente')
+                    ->hidden()
                     ->searchable()
                     ->sortable(),
             ])
@@ -91,8 +95,12 @@ class PersonasTable
                     ->color('info')
             )
             ->recordActions([
-                // EditAction removed
-            ])
+                EditAction::make()
+                    ->icon('heroicon-o-pencil')
+                    ->iconButton()
+                    ->tooltip('Editar persona')
+                    ->color('warning'),
+            ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 // BulkActionGroup removed
             ]);
