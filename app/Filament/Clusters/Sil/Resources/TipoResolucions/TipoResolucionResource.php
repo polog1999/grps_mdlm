@@ -24,6 +24,10 @@ class TipoResolucionResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::tipo_resoluciones') ?? false;
+    }
     protected static ?string $recordTitleAttribute = 'TipoResolucion';
 
     public static function form(Schema $schema): Schema
