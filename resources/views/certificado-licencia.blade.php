@@ -22,7 +22,7 @@
             font-size: 11pt;
             color: #000;
             background: white;
-            line-height: 1.4;
+            line-height: 1.2;
         }
 
         .container {
@@ -161,13 +161,13 @@
             margin-bottom: 10px;
             font-family: 'Times New Roman', Times, serif;
             font-size: 8pt;
-            line-height: 1.5;
+            line-height: 1.2;
             color: #000;
         }
 
         .legal-text-bold {
             font-weight: bold;
-            line-height: 1.8;
+            line-height: 1.2;
         }
 
         .legal-title {
@@ -189,7 +189,7 @@
             font-weight: normal;
             text-align: justify;
             margin-bottom: 8px;
-            line-height: 1.5;
+            line-height: 1.2;
             color: #000;
         }
 

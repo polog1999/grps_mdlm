@@ -2,13 +2,14 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Tables;
 
-//Storage
-
+use Illuminate\Support\Facades\Storage;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
+use App\Services\Sil\Licencias\CertificadoLicenciaPdfService;
+use App\Services\Sil\Licencias\CompatibilidadCertificadoPdfService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Filament\Tables\Enums\FiltersLayout;
@@ -17,14 +18,19 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Collection;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\DatePicker;
 use Filament\Actions\ReplicateAction;
 use Filament\Actions\ViewAction;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Support\Colors\Color;
+use Filament\Notifications\Notification;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
+
 class CertificadoLicenciaFuncionamientosTable
 {
 
@@ -559,16 +565,285 @@ class CertificadoLicenciaFuncionamientosTable
                     ])
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
-                Action::make('certificado-licencia')
-                    ->icon('heroicon-o-document-text')
-                    ->iconButton()
-                    ->tooltip('Generar certificado')
-                    ->color(Color::Stone)
-                    ->url(
-                        fn(CertificadoLicenciaFuncionamiento $record): string =>
-                        route('certificado-licencia.mostrar', ['licenciaId' => $record->lic_id])
-                    )
-                    ->openUrlInNewTab(),
+
+                \Filament\Actions\ActionGroup::make([
+                    Action::make('certificado-licencia')
+                        ->label('Generar certificado')
+                        ->icon('heroicon-o-document-text')
+                        ->tooltip('Generar certificado')
+                        ->color(Color::Stone)
+                        ->url(
+                            fn(CertificadoLicenciaFuncionamiento $record): string =>
+                            route('certificado-licencia.mostrar', ['licenciaId' => $record->lic_id])
+                        )
+                        ->openUrlInNewTab(),
+
+                    Action::make('ver_actualizado')
+                        ->label('Certificado actualizado')
+                        ->icon('tabler-certificate')
+                        ->color('primary')
+                        ->tooltip('Gestionar certificado actualizado')
+                        ->modalHeading('Gestión de Certificado de Licencia Actualizado')
+                        ->modalDescription('Modal para subir y descargar certificado de licencia actualizado')
+                        ->modalWidth('5xl')
+                        ->modalSubmitActionLabel('Subir Certificado')
+                        ->modalCancelActionLabel('Cerrar')
+                        ->form(fn($record) => [
+                            Grid::make(2)
+                                ->schema([
+                                    Section::make('Subir/Actualizar Certificado')
+                                        ->description('Suba o actualice el certificado en formato PDF')
+                                        ->icon('heroicon-o-arrow-up-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            FileUpload::make('certificado_actualizado')
+                                                ->label('Archivo PDF')
+                                                ->acceptedFileTypes(['application/pdf'])
+                                                ->maxSize(10240) // 10MB
+                                                ->disk('local')
+                                                ->directory('temp')
+                                                ->visibility('private')
+                                                ->downloadable()
+                                                ->openable()
+                                                ->previewable()
+                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
+                                                ->storeFiles(false)
+                                                ->required(),
+
+                                            Hidden::make('lic_id')
+                                                ->default(fn($record) => $record->lic_id),
+                                            Hidden::make('lic_numlic')
+                                                ->default(fn($record) => $record->lic_numlic),
+                                        ]),
+
+                                    Section::make('Descargar Certificado')
+                                        ->description('Descargue el certificado actualizado')
+                                        ->icon('heroicon-o-arrow-down-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            TextInput::make('download_status')
+                                                ->label('Estado del Certificado')
+                                                ->default(function () use ($record) {
+                                                    $service = app(CertificadoLicenciaPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixIcon(function () use ($record) {
+                                                    $service = app(CertificadoLicenciaPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                })
+                                                ->suffixIconColor(function () use ($record) {
+                                                    $service = app(CertificadoLicenciaPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? 'success' : 'warning';
+                                                }),
+
+                                            TextInput::make('download_link')
+                                                ->label('Descargar')
+                                                ->default(function () use ($record) {
+                                                    $service = app(CertificadoLicenciaPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? 'Listo para descargar' : 'No disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixAction(
+                                                    Action::make('download')
+                                                        ->icon('heroicon-o-arrow-down-tray')
+                                                        ->label('Descargar PDF')
+                                                        ->url(fn() => route('certificado-licencia.ver-actualizado', ['id' => $record->lic_id]))
+                                                        ->openUrlInNewTab()
+                                                        ->visible(function () use ($record) {
+                                                            $service = app(CertificadoLicenciaPdfService::class);
+                                                            return $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        })
+                                                ),
+                                        ]),
+                                ])
+                        ])
+                        ->action(function (array $data, $record, Action $action) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+
+                            // Obtenemos el archivo temporal
+                            $file = $data['certificado_actualizado'];
+
+                            // Aseguramos que no sea un array (por si acaso)
+                            if (is_array($file)) {
+                                $file = reset($file);
+                            }
+
+                            try {
+                                $result = $service->subirPdfActualizado(
+                                    $record->lic_id,
+                                    $record->lic_numlic ?? '',
+                                    $file
+                                );
+
+                                if (!$result['success']) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body($result['message'])
+                                        ->danger()
+                                        ->send();
+
+                                    $action->halt();
+                                }
+
+                                Notification::make()
+                                    ->title('Éxito')
+                                    ->body($result['message'])
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error del Sistema')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                $action->halt();
+                            }
+                        }),
+
+                    Action::make('ver_compatibilidad')
+                        ->label('Compatibilidad')
+                        ->icon('heroicon-o-document-check')
+                        ->color(Color::Violet)
+                        ->tooltip('Gestionar certificado de compatibilidad')
+                        ->modalHeading('Gestión de Certificado de Compatibilidad')
+                        ->modalDescription('Modal para subir y descargar certificado de compatibilidad actualizado')
+                        ->modalWidth('5xl')
+                        ->modalSubmitActionLabel('Subir Certificado')
+                        ->modalCancelActionLabel('Cerrar')
+                        ->form(fn($record) => [
+                            Grid::make(2)
+                                ->schema([
+                                    Section::make('Subir/Actualizar Compatibilidad')
+                                        ->description('Suba o actualice el certificado de compatibilidad en formato PDF')
+                                        ->icon('heroicon-o-arrow-up-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            FileUpload::make('compatibilidad_actualizado')
+                                                ->label('Archivo PDF')
+                                                ->acceptedFileTypes(['application/pdf'])
+                                                ->maxSize(10240) // 10MB
+                                                ->disk('local')
+                                                ->directory('temp')
+                                                ->visibility('private')
+                                                ->downloadable()
+                                                ->openable()
+                                                ->previewable()
+                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
+                                                ->storeFiles(false)
+                                                ->required(),
+
+                                            Hidden::make('lic_id')
+                                                ->default(fn($record) => $record->lic_id),
+                                            Hidden::make('lic_numlic')
+                                                ->default(fn($record) => $record->lic_numlic),
+                                        ]),
+
+                                    Section::make('Descargar Compatibilidad')
+                                        ->description('Descargue el certificado de compatibilidad actualizado')
+                                        ->icon('heroicon-o-arrow-down-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            TextInput::make('compatibilidad_status')
+                                                ->label('Estado del Certificado')
+                                                ->default(function () use ($record) {
+                                                    $service = app(CompatibilidadCertificadoPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixIcon(function () use ($record) {
+                                                    $service = app(CompatibilidadCertificadoPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                })
+                                                ->suffixIconColor(function () use ($record) {
+                                                    $service = app(CompatibilidadCertificadoPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? 'success' : 'warning';
+                                                }),
+
+                                            TextInput::make('compatibilidad_link')
+                                                ->label('Descargar')
+                                                ->default(function () use ($record) {
+                                                    $service = app(CompatibilidadCertificadoPdfService::class);
+                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                    return $exists ? 'Listo para descargar' : 'No disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixAction(
+                                                    Action::make('download_compatibilidad')
+                                                        ->icon('heroicon-o-arrow-down-tray')
+                                                        ->label('Descargar PDF')
+                                                        ->url(fn() => route('certificado-licencia.ver-compatibilidad', ['id' => $record->lic_id]))
+                                                        ->openUrlInNewTab()
+                                                        ->visible(function () use ($record) {
+                                                            $service = app(CompatibilidadCertificadoPdfService::class);
+                                                            return $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        })
+                                                ),
+                                        ]),
+                                ])
+                        ])
+                        ->action(function (array $data, $record, Action $action) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+
+                            // Obtenemos el archivo temporal
+                            $file = $data['compatibilidad_actualizado'];
+
+                            // Aseguramos que no sea un array (por si acaso)
+                            if (is_array($file)) {
+                                $file = reset($file);
+                            }
+
+                            try {
+                                $result = $service->subirPdfActualizado(
+                                    $record->lic_id,
+                                    $record->lic_numlic ?? '',
+                                    $file
+                                );
+
+                                if (!$result['success']) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body($result['message'])
+                                        ->danger()
+                                        ->send();
+
+                                    $action->halt();
+                                }
+
+                                Notification::make()
+                                    ->title('Éxito')
+                                    ->body($result['message'])
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error del Sistema')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                $action->halt();
+                            }
+                        }),
+                ])->label('Docum.')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->color(Color::Teal)
+                    ->outlined()
+                    ->button(),
 
                 \Filament\Actions\ActionGroup::make([
                     Action::make('licencia-duplicar')
