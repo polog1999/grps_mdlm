@@ -52,13 +52,17 @@ class TipoEstablecimientoService
                 ->orderBy('FECHCREA', 'desc')
                 ->first();
 
-            if (!$ficha) {
-                Log::debug("TipoEstablecimientoService: No se encontró ficha para CODUCA: {$coduca}");
-                return null;
-            }
+            // Log detallado de lo encontrado
+            if ($ficha) {
+                Log::debug("TipoEstablecimientoService: Ficha encontrada para CODUCA: {$coduca}", [
+                    'data' => $ficha->toArray()
+                ]);
 
+            } else {
+                Log::warning("TipoEstablecimientoService: No se encontró ninguna ficha para CODUCA: {$coduca}");
+            }
             // 2. Obtener CODUSO de la ficha
-            $coduso = trim($ficha->CODUSO ?? '');
+            $coduso = trim($ficha->coduso ?? '');
 
             if (empty($coduso)) {
                 Log::debug("TipoEstablecimientoService: Ficha sin CODUSO para CODUCA: {$coduca}");
@@ -93,5 +97,30 @@ class TipoEstablecimientoService
             ]);
             return null;
         }
+    }
+
+    public function obtenerTipoEstablecimientoPorCoducaTest(string $coduca): ?int
+    {
+        try {
+            $coduca = trim($coduca);
+
+            if (empty($coduca)) {
+                return null;
+            }
+
+            $ficha = Mvcatfind::where('CODUCA', $coduca)
+                ->orderBy('FECHCREA', 'desc')
+                ->first();
+
+        } catch (\Exception $e) {
+            Log::error("TipoEstablecimientoService: Error al obtener tipo establecimiento", [
+                'coduca' => $coduca,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+
+
+
     }
 }
