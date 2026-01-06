@@ -18,12 +18,16 @@ use Filament\Tables\Table;
 class AuditoriaLicenciaResource extends Resource
 {
     protected static ?string $model = AuditoriaLicencia::class;
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 6;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'tabler-eye-cog';
 
     protected static ?string $cluster = SilCluster::class;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::auditoria_licencias') ?? false;
+    }
     protected static ?string $recordTitleAttribute = 'AuditoriaLicencia';
 
     public static function form(Schema $schema): Schema

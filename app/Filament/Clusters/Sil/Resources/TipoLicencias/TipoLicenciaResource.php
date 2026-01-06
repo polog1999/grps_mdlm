@@ -18,12 +18,16 @@ use Filament\Tables\Table;
 class TipoLicenciaResource extends Resource
 {
     protected static ?string $model = TipoLicencia::class;
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $cluster = SilCluster::class;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::tipo_licencias') ?? false;
+    }
     protected static ?string $recordTitleAttribute = 'TipoLicencia';
 
     public static function form(Schema $schema): Schema

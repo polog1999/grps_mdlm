@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "07a7750ff3ea779ce73e71d6bf4b3da7",
+    "content-hash": "05824bdeddd56d2b2f34ab78cb2f6c53",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -8060,16 +8060,16 @@
         },
         {
             "name": "secondnetwork/blade-tabler-icons",
-            "version": "v3.35.0",
+            "version": "v3.36.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/secondnetwork/blade-tabler-icons.git",
-                "reference": "637a4ae739daa13a27522fe91dd36f0716321616"
+                "reference": "d04786e34b9e74820ad6a32290a17f9a59fefb6c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/secondnetwork/blade-tabler-icons/zipball/637a4ae739daa13a27522fe91dd36f0716321616",
-                "reference": "637a4ae739daa13a27522fe91dd36f0716321616",
+                "url": "https://api.github.com/repos/secondnetwork/blade-tabler-icons/zipball/d04786e34b9e74820ad6a32290a17f9a59fefb6c",
+                "reference": "d04786e34b9e74820ad6a32290a17f9a59fefb6c",
                 "shasum": ""
             },
             "require": {
@@ -8112,9 +8112,9 @@
             ],
             "support": {
                 "issues": "https://github.com/secondnetwork/blade-tabler-icons/issues",
-                "source": "https://github.com/secondnetwork/blade-tabler-icons/tree/v3.35.0"
+                "source": "https://github.com/secondnetwork/blade-tabler-icons/tree/v3.36.1"
             },
-            "time": "2025-09-18T12:39:56+00:00"
+            "time": "2026-01-05T15:11:00+00:00"
         },
         {
             "name": "shalvah/clara",
