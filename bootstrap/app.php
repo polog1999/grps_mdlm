@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function ($schedule) {
         // Expirar licencias temporales vencidas - Diariamente a las 00:01
         $schedule->command('licenses:expire')
-            ->dailyAt('08:00')
+            ->dailyAt('11:30')
             ->appendOutputTo(storage_path('logs/license-expiration.log'));
     })
     ->withExceptions(function (Exceptions $exceptions) {
