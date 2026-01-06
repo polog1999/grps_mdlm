@@ -24,6 +24,10 @@ class AuditoriaLicenciaResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::auditoria_licencias') ?? false;
+    }
     protected static ?string $recordTitleAttribute = 'AuditoriaLicencia';
 
     public static function form(Schema $schema): Schema

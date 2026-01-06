@@ -24,6 +24,10 @@ class TipoLicenciaResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::tipo_licencias') ?? false;
+    }
     protected static ?string $recordTitleAttribute = 'TipoLicencia';
 
     public static function form(Schema $schema): Schema
