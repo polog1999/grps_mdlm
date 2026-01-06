@@ -24,6 +24,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\Indicator;
 use App\Models\CertificadoInspeccion;
 use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
+use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionAnexoService;
+use Filament\Support\Colors\Color;
 
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Notifications\Notification;
@@ -370,137 +372,6 @@ class CertificadoInspeccionsTable
                     ->iconButton()
                     ->tooltip('Editar certificado')
                     ->color('warning'),
-
-                Action::make('ver_original')
-                    ->icon('heroicon-c-check-badge')
-                    ->color('gray')
-                    ->iconButton()
-                    ->tooltip('Ver el PDF original generado por el sistema')
-                    ->visible(fn($record) => Storage::disk('certificados_externos')->exists("originales/certificado_inspeccion_id_{$record->cin_id}.pdf"))
-                    ->url(fn($record) => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'original']))
-                    ->openUrlInNewTab(),
-
-                Action::make('ver_actualizado')
-                    ->icon('tabler-certificate')
-                    ->color('primary')
-                    ->iconButton()
-                    ->tooltip('Gestionar certificado actualizado')
-                    ->modalHeading('Gestión de Certificado Actualizado')
-                    ->modalDescription('Modal para subir y descargar certificado actualizado')
-                    ->modalWidth('5xl')
-
-                    ->modalSubmitActionLabel('Subir Certificado')
-                    ->modalCancelActionLabel('Cerrar')
-
-                    ->form(fn($record) => [
-                        Grid::make(2)
-                            ->schema([
-                                Section::make('Subir/Actualizar Certificado')
-                                    ->description('Suba o actualice el certificado en formato PDF')
-                                    ->icon('heroicon-o-arrow-up-tray')
-                                    ->columnSpan(1)
-                                    ->schema([
-                                        FileUpload::make('certificado_actualizado')
-                                            ->label('Archivo PDF')
-                                            ->acceptedFileTypes(['application/pdf'])
-                                            ->maxSize(10240) // 10MB
-                                            ->disk('local')
-                                            ->directory('temp')
-                                            ->visibility('private')
-                                            ->downloadable()
-                                            ->openable()
-                                            ->previewable()
-                                            ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
-                                            ->storeFiles(false)
-                                            ->required(),
-
-                                        Hidden::make('cin_id')
-                                            ->default(fn($record) => $record->cin_id),
-                                    ]),
-
-                                Section::make('Descargar Certificado')
-                                    ->description('Descargue el certificado actualizado')
-                                    ->icon('heroicon-o-arrow-down-tray')
-                                    ->columnSpan(1)
-                                    ->schema([
-                                        TextInput::make('download_status')
-                                            ->label('Estado del Certificado')
-                                            ->default(function () use ($record) {
-                                                $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
-                                            })
-                                            ->disabled()
-                                            ->dehydrated(false)
-                                            ->suffixIcon(function () use ($record) {
-                                                $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
-                                            })
-                                            ->suffixIconColor(function () use ($record) {
-                                                $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                return $exists ? 'success' : 'warning';
-                                            }),
-
-                                        TextInput::make('download_link')
-                                            ->label('Descargar')
-                                            ->default(function () use ($record) {
-                                                $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                return $exists ? 'Listo para descargar' : 'No disponible';
-                                            })
-                                            ->disabled()
-                                            ->dehydrated(false)
-                                            ->suffixAction(
-                                                Action::make('download')
-                                                    ->icon('heroicon-o-arrow-down-tray')
-                                                    ->label('Descargar PDF')
-                                                    ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'actualizado']))
-                                                    ->openUrlInNewTab()
-                                                    ->visible(fn() => Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf"))
-                                            ),
-                                    ]),
-                            ])
-                    ])
-
-                    ->action(function (array $data, $record, Action $action) {
-                        $service = app(CertificadoInspeccionService::class);
-
-                        // Obtenemos el archivo temporal
-                        $file = $data['certificado_actualizado'];
-
-                        // Aseguramos que no sea un array (por si acaso)
-                        if (is_array($file)) {
-                            $file = reset($file);
-                        }
-
-                        try {
-                            $result = $service->subirPdfActualizado($record->cin_id, $file);
-
-                            if (!$result['success']) {
-                                Notification::make()
-                                    ->title('Error')
-                                    ->body($result['message'])
-                                    ->danger()
-                                    ->send();
-
-                                // Detenemos el cierre del modal para que el usuario pueda corregir
-                                $action->halt();
-                            }
-
-                            Notification::make()
-                                ->title('Éxito')
-                                ->body($result['message'])
-                                ->success()
-                                ->send();
-
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Error del Sistema')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-
-                            $action->halt();
-                        }
-                    }),
                 Action::make('borrar')
                     ->label('Borrar')
                     ->icon('heroicon-o-trash')
@@ -550,6 +421,275 @@ class CertificadoInspeccionsTable
                             ->send();
                     })
                     ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.certificado-inspeccions.index')),
+
+
+                \Filament\Actions\ActionGroup::make([
+                    Action::make('ver_original')
+                        ->label('Ver PDF original')
+                        ->icon('heroicon-c-check-badge')
+                        ->color('gray')
+                        ->tooltip('Ver el PDF original generado por el sistema')
+                        ->visible(fn($record) => Storage::disk('certificados_externos')->exists("originales/certificado_inspeccion_id_{$record->cin_id}.pdf"))
+                        ->url(fn($record) => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'original']))
+                        ->openUrlInNewTab(),
+
+                    Action::make('ver_actualizado')
+                        ->label('Certificado actualizado')
+                        ->icon('tabler-certificate')
+                        ->color('primary')
+                        ->tooltip('Gestionar certificado actualizado')
+                        ->modalHeading('Gestión de Certificado Actualizado')
+                        ->modalDescription('Modal para subir y descargar certificado actualizado')
+                        ->modalWidth('5xl')
+
+                        ->modalSubmitActionLabel('Subir Certificado')
+                        ->modalCancelActionLabel('Cerrar')
+
+                        ->form(fn($record) => [
+                            Grid::make(2)
+                                ->schema([
+                                    Section::make('Subir/Actualizar Certificado')
+                                        ->description('Suba o actualice el certificado en formato PDF')
+                                        ->icon('heroicon-o-arrow-up-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            FileUpload::make('certificado_actualizado')
+                                                ->label('Archivo PDF')
+                                                ->acceptedFileTypes(['application/pdf'])
+                                                ->maxSize(10240) // 10MB
+                                                ->disk('local')
+                                                ->directory('temp')
+                                                ->visibility('private')
+                                                ->downloadable()
+                                                ->openable()
+                                                ->previewable()
+                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
+                                                ->storeFiles(false)
+                                                ->required(),
+
+                                            Hidden::make('cin_id')
+                                                ->default(fn($record) => $record->cin_id),
+                                        ]),
+
+                                    Section::make('Descargar Certificado')
+                                        ->description('Descargue el certificado actualizado')
+                                        ->icon('heroicon-o-arrow-down-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            TextInput::make('download_status')
+                                                ->label('Estado del Certificado')
+                                                ->default(function () use ($record) {
+                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                    return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixIcon(function () use ($record) {
+                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                })
+                                                ->suffixIconColor(function () use ($record) {
+                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                    return $exists ? 'success' : 'warning';
+                                                }),
+
+                                            TextInput::make('download_link')
+                                                ->label('Descargar')
+                                                ->default(function () use ($record) {
+                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                    return $exists ? 'Listo para descargar' : 'No disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixAction(
+                                                    Action::make('download')
+                                                        ->icon('heroicon-o-arrow-down-tray')
+                                                        ->label('Descargar PDF')
+                                                        ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'actualizado']))
+                                                        ->openUrlInNewTab()
+                                                        ->visible(fn() => Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf"))
+                                                ),
+                                        ]),
+                                ])
+                        ])
+
+                        ->action(function (array $data, $record, Action $action) {
+                            $service = app(CertificadoInspeccionService::class);
+
+                            // Obtenemos el archivo temporal
+                            $file = $data['certificado_actualizado'];
+
+                            // Aseguramos que no sea un array (por si acaso)
+                            if (is_array($file)) {
+                                $file = reset($file);
+                            }
+
+                            try {
+                                $result = $service->subirPdfActualizado($record->cin_id, $file);
+
+                                if (!$result['success']) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body($result['message'])
+                                        ->danger()
+                                        ->send();
+
+                                    // Detenemos el cierre del modal para que el usuario pueda corregir
+                                    $action->halt();
+                                }
+
+                                Notification::make()
+                                    ->title('Éxito')
+                                    ->body($result['message'])
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error del Sistema')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                $action->halt();
+                            }
+                        }),
+
+                    Action::make('ver_anexos')
+                        ->label('Gestionar anexos')
+                        ->icon('tabler-paperclip')
+                        ->color('info')
+                        ->tooltip('Gestionar anexos')
+                        ->modalHeading('Gestión de Anexos')
+                        ->modalDescription('Modal para subir y descargar anexos del certificado')
+                        ->modalWidth('5xl')
+
+                        ->modalSubmitActionLabel('Subir Anexo')
+                        ->modalCancelActionLabel('Cerrar')
+
+                        ->form(fn($record) => [
+                            Grid::make(2)
+                                ->schema([
+                                    Section::make('Subir/Actualizar Anexo')
+                                        ->description('Suba o actualice el anexo en formato PDF')
+                                        ->icon('heroicon-o-arrow-up-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            FileUpload::make('anexo_pdf')
+                                                ->label('Archivo PDF')
+                                                ->acceptedFileTypes(['application/pdf'])
+                                                ->maxSize(10240) // 10MB
+                                                ->disk('local')
+                                                ->directory('temp')
+                                                ->visibility('private')
+                                                ->downloadable()
+                                                ->openable()
+                                                ->previewable()
+                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Anexo"')
+                                                ->storeFiles(false)
+                                                ->required(),
+
+                                            Hidden::make('cin_id')
+                                                ->default(fn($record) => $record->cin_id),
+                                        ]),
+
+                                    Section::make('Descargar Anexo')
+                                        ->description('Descargue el anexo del certificado')
+                                        ->icon('heroicon-o-arrow-down-tray')
+                                        ->columnSpan(1)
+                                        ->schema([
+                                            TextInput::make('anexo_status')
+                                                ->label('Estado del Anexo')
+                                                ->default(function () use ($record) {
+                                                    $service = app(CertificadoInspeccionAnexoService::class);
+                                                    $exists = $service->existeAnexo($record->cin_id);
+                                                    return $exists ? '✓ Anexo Disponible' : '⚠ No Disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixIcon(function () use ($record) {
+                                                    $service = app(CertificadoInspeccionAnexoService::class);
+                                                    $exists = $service->existeAnexo($record->cin_id);
+                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                })
+                                                ->suffixIconColor(function () use ($record) {
+                                                    $service = app(CertificadoInspeccionAnexoService::class);
+                                                    $exists = $service->existeAnexo($record->cin_id);
+                                                    return $exists ? 'success' : 'warning';
+                                                }),
+
+                                            TextInput::make('anexo_download')
+                                                ->label('Descargar')
+                                                ->default(function () use ($record) {
+                                                    $service = app(CertificadoInspeccionAnexoService::class);
+                                                    $exists = $service->existeAnexo($record->cin_id);
+                                                    return $exists ? 'Listo para descargar' : 'No disponible';
+                                                })
+                                                ->disabled()
+                                                ->dehydrated(false)
+                                                ->suffixAction(
+                                                    Action::make('download_anexo')
+                                                        ->icon('heroicon-o-arrow-down-tray')
+                                                        ->label('Descargar PDF')
+                                                        ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'anexo']))
+                                                        ->openUrlInNewTab()
+                                                        ->visible(function () use ($record) {
+                                                            $service = app(CertificadoInspeccionAnexoService::class);
+                                                            return $service->existeAnexo($record->cin_id);
+                                                        })
+                                                ),
+                                        ]),
+                                ])
+                        ])
+
+                        ->action(function (array $data, $record, Action $action) {
+                            $service = app(CertificadoInspeccionAnexoService::class);
+
+                            // Obtenemos el archivo temporal
+                            $file = $data['anexo_pdf'];
+
+                            // Aseguramos que no sea un array (por si acaso)
+                            if (is_array($file)) {
+                                $file = reset($file);
+                            }
+
+                            try {
+                                $result = $service->subirPdfAnexo($record->cin_id, $file);
+
+                                if (!$result['success']) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body($result['message'])
+                                        ->danger()
+                                        ->send();
+
+                                    // Detenemos el cierre del modal para que el usuario pueda corregir
+                                    $action->halt();
+                                }
+
+                                Notification::make()
+                                    ->title('Éxito')
+                                    ->body($result['message'])
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error del Sistema')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+
+                                $action->halt();
+                            }
+                        }),
+                ])->label('Docum.')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->color(Color::Teal)
+                    ->outlined()
+                    ->button(),
+
+
 
             ], position: RecordActionsPosition::BeforeCells)
             ->modifyQueryUsing(fn($query) => $query->where('cin_filaeliminada', false))
