@@ -19,7 +19,7 @@ class TipoResolucionResource extends Resource
 {
     protected static ?string $model = TipoResolucion::class;
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 8;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $cluster = SilCluster::class;

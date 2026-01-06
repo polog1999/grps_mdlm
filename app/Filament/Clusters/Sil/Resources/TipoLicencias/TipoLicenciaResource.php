@@ -18,7 +18,7 @@ use Filament\Tables\Table;
 class TipoLicenciaResource extends Resource
 {
     protected static ?string $model = TipoLicencia::class;
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
