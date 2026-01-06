@@ -30,7 +30,7 @@
         "maatwebsite/excel": "^3.1",
         "owenvoke/blade-fontawesome": "^2.9",
         "pxlrbt/filament-excel": "3.0",
-        "secondnetwork/blade-tabler-icons": "^3.35",
+        "secondnetwork/blade-tabler-icons": "^3.36",
         "spatie/laravel-permission": "^6.24",
         "stevebauman/location": "^7.6",
         "yajra/laravel-oci8": "12"

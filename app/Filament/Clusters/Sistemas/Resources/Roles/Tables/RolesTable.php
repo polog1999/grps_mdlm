@@ -211,10 +211,29 @@ class RolesTable
                             }
                         }
 
-                        \Filament\Notifications\Notification::make()
-                            ->title('Permisos actualizados correctamente')
-                            ->success()
-                            ->send();
+                        // Ejecutar el seeder automáticamente
+                        try {
+                            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                                '--class' => 'RolesAndPermissionsSeeder',
+                                '--force' => true,
+                            ]);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Permisos actualizados correctamente')
+                                ->body('Los permisos se sincronizaron automáticamente.')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            \Illuminate\Support\Facades\Log::error('Error al ejecutar seeder de permisos', [
+                                'error' => $e->getMessage()
+                            ]);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Permisos actualizados')
+                                ->body('Los permisos se guardaron pero hubo un error al sincronizar.')
+                                ->warning()
+                                ->send();
+                        }
                     }),
 
                 Action::make('borrar')
