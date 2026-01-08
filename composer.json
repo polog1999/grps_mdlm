@@ -19,6 +19,7 @@
         "endroid/qr-code": "^6.0",
         "faisal50x/blade-ionicons": "^1.1",
         "filament/filament": "^4.0",
+        "flowframe/laravel-trend": "^0.4.0",
         "inertiajs/inertia-laravel": "^2.0",
         "jenssegers/agent": "^2.6",
         "knuckleswtf/scribe": "^5.5",
