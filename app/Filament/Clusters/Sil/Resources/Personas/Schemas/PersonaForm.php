@@ -20,11 +20,10 @@ class PersonaForm
                     ->tel(),
                 TextInput::make('per_email')
                     ->email(),
-                Toggle::make('per_filaoriginal')
-                    ->required(),
-                Toggle::make('per_filaeliminada')
-                    ->required(),
-                TextInput::make('per_expcodcon'),
+
+                TextInput::make('per_expcodcon')
+                    ->disabled()
+                    ->dehydrated(false),
             ]);
     }
 }

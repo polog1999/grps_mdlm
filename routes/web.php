@@ -92,6 +92,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         } elseif ($tipo === 'firmado') {
             $filename = "firmados/{$id}_firmado.pdf";
             $downloadName = "Certificado_Oficial_{$id}.pdf";
+        } elseif ($tipo === 'anexo') {
+            $filename = "anexos_actualizar/anexo_inspeccion_id_{$id}.pdf";
+            $downloadName = "Anexo_Certificado_{$id}.pdf";
         } else {
             abort(404);
         }
