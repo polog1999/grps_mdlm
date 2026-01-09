@@ -19,11 +19,15 @@ class DataLevantamientoConsolidaResource extends Resource
 {
     protected static ?string $model = DataLevantamientoConsolida::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'phosphor-map-pin-area-bold';
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $cluster = SilCluster::class;
 
     protected static ?string $recordTitleAttribute = 'DataLevantamientoConsolida';
+
+    protected static ?string $navigationLabel = 'Data de Levantamiento';
+    protected static ?string $pluralModelLabel = 'Data de Levantamiento';
 
     public static function form(Schema $schema): Schema
     {

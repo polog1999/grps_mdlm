@@ -27,6 +27,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Columns\TextInputColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Support\Colors\Color;
 
 
 class DataLevantamientoConsolidasTable
@@ -288,7 +289,7 @@ class DataLevantamientoConsolidasTable
                     ->label('Ver Licencias')
                     ->icon('heroicon-m-document-text')
                     ->tooltip('Consultar licencias vinculadas')
-                    ->color('teal')
+                    ->color(Color::Teal)
                     ->modalHeading(fn($record) => "Licencias vinculadas al SML: {$record->sml}")
                     ->modalDescription('Consulta todas las licencias de funcionamiento asociadas a este predio')
                     ->modalWidth('2xl')
@@ -312,7 +313,6 @@ class DataLevantamientoConsolidasTable
                         }
 
                         return [
-                            // Header mejorado con información contextual
                             Section::make()
                                 ->schema([
                                     Grid::make(3)
