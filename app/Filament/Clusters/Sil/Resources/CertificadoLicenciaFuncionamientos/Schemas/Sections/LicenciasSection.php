@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Actions\SectionHeaderActions;
 use App\Services\Sil\Licencias\TipoCentroComercialService;
 use App\Services\Sil\Licencias\TipoLocalService;
+use App\Models\Giro;
 use App\Services\Sil\Licencias\NivelRiesgoService;
 class LicenciasSection
 {
@@ -188,8 +189,7 @@ class LicenciasSection
                     ->label('Giros encontrados')
                     ->multiple()
                     ->options(function () {
-                        $service = app(GiroLicenciaService::class);
-                        $giros = $service->buscarGiros('');
+                        $giros = Giro::where('gir_usos', true)->get();
                         return $giros->pluck('gir_descripcion', 'gir_id')->toArray();
                     })
                     ->searchable()
@@ -199,9 +199,7 @@ class LicenciasSection
                             $set('tabla_giros', []);
                             return;
                         }
-
-                        $service = app(GiroLicenciaService::class);
-                        $todosLosGiros = $service->buscarGiros('');
+                        $todosLosGiros = Giro::all();
                         $mapaGiros = $todosLosGiros->pluck('gir_descripcion', 'gir_id')->toArray();
 
                         $filas = [];
@@ -213,7 +211,6 @@ class LicenciasSection
                                 ];
                             }
                         }
-
                         $set('tabla_giros', $filas);
                     })
                     ->columnSpanFull()
