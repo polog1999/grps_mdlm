@@ -48,6 +48,7 @@ class Giro extends Model
         'gir_filaeliminada',
         'gir_migrado',
         'gir_filafecha',
+        'gir_usos',
     ];
 
     /**
@@ -65,6 +66,7 @@ class Giro extends Model
         'gir_filaeliminada' => 'integer',
         'gir_migrado' => 'integer',
         'gir_filafecha' => 'datetime',
+        'gir_usos' => 'boolean',
     ];
 
     /**
