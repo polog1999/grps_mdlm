@@ -144,6 +144,20 @@ return [
             'prefix_indexes' => true,
             //'search_path' => 'itse',
             'sslmode' => 'prefer',
+        ],
+        'pgsql_finereport' => [
+            'driver' => 'pgsql',
+            'url' => env('DB_URL_FINEREPORT_POSTGRES'),
+            'host' => env('DB_HOST_FINEREPORT_POSTGRES', '127.0.0.1'),
+            'port' => env('DB_PORT_FINEREPORT_POSTGRES', '5432'),
+            'database' => env('DB_DATABASE_FINEREPORT_POSTGRES', 'laravel'),
+            'username' => env('DB_USERNAME_FINEREPORT_POSTGRES', 'root'),
+            'password' => env('DB_PASSWORD_FINEREPORT_POSTGRES', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'sslmode' => 'prefer',
+
         ]
     ],
 
