@@ -5,6 +5,7 @@ use App\Models\TipoLicencia;
 use App\Models\TipoEstadoLicencia;
 use App\Models\Persona;
 use App\Models\User;
+use App\Models\LicenciaLevantamiento;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -135,6 +136,25 @@ class CertificadoLicenciaFuncionamiento extends Model
     public function actualizadoPor()
     {
         return $this->belongsTo(User::class, 'lic_actualizado_por');
+    }
+
+    public function licenciaLevantamiento()
+    {
+        return $this->hasMany(LicenciaLevantamiento::class, 'lic_id');
+    }
+
+    /**
+     * Relación para obtener el registro más reciente de licencia_levantamiento
+     */
+    public function licenciaLevantamientoReciente()
+    {
+        return $this->hasOne(LicenciaLevantamiento::class, 'lic_id')
+            ->latestOfMany('created_at');
+    }
+
+    public function licenciaCatastro()
+    {
+        return $this->belongsTo(LicenciaCatastro::class, 'lic_id');
     }
 
     // ==========================================
