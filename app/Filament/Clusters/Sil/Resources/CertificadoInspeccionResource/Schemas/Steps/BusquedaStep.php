@@ -20,19 +20,19 @@ class BusquedaStep
                     ->schema([
                         TextInput::make('search_expediente')
                             ->label('Número de Expediente')
-                            ->placeholder('Ej: 2025-001234')
+                            ->placeholder('Ej: E-13608-2025')
                             ->suffixIcon('heroicon-o-folder-open')
                             ->helperText('Ingrese el expediente administrativo'),
 
                         TextInput::make('search_licencia')
                             ->label('Número de Licencia')
-                            ->placeholder('Ej: 2024-12345')
+                            ->placeholder('Ej: 004008')
                             ->suffixIcon('heroicon-o-document-check')
                             ->helperText('Ingrese el número de licencia'),
 
                         TextInput::make('search_resolucion')
                             ->label('Número de Resolución')
-                            ->placeholder('Ej: 3095-2024')
+                            ->placeholder('Ej: 1523-2025')
                             ->suffixIcon('heroicon-o-document-text')
                             ->helperText('Ingrese el número de resolución'),
                     ]),
