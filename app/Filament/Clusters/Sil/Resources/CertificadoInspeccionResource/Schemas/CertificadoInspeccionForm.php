@@ -227,7 +227,7 @@ class CertificadoInspeccionForm
                             ->preload()
                             ->native(false)
                             ->placeholder('Seleccione el tipo de edificación')
-                            ->disabled(fn(callable $get) => (bool) $get('tie_id_autofilled'))
+                            //->disabled(fn(callable $get) => (bool) $get('tie_id_autofilled'))
                             ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('tie_id_autofilled') ? '1' : '0',
                                 'style' => self::getAutofilledStyle($get, 'tie_id_autofilled'),
@@ -357,7 +357,7 @@ class CertificadoInspeccionForm
                             ->suffix('m²')
                             ->placeholder('150.50')
                             ->required()
-                            ->disabled(fn(callable $get) => (bool) $get('cin_area_autofilled'))
+                            //->disabled(fn(callable $get) => (bool) $get('cin_area_autofilled'))
                             ->dehydrated()
 
                             ->extraInputAttributes(fn(callable $get) => [
@@ -414,7 +414,7 @@ class CertificadoInspeccionForm
                     ->helperText('Fecha de emisión del certificado'),
 
                 Toggle::make('cin_indeterminado')
-                    ->label('Vigencia Indeterminada')
+                    ->label('Temporalidad Licencias')
                     ->live()
                     ->default(true)
                     ->inline(false)
@@ -439,7 +439,7 @@ class CertificadoInspeccionForm
                                 }
                             })
                             ->suffixIcon('heroicon-o-play')
-                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
+                            //->disabled(fn(callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
                             ->dehydrated()
 
                             ->extraInputAttributes(fn(callable $get) => [
@@ -466,7 +466,40 @@ class CertificadoInspeccionForm
                             ->suffixIcon('heroicon-o-stop')
                             ->disabled(fn(callable $get) => (bool) $get('cin_fecha_fin_autofilled') && !$get('cin_es_temporal'))
                             ->dehydrated()
+                            ->rules([
+                                function (callable $get) {
+                                    return function (string $attribute, $value, $fail) use ($get) {
+                                        $fechaInicio = $get('cin_fec_inicio');
 
+                                        // Si no hay fecha de inicio, no validar
+                                        if (!$fechaInicio || !$value) {
+                                            return;
+                                        }
+
+                                        $inicio = Carbon::parse($fechaInicio);
+                                        $fin = Carbon::parse($value);
+
+                                        // Calcular la fecha esperada (exactamente 2 años después)
+                                        $fechaEsperada = $inicio->copy()->addYears(2);
+
+                                        // Caso especial: Si la fecha inicio es 29 de febrero (año bisiesto)
+                                        // y la fecha esperada se ajusta a 28 de febrero, aceptar ambas
+                                        if ($inicio->month === 2 && $inicio->day === 29) {
+                                            // Aceptar tanto 28 como 29 de febrero del año destino
+                                            $esValido = ($fin->month === 2 && ($fin->day === 28 || $fin->day === 29) && $fin->year === $fechaEsperada->year);
+
+                                            if (!$esValido) {
+                                                $fail("La fecha de fin debe ser exactamente 2 años después de la fecha de inicio. Para fechas del 29 de febrero, se acepta 28 o 29 de febrero. Fecha esperada: {$fechaEsperada->format('d/m/Y')}");
+                                            }
+                                        } else {
+                                            // Verificar que sea exactamente la misma fecha (mismo día, mes, año+2)
+                                            if (!$fin->isSameDay($fechaEsperada)) {
+                                                $fail("La fecha de fin debe ser exactamente 2 años después de la fecha de inicio (mismo día y mes). Fecha esperada: {$fechaEsperada->format('d/m/Y')}");
+                                            }
+                                        }
+                                    };
+                                }
+                            ])
                             ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_fin_autofilled') ? '1' : '0',
                                 'style' => self::getAutofilledStyle($get, 'cin_fecha_fin_autofilled'),
@@ -478,7 +511,7 @@ class CertificadoInspeccionForm
                                 fn(callable $get) =>
                                 $get('cin_fecha_fin_autofilled')
                                 ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
+                                : 'Debe ser exactamente 2 años después de la fecha de inicio'
                             ),
                     ])
                     ->hidden(fn(callable $get) => $get('cin_indeterminado')),
@@ -555,7 +588,7 @@ class CertificadoInspeccionForm
                     ->schema([
                         TextInput::make('cin_expediente')
                             ->label('Número de Expediente')
-                            ->placeholder('2025-001234')
+                            ->placeholder('E-13608-2025')
                             ->suffixIcon('heroicon-o-folder-open')
                             ->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
                             ->dehydrated()
