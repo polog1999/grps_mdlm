@@ -26,6 +26,19 @@ class DataLevantamientoService
     ) {
     }
 
+    /**
+     * Verifica si existe un SML en la tabla de data_levantamiento_consolida
+     * 
+     * @param string $codcat Código catastral (SML) a buscar
+     * @return bool True si existe, False si no existe
+     */
+    public function existeSMLporCodigoCatastral(string $codcat): bool
+    {
+        return $this->dataLevantamiento
+            ->where('sml', $codcat)
+            ->exists();
+    }
+
     public function getLicenciasRelacionadas($sml)
     {
         return $this->certificadoLicenciaFuncionamiento

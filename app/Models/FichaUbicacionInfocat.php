@@ -14,11 +14,7 @@ class FichaUbicacionInfocat extends Model
     /**
      * Conexión a la base de datos PostgreSQL
      */
-    protected $connection = 'pgsql_licencias';
 
-    /**
-     * Nombre de la tabla
-     */
     protected $table = 'infocat.fichaubicacion';
 
     /**

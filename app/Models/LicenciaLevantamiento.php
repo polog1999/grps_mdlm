@@ -21,6 +21,7 @@ class LicenciaLevantamiento extends Model
         'id_estado_levantamiento',
         'created_by',
         'updated_by',
+        'observaciones',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class LicenciaLevantamiento extends Model
         'id_estado_levantamiento' => 'integer',
         'created_by' => 'integer',
         'updated_by' => 'integer',
+        'observaciones' => 'string',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
