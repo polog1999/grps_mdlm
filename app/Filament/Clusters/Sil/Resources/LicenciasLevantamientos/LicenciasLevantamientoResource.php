@@ -19,9 +19,10 @@ class LicenciasLevantamientoResource extends Resource
 {
     protected static ?string $model = CertificadoLicenciaFuncionamiento::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'phosphor-map-pin-area-bold';
 
     protected static ?string $cluster = SilCluster::class;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'CertificadoLicenciaFuncionamiento';
 
@@ -49,8 +50,8 @@ class LicenciasLevantamientoResource extends Resource
     {
         return [
             'index' => ListLicenciasLevantamientos::route('/'),
-            'create' => CreateLicenciasLevantamiento::route('/create'),
-            'edit' => EditLicenciasLevantamiento::route('/{record}/edit'),
+            //'create' => CreateLicenciasLevantamiento::route('/create'),
+            //'edit' => EditLicenciasLevantamiento::route('/{record}/edit'),
         ];
     }
 }
