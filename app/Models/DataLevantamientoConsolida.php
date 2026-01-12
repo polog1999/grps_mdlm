@@ -14,12 +14,8 @@ class DataLevantamientoConsolida extends Model
     /**
      * Conexión a la base de datos PostgreSQL
      */
-    protected $connection = 'pgsql_finereport';
-
-    /**
-     * Nombre de la tabla
-     */
-    protected $table = 'catastro.data_levantamiento_consolida';
+    protected $connection = 'pgsql_licencias';
+    protected $table = 'licencia.data_levantamiento_consolida';
 
     /**
      * Usamos 'sml' como clave primaria virtual (Sector-Manzana-Lote)
