@@ -6,6 +6,8 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
@@ -112,7 +114,71 @@ class LicenciasLevantamientosTable
                     ->icon('heroicon-o-eye')
                     ->iconButton()
                     ->tooltip('Ver Acciones Realizadas')
-                    ->color(Color::Blue),
+                    ->color(Color::Blue)
+                    ->modalHeading(fn($record) => "Acciones Realizadas - Licencia #{$record->lic_numlic}")
+                    ->modalWidth('5xl')
+                    ->form([
+                        Section::make('Detalles del Levantamiento')
+                            ->schema([
+                                TextInput::make('usuario_registro')
+                                    ->label('Usuario Registrador')
+                                    ->disabled(),
+
+                                TextInput::make('fecha_registro')
+                                    ->label('Fecha de Registro')
+                                    ->disabled(),
+
+                                TextInput::make('usuario_modificacion')
+                                    ->label('Última Modificación Por')
+                                    ->disabled(),
+
+                                TextInput::make('fecha_modificacion')
+                                    ->label('Fecha de Modificación')
+                                    ->disabled(),
+
+                                Textarea::make('observaciones')
+                                    ->label('Observaciones Técnicas')
+                                    ->disabled()
+                                    ->rows(4)
+                                    ->columnSpanFull(),
+                            ])->columns(2)
+                    ])
+                    ->fillForm(function ($record) {
+                        // Obtener el registro más reciente de licencia_levantamiento
+                        $levantamiento = $record->licenciaLevantamientoReciente;
+
+                        if (!$levantamiento) {
+                            return [
+                                'usuario_registro' => 'Sin registros',
+                                'fecha_registro' => 'N/A',
+                                'usuario_modificacion' => 'N/A',
+                                'fecha_modificacion' => 'N/A',
+                                'observaciones' => 'No se han registrado acciones para esta licencia',
+                            ];
+                        }
+
+                        // Obtener usuarios manualmente para evitar problemas de conexión
+                        $usuarioCreador = null;
+                        $usuarioModificador = null;
+
+                        if ($levantamiento->created_by) {
+                            $usuarioCreador = \App\Models\User::find($levantamiento->created_by);
+                        }
+
+                        if ($levantamiento->updated_by) {
+                            $usuarioModificador = \App\Models\User::find($levantamiento->updated_by);
+                        }
+
+                        return [
+                            'usuario_registro' => $usuarioCreador?->name ?? 'N/A',
+                            'fecha_registro' => $levantamiento->created_at?->format('d/m/Y H:i:s') ?? 'N/A',
+                            'usuario_modificacion' => $usuarioModificador?->name ?? 'N/A',
+                            'fecha_modificacion' => $levantamiento->updated_at?->format('d/m/Y H:i:s') ?? 'N/A',
+                            'observaciones' => $levantamiento->observaciones ?? 'Sin observaciones',
+                        ];
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar'),
                 Action::make('ver_data_levantamiento')
                     ->label('Ver Data del Levantamiento')
                     ->icon('heroicon-o-map')
@@ -296,11 +362,56 @@ class LicenciasLevantamientosTable
                     })
                     ->modalSubmitActionLabel('Guardar')
                     ->modalCancelActionLabel('Cancelar'),
-                Action::make('Ver Foto de la Licencia')
+                Action::make('ver_foto_licencia')
+                    ->label('Ver Foto de la Licencia')
                     ->icon('heroicon-o-photo')
                     ->iconButton()
                     ->tooltip('Ver Foto de la Licencia')
-                    ->color(Color::Green),
+                    ->color(Color::Green)
+                    ->url(function ($record) {
+                        // Obtener SML de Syscat o Infocat
+                        $sml = null;
+                        $smlSyscat = $record->licenciaCatastro?->fichaUbicacionSyscat?->fiu_coduca;
+                        if ($smlSyscat) {
+                            $sml = substr($smlSyscat, 6, 6);
+                        } else {
+                            $smlInfocat = $record->licenciaCatastro?->fichaUbicacionInfocat?->fiu_codcat;
+                            if ($smlInfocat) {
+                                $sml = substr($smlInfocat, 2, 6);
+                            }
+                        }
+
+                        // Buscar data de levantamiento
+                        if ($sml) {
+                            $dataLevantamiento = DataLevantamientoConsolida::where('sml', $sml)->first();
+
+                            if ($dataLevantamiento && $dataLevantamiento->img_edificacion) {
+                                return $dataLevantamiento->img_edificacion;
+                            }
+                        }
+
+                        return null;
+                    }, shouldOpenInNewTab: true)
+                    ->disabled(function ($record) {
+                        // Deshabilitar si no hay imagen
+                        $sml = null;
+                        $smlSyscat = $record->licenciaCatastro?->fichaUbicacionSyscat?->fiu_coduca;
+                        if ($smlSyscat) {
+                            $sml = substr($smlSyscat, 6, 6);
+                        } else {
+                            $smlInfocat = $record->licenciaCatastro?->fichaUbicacionInfocat?->fiu_codcat;
+                            if ($smlInfocat) {
+                                $sml = substr($smlInfocat, 2, 6);
+                            }
+                        }
+
+                        if ($sml) {
+                            $dataLevantamiento = DataLevantamientoConsolida::where('sml', $sml)->first();
+                            return !($dataLevantamiento && $dataLevantamiento->img_edificacion);
+                        }
+
+                        return true;
+                    }),
 
             ], position: RecordActionsPosition::BeforeCells)
             //->actionsColumnLabel('Acciones')

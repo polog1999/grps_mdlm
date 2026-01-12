@@ -50,9 +50,7 @@ class LicenciaLevantamiento extends Model
         return $this->belongsTo(EstadoLevantamiento::class, 'id_estado_levantamiento');
     }
 
-    /**
-     * Relación: Usuario que creó el registro
-     */
+
     public function creadoPor()
     {
         return $this->belongsTo(User::class, 'created_by');
