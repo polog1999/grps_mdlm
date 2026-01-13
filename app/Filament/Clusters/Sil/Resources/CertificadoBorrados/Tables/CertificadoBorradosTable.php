@@ -74,7 +74,7 @@ class CertificadoBorradosTable
                     ->form([
                         \Filament\Forms\Components\TextInput::make('numero_licencia')
                             ->label('N° Licencia')
-                            ->placeholder('Ej: 2024-12345'),
+                            ->placeholder('Ej: 004008'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
