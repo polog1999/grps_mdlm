@@ -611,7 +611,7 @@ class CertificadoInspeccionForm
                         TextInput::make('cin_licencia')
                             ->label('Número de Licencia')
                             ->dehydrated()
-                            ->placeholder('Se completa automáticamente')
+                            ->placeholder('Ej: 004052')
                             ->suffixIcon('heroicon-o-clipboard-document-check')
                             ->disabled(fn(callable $get) => (bool) $get('cin_licencia_autofilled'))
                             ->dehydrated()
