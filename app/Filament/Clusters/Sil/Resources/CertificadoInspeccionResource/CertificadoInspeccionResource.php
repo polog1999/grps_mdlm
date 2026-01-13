@@ -173,7 +173,7 @@ class CertificadoInspeccionResource extends Resource
                                     ->visible(fn($record) => !$record->cin_indeterminado),
 
                                 IconEntry::make('cin_indeterminado')
-                                    ->label('Vigencia Indeterminada')
+                                    ->label('Temporalidad Licencias')
                                     ->boolean()
                                     ->trueIcon('heroicon-o-check-circle')
                                     ->falseIcon('heroicon-o-x-circle')
