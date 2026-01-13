@@ -34,6 +34,60 @@ class CertificadoLincenciaFuncionamientoService
             ->distinct();
     }
 
+    /**
+     * Obtiene los certificados de inspección relacionados con una licencia
+     * 
+     * @param int $lic_id ID de la licencia
+     * @return \Illuminate\Support\Collection
+     */
+    public function obtenerCertificadosInspeccionPorLicencia($lic_id)
+    {
+        try {
+            return $this->connectionToPostgreSQL
+                ->table('licencia.vu_licencia')
+                ->select(
+                    'cin_annio',
+                    'cin_numero',
+                    'tie_descripcion',
+                    'cin_expediente',
+                    'cin_resolucion',
+                    'cin_fecha'
+                )
+                ->where('lic_id', $lic_id)
+                ->orderBy('lic_id', 'desc')
+                ->get();
+        } catch (\Throwable $e) {
+            Log::error("Error al obtener certificados de inspección para LIC_ID {$lic_id}: " . $e->getMessage());
+            return collect();
+        }
+    }
+
+
+    public function tieneCertificadoCompleto($lic_id): bool
+    {
+        try {
+            $resultado = $this->connectionToPostgreSQL
+                ->table('licencia.vu_licencia')
+                ->where('lic_id', $lic_id)
+                ->whereNotNull('cin_numero')
+                ->exists();
+
+            Log::info('tieneCertificadoCompleto', [
+                'lic_id' => $lic_id,
+                'resultado' => $resultado
+            ]);
+
+            return $resultado;
+        } catch (\Throwable $e) {
+            Log::error('Error en tieneCertificadoCompleto', [
+                'lic_id' => $lic_id,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+
     public function getIdPersonaPorNombre($nombre)
     {
         return $this->connectionToPostgreSQL
