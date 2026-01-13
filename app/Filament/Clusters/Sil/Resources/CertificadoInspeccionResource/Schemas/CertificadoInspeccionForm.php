@@ -10,6 +10,7 @@ use App\Services\Sil\CertificadoInspeccion\ResolucionService;
 use App\Models\NivelRiesgo;
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep;
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Wizard;
@@ -281,7 +282,7 @@ class CertificadoInspeccionForm
                     ->columnSpanFull()
                     ->dehydrated()
 
-                    ->disabled(fn(callable $get) => (bool) $get('cin_ubicacion_autofilled'))
+                    //->disabled(fn(callable $get) => (bool) $get('cin_ubicacion_autofilled'))
                     ->dehydrated()
 
                     ->extraInputAttributes(fn(callable $get) => [
@@ -888,17 +889,24 @@ class CertificadoInspeccionForm
         ?string $expediente,
         ?string $licencia
     ): array {
-        if (!empty($licencia) && !empty($expediente)) {
-            return $service->obtenerPorNumeroLicenciaYExpediente($licencia, $expediente);
-        }
-
+        // Búsqueda combinada o solo por licencia: usar servicio actual
         if (!empty($licencia)) {
+            if (!empty($expediente)) {
+                return $service->obtenerPorNumeroLicenciaYExpediente($licencia, $expediente);
+            }
             return $service->obtenerPorNumeroLicencia($licencia);
         }
 
-        return $service->obtenerPorNumeroExpediente($expediente);
-    }
+        // Búsqueda solo por expediente: usar servicio robusto
+        $serviceCertificado = app(CertificadoLincenciaFuncionamientoService::class);
+        $datos = $serviceCertificado->obtenerDatosCompletosParaRegistrarPorExpediente($expediente);
 
+        if ($datos && $datos['expediente']) {
+            return ['status' => 'ok', 'data' => $datos];
+        }
+
+        return ['status' => 'no_encontrado', 'data' => null];
+    }
 
     /**
      * Procesa la respuesta del servicio de licencias y ejecuta la acción
@@ -969,22 +977,17 @@ class CertificadoInspeccionForm
             throw new \Exception('Los datos de la licencia están vacíos.');
         }
 
-        // Obtener datos del solicitante
-        $nombreSolicitante = self::obtenerNombreSolicitante($licenciaData->per_idsolicitante ?? null);
-
-        // Setear valores en el formulario
-        self::setearDatosLicencia($set, $licenciaData, $nombreSolicitante, $expediente, $licencia, $resolucion);
+        // Detectar formato de datos
+        if (is_array($licenciaData) && isset($licenciaData['expediente'])) {
+            // Nuevo formato (de CertificadoLincenciaFuncionamientoService)
+            self::mapearDatosDesdeExpediente($licenciaData, $set, $expediente);
+        } else {
+            // Formato antiguo (de LicenciaService)
+            self::mapearDatosDesdeLicencia($licenciaData, $set, $expediente, $licencia, $resolucion);
+        }
 
         // Mark search as completed successfully
         $set('search_completed', true);
-
-        // Mostrar notificación de éxito
-        Notification::make()
-            ->title('✅ Licencia Encontrada')
-            ->body(self::generarMensajeExito($licenciaData))
-            ->success()
-            ->duration(10000)
-            ->send();
     }
 
     /**
@@ -1014,6 +1017,161 @@ class CertificadoInspeccionForm
         }
 
         return 'No disponible';
+    }
+
+    /**
+     * Mapea datos desde el formato nuevo (CertificadoLincenciaFuncionamientoService) al formulario.
+     *
+     * @param array $datos Datos completos del expediente.
+     * @param callable $set Callback para asignar valores en el formulario.
+     * @param string|null $expediente Número de expediente buscado.
+     * @return void
+     */
+    private static function mapearDatosDesdeExpediente(
+        array $datos,
+        callable $set,
+        ?string $expediente
+    ): void {
+        $expedienteData = $datos['expediente'] ?? null;
+        $nivelRiesgo = $datos['nivel_riesgo'] ?? null;
+
+        if (!$expedienteData) {
+            Notification::make()
+                ->title('Datos incompletos')
+                ->body('No se pudieron obtener los datos del expediente.')
+                ->warning()
+                ->duration(5000)
+                ->send();
+            return;
+        }
+
+        $set('cin_expediente', $expedienteData->exp_num ?? $expediente);
+        $set('cin_expediente_autofilled', !empty($expedienteData->exp_num));
+
+        $set('cin_solicitante', $expedienteData->exp_nomrec ?? '');
+        $set('cin_solicitante_autofilled', !empty($expedienteData->exp_nomrec));
+
+        $set('cin_establecimiento', $expedienteData->exp_nomrec ?? '');
+        $set('cin_establecimiento_autofilled', !empty($expedienteData->exp_nomrec));
+
+
+        // Mapear dirección desde datos de catastro (NO desde domfis)
+        if (!empty($expedienteData->ecc_codcat)) {
+            try {
+                $serviceCatastro = app(CertificadoLincenciaFuncionamientoService::class);
+                $datosCatastro = $serviceCatastro->obtenerDatosPorCodCat($expedienteData->ecc_codcat);
+
+                if ($datosCatastro && $datosCatastro->isNotEmpty()) {
+                    $catastro = $datosCatastro->first();
+
+                    // Construir dirección completa
+                    $direccion = self::construirDireccionDesdeCatastro($catastro);
+
+                    if (!empty($direccion)) {
+                        $set('cin_ubicacion', $direccion);
+                        $set('cin_ubicacion_autofilled', true);
+
+                        logger()->info('Dirección construida desde catastro', [
+                            'codcat' => $expedienteData->ecc_codcat,
+                            'direccion' => $direccion
+                        ]);
+                    }
+
+                    // Mapear área económica si existe
+                    if (isset($catastro->area_economica) && !empty($catastro->area_economica)) {
+                        $set('cin_area', (float) $catastro->area_economica);
+                        $set('cin_area_autofilled', true);
+                    }
+                }
+            } catch (\Throwable $e) {
+                logger()->warning('No se pudo obtener dirección desde catastro', [
+                    'codcat' => $expedienteData->ecc_codcat,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if ($nivelRiesgo && isset($nivelRiesgo['nivel_riesgo'])) {
+            $nivel = $nivelRiesgo['nivel_riesgo'];
+
+            if (isset($nivel->nir_id)) {
+                $set('nir_id', $nivel->nir_id);
+                $set('nir_descripcion', $nivel->nir_descripcion ?? '');
+
+                // tie_id es igual a nir_id
+                $set('tie_id', $nivel->nir_id);
+                $set('tie_id_autofilled', true);
+
+                logger()->info('Nivel de riesgo mapeado desde expediente', [
+                    'nir_id' => $nivel->nir_id,
+                    'nir_descripcion' => $nivel->nir_descripcion ?? '',
+                ]);
+            }
+        }
+
+        if (!empty($expediente)) {
+            try {
+                $serviceResolucion = app(ResolucionService::class);
+                $resultadoResolucion = $serviceResolucion->obtenerNumeroResolucionPorNumeroExpediente($expediente);
+
+                if ($resultadoResolucion && !empty($resultadoResolucion->numero_resolucion)) {
+                    $set('cin_resolucion', $resultadoResolucion->numero_resolucion);
+                    $set('cin_resolucion_autofilled', true);
+                }
+            } catch (\Throwable $e) {
+                logger()->warning('No se pudo obtener resolución desde expediente', [
+                    'expediente' => $expediente,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Mostrar notificación de éxito
+        $mensaje = "Expediente: {$expedienteData->exp_num}\n";
+        $mensaje .= "Solicitante: {$expedienteData->exp_nomrec}";
+
+        if ($nivelRiesgo && isset($nivelRiesgo['nivel_riesgo']->nir_descripcion)) {
+            $mensaje .= "\nNivel de Riesgo: {$nivelRiesgo['nivel_riesgo']->nir_descripcion}";
+        }
+
+        Notification::make()
+            ->title('✅ Expediente Encontrado')
+            ->body($mensaje)
+            ->success()
+            ->duration(10000)
+            ->send();
+    }
+
+    /**
+     * Mapea datos desde el formato antiguo (LicenciaService) al formulario.
+     *
+     * @param callable $set Callback para asignar valores en el formulario.
+     * @param mixed $licenciaData Datos de la licencia.
+     * @param string|null $expediente Número de expediente original de búsqueda.
+     * @param string|null $licencia Número de licencia original de búsqueda.
+     * @param string|null $resolucion Número de resolución original de búsqueda.
+     * @return void
+     */
+    private static function mapearDatosDesdeLicencia(
+        $licenciaData,
+        callable $set,
+        ?string $expediente,
+        ?string $licencia,
+        ?string $resolucion = null
+    ): void {
+        // Obtener datos del solicitante
+        $nombreSolicitante = self::obtenerNombreSolicitante($licenciaData->per_idsolicitante ?? null);
+
+        // Setear valores en el formulario
+        self::setearDatosLicencia($set, $licenciaData, $nombreSolicitante, $expediente, $licencia, $resolucion);
+
+        // Mostrar notificación de éxito
+        Notification::make()
+            ->title('✅ Licencia Encontrada')
+            ->body(self::generarMensajeExito($licenciaData))
+            ->success()
+            ->duration(10000)
+            ->send();
     }
 
     /**
@@ -1186,6 +1344,62 @@ class CertificadoInspeccionForm
      *
      * @return array Lista de tipos de edificación (id => descripcion).
      */
+    /**
+     * Construye la dirección completa desde datos de catastro
+     * Formato: Via + NRO + DPTO + BLOQUE + MZ + LT + URB.
+     * 
+     * @param object $catastro Datos de catastro obtenidos de obtenerDatosPorCodCat
+     * @return string Dirección completa formateada
+     */
+    private static function construirDireccionDesdeCatastro($catastro): string
+    {
+        $partes = [];
+
+        // 1. Vía completa (ya viene construida desde el servicio)
+        $viaCompleta = trim($catastro->via_completa ?? '');
+        if (!empty($viaCompleta)) {
+            $partes[] = $viaCompleta;
+        }
+
+        // 2. Número
+        $numvia = trim($catastro->numvia ?? '');
+        if (!empty($numvia)) {
+            $partes[] = 'NRO ' . $numvia;
+        }
+
+        // 3. Departamento
+        $intdpto = trim($catastro->intdpto ?? '');
+        if (!empty($intdpto)) {
+            $partes[] = 'DPTO ' . $intdpto;
+        }
+
+        // 4. Bloque
+        $blockedif = trim($catastro->blockedif ?? '');
+        if (!empty($blockedif)) {
+            $partes[] = 'BLOQUE ' . $blockedif;
+        }
+
+        // 5. Manzana
+        $mz = trim($catastro->mz ?? '');
+        if (!empty($mz)) {
+            $partes[] = 'MZ ' . $mz;
+        }
+
+        // 6. Lote
+        $lote = trim($catastro->lote ?? '');
+        if (!empty($lote)) {
+            $partes[] = 'LT ' . $lote;
+        }
+
+        // 7. Urbanización
+        $descurb = trim($catastro->descurb ?? '');
+        if (!empty($descurb)) {
+            $partes[] = 'URB. ' . $descurb;
+        }
+
+        return trim(implode(' ', $partes));
+    }
+
     private static function obtenerTiposEdificacion(): array
     {
         try {
