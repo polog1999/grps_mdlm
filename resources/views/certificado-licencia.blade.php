@@ -18,8 +18,8 @@
         }
 
         body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
             color: #000;
             background: white;
             line-height: 1.2;
@@ -88,8 +88,8 @@
         }
 
         .certificate-header {
-            font-family: 'Sultan Nahia Regular', Arial, sans-serif;
-            font-size: 14pt;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
             font-weight: bold;
             color: #000;
             text-align: left;
@@ -128,7 +128,7 @@
         .data-section {
             margin-bottom: 15px;
             font-family: Arial, sans-serif;
-            font-size: 9pt;
+            font-size: 10pt;
         }
 
         .data-table {
@@ -145,12 +145,12 @@
             width: 130px;
             color: #000;
             font-family: Arial, sans-serif;
-            font-size: 9pt;
+            font-size: 10pt;
         }
 
         .data-value {
             font-family: Arial, sans-serif;
-            font-size: 9pt;
+            font-size: 10pt;
             font-weight: bold;
             color: #000;
         }
@@ -159,8 +159,8 @@
         .legal-text {
             text-align: justify;
             margin-bottom: 10px;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 8pt;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
             line-height: 1.2;
             color: #000;
         }
@@ -171,11 +171,11 @@
         }
 
         .legal-title {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: Arial, sans-serif;
             font-weight: bold;
             margin-top: 10px;
             margin-bottom: 3px;
-            font-size: 9pt;
+            font-size: 10pt;
             color: #000;
         }
 
@@ -184,8 +184,8 @@
         }
 
         .legal-paragraph-normal {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 8pt;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
             font-weight: normal;
             text-align: justify;
             margin-bottom: 8px;
@@ -194,8 +194,8 @@
         }
 
         .vigencia-text {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 9pt;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
             font-weight: bold;
             color: #000;
             text-align: justify;
@@ -203,7 +203,6 @@
 
         /* Segunda sección legal - con outdent a la izquierda */
         .legal-section-two {
-            margin-left: -10px;
             text-align: justify;
         }
 
@@ -230,7 +229,7 @@
 
         .nota {
             margin-top: 15px;
-            font-size: 9pt;
+            font-size: 10pt;
         }
     </style>
 </head>
@@ -270,15 +269,15 @@
                 <td class="header-left-col">
                     <table style="width: 100%;">
                         <tr>
-                            <td><span class="field-label">Expediente Nº</span>.................... : <span
+                            <td><span class="field-label">Expediente Nº</span>................ : <span
                                     class="field-value">{{ $licencia->EXPEDIENTE_NRO ?? '' }}</span></td>
                         </tr>
                         <tr>
-                            <td><span class="field-label">RSG</span>................................... : <span
+                            <td><span class="field-label">RSG</span>....................... : <span
                                     class="field-value">{{ $licencia->RESOLUCION_NRO ?? '' }}</span></td>
                         </tr>
                         <tr>
-                            <td><span class="field-label">Código Catastral</span>................ : <span
+                            <td><span class="field-label">Código Catastral</span>............ : <span
                                     class="field-value">{{ $licencia->CODIGO_CATASTRAL ?? '' }}</span></td>
                         </tr>
                     </table>
