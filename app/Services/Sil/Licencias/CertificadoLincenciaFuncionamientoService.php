@@ -63,6 +63,31 @@ class CertificadoLincenciaFuncionamientoService
     }
 
 
+    public function tieneCertificadoCompleto($lic_id): bool
+    {
+        try {
+            $resultado = $this->connectionToPostgreSQL
+                ->table('licencia.vu_licencia')
+                ->where('lic_id', $lic_id)
+                ->whereNotNull('cin_numero')
+                ->exists();
+
+            Log::info('tieneCertificadoCompleto', [
+                'lic_id' => $lic_id,
+                'resultado' => $resultado
+            ]);
+
+            return $resultado;
+        } catch (\Throwable $e) {
+            Log::error('Error en tieneCertificadoCompleto', [
+                'lic_id' => $lic_id,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+
     public function getIdPersonaPorNombre($nombre)
     {
         return $this->connectionToPostgreSQL

@@ -339,6 +339,26 @@ class CertificadoLicenciaFuncionamientosTable
                         return null;
                     }),
 
+                \Filament\Tables\Filters\TernaryFilter::make('tiene_itse')
+                    ->label('Con ITSE')
+                    ->placeholder('Todos')
+                    ->trueLabel('Solo con ITSE')
+                    ->falseLabel('Sin ITSE')
+                    ->queries(
+                        true: fn(Builder $query) => $query->whereIn('lic_id', function ($subquery) {
+                            $subquery->select('lic_id')
+                                ->from('licencia.vu_licencia')
+                                ->whereNotNull('cin_numero');
+                        }),
+                        false: fn(Builder $query) => $query->whereNotIn('lic_id', function ($subquery) {
+                            $subquery->select('lic_id')
+                                ->from('licencia.vu_licencia')
+                                ->whereNotNull('cin_numero');
+                        }),
+                        blank: fn(Builder $query) => $query,
+                    )
+                    ->indicator('ITSE'),
+
             ], layout: FiltersLayout::Modal)
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
@@ -574,6 +594,10 @@ class CertificadoLicenciaFuncionamientosTable
                     ->iconButton()
                     ->tooltip('Ver Certificados ITSE')
                     ->color(Color::Stone)
+                    ->disabled(function ($record) {
+                        $service = app(CertificadoLincenciaFuncionamientoService::class);
+                        return !$service->tieneCertificadoCompleto($record->lic_id);
+                    })
                     ->modalHeading('Certificados de Inspección Técnica (ITSE)')
                     ->modalDescription(fn($record) => "Certificados ITSE relacionados con la Licencia N° {$record->lic_numlic}")
                     ->modalWidth('5xl')
@@ -587,7 +611,7 @@ class CertificadoLicenciaFuncionamientosTable
                             return [
                                 Section::make()
                                     ->schema([
-                                        \Filament\Infolists\Components\TextEntry::make('sin_datos')
+                                        TextEntry::make('sin_datos')
                                             ->label('')
                                             ->default('No se encontraron certificados ITSE para esta licencia.')
                                             ->color('warning')
@@ -601,35 +625,35 @@ class CertificadoLicenciaFuncionamientosTable
                                 ->description("Total: {$certificados->count()} certificado(s)")
                                 ->icon('heroicon-o-document-check')
                                 ->schema([
-                                    \Filament\Infolists\Components\RepeatableEntry::make('certificados')
+                                    RepeatableEntry::make('certificados')
                                         ->label('')
                                         ->state($certificados->toArray())
                                         ->schema([
-                                            \Filament\Infolists\Components\TextEntry::make('cin_annio')
+                                            TextEntry::make('cin_annio')
                                                 ->label('Año')
                                                 ->badge()
                                                 ->color('primary'),
-                                            \Filament\Infolists\Components\TextEntry::make('cin_numero')
+                                            TextEntry::make('cin_numero')
                                                 ->label('Número')
                                                 ->weight('bold')
                                                 ->copyable()
                                                 ->copyMessage('Número copiado')
                                                 ->icon('heroicon-o-hashtag'),
-                                            \Filament\Infolists\Components\TextEntry::make('tie_descripcion')
+                                            TextEntry::make('tie_descripcion')
                                                 ->label('Tipo de Edificación')
                                                 ->badge()
                                                 ->color('success'),
-                                            \Filament\Infolists\Components\TextEntry::make('cin_expediente')
+                                            TextEntry::make('cin_expediente')
                                                 ->label('Expediente')
                                                 ->icon('heroicon-o-folder-open')
                                                 ->copyable()
                                                 ->copyMessage('Expediente copiado'),
-                                            \Filament\Infolists\Components\TextEntry::make('cin_resolucion')
+                                            TextEntry::make('cin_resolucion')
                                                 ->label('Resolución')
                                                 ->icon('heroicon-o-document-text')
                                                 ->copyable()
                                                 ->copyMessage('Resolución copiada'),
-                                            \Filament\Infolists\Components\TextEntry::make('cin_fecha')
+                                            TextEntry::make('cin_fecha')
                                                 ->label('Fecha')
                                                 ->date('d/m/Y')
                                                 ->icon('heroicon-o-calendar'),
