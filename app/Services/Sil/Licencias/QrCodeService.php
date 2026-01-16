@@ -38,9 +38,11 @@ class QrCodeService
     private function obtenerSignedUrl(int $licenciaId): string
     {
         $baseUrl = config('services.qr_api.base_url');
+        $secret = config('services.qr_api.secret');
         $timeout = config('services.qr_api.timeout', 10);
         $retryTimes = config('services.qr_api.retry_times', 3);
         $retryDelay = config('services.qr_api.retry_delay', 100);
+        $signature = hash_hmac('sha256', (string) $licenciaId, $secret);
 
         if (empty($baseUrl)) {
             throw new \RuntimeException('QR_API_BASE_URL no está configurado');
@@ -55,46 +57,24 @@ class QrCodeService
         try {
             $response = Http::timeout($timeout)
                 ->retry($retryTimes, $retryDelay)
-                ->get("{$baseUrl}/api/generate-qr-url/{$licenciaId}");
-
+                ->get("{$baseUrl}/api/licenses/{$licenciaId}/pdf", [
+                        'signature' => $signature
+                    ]);
             if (!$response->successful()) {
-                Log::error('API returned error status', [
-                    'licencia_id' => $licenciaId,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                throw new \RuntimeException("API retornó error: HTTP " . $response->status());
+                Log::error('API Error', ['status' => $response->status()]);
+                throw new \RuntimeException("API Error: " . $response->status());
             }
 
-            $data = $response->json();
+            // NOTA IMPORTANTE: 
+            // Si tu endpoint de NestJS devuelve el archivo PDF directo (Buffer), 
+            // $response->json() fallará porque no es un JSON.
+            // Si lo que quieres es la URL para el QR, simplemente devuélvela tú:
 
-            // Validar respuesta
-            if (!isset($data['success']) || $data['success'] !== true) {
-                throw new \RuntimeException("API no retornó success=true");
-            }
+            return "{$baseUrl}/api/licenses/{$licenciaId}/pdf?signature={$signature}";
 
-            if (empty($data['qr_url'])) {
-                throw new \RuntimeException("API no retornó qr_url");
-            }
-
-            // Validar formato de URL
-            if (!filter_var($data['qr_url'], FILTER_VALIDATE_URL)) {
-                throw new \RuntimeException("qr_url tiene formato inválido");
-            }
-
-            Log::info('QR URL obtenida exitosamente', [
-                'licencia_id' => $licenciaId,
-                'expires' => $data['expires'] ?? 'N/A'
-            ]);
-
-            return $data['qr_url'];
-
-        } catch (\Illuminate\Http\Client\RequestException $e) {
-            Log::error('Error de conexión al API de QR', [
-                'licencia_id' => $licenciaId,
-                'error' => $e->getMessage()
-            ]);
-            throw new \RuntimeException("Error de conexión al API: " . $e->getMessage(), 0, $e);
+        } catch (\Exception $e) {
+            Log::error('Error al conectar con NestJS', ['error' => $e->getMessage()]);
+            throw $e;
         }
     }
 
