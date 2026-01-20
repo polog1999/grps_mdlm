@@ -31,9 +31,7 @@ use App\Http\Controllers\GiroLicenciaController;
  * Renderiza la vista 'welcome' usando Inertia, pasando si el registro está habilitado.
  */
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    return redirect('/admin');
 })->name('home');
 
 
