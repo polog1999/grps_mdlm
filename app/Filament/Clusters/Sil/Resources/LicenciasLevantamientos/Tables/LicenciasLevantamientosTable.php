@@ -46,36 +46,41 @@ class LicenciasLevantamientosTable
             })
             ->defaultSort('lic_filafecha', 'desc')
             ->columns([
+                /*
+                                TextColumn::make('existe_en_levantamiento')
 
-                TextColumn::make('existe_en_levantamiento')
-                    ->label('Existe en Levantamiento')
-                    ->state(function ($record) {
-                        $service = app(DataLevantamientoService::class);
+                                    ->label('Existe en Levantamiento')
+                                    ->state(function ($record) {
+                                        $service = app(DataLevantamientoService::class);
 
-                        $smlSyscat = $record->licenciaCatastro?->fichaUbicacionSyscat?->fiu_coduca;
-                        if ($smlSyscat) {
-                            $sml = substr($smlSyscat, 6, 6);
-                            if ($service->existeSMLporCodigoCatastral($sml)) {
-                                return true;
-                            }
-                        }
-                        $smlInfocat = $record->licenciaCatastro?->fichaUbicacionInfocat?->fiu_codcat;
-                        if ($smlInfocat) {
-                            $sml = substr($smlInfocat, 2, 6);
-                            if ($service->existeSMLporCodigoCatastral($sml)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    })
-                    ->badge()
-                    ->formatStateUsing(fn($state) => $state ? 'Sí' : 'No')
-                    ->color(fn($state) => $state ? 'success' : 'danger')
-                    ->icon(fn($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
-                    ->alignCenter(),
-
+                                        $smlSyscat = $record->licenciaCatastro?->fichaUbicacionSyscat?->fiu_coduca;
+                                        if ($smlSyscat) {
+                                            $sml = substr($smlSyscat, 6, 6);
+                                            if ($service->existeSMLporCodigoCatastral($sml)) {
+                                                return true;
+                                            }
+                                        }
+                                        $smlInfocat = $record->licenciaCatastro?->fichaUbicacionInfocat?->fiu_codcat;
+                                        if ($smlInfocat) {
+                                            $sml = substr($smlInfocat, 2, 6);
+                                            if ($service->existeSMLporCodigoCatastral($sml)) {
+                                                return true;
+                                            }
+                                        }
+                                        return false;
+                                    })
+                                    ->badge()
+                                    ->formatStateUsing(fn($state) => $state ? 'Sí' : 'No')
+                                    ->color(fn($state) => $state ? 'success' : 'danger')
+                                    ->icon(fn($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
+                                    ->alignCenter(),
+                */
                 TextColumn::make('lic_numlic')
                     ->label('Licencia')
+                    ->badge()
+                    ->color('primary')
+                    ->url(fn($record) => "/certificado-licencia/{$record->lic_id}")
+                    ->openUrlInNewTab()
                     ->searchable(),
 
                 TextColumn::make('licenciaLevantamientoReciente.estadoLevantamiento.descripcion')
