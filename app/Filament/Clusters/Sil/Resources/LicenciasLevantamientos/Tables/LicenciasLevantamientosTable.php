@@ -304,12 +304,8 @@ class LicenciasLevantamientosTable
                     ->color(Color::Orange)
                     ->modalHeading(fn($record) => "Registrar Acción - Licencia #{$record->lic_numlic}")
                     ->form([
-                        \Filament\Forms\Components\Select::make('id_estado_levantamiento')
-                            ->label('Estado de Levantamiento')
-                            ->options(\App\Models\EstadoLevantamiento::pluck('descripcion', 'id'))
-                            ->required()
-                            ->searchable()
-                            ->placeholder('Seleccione un estado'),
+                        \Filament\Forms\Components\Hidden::make('id_estado_levantamiento')
+                            ->default(3),
 
                         \Filament\Forms\Components\Textarea::make('observaciones')
                             ->label('Observaciones')
@@ -322,7 +318,7 @@ class LicenciasLevantamientosTable
                         $levantamiento = $record->licenciaLevantamientoReciente;
 
                         return [
-                            'id_estado_levantamiento' => $levantamiento?->id_estado_levantamiento,
+                            'id_estado_levantamiento' => $levantamiento?->id_estado_levantamiento ?? 3,
                             'observaciones' => $levantamiento?->observaciones,
                         ];
                     })
