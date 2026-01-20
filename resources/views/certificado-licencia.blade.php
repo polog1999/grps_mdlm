@@ -84,12 +84,12 @@
         }
 
         .header-left-col {
-            width: 55%;
             padding-right: 15px;
         }
 
         .header-right-col {
-            width: 45%;
+            width: 1%;
+            white-space: nowrap;
             padding-left: 15px;
             border-left: 1px solid #eee;
         }

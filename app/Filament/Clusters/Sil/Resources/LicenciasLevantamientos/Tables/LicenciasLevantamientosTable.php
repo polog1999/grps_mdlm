@@ -79,7 +79,7 @@ class LicenciasLevantamientosTable
                     ->label('Licencia')
                     ->badge()
                     ->color('primary')
-                    ->url(fn($record) => "/admin/sil/certificado-licencia-funcionamientos/{$record->lic_id}/edit")
+                    ->url(fn($record) => "/certificado-licencia/{$record->lic_id}")
                     ->openUrlInNewTab()
                     ->searchable(),
 
