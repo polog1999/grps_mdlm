@@ -44,6 +44,11 @@ class RolesAndPermissionsSeeder extends Seeder
 
             //Permisos para AuditoriaLicencias
             'view::auditoria_licencias',
+
+            //Permisos para DataLevantamiento
+            'view::data_levantamiento',
+
+
         ];
 
         foreach ($permissions as $permission) {
