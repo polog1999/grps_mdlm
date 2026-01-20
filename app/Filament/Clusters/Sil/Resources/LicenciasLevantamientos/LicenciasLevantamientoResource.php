@@ -24,6 +24,12 @@ class LicenciasLevantamientoResource extends Resource
     protected static ?string $cluster = SilCluster::class;
     protected static ?int $navigationSort = 3;
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view::data_levantamiento') ?? false;
+    }
+
+
     protected static ?string $recordTitleAttribute = 'CertificadoLicenciaFuncionamiento';
 
     protected static ?string $navigationLabel = 'Data de Levantamiento';
