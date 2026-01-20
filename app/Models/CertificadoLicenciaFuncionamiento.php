@@ -154,7 +154,7 @@ class CertificadoLicenciaFuncionamiento extends Model
 
     public function licenciaCatastro()
     {
-        return $this->belongsTo(LicenciaCatastro::class, 'lic_id');
+        return $this->belongsTo(LicenciaCatastro::class, 'lic_id', 'lic_id');
     }
 
     // ==========================================
