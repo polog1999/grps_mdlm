@@ -6,6 +6,18 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Licencia de Funcionamiento - {{ $licencia->NUMERO_LICENCIA ?? 'N/A' }}</title>
     <style>
+        :root {
+            --font-family-base: Arial, sans-serif;
+            --padding-vertical: 2px;
+            --padding-horizontal: 12px;
+            --font-size-base: 10pt;
+
+            --mdlm-green: #007A33;
+            --mdlm-yellow: #FFC400;
+            --text-black: #000000;
+            --border-light: #e0e0e0;
+        }
+
         @page {
             size: A4 portrait;
             margin: 3.39cm 2cm 0.49cm 2cm;
@@ -18,11 +30,12 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+            font-family: var(--font-family-base);
+            font-size: var(--font-size-base);
             color: #000;
             background: white;
-            line-height: 1.2;
+            line-height: 1.1;
+            /* REDUCCIÓN: Line-height ligeramente más ajustado */
         }
 
         .container {
@@ -33,12 +46,25 @@
             background: white;
         }
 
-        /* Header con datos y QR */
-        .header-section {
+        /* --- Header Técnico --- */
+        .technical-box {
             width: 100%;
-            margin-bottom: 20px;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+            /* REDUCCIÓN: Margen inferior de 12px a 5px */
+            margin-bottom: 15px;
+            background-color: #fcfcfc;
+            /* REDUCCIÓN: Padding interno reducido */
+            padding: 4px 0;
+            position: relative;
+        }
+
+        .technical-box::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 2px;
+            /* REDUCCIÓN: Margen superior de 10px a 2px */
+            margin-top: 2px;
+            opacity: 0.6;
         }
 
         .header-table {
@@ -48,37 +74,52 @@
 
         .header-table td {
             vertical-align: top;
-            padding: 3px 0;
+            /* REDUCCIÓN: Padding de celda reducido a 1px vertical */
+            padding: 5px 5px;
+            border-bottom: 1px dotted var(--border-light);
+        }
+
+        .header-table tr:last-child td {
+            border-bottom: none;
         }
 
         .header-left-col {
             width: 55%;
-            white-space: nowrap;
+            padding-right: 15px;
         }
 
         .header-right-col {
             width: 45%;
-            white-space: nowrap;
+            padding-left: 15px;
+            border-left: 1px solid #eee;
         }
 
-        .qr-col {
-            width: 15%;
-            text-align: right;
-            vertical-align: top;
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .field-label {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            color: #000;
+            white-space: nowrap;
+            font-size: var(--font-size-base);
+            color: #333;
             font-weight: normal;
+            flex-shrink: 0;
+        }
+
+        .field-separator {
+            padding: 0 5px;
+            color: var(--mdlm-green);
+            font-weight: bold;
+            flex-shrink: 0;
         }
 
         .field-value {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+            text-align: left;
+            font-size: var(--font-size-base);
             font-weight: bold;
-            color: #000;
+            color: var(--text-black);
         }
 
         .qr-image {
@@ -88,128 +129,176 @@
         }
 
         .certificate-header {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+            font-size: 14pt;
             font-weight: bold;
             color: #000;
             text-align: left;
         }
 
-        /* Título principal */
+        /* --- Título --- */
         .title-section {
             text-align: center;
-            margin: 25px 0 20px 0;
+            /* REDUCCIÓN: Márgenes externos reducidos */
+            margin: 5px 0;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .title-text-common {
+            font-size: 14pt;
+            color: #000;
+            text-transform: uppercase;
+            line-height: 1;
+            display: block;
         }
 
         .title-main {
-            font-family: Arial, sans-serif;
-            color: #000;
-            font-size: 13pt;
             font-weight: bold;
-            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            white-space: nowrap;
         }
 
         .title-sub {
-            font-family: Arial, sans-serif;
-            color: #000;
-            font-size: 13pt;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 10px;
+            display: inline-block;
+            padding-bottom: 1px;
         }
 
         .title-type {
-            font-family: Arial, sans-serif;
-            color: #000;
-            font-size: 13pt;
             font-weight: bold;
+            display: inline-block;
+            background-color: #f2f2f2;
+            padding: 2px 25px;
+            /* REDUCCIÓN: Padding vertical interno */
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
         }
 
-        /* Campos de datos del certificado */
+        /* --- Datos (Data Section) --- */
         .data-section {
+            /* REDUCCIÓN: Márgenes verticales reducidos */
             margin-bottom: 15px;
+            margin-top: 5px;
             font-family: Arial, sans-serif;
-            font-size: 10pt;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .data-table tr {
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .data-table td {
-            padding: 5px 0;
+            /* REDUCCIÓN: Padding vertical de celda a 3px */
+            padding: 5px 5px;
             vertical-align: top;
         }
 
-        .data-label {
-            width: 130px;
-            color: #000;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+        .data-label-col {
+            width: 140px;
+            color: #444;
+            font-size: var(--font-size-base);
+            font-weight: normal;
+            white-space: nowrap;
         }
 
-        .data-value {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+        .data-separator-col {
+            width: 20px;
+            text-align: center;
             font-weight: bold;
-            color: #000;
         }
 
-        /* Texto legal */
-        .legal-text {
+        .data-value-col {
+            color: #000;
+            font-size: var(--font-size-base);
+            font-weight: bold;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .highlight-name {
+            font-size: var(--font-size-base);
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Sección Legal --- */
+        .legal-wrapper {
+            /* REDUCCIÓN: Margen superior */
+            margin-top: 5px;
+            font-family: var(--font-family-base);
+            color: var(--text-black);
+        }
+
+        .legal-base-box {
             text-align: justify;
-            margin-bottom: 10px;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+            /* REDUCCIÓN: Margen inferior de 12px a 5px */
+            margin-bottom: 15px;
+            font-size: var(--font-size-base);
             line-height: 1.2;
-            color: #000;
+            color: #444;
+            border-bottom: 1px solid var(--border-light);
+            /* REDUCCIÓN: Padding inferior */
+            padding-bottom: 4px;
         }
 
-        .legal-text-bold {
+        .vigencia-box {
+            background-color: #f9f9f9;
+            /* REDUCCIÓN: Padding y margen */
+            padding: 4px 0;
+            margin-bottom: 15px;
+            font-size: var(--font-size-base);
             font-weight: bold;
-            line-height: 1.2;
+            color: var(--text-black);
         }
 
-        .legal-title {
-            font-family: Arial, sans-serif;
+        .legal-grid-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .legal-grid-td {
+            vertical-align: top;
+            width: 50%;
+            padding-right: 15px;
+        }
+
+        .legal-grid-td.section-spacing {
+            padding-bottom: 15px;
+        }
+
+        .legal-header {
+            font-size: var(--font-size-base);
             font-weight: bold;
-            margin-top: 10px;
-            margin-bottom: 3px;
-            font-size: 10pt;
-            color: #000;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            /* REDUCCIÓN */
+            display: block;
+            border-bottom: 1px dotted var(--border-light);
+            padding-bottom: 1px;
         }
 
-        .legal-paragraph {
-            margin-bottom: 8px;
-        }
-
-        .legal-paragraph-normal {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
+        .legal-body {
+            font-size: var(--font-size-base);
             font-weight: normal;
             text-align: justify;
-            margin-bottom: 8px;
             line-height: 1.2;
-            color: #000;
+            /* REDUCCIÓN */
+            color: var(--text-black);
+            margin-top: 2px;
+            /* REDUCCIÓN */
         }
 
-        .vigencia-text {
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            font-weight: bold;
-            color: #000;
-            text-align: justify;
-        }
-
-        /* Segunda sección legal - con outdent a la izquierda */
-        .legal-section-two {
-            text-align: justify;
-        }
-
-        /* Footer */
+        /* --- Footer --- */
         .footer-section {
-            margin-top: 30px;
-            font-size: 10pt;
+            /* REDUCCIÓN: Margen superior de 30px a 10px */
+            margin-top: 20px;
+            font-size: var(--font-size-base);
         }
 
         .footer-table {
@@ -217,127 +306,132 @@
             border-collapse: collapse;
         }
 
-        .footer-left {
-            text-align: left;
-            color: #000;
-        }
-
         .footer-right {
             text-align: right;
             color: #000;
-        }
-
-        .nota {
-            margin-top: 15px;
-            font-size: 10pt;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <!-- Espaciador invisible para margen superior -->
         <table style="width: 100%; border: none; margin: 0; padding: 0;">
             <tr>
-                <td style="height: 0.8cm; border: none;">&nbsp;</td>
-            </tr>
-        </table>
-
-        <!-- Header con datos y QR -->
-        <table class="header-table">
-            <!-- Primera fila: Certificado Nº -->
-            <tr>
-                <td colspan="2" style="text-align: left; vertical-align: top;">
+                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.2cm;">
                     <div class="certificate-header">{{ $licencia->NUMERO_LICENCIA ?? '' }}</div>
                 </td>
-            </tr>
-            <!-- Espaciador vertical -->
-            <tr>
-                <td colspan="2" style="height: 1.50cm; border: none;">&nbsp;</td>
-            </tr>
-            <!-- Segunda fila: QR a la derecha -->
-            <tr>
-                <td colspan="2" style="text-align: right; vertical-align: top; padding-bottom: 10px;">
+                <td
+                    style="height: 2.7cm; border: none; vertical-align: top; text-align: right; padding-top: 3.5cm; padding-right: 0;">
                     @if(isset($qrImage) && $qrImage)
-                        <img src="{{ $qrImage }}" alt="QR" class="qr-image">
+                        <img src="{{ $qrImage }}" alt="QR" class="qr-image" style="margin-right: -20px;">
                     @endif
                 </td>
             </tr>
-
-            <!-- Segunda fila: datos en dos columnas -->
-            <tr>
-                <td class="header-left-col">
-                    <table style="width: 100%;">
-                        <tr>
-                            <td><span class="field-label">Expediente Nº</span>................ : <span
-                                    class="field-value">{{ $licencia->EXPEDIENTE_NRO ?? '' }}</span></td>
-                        </tr>
-                        <tr>
-                            <td><span class="field-label">RSG</span>....................... : <span
-                                    class="field-value">{{ $licencia->RESOLUCION_NRO ?? '' }}</span></td>
-                        </tr>
-                        <tr>
-                            <td><span class="field-label">Código Catastral</span>............ : <span
-                                    class="field-value">{{ $licencia->CODIGO_CATASTRAL ?? '' }}</span></td>
-                        </tr>
-                    </table>
-                </td>
-                <td class="header-right-col">
-                    <table style="width: 100%;">
-                        <tr>
-                            <td><span class="field-label">Área Actividad Económica</span> : <span
-                                    class="field-value">@if(isset($licencia->AREA) && is_numeric($licencia->AREA)){{ number_format((float) $licencia->AREA, 2, '.', '') }}m2
-                                    @endif</span></td>
-                        </tr>
-                        <tr>
-                            <td><span class="field-label">Zonificación</span>....................... : <span
-                                    class="field-value">{{ $licencia->ZONIFICACION ?? '' }}</span></td>
-                        </tr>
-                        <tr>
-                            <td><span class="field-label">Nº Licencia</span>......................... : <span
-                                    class="field-value">{{ $licencia->NUMERO_LICENCIA ?? '' }}</span></td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
         </table>
 
-        <!-- Título -->
+        <div class="technical-box">
+            <table class="header-table">
+                <tr>
+                    <td class="header-left-col">
+                        <div class="field-row">
+                            <span class="field-label">Expediente Nº.......... :</span>
+                            <span class="field-value">{{ $licencia->EXPEDIENTE_NRO ?? '' }}</span>
+                        </div>
+                    </td>
+                    <td class="header-right-col">
+                        <div class="field-row">
+                            <span class="field-label">Área Actividad Económica :</span>
+                            <span class="field-value">
+                                @if(isset($licencia->AREA) && is_numeric($licencia->AREA))
+                                    {{ number_format((float) $licencia->AREA, 2, '.', '') }} m²
+                                @endif
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="header-left-col">
+                        <div class="field-row">
+                            <span class="field-label">RSG......................... :</span>
+                            <span class="field-value">{{ $licencia->RESOLUCION_NRO ?? '' }}</span>
+                        </div>
+                    </td>
+                    <td class="header-right-col">
+                        <div class="field-row">
+                            <span class="field-label">Zonificación........................ :</span>
+                            <span class="field-value">{{ $licencia->ZONIFICACION ?? '' }}</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="header-left-col">
+                        <div class="field-row">
+                            <span class="field-label">Código Catastral...... :</span>
+                            <span class="field-value">{{ $licencia->CODIGO_CATASTRAL ?? '' }}</span>
+                        </div>
+                    </td>
+                    <td class="header-right-col">
+                        <div class="field-row">
+                            <span class="field-label">Nº Licencia......................... :</span>
+                            <span class="field-value">{{ $licencia->NUMERO_LICENCIA ?? '' }}</span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <div class="title-section">
-            <div class="title-main">SUBGERENCIA DE PROMOCIÓN EMPRESARIAL Y AUTORIZACIONES</div>
-            <div class="title-sub">LICENCIA DE FUNCIONAMIENTO</div>
-            <div class="title-type">{{ $licencia->TIPO_LICENCIA ?? 'ESPECIAL' }}</div>
+            <div class="title-text-common title-main">Subgerencia de Promoción Empresarial y Autorizaciones</div>
+
+            <div class="title-text-common">
+                <span class="title-sub">LICENCIA DE FUNCIONAMIENTO</span>
+            </div>
+
+            <div class="title-text-common title-type">{{ $licencia->TIPO_LICENCIA ?? 'ESPECIAL' }}</div>
         </div>
 
-        <!-- Datos del certificado -->
         <div class="data-section">
             <table class="data-table">
                 <tr>
-                    <td class="data-label">Otorgado a......... :</td>
-                    <td class="data-value">{{ $licencia->RAZON_SOCIAL ?? '' }}</td>
+                    <td class="data-label-col">Otorgado a</td>
+                    <td class="data-separator-col">:</td>
+                    <td class="data-value-col highlight-name">{{ $licencia->RAZON_SOCIAL ?? '' }}</td>
                 </tr>
+
                 <tr>
-                    <td class="data-label">RUC Nº............... :</td>
-                    <td class="data-value">{{ $licencia->RUC ?? '' }}</td>
+                    <td class="data-label-col">RUC Nº</td>
+                    <td class="data-separator-col">:</td>
+                    <td class="data-value-col">{{ $licencia->RUC ?? '' }}</td>
                 </tr>
+
                 <tr>
-                    <td class="data-label">Ubicado en......... :</td>
-                    <td class="data-value">{{ $licencia->LIC_DIRECCION ?? '' }}</td>
+                    <td class="data-label-col">Ubicado en</td>
+                    <td class="data-separator-col">:</td>
+                    <td class="data-value-col">
+                        {{ $licencia->LIC_DIRECCION ?? '' }}
+                    </td>
                 </tr>
+
                 <tr>
-                    <td class="data-label">Giro(s)................ :</td>
-                    <td class="data-value">{{ !empty($giros) ? implode(', ', $giros) : ($licencia->GIRO ?? '') }}</td>
+                    <td class="data-label-col">Giro(s)</td>
+                    <td class="data-separator-col">:</td>
+                    <td class="data-value-col">
+                        {{ !empty($giros) ? implode(', ', $giros) : ($licencia->GIRO ?? '') }}
+                    </td>
                 </tr>
-                <tr>
-                    <td class="data-label">Horario Atención :</td>
-                    <td class="data-value">
+
+                <tr style="border-bottom: none;">
+                    <td class="data-label-col">Horario Atención</td>
+                    <td class="data-separator-col">:</td>
+                    <td class="data-value-col">
                         @php
                             $horaInicio = $licencia->lic_horainicio ?? null;
                             $horaFin = $licencia->lic_horafin ?? null;
                             if ($horaInicio && $horaFin) {
                                 $horaInicioFormateada = \Carbon\Carbon::parse($horaInicio)->format('H:i');
                                 $horaFinFormateada = \Carbon\Carbon::parse($horaFin)->format('H:i');
-                                echo $horaInicioFormateada . ' - ' . $horaFinFormateada . ' Horas.';
+                                echo $horaInicioFormateada . ' - ' . $horaFinFormateada . ' HORAS.';
                             }
                         @endphp
                     </td>
@@ -345,45 +439,53 @@
             </table>
         </div>
 
-        <!-- Texto legal -->
-        <div class="legal-text">
-            <p class="legal-paragraph legal-text-bold">
+        <div class="legal-wrapper">
+
+            <div class="legal-base-box">
                 El presente certificado se expide en aplicación al D.S. Nº 163-2020-PCM Decreto Supremo que aprueba el
                 Texto Único Ordenado de la Ley Nº 28976, Ley Marco de Licencia de Funcionamiento en concordancia al D.S.
                 Nº 002-2018-PCM Decreto Supremo que aprueba el Nuevo Reglamento de Inspecciones Técnicas de Seguridad en
                 Edificaciones, que determina la matriz de riesgos de los establecimiento objeto de inspección.
-            </p>
-        </div>
+            </div>
 
-        <!-- Segunda sección legal con outdent -->
-        <div class="legal-section-two">
-            <p class="vigencia-text">
+            <div class="vigencia-box">
                 @php
                     $tipoLicencia = strtoupper($licencia->TIPO_LICENCIA ?? '');
                 @endphp
+                VIGENCIA:
                 @if($tipoLicencia === 'INDETERMINADA' || $tipoLicencia === 'TEMPORAL')
-                    La licencia tiene vigencia {{ $licencia->TIPO_LICENCIA }}.
+                    {{ $licencia->TIPO_LICENCIA }}
                 @else
-                    El plazo de esta licencia se encuentra sujeto a la licencia principal.
+                    Sujeta a la licencia principal.
                 @endif
-            </p>
-            <p class="legal-title">COMPROMISO :</p>
-            <p class="legal-paragraph-normal">
-                El administrado asume el compromiso de no vulnerar ni infringir la normativa legal vigente al momento de
-                realizar la actividad comercial autorizada
-                por medio de la Licencia de Funcionamiento.
-            </p>
-            <p class="legal-title">OBSERVACIONES :</p>
-            <p class="legal-paragraph-normal">
-                En caso se detecte incumplimiento de la normativa legal vigente, así como el haber incurrido en alguna
-                de las causales establecidas en el artículo 32 de
-                la Ordenanza N° 475/MDLM, se dará inicio al procedimiento de Revocatoria de la Licencia de
-                Funcionamiento; así como en la Clausura del Establecimiento
-                donde se realiza la actividad comercial autorizada.
-            </p>
-        </div>
+            </div>
 
-        <!-- Footer -->
+            <table class="legal-grid-table">
+                <tr>
+                    <td class="legal-grid-td section-spacing">
+                        <span class="legal-header">COMPROMISO</span>
+                        <p class="legal-body">
+                            El administrado asume el compromiso de no vulnerar ni infringir la normativa legal vigente
+                            al momento de realizar la actividad comercial autorizada por medio de la Licencia de
+                            Funcionamiento.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="legal-grid-td">
+                        <span class="legal-header">OBSERVACIONES</span>
+                        <p class="legal-body">
+                            En caso se detecte incumplimiento de la normativa legal vigente, así como el haber incurrido
+                            en alguna de las causales establecidas en el artículo 32 de la Ordenanza N° 475/MDLM, se
+                            dará inicio al procedimiento de Revocatoria de la Licencia de Funcionamiento; así como en la
+                            Clausura del Establecimiento donde se realiza la actividad comercial autorizada.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
         <div class="footer-section">
             <table class="footer-table">
                 <tr>
