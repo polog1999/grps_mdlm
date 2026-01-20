@@ -76,6 +76,10 @@ class LicenciasLevantamientosTable
 
                 TextColumn::make('lic_numlic')
                     ->label('Licencia')
+                    ->badge()
+                    ->color('primary')
+                    ->url(fn($record) => "/certificado-licencia/{$record->lic_id}")
+                    ->openUrlInNewTab()
                     ->searchable(),
 
                 TextColumn::make('licenciaLevantamientoReciente.estadoLevantamiento.descripcion')
