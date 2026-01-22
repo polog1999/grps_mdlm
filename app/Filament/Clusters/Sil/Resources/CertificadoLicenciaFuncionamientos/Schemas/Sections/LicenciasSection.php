@@ -60,9 +60,8 @@ class LicenciasSection
                 TextInput::make('n_resolucion')
                     ->label('N° Resolución')
                     ->maxLength(255)
-                    ->disabled()
-                    ->dehydrated()
-                    ->helperText('Código único de trámite: RESOLUCIÓN-ÁREA'),
+                    //->disabled()
+                    ->dehydrated(),
                 DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 Select::make('tipo_licencia')
