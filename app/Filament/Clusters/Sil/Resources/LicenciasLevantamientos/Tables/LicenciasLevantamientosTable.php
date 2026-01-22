@@ -83,13 +83,13 @@ class LicenciasLevantamientosTable
                     ->openUrlInNewTab()
                     ->searchable(),
 
-                /*
-            TextColumn::make('licenciaLevantamientoReciente.estadoLevantamiento.descripcion')
-                ->label('Estado de Levantamiento')
-                ->default('Sin estado')
-                ->badge()
-                ->color(fn($state) => $state === 'Sin estado' ? 'gray' : 'success')
-                ->searchable(),*/
+
+                TextColumn::make('licenciaLevantamientoReciente.estadoLevantamiento.descripcion')
+                    ->label('Estado de Levantamiento')
+                    ->default('Sin estado')
+                    ->badge()
+                    ->color(fn($state) => $state === 'Sin estado' ? 'gray' : 'success')
+                    ->searchable(),
 
                 TextColumn::make('licenciaLevantamientoReciente.observaciones')
                     ->label('Observaciones')
