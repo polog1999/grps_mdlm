@@ -16,7 +16,9 @@ use App\Services\Sil\DataLevantamiento\DataLevantamientoService;
 use App\Models\DataLevantamientoConsolida;
 use Filament\Schemas\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Schemas\Components\Grid;
+use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 
 class LicenciasLevantamientosTable
 {
@@ -79,10 +81,37 @@ class LicenciasLevantamientosTable
                     ->label('Licencia')
                     ->badge()
                     ->color('primary')
-                    ->url(fn($record) => "/certificado-licencia/{$record->lic_id}")
-                    ->openUrlInNewTab()
+                    // ->url(fn($record) => "/certificado-licencia/{$record->lic_id}")
+                    // ->openUrlInNewTab()
+                    ->action(
+                        Action::make('ver_certificado_pdf')
+                            ->modalHeading(fn($record) => "Certificado de Licencia N° {$record->lic_numlic}")
+                            ->modalWidth('7xl')
+                            ->modalIcon('heroicon-o-document-text')
+                            ->modalIconColor('primary')
+                            ->form(fn($record) => [
+                                \Filament\Forms\Components\Placeholder::make('pdf_viewer')
+                                    ->label('')
+                                    ->content(fn() => new \Illuminate\Support\HtmlString(
+                                        '<div style="width: 100%; height: 80vh;">
+                                            <iframe src="/certificado-licencia/' . $record->lic_id . '" 
+                                                    style="width: 100%; height: 100%; border: none; border-radius: 8px;"
+                                                    title="Certificado de Licencia">
+                                            </iframe>
+                                        </div>'
+                                    ))
+                                    ->columnSpanFull(),
+                            ])
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Cerrar')
+                    )
                     ->searchable(),
 
+
+                TextColumn::make('lic_fechaemision')
+                    ->label('Fecha Emisión De Licencia')
+                    ->date('d/m/Y')
+                    ->searchable(),
 
                 TextColumn::make('licenciaLevantamientoReciente.estadoLevantamiento.descripcion')
                     ->label('Estado de Levantamiento')
@@ -116,7 +145,25 @@ class LicenciasLevantamientosTable
 
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\TernaryFilter::make('tiene_itse')
+                    ->label('Con ITSE')
+                    ->placeholder('Todos')
+                    ->trueLabel('Solo con ITSE')
+                    ->falseLabel('Sin ITSE')
+                    ->queries(
+                        true: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->whereIn('lic_id', function ($subquery) {
+                            $subquery->select('lic_id')
+                                ->from('licencia.vu_licencia')
+                                ->whereNotNull('cin_numero');
+                        }),
+                        false: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->whereNotIn('lic_id', function ($subquery) {
+                            $subquery->select('lic_id')
+                                ->from('licencia.vu_licencia')
+                                ->whereNotNull('cin_numero');
+                        }),
+                        blank: fn(\Illuminate\Database\Eloquent\Builder $query) => $query,
+                    )
+                    ->indicator('ITSE'),
             ])
 
             ->recordActions([
@@ -370,7 +417,7 @@ class LicenciasLevantamientosTable
                     ->modalSubmitActionLabel('Guardar')
                     ->modalCancelActionLabel('Cancelar'),
                 Action::make('ver_foto_licencia')
-                    ->label('Ver Foto de la Licencia')
+                    ->label('Ver Foto Levantamiento')
                     ->icon('heroicon-o-photo')
                     ->iconButton()
                     ->tooltip('Ver Foto de la Licencia')
@@ -419,6 +466,83 @@ class LicenciasLevantamientosTable
 
                         return true;
                     }),
+
+                Action::make('Ver Itse')
+                    ->icon('tabler-clipboard-check')
+                    ->iconButton()
+                    ->tooltip('Ver Certificados ITSE')
+                    ->color(Color::Stone)
+                    ->disabled(function ($record) {
+                        $service = app(CertificadoLincenciaFuncionamientoService::class);
+                        return !$service->tieneCertificadoCompleto($record->lic_id);
+                    })
+                    ->modalHeading('Certificados de Inspección Técnica (ITSE)')
+                    ->modalDescription(fn($record) => "Certificados ITSE relacionados con la Licencia N° {$record->lic_numlic}")
+                    ->modalWidth('5xl')
+                    ->modalIcon('tabler-clipboard-check')
+                    ->modalIconColor(Color::Stone)
+                    ->infolist(function ($record) {
+                        $service = app(CertificadoLincenciaFuncionamientoService::class);
+                        $certificados = $service->obtenerCertificadosInspeccionPorLicencia($record->lic_id);
+
+                        if ($certificados->isEmpty()) {
+                            return [
+                                Section::make()
+                                    ->schema([
+                                        TextEntry::make('sin_datos')
+                                            ->label('')
+                                            ->default('No se encontraron certificados ITSE para esta licencia.')
+                                            ->color('warning')
+                                            ->icon('heroicon-o-exclamation-triangle')
+                                    ])
+                            ];
+                        }
+
+                        return [
+                            Section::make('Certificados Encontrados')
+                                ->description("Total: {$certificados->count()} certificado(s)")
+                                ->icon('heroicon-o-document-check')
+                                ->schema([
+                                    RepeatableEntry::make('certificados')
+                                        ->label('')
+                                        ->state($certificados->toArray())
+                                        ->schema([
+                                            TextEntry::make('cin_annio')
+                                                ->label('Año')
+                                                ->badge()
+                                                ->color('primary'),
+                                            TextEntry::make('cin_numero')
+                                                ->label('Número')
+                                                ->weight('bold')
+                                                ->copyable()
+                                                ->copyMessage('Número copiado')
+                                                ->icon('heroicon-o-hashtag'),
+                                            TextEntry::make('tie_descripcion')
+                                                ->label('Tipo de Edificación')
+                                                ->badge()
+                                                ->color('success'),
+                                            TextEntry::make('cin_expediente')
+                                                ->label('Expediente')
+                                                ->icon('heroicon-o-folder-open')
+                                                ->copyable()
+                                                ->copyMessage('Expediente copiado'),
+                                            TextEntry::make('cin_resolucion')
+                                                ->label('Resolución')
+                                                ->icon('heroicon-o-document-text')
+                                                ->copyable()
+                                                ->copyMessage('Resolución copiada'),
+                                            TextEntry::make('cin_fecha')
+                                                ->label('Fecha')
+                                                ->date('d/m/Y')
+                                                ->icon('heroicon-o-calendar'),
+                                        ])
+                                        ->columns(3)
+                                        ->contained(true)
+                                ])
+                        ];
+                    })
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar'),
 
             ], position: RecordActionsPosition::BeforeCells)
             //->actionsColumnLabel('Acciones')
