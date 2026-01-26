@@ -53,4 +53,23 @@ class EditCertificadoLicenciaFuncionamiento extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function afterSave(): void
+    {
+        $user = auth()->user();
+
+        // Obtener el ID del módulo basado en el recurso
+        $moduleId = \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id');
+
+        // Buscar si existe un ticket APROBADO para este usuario, registro y módulo
+        // y pasarlo a FINALIZADO para cerrar el ciclo de permiso.
+        \App\Models\SolicitudPermiso::query()
+            ->where('module_id', $moduleId)
+            ->where('record_id', $this->record->lic_id)
+            ->where('user_id', $user->id)
+            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+            ->update([
+                'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+            ]);
+    }
 }

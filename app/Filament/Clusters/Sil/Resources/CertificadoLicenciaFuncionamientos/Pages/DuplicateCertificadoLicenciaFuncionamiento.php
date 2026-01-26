@@ -102,4 +102,17 @@ class DuplicateCertificadoLicenciaFuncionamiento extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function afterSave(): void
+    {
+        // Finalizar el permiso si existe y fue usado con exito
+        \App\Models\SolicitudPermiso::query()
+            ->where('record_id', $this->record->lic_id)
+            ->where('user_id', auth()->id())
+            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DUPLICAR_LICENCIA)
+            ->update([
+                'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+            ]);
+    }
 }
