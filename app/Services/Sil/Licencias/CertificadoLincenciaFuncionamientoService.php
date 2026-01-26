@@ -51,7 +51,8 @@ class CertificadoLincenciaFuncionamientoService
                     'tie_descripcion',
                     'cin_expediente',
                     'cin_resolucion',
-                    'cin_fecha'
+                    'cin_fecha',
+                    'cin_vigencia_c',
                 )
                 ->where('lic_id', $lic_id)
                 ->orderBy('lic_id', 'desc')

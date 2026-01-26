@@ -678,7 +678,10 @@ class CertificadoLicenciaFuncionamientosTable
                     ->icon('tabler-clipboard-check')
                     ->iconButton()
                     ->tooltip('Ver Certificados ITSE')
-                    ->color(Color::Stone)
+                    ->color(function ($record) {
+                        $service = app(CertificadoLincenciaFuncionamientoService::class);
+                        return $service->tieneCertificadoCompleto($record->lic_id) ? Color::Yellow : Color::Stone;
+                    })
                     ->disabled(function ($record) {
                         $service = app(CertificadoLincenciaFuncionamientoService::class);
                         return !$service->tieneCertificadoCompleto($record->lic_id);
@@ -742,6 +745,9 @@ class CertificadoLicenciaFuncionamientosTable
                                                 ->label('Fecha')
                                                 ->date('d/m/Y')
                                                 ->icon('heroicon-o-calendar'),
+                                            TextEntry::make('cin_vigencia_c')
+                                                ->label('Tiempo de la vigencia')
+                                                ->icon('heroicon-o-calendar')
                                         ])
                                         ->columns(3)
                                         ->contained(true)
