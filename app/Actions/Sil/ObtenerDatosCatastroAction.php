@@ -27,10 +27,14 @@ class ObtenerDatosCatastroAction
             return CatastroSearchResult::notFound();
         }
 
-        // Lógica de decisión encapsulada aquí
+        // Si hay múltiples resultados, seleccionar automáticamente el fiu_id más reciente
         if ($collection->count() > 1) {
-            $matches = $collection->map(fn($item) => (array) $item)->toArray();
-            return CatastroSearchResult::multiple($matches);
+            /*
+              $matches = $collection->map(fn($item) => (array) $item)->toArray();
+            return CatastroSearchResult::multiple($matches);*/
+            $mostRecent = $collection->sortByDesc('fiu_id')->first();
+            $singleData = (array) $mostRecent;
+            return CatastroSearchResult::found($singleData);
         }
 
         // Caso único
