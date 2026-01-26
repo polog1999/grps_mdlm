@@ -371,7 +371,104 @@ class CertificadoInspeccionsTable
                     ->icon('heroicon-o-pencil')
                     ->iconButton()
                     ->tooltip('Editar certificado')
-                    ->color('warning'),
+                    ->color('warning')
+                    ->url(function ($record) {
+                        $user = auth()->user();
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                            ->where('record_id', $record->cin_id)
+                            ->where('user_id', $user->id)
+                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
+                            ->exists();
+
+                        if ($tienePermiso) {
+                            return \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::getUrl('edit', ['record' => $record]);
+                        }
+                        return null;
+                    })
+                    ->visible(function ($record) {
+                        $user = auth()->user();
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        return ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                            ->where('record_id', $record->cin_id)
+                            ->where('user_id', $user->id)
+                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
+                            ->exists();
+                    }),
+
+                Action::make('solicitar_editar')
+                    ->label('Editar')
+                    ->icon('heroicon-o-pencil')
+                    ->iconButton()
+                    ->tooltip('Solicitar permiso para editar')
+                    ->color('warning')
+                    ->modalHeading('Solicitar Permiso de Edición')
+                    ->modalDescription('Para editar este certificado, debe solicitar un permiso. Por favor, indique el motivo de la edición.')
+                    ->modalWidth('md')
+                    ->modalSubmitActionLabel('Enviar Solicitud')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->form([
+                        \Filament\Forms\Components\Textarea::make('observacion')
+                            ->label('Motivo de la solicitud')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('Ingrese el motivo por el cual desea editar este certificado...')
+                    ])
+                    ->action(function (array $data, $record) {
+                        $user = auth()->user();
+                        try {
+                            $existeSolicitud = \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', 'PENDIENTE')
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
+                                ->exists();
+
+                            if ($existeSolicitud) {
+                                Notification::make()
+                                    ->title('Solicitud pendiente')
+                                    ->body('Ya existe una solicitud pendiente de edición para este registro.')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
+
+                            \App\Models\SolicitudPermiso::create([
+                                'module_id' => \App\Models\Module::where('filament_class', \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::class)->value('id'),
+                                'record_id' => $record->cin_id,
+                                'user_id' => $user->id,
+                                'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE,
+                                'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                'observacion' => $data['observacion'],
+                            ]);
+
+                            Notification::make()
+                                ->title('Solicitud Enviada')
+                                ->body('Su solicitud de edición ha sido registrada y está pendiente de aprobación.')
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Error')
+                                ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->visible(function ($record) {
+                        $user = auth()->user();
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                            ->where('record_id', $record->cin_id)
+                            ->where('user_id', $user->id)
+                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
+                            ->exists();
+                        return !$tienePermiso;
+                    }),
                 Action::make('borrar')
                     ->label('Borrar')
                     ->icon('heroicon-o-trash')
@@ -438,82 +535,226 @@ class CertificadoInspeccionsTable
                         ->icon('tabler-certificate')
                         ->color('primary')
                         ->tooltip('Gestionar certificado actualizado')
-                        ->modalHeading('Gestión de Certificado Actualizado')
-                        ->modalDescription('Modal para subir y descargar certificado actualizado')
-                        ->modalWidth('5xl')
+                        ->modalHeading(function ($record) {
+                            $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
 
-                        ->modalSubmitActionLabel('Subir Certificado')
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Solicitar Permiso de Actualización';
+                            }
+
+                            return 'Gestión de Certificado Actualizado';
+                        })
+                        ->modalDescription(function ($record) {
+                            $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'El certificado ya existe. Para volver a subirlo, necesitas solicitar un permiso. Por favor, indica el motivo.';
+                            }
+
+                            return 'Modal para subir y descargar certificado actualizado';
+                        })
+                        ->modalWidth(function ($record) {
+                            $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'md';
+                            }
+
+                            return '5xl';
+                        })
+                        ->modalSubmitActionLabel(function ($record) {
+                            $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Enviar Solicitud';
+                            }
+
+                            return 'Subir Certificado';
+                        })
                         ->modalCancelActionLabel('Cerrar')
+                        ->form(function ($record) {
+                            $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
 
-                        ->form(fn($record) => [
-                            Grid::make(2)
-                                ->schema([
-                                    Section::make('Subir/Actualizar Certificado')
-                                        ->description('Suba o actualice el certificado en formato PDF')
-                                        ->icon('heroicon-o-arrow-up-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            FileUpload::make('certificado_actualizado')
-                                                ->label('Archivo PDF')
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(10240) // 10MB
-                                                ->disk('local')
-                                                ->directory('temp')
-                                                ->visibility('private')
-                                                ->downloadable()
-                                                ->openable()
-                                                ->previewable()
-                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
-                                                ->storeFiles(false)
-                                                ->required(),
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                ->exists();
 
-                                            Hidden::make('cin_id')
-                                                ->default(fn($record) => $record->cin_id),
-                                        ]),
+                            if ($exists && !$tienePermiso) {
+                                return [
+                                    \Filament\Forms\Components\Textarea::make('observacion')
+                                        ->label('Motivo de la solicitud')
+                                        ->required()
+                                        ->rows(3)
+                                        ->placeholder('Ingrese el motivo por el cual desea volver a subir el certificado...')
+                                ];
+                            }
 
-                                    Section::make('Descargar Certificado')
-                                        ->description('Descargue el certificado actualizado')
-                                        ->icon('heroicon-o-arrow-down-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            TextInput::make('download_status')
-                                                ->label('Estado del Certificado')
-                                                ->default(function () use ($record) {
-                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                    return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixIcon(function () use ($record) {
-                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
-                                                })
-                                                ->suffixIconColor(function () use ($record) {
-                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                    return $exists ? 'success' : 'warning';
-                                                }),
+                            return [
+                                Grid::make(2)
+                                    ->schema([
+                                        Section::make('Subir/Actualizar Certificado')
+                                            ->description('Suba o actualice el certificado en formato PDF')
+                                            ->icon('heroicon-o-arrow-up-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                FileUpload::make('certificado_actualizado')
+                                                    ->label('Archivo PDF')
+                                                    ->acceptedFileTypes(['application/pdf'])
+                                                    ->maxSize(10240) // 10MB
+                                                    ->disk('local')
+                                                    ->directory('temp')
+                                                    ->visibility('private')
+                                                    ->downloadable()
+                                                    ->openable()
+                                                    ->previewable()
+                                                    ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
+                                                    ->storeFiles(false)
+                                                    ->required(),
 
-                                            TextInput::make('download_link')
-                                                ->label('Descargar')
-                                                ->default(function () use ($record) {
-                                                    $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
-                                                    return $exists ? 'Listo para descargar' : 'No disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixAction(
-                                                    Action::make('download')
-                                                        ->icon('heroicon-o-arrow-down-tray')
-                                                        ->label('Descargar PDF')
-                                                        ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'actualizado']))
-                                                        ->openUrlInNewTab()
-                                                        ->visible(fn() => Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf"))
-                                                ),
-                                        ]),
-                                ])
-                        ])
+                                                Hidden::make('cin_id')
+                                                    ->default(fn($record) => $record->cin_id),
+                                            ]),
 
+                                        Section::make('Descargar Certificado')
+                                            ->description('Descargue el certificado actualizado')
+                                            ->icon('heroicon-o-arrow-down-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                TextInput::make('download_status')
+                                                    ->label('Estado del Certificado')
+                                                    ->default(function () use ($record) {
+                                                        $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                        return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixIcon(function () use ($record) {
+                                                        $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                        return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                    })
+                                                    ->suffixIconColor(function () use ($record) {
+                                                        $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                        return $exists ? 'success' : 'warning';
+                                                    }),
+
+                                                TextInput::make('download_link')
+                                                    ->label('Descargar')
+                                                    ->default(function () use ($record) {
+                                                        $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+                                                        return $exists ? 'Listo para descargar' : 'No disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixAction(
+                                                        Action::make('download')
+                                                            ->icon('heroicon-o-arrow-down-tray')
+                                                            ->label('Descargar PDF')
+                                                            ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'actualizado']))
+                                                            ->openUrlInNewTab()
+                                                            ->visible(fn() => Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf"))
+                                                    ),
+                                            ]),
+                                    ])
+                            ];
+                        })
                         ->action(function (array $data, $record, Action $action) {
+                            $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                // Logic for permission request
+                                try {
+                                    $existeSolicitud = \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->cin_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', 'PENDIENTE')
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                        ->exists();
+
+                                    if ($existeSolicitud) {
+                                        Notification::make()
+                                            ->title('Solicitud pendiente')
+                                            ->body('Ya existe una solicitud pendiente de actualización para este registro.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    \App\Models\SolicitudPermiso::create([
+                                        'module_id' => \App\Models\Module::where('filament_class', \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::class)->value('id'),
+                                        'record_id' => $record->cin_id,
+                                        'user_id' => $user->id,
+                                        'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE,
+                                        'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                        'observacion' => $data['observacion'],
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Solicitud Enviada')
+                                        ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
+                                        ->success()
+                                        ->send();
+
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                                return;
+                            }
+
+                            // Normal Upload Logic
                             $service = app(CertificadoInspeccionService::class);
 
                             // Obtenemos el archivo temporal
@@ -534,8 +775,19 @@ class CertificadoInspeccionsTable
                                         ->danger()
                                         ->send();
 
-                                    // Detenemos el cierre del modal para que el usuario pueda corregir
                                     $action->halt();
+                                }
+
+                                // Finalize permission if used
+                                if ($tienePermiso && !($user_role_id === 1 || $user_role_id === 6)) {
+                                    \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->cin_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ITSE)
+                                        ->update([
+                                            'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+                                        ]);
                                 }
 
                                 Notification::make()
@@ -560,91 +812,234 @@ class CertificadoInspeccionsTable
                         ->icon('tabler-paperclip')
                         ->color('info')
                         ->tooltip('Gestionar anexos')
-                        ->modalHeading('Gestión de Anexos')
-                        ->modalDescription('Modal para subir y descargar anexos del certificado')
-                        ->modalWidth('5xl')
+                        ->modalHeading(function ($record) {
+                            $service = app(CertificadoInspeccionAnexoService::class);
+                            $exists = $service->existeAnexo($record->cin_id);
 
-                        ->modalSubmitActionLabel('Subir Anexo')
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Solicitar Permiso de Actualización';
+                            }
+
+                            return 'Gestión de Anexos';
+                        })
+                        ->modalDescription(function ($record) {
+                            $service = app(CertificadoInspeccionAnexoService::class);
+                            $exists = $service->existeAnexo($record->cin_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'El anexo ya existe. Para volver a subirlo, necesitas solicitar un permiso. Por favor, indica el motivo.';
+                            }
+
+                            return 'Modal para subir y descargar anexos del certificado';
+                        })
+                        ->modalWidth(function ($record) {
+                            $service = app(CertificadoInspeccionAnexoService::class);
+                            $exists = $service->existeAnexo($record->cin_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'md';
+                            }
+
+                            return '5xl';
+                        })
+                        ->modalSubmitActionLabel(function ($record) {
+                            $service = app(CertificadoInspeccionAnexoService::class);
+                            $exists = $service->existeAnexo($record->cin_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Enviar Solicitud';
+                            }
+
+                            return 'Subir Anexo';
+                        })
                         ->modalCancelActionLabel('Cerrar')
+                        ->form(function ($record) {
+                            $service = app(CertificadoInspeccionAnexoService::class);
+                            $exists = $service->existeAnexo($record->cin_id);
 
-                        ->form(fn($record) => [
-                            Grid::make(2)
-                                ->schema([
-                                    Section::make('Subir/Actualizar Anexo')
-                                        ->description('Suba o actualice el anexo en formato PDF')
-                                        ->icon('heroicon-o-arrow-up-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            FileUpload::make('anexo_pdf')
-                                                ->label('Archivo PDF')
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(10240) // 10MB
-                                                ->disk('local')
-                                                ->directory('temp')
-                                                ->visibility('private')
-                                                ->downloadable()
-                                                ->openable()
-                                                ->previewable()
-                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Anexo"')
-                                                ->storeFiles(false)
-                                                ->required(),
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                ->exists();
 
-                                            Hidden::make('cin_id')
-                                                ->default(fn($record) => $record->cin_id),
-                                        ]),
+                            if ($exists && !$tienePermiso) {
+                                return [
+                                    \Filament\Forms\Components\Textarea::make('observacion')
+                                        ->label('Motivo de la solicitud')
+                                        ->required()
+                                        ->rows(3)
+                                        ->placeholder('Ingrese el motivo por el cual desea volver a subir el anexo...')
+                                ];
+                            }
 
-                                    Section::make('Descargar Anexo')
-                                        ->description('Descargue el anexo del certificado')
-                                        ->icon('heroicon-o-arrow-down-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            TextInput::make('anexo_status')
-                                                ->label('Estado del Anexo')
-                                                ->default(function () use ($record) {
-                                                    $service = app(CertificadoInspeccionAnexoService::class);
-                                                    $exists = $service->existeAnexo($record->cin_id);
-                                                    return $exists ? '✓ Anexo Disponible' : '⚠ No Disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixIcon(function () use ($record) {
-                                                    $service = app(CertificadoInspeccionAnexoService::class);
-                                                    $exists = $service->existeAnexo($record->cin_id);
-                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
-                                                })
-                                                ->suffixIconColor(function () use ($record) {
-                                                    $service = app(CertificadoInspeccionAnexoService::class);
-                                                    $exists = $service->existeAnexo($record->cin_id);
-                                                    return $exists ? 'success' : 'warning';
-                                                }),
+                            return [
+                                Grid::make(2)
+                                    ->schema([
+                                        Section::make('Subir/Actualizar Anexo')
+                                            ->description('Suba o actualice el anexo en formato PDF')
+                                            ->icon('heroicon-o-arrow-up-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                FileUpload::make('anexo_pdf')
+                                                    ->label('Archivo PDF')
+                                                    ->acceptedFileTypes(['application/pdf'])
+                                                    ->maxSize(10240) // 10MB
+                                                    ->disk('local')
+                                                    ->directory('temp')
+                                                    ->visibility('private')
+                                                    ->downloadable()
+                                                    ->openable()
+                                                    ->previewable()
+                                                    ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Anexo"')
+                                                    ->storeFiles(false)
+                                                    ->required(),
 
-                                            TextInput::make('anexo_download')
-                                                ->label('Descargar')
-                                                ->default(function () use ($record) {
-                                                    $service = app(CertificadoInspeccionAnexoService::class);
-                                                    $exists = $service->existeAnexo($record->cin_id);
-                                                    return $exists ? 'Listo para descargar' : 'No disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixAction(
-                                                    Action::make('download_anexo')
-                                                        ->icon('heroicon-o-arrow-down-tray')
-                                                        ->label('Descargar PDF')
-                                                        ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'anexo']))
-                                                        ->openUrlInNewTab()
-                                                        ->visible(function () use ($record) {
-                                                            $service = app(CertificadoInspeccionAnexoService::class);
-                                                            return $service->existeAnexo($record->cin_id);
-                                                        })
-                                                ),
-                                        ]),
-                                ])
-                        ])
+                                                Hidden::make('cin_id')
+                                                    ->default(fn($record) => $record->cin_id),
+                                            ]),
 
+                                        Section::make('Descargar Anexo')
+                                            ->description('Descargue el anexo del certificado')
+                                            ->icon('heroicon-o-arrow-down-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                TextInput::make('anexo_status')
+                                                    ->label('Estado del Anexo')
+                                                    ->default(function () use ($record, $service) {
+                                                        $exists = $service->existeAnexo($record->cin_id);
+                                                        return $exists ? '✓ Anexo Disponible' : '⚠ No Disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixIcon(function () use ($record, $service) {
+                                                        $exists = $service->existeAnexo($record->cin_id);
+                                                        return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                    })
+                                                    ->suffixIconColor(function () use ($record, $service) {
+                                                        $exists = $service->existeAnexo($record->cin_id);
+                                                        return $exists ? 'success' : 'warning';
+                                                    }),
+
+                                                TextInput::make('anexo_download')
+                                                    ->label('Descargar')
+                                                    ->default(function () use ($record, $service) {
+                                                        $exists = $service->existeAnexo($record->cin_id);
+                                                        return $exists ? 'Listo para descargar' : 'No disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixAction(
+                                                        Action::make('download_anexo')
+                                                            ->icon('heroicon-o-arrow-down-tray')
+                                                            ->label('Descargar PDF')
+                                                            ->url(fn() => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'anexo']))
+                                                            ->openUrlInNewTab()
+                                                            ->visible(function () use ($record, $service) {
+                                                                return $service->existeAnexo($record->cin_id);
+                                                            })
+                                                    ),
+                                            ]),
+                                    ])
+                            ];
+                        })
                         ->action(function (array $data, $record, Action $action) {
                             $service = app(CertificadoInspeccionAnexoService::class);
+                            $exists = $service->existeAnexo($record->cin_id);
 
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                // Logic for permission request
+                                try {
+                                    $existeSolicitud = \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->cin_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', 'PENDIENTE')
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                        ->exists();
+
+                                    if ($existeSolicitud) {
+                                        Notification::make()
+                                            ->title('Solicitud pendiente')
+                                            ->body('Ya existe una solicitud pendiente de actualización para este registro.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    \App\Models\SolicitudPermiso::create([
+                                        'module_id' => \App\Models\Module::where('filament_class', \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::class)->value('id'),
+                                        'record_id' => $record->cin_id,
+                                        'user_id' => $user->id,
+                                        'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS,
+                                        'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                        'observacion' => $data['observacion'],
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Solicitud Enviada')
+                                        ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
+                                        ->success()
+                                        ->send();
+
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                                return;
+                            }
+
+                            // Normal Upload Logic
                             // Obtenemos el archivo temporal
                             $file = $data['anexo_pdf'];
 
@@ -663,8 +1058,19 @@ class CertificadoInspeccionsTable
                                         ->danger()
                                         ->send();
 
-                                    // Detenemos el cierre del modal para que el usuario pueda corregir
                                     $action->halt();
+                                }
+
+                                // Finalize permission if used
+                                if ($tienePermiso && !($user_role_id === 1 || $user_role_id === 6)) {
+                                    \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->cin_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_ANEXOS)
+                                        ->update([
+                                            'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+                                        ]);
                                 }
 
                                 Notification::make()

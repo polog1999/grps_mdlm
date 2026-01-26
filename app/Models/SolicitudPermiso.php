@@ -72,4 +72,12 @@ class SolicitudPermiso extends Model
         return $this->belongsTo(CertificadoLicenciaFuncionamiento::class, 'record_id', 'lic_id');
     }
 
+    /**
+     * Relación con CertificadoInspeccion (solo válido si module_id = 1).
+     */
+    public function certificado()
+    {
+        return $this->belongsTo(CertificadoInspeccion::class, 'record_id', 'cin_id');
+    }
+
 }

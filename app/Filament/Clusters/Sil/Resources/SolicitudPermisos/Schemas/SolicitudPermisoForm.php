@@ -36,6 +36,9 @@ class SolicitudPermisoForm
                                 if ($record->module_id === 2) {
                                     return 'Licencia N°: ' . ($record->licencia?->lic_numlic ?? 'S/N');
                                 }
+                                if ($record->module_id === 1) {
+                                    return 'Itse N°: ' . $record->certificado?->cin_numero;
+                                }
                                 return 'Registro ID: ' . $record->record_id;
                             })
                             ->disabled()

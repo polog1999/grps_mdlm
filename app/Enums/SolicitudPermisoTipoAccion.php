@@ -16,6 +16,12 @@ enum SolicitudPermisoTipoAccion: string implements HasLabel
 
     case SUBIR_PDF_COMPATIBILIDAD = 'SUBIR_PDF_COMPATIBILIDAD';
 
+    case EDITAR_DATOS_ITSE = 'EDITAR_DATOS_ITSE';
+    case ELIMINAR_ITSE = 'ELIMINAR_ITSE';
+    case SUBIR_PDF_ITSE = 'SUBIR_PDF_ITSE';
+    case SUBIR_PDF_ANEXOS = 'SUBIR_PDF_ANEXOS';
+
+
     public function getLabel(): ?string
     {
         return match ($this) {
@@ -26,6 +32,10 @@ enum SolicitudPermisoTipoAccion: string implements HasLabel
             self::CESIONAR_LICENCIA => 'Cesionar Licencia',
             self::SUBIR_PDF_LICENCIA => 'Subir PDF de Licencia',
             self::SUBIR_PDF_COMPATIBILIDAD => 'Subir PDF de Compatibilidad',
+            self::EDITAR_DATOS_ITSE => 'Editar Datos de ITSE',
+            self::ELIMINAR_ITSE => 'Eliminar ITSE',
+            self::SUBIR_PDF_ITSE => 'Subir PDF de ITSE',
+            self::SUBIR_PDF_ANEXOS => 'Subir PDF de Anexos',
         };
     }
 }

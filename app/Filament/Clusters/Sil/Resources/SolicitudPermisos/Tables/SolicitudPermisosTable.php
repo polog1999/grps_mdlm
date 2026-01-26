@@ -17,7 +17,22 @@ class SolicitudPermisosTable
     {
         return $table
             ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(fn(Builder $query) => $query->where('estado', '!=', SolicitudPermisoEstado::FINALIZADO))
+            ->modifyQueryUsing(function (Builder $query) {
+                $user = auth()->user();
+                $user_role_id = $user->modelHasRole?->role_id;
+
+                // Role 1 = Admin (global access)
+                // Role 2 = SPEA (only Licencias - module_id=2)
+                // Role 6 = ITSE (only ITSE - module_id=1)
+                if ($user_role_id === 2) {
+                    $query->where('module_id', 2); // Only Licencias
+                } elseif ($user_role_id === 6) {
+                    $query->where('module_id', 1); // Only ITSE
+                }
+                // Role 1 sees all, no filter needed
+    
+                return $query->where('estado', '!=', SolicitudPermisoEstado::FINALIZADO);
+            })
             ->columns([
                 TextColumn::make('module.name')
                     ->label('Módulo')
@@ -27,6 +42,9 @@ class SolicitudPermisosTable
                     ->formatStateUsing(function ($state, $record) {
                         if ($record->module_id === 2) {
                             return $record->licencia?->lic_numlic ?? $state;
+                        }
+                        if ($record->module_id === 1) {
+                            return $record->certificado?->cin_numero ?? $state;
                         }
                         return $state;
                     })
@@ -70,6 +88,25 @@ class SolicitudPermisosTable
                     ->icon('heroicon-o-pencil')
                     ->tooltip('Editar solicitud')
                     ->color('warning')
+                    ->visible(function ($record) {
+                        $user = auth()->user();
+                        $user_role_id = $user->modelHasRole?->role_id;
+
+                        // Role 1 = Admin (global access)
+                        if ($user_role_id === 1) {
+                            return true;
+                        }
+                        // Role 2 = SPEA (only Licencias - module_id=2)
+                        if ($user_role_id === 2) {
+                            return $record->module_id === 2;
+                        }
+                        // Role 6 = ITSE (only ITSE - module_id=1)
+                        if ($user_role_id === 6) {
+                            return $record->module_id === 1;
+                        }
+
+                        return false;
+                    })
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
 
