@@ -9,6 +9,7 @@ class BusquedaExpedienteResult
     public const STATUS_NOT_FOUND = 'NOT_FOUND';
     public const STATUS_SELECTION_CATASTRO = 'SELECTION_CATASTRO';
     public const STATUS_SELECTION_RESOLUCION = 'SELECTION_RESOLUCION';
+    public const STATUS_SELECTION_ITSE = 'SELECTION_ITSE';
 
     public const STATUS_MISSING_PERSONA = 'MISSING_PERSONA';
     public const STATUS_ERROR = 'ERROR';
@@ -45,5 +46,15 @@ class BusquedaExpedienteResult
     public static function requirePersonaSearch(array $data): self
     {
         return new self(self::STATUS_MISSING_PERSONA, data: $data, message: 'El expediente no tiene una persona vinculada. Debe buscarla manualmente.');
+    }
+
+    public static function requireItseSelection(array $data, array $matches): self
+    {
+        return new self(
+            status: self::STATUS_SELECTION_ITSE,
+            data: $data,
+            matches: $matches,
+            message: 'Expediente de riesgo ALTO/MUY ALTO. Debe seleccionar una ITSE existente para continuar.'
+        );
     }
 }
