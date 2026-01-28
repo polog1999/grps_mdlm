@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Sections;
 
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -30,8 +31,6 @@ class LicenciasSection
             ->icon('heroicon-o-exclamation-triangle')
             ->collapsible()
             ->schema([
-                TextInput::make('proccodigo')->label('Código de Procedimiento')->maxLength(50)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('procnivel')->label('Nivel de Riesgo')->maxLength(100)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 Select::make('nir_id')
                     ->label('Nivel de Riesgo')
                     ->options(self::nivelesRiesgo())
@@ -51,12 +50,6 @@ class LicenciasSection
                     ->disabled(fn($get) => $get('_section_licencias_saved'))
                     ->dehydrated(),
 
-                TextInput::make('nir_descripcion')
-                    ->label('Descripción Nivel de Riesgo')
-                    ->maxLength(255)
-                    ->disabled()
-                    ->dehydrated()
-                    ->columnSpanFull(),
                 Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('n_resolucion')
                     ->label('N° Resolución')
@@ -238,6 +231,20 @@ class LicenciasSection
                     ->disabled(fn($get) => $get('_section_licencias_saved'))
                     ->dehydrated(),
                 Textarea::make('observaciones')->label('Observaciones')->rows(3)->columnSpanFull()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Hidden::make('proccodigo')->label('Código de Procedimiento')
+                    //->maxLength(50)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Hidden::make('procnivel')->label('Nivel de Riesgo')
+                    //->maxLength(100)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+
+                Hidden::make('nir_descripcion')
+                    ->label('Descripción Nivel de Riesgo')
+                    //->maxLength(255)
+                    ->disabled()
+                    ->dehydrated()
+                    ->columnSpanFull(),
+
             ])
             ->headerActions(SectionHeaderActions::make('licencias'))
             ->columnSpanFull()

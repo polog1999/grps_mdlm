@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Sections;
 
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -183,12 +184,7 @@ class ExpedienteSection
                                 }
                             })
                     ),
-                TextInput::make('exp_nomrec_id')
-                    ->label('ID Persona')
-                    ->disabled()
-                    ->dehydrated()
-                    ->numeric()
-                    ->columnSpan(1),
+
 
                 TextInput::make('exp_razsoc')
                     ->label('Razón Social')
@@ -293,12 +289,7 @@ class ExpedienteSection
                                 }
                             })
                     ),
-                TextInput::make('exp_razsoc_id')
-                    ->label('ID Razón Social')
-                    ->disabled()
-                    ->dehydrated()
-                    ->numeric()
-                    ->columnSpan(1),
+
 
 
                 TextInput::make('numdoc')->label('RUC/DNI')->maxLength(22)->numeric()->disabled()->dehydrated(),
@@ -307,6 +298,18 @@ class ExpedienteSection
                     ->dehydrated(),
                 TextInput::make('correo')->label('Correo Electrónico')->maxLength(255)->disabled()->dehydrated(),
                 TextInput::make('domfis')->label('Domicilio Fiscal')->maxLength(255)->columnSpanFull()->disabled()->dehydrated(),
+                Hidden::make('exp_nomrec_id')
+                    ->label('ID Persona')
+                    ->disabled()
+                    ->dehydrated()
+                    //->numeric()
+                    ->columnSpan(1),
+                Hidden::make('exp_razsoc_id')
+                    ->label('ID Razón Social')
+                    ->disabled()
+                    ->dehydrated()
+                    //->numeric()
+                    ->columnSpan(1),
             ])
             ->headerActions(SectionHeaderActions::make('expediente'))
             ->columnSpanFull()
