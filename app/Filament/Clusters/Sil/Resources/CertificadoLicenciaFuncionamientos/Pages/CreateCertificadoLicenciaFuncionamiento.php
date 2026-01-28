@@ -13,7 +13,7 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
 {
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
     protected static ?string $title = 'Registro de Certificado de Licencia de Funcionamiento';
-
+    protected static bool $canCreateAnother = false;
     /**
      * Intercepta los datos antes de crear el registro
      * Reorganiza los datos por secciones: expediente, catastro, licencias
@@ -132,6 +132,47 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
             // Hidratar otros atributos del modelo si es necesario
             $model->lic_expnum = $datosOrganizados['expediente']['exp_num'] ?? null;
             $model->lic_numlic = $datosOrganizados['licencias']['numero_licencia'] ?? null;
+
+            // Si hay cin_id seleccionado, actualizar CertificadoInspeccion con el número de licencia
+            $cinId = $data['_cin_id_seleccionado'] ?? null;
+            $numeroLicencia = $datosOrganizados['licencias']['numero_licencia'] ?? null;
+
+            \Log::info('=== DEBUG ITSE UPDATE ===', [
+                'cin_id_seleccionado' => $cinId,
+                'cin_id_type' => gettype($cinId),
+                'numero_licencia' => $numeroLicencia,
+                'numero_licencia_type' => gettype($numeroLicencia),
+                'data_keys' => array_keys($data),
+                'has_cin_id_key' => array_key_exists('_cin_id_seleccionado', $data),
+            ]);
+
+            if ($cinId && $numeroLicencia) {
+                \Log::info('Entrando al bloque de actualización ITSE');
+
+                $itse = \App\Models\CertificadoInspeccion::find($cinId);
+
+                \Log::info('Resultado de búsqueda ITSE', [
+                    'itse_found' => $itse ? true : false,
+                    'itse_id' => $itse->cin_id ?? null,
+                    'itse_current_licencia' => $itse->cin_licencia ?? null,
+                ]);
+
+                if ($itse) {
+                    $itse->cin_licencia = $numeroLicencia;
+                    $saved = $itse->save();
+
+                    \Log::info('ITSE actualizada con número de licencia', [
+                        'cin_id' => $cinId,
+                        'cin_licencia' => $numeroLicencia,
+                        'save_result' => $saved,
+                    ]);
+                }
+            } else {
+                \Log::info('No se actualiza ITSE - faltan datos', [
+                    'cin_id_empty' => empty($cinId),
+                    'numero_licencia_empty' => empty($numeroLicencia),
+                ]);
+            }
 
             // Mostrar notificación de éxito
             Notification::make()

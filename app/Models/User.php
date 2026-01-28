@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles; // <-- 1. Importar el Trait de Spatie
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -67,5 +68,13 @@ class User extends Authenticatable
 
         // 3. **Verificación de Email (como ya tenías)**
         return !is_null($this->email_verified_at);
+    }
+
+    /**
+     * Get the model_has_role record associated with the user.
+     */
+    public function modelHasRole(): HasOne
+    {
+        return $this->hasOne(ModelHasRole::class, 'model_id', 'id');
     }
 }

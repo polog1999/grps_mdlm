@@ -6,6 +6,7 @@ use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use App\DTOs\Sil\BusquedaExpedienteResult;
 use App\DTOs\Sil\CatastroSearchResult;
 use App\DTOs\Sil\ResolucionSearchResult;
+use App\Models\CertificadoInspeccion;
 
 class ProcesarBusquedaExpedienteAction
 {
@@ -57,6 +58,31 @@ class ProcesarBusquedaExpedienteAction
 
     private function evaluarReglasDeNegocio(array $datos, CatastroSearchResult $catastroResult, ResolucionSearchResult $resolucionResult): BusquedaExpedienteResult
     {
+        // Regla 0: Riesgo ALTO o MUY ALTO - Buscar ITSEs disponibles (sin licencia) para el mismo expediente
+        $codigosRiesgoAlto = ['P043', 'P044', 'P047', 'P048'];
+        $proccodigo = $datos['nivel_riesgo']['proccodigo'] ?? null;
+        $expedienteNum = $datos['expediente']->exp_num ?? null;
+
+        if ($proccodigo && in_array($proccodigo, $codigosRiesgoAlto)) {
+            // Buscar ITSEs sin licencia vinculada Y del mismo expediente
+            $itses = CertificadoInspeccion::where(function ($query) {
+                $query->whereNull('cin_licencia')
+                    ->orWhere('cin_licencia', '');
+            })
+                ->where('cin_expediente', $expedienteNum)
+                ->orderBy('cin_id', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(fn($itse) => $itse->toArray())
+                ->toArray();
+
+            if (empty($itses)) {
+                return BusquedaExpedienteResult::notFound("Riesgo Alto/Muy Alto: No hay ITSEs disponibles para el expediente {$expedienteNum}. Primero debe registrar una ITSE para este expediente.");
+            }
+
+            return BusquedaExpedienteResult::requireItseSelection($datos, $itses);
+        }
+
         // Regla 1: Error Crítico de Catastro
         if ($catastroResult->status === CatastroSearchResult::STATUS_NOT_FOUND) {
             $codcat = $datos['expediente']->ecc_codcat ?? 'N/A';

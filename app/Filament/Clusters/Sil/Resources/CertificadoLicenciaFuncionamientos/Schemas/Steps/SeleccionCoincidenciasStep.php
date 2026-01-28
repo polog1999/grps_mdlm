@@ -29,14 +29,17 @@ class SeleccionCoincidenciasStep
                 fn($get) =>
                 !empty($get('_catastro_coincidencias')) ||
                 !empty($get('_resolucion_areas_coincidencias')) ||
-                !empty($get('_persona_requerida'))
-
+                !empty($get('_persona_requerida')) ||
+                !empty($get('_itse_coincidencias'))
             );
 
     }
 
     private static function getDescription(callable $get): string
     {
+        if (!empty($get('_itse_coincidencias'))) {
+            return 'Seleccione una ITSE disponible para riesgo alto';
+        }
         return !empty($get('_resolucion_areas_coincidencias'))
             ? 'Seleccione el área de resolución correcta'
             : 'Resolver duplicados de catastro';
@@ -46,6 +49,12 @@ class SeleccionCoincidenciasStep
     {
         $areasResolucion = $get('_resolucion_areas_coincidencias') ?? [];
         $catastroCoincidencias = $get('_catastro_coincidencias') ?? [];
+        $itseCoincidencias = $get('_itse_coincidencias') ?? [];
+
+        // Prioridad: ITSE > Áreas > Catastro > Persona
+        if (!empty($itseCoincidencias)) {
+            return self::schemaItse($itseCoincidencias);
+        }
 
         if (!empty($areasResolucion)) {
             return self::schemaAreas($areasResolucion);
@@ -125,7 +134,46 @@ class SeleccionCoincidenciasStep
                 ->compact()
         ];
     }
-    // --- SECCIÓN 3: Schema de Persona ---
+
+    // --- SECCIÓN 3: Schema de ITSE ---
+    private static function schemaItse(array $coincidencias): array
+    {
+        $opciones = [];
+        $descripciones = [];
+
+        foreach ($coincidencias as $item) {
+            $item = (array) $item;
+            $id = $item['cin_id'] ?? null;
+            if ($id) {
+                $numero = $item['cin_numero'] ?? 'S/N';
+                $anio = $item['cin_anio'] ?? '';
+                $expediente = $item['cin_expediente'] ?? '';
+                $ubicacion = $item['cin_ubicacion'] ?? '';
+                $solicitante = $item['cin_solicitante'] ?? '';
+
+                $opciones[$id] = "ITSE N° {$numero}-{$anio}";
+                $descripciones[$id] = "Expediente: {$expediente} | Solicitante: {$solicitante} | Ubicación: {$ubicacion}";
+            }
+        }
+
+        return [
+            Section::make('Seleccionar ITSE para Riesgo Alto/Muy Alto')
+                ->description("Se encontraron " . count($coincidencias) . " ITSEs disponibles (sin licencia vinculada). Seleccione una para continuar.")
+                ->icon('heroicon-o-shield-check')
+                ->schema([
+                    Radio::make('itse_seleccionado')
+                        ->hiddenLabel()
+                        ->options($opciones)
+                        ->descriptions($descripciones)
+                        ->required()
+                        ->live()
+                        ->afterStateUpdated(fn($state, $set, $get) => self::procesarSeleccionItse($state, $set, $get))
+                        ->columnSpanFull()
+                ])
+                ->compact()
+        ];
+    }
+    // --- SECCIÓN 4: Schema de Persona ---
     private static function schemaBuscarPersona(): array
     {
         return [
@@ -429,6 +477,49 @@ class SeleccionCoincidenciasStep
 
         // 3. Actualizar UI
         self::actualizarEstadoGlobal($nuevosDatos, $set);
+    }
+
+    private static function procesarSeleccionItse($state, callable $set, callable $get): void
+    {
+        if (!$state)
+            return;
+
+        $datosCompletos = $get('_datos_completos') ?? [];
+        $coincidencias = $get('_itse_coincidencias') ?? [];
+
+        // Buscar la ITSE seleccionada
+        $itseSeleccionada = null;
+        foreach ($coincidencias as $item) {
+            $item = (array) $item;
+            if (($item['cin_id'] ?? null) == $state) {
+                $itseSeleccionada = $item;
+                break;
+            }
+        }
+
+        if (!$itseSeleccionada) {
+            return;
+        }
+
+        // Guardar cin_id seleccionado para uso posterior
+        $cinId = $itseSeleccionada['cin_id'];
+        $set('_cin_id_seleccionado', $cinId);
+
+        // Mostrar notificación con el cin_id
+        Notification::make()
+            ->success()
+            ->title('ITSE Seleccionada')
+            ->body("Se ha seleccionado la ITSE con ID: {$cinId}")
+            ->send();
+
+        // Agregar la ITSE seleccionada a los datos completos
+        $datosCompletos['itse_seleccionada'] = $itseSeleccionada;
+
+        // Limpiar las coincidencias de ITSE ya que se seleccionó una
+        $set('_itse_coincidencias', null);
+
+        // Actualizar estado global y autocompletar formulario
+        self::actualizarEstadoGlobal($datosCompletos, $set);
     }
 
     private static function procesarSeleccionCatastro($state, callable $set, callable $get): void

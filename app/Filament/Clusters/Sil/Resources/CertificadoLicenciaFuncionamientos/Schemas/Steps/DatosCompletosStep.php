@@ -33,6 +33,11 @@ class DatosCompletosStep
                 ->live(),
 
             Hidden::make('_persona_requerida')->live(),
+
+            // Campo oculto para guardar cin_id de ITSE seleccionada (riesgo alto/muy alto)
+            Hidden::make('_cin_id_seleccionado')
+                ->dehydrated()
+                ->live(),
         ];
     }
 

@@ -9,5 +9,5 @@ use Filament\Support\Icons\Heroicon;
 class SilCluster extends Cluster
 {
     protected static string|BackedEnum|null $navigationIcon = 'tabler-license';
-    protected static ?string $navigationLabel = 'Sistema Integrado de Licencias';
+    protected static ?string $navigationLabel = 'SIL & ITSE';
 }

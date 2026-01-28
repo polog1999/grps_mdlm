@@ -39,9 +39,16 @@ class BusquedaStep
 
             $set('_catastro_coincidencias', null);
             $set('_resolucion_areas_coincidencias', null);
+            $set('_itse_coincidencias', null);
             $set('_tiene_errores', false);
 
             switch ($result->status) {
+                case BusquedaExpedienteResult::STATUS_SELECTION_ITSE:
+                    $set('_datos_completos', $result->data);
+                    $set('_itse_coincidencias', $result->matches);
+                    self::notify('info', 'Selección de ITSE Requerida', $result->message);
+                    return;
+
                 case BusquedaExpedienteResult::STATUS_NOT_FOUND:
                     self::notify('warning', 'Atención', $result->message);
                     return;

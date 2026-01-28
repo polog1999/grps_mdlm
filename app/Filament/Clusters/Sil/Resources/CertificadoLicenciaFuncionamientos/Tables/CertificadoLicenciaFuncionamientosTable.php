@@ -122,6 +122,13 @@ class CertificadoLicenciaFuncionamientosTable
             ->defaultPaginationPageOption(10)
             ->columns([
                 //TextColumn::make('lic_id')->label('ID')->sortable()->searchable(),
+
+                /*
+                TextColumn::make('module_id_debug')
+                    ->label('Module ID')
+                    ->color('gray')
+                    ->getStateUsing(fn() => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id')),
+*/
                 TextColumn::make('lic_numlic')
                     ->label('Licencia')
                     ->sortable()
@@ -135,7 +142,7 @@ class CertificadoLicenciaFuncionamientosTable
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'EXPEDIENTE_NRO')),
 
                 TextColumn::make('codcat')
-                    ->label('CodCat')
+                    ->label('Código Catastral')
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'CODIGO_CATASTRAL'))
                     ->sortable(),
 
@@ -363,6 +370,7 @@ class CertificadoLicenciaFuncionamientosTable
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
+                /*
                 Action::make('notificar_licencia')
                     ->label('Notificar')
                     ->icon('heroicon-o-bell-alert')
@@ -528,7 +536,7 @@ class CertificadoLicenciaFuncionamientosTable
                                 throw new \Exception('No se pudo completar el registro de la notificación.');
                             }
                         } catch (\Throwable $e) {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Error al notificar')
                                 ->body($e->getMessage())
                                 ->danger()
@@ -544,17 +552,96 @@ class CertificadoLicenciaFuncionamientosTable
 
                             $action->halt();
                         }
-                    }),
-                EditAction::make()
+                    }),*/
+                Action::make('edit')
                     ->icon('heroicon-o-pencil')
                     ->iconButton()
-                    ->tooltip('Modificar certificado')
-                    ->color('warning'),
+                    ->tooltip('Modificar')
+                    ->color('warning')
+                    ->url(function (CertificadoLicenciaFuncionamiento $record) {
+                        $user = auth()->user();
+                        $user_role_id = $user->modelHasRole?->role_id;
+
+                        // 1. Super-permisos: Entran directo                       
+                        if ($user_role_id === 1 || $user_role_id === 2) {
+                            return CertificadoLicenciaFuncionamientoResource::getUrl('edit', ['record' => $record]);
+                        }
+
+                        // 2. Otros roles: Solo entran si tienen permiso APROBADO
+                        // Usamos AND (&&) para verificar que NO sea admin Y que tenga el permiso
+                        $tienePermisoAprobado = \App\Models\SolicitudPermiso::query()
+                            ->where('record_id', $record->lic_id)
+                            ->where('user_id', $user->id)
+                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                            ->exists();
+
+                        if ($tienePermisoAprobado) {
+                            return CertificadoLicenciaFuncionamientoResource::getUrl('edit', ['record' => $record]);
+                        }
+
+                        return null;
+                    })
+                    ->modalHeading('Solicitar Permiso de Edición')
+                    ->modalDescription('No tienes permisos directos para editar este registro. Por favor, indica el motivo para solicitar la edición.')
+                    ->modalSubmitActionLabel('Enviar Solicitud')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->form([
+                        \Filament\Forms\Components\Textarea::make('observacion')
+                            ->label('Motivo de la solicitud')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('Ingrese el motivo por el cual desea editar el registro...'),
+                    ])
+                    ->action(function (array $data, CertificadoLicenciaFuncionamiento $record) {
+                        //que hacer cuando se envie la solicitud
+                        try {
+                            $user = auth()->user();
+
+                            // Validar si ya existe solicitud pendiente
+                            $existe = \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', 'PENDIENTE')
+                                ->exists();
+
+                            if ($existe) {
+                                Notification::make()
+                                    ->title('Solicitud pendiente')
+                                    ->body('Ya existe un ticket pendiente para este registro. Espera a que sea atendido')
+                                    ->warning()
+                                    ->send();
+                                return;
+                            }
+
+                            \App\Models\SolicitudPermiso::create([
+                                'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                'record_id' => $record->lic_id,
+                                'user_id' => $user->id,
+                                'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_LICENCIA,
+                                'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                'observacion' => $data['observacion'],
+                            ]);
+
+                            Notification::make()
+                                ->title('Solicitud Enviada')
+                                ->body('Su solicitud ha sido registrada y está pendiente de aprobación.')
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Error')
+                                ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+
+                    }),
 
                 Action::make('generar-qr')
                     ->icon('heroicon-o-qr-code')
                     ->iconButton()
-                    ->tooltip('Generar QR')
+                    ->tooltip('Ver QR')
                     ->color('success')
                     ->modalHeading('Código QR de Licencia')
                     ->modalDescription('Escanee este código QR para ver los detalles de la licencia')
@@ -592,8 +679,11 @@ class CertificadoLicenciaFuncionamientosTable
                 Action::make('Ver Itse')
                     ->icon('tabler-clipboard-check')
                     ->iconButton()
-                    ->tooltip('Ver Certificados ITSE')
-                    ->color(Color::Stone)
+                    ->tooltip('Ver Certificado(s) de ITSE')
+                    ->color(function ($record) {
+                        $service = app(CertificadoLincenciaFuncionamientoService::class);
+                        return $service->tieneCertificadoCompleto($record->lic_id) ? Color::Yellow : Color::Stone;
+                    })
                     ->disabled(function ($record) {
                         $service = app(CertificadoLincenciaFuncionamientoService::class);
                         return !$service->tieneCertificadoCompleto($record->lic_id);
@@ -657,6 +747,9 @@ class CertificadoLicenciaFuncionamientosTable
                                                 ->label('Fecha')
                                                 ->date('d/m/Y')
                                                 ->icon('heroicon-o-calendar'),
+                                            TextEntry::make('cin_vigencia_c')
+                                                ->label('Tiempo de la vigencia')
+                                                ->icon('heroicon-o-calendar')
                                         ])
                                         ->columns(3)
                                         ->contained(true)
@@ -683,88 +776,241 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('tabler-certificate')
                         ->color('primary')
                         ->tooltip('Gestionar certificado actualizado')
-                        ->modalHeading('Gestión de Certificado de Licencia Actualizado')
-                        ->modalDescription('Modal para subir y descargar certificado de licencia actualizado')
-                        ->modalWidth('5xl')
-                        ->modalSubmitActionLabel('Subir Certificado')
+                        ->modalHeading(function ($record) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Solicitar Permiso de Actualización';
+                            }
+
+                            return 'Gestión de Certificado de Licencia Actualizado';
+                        })
+                        ->modalDescription(function ($record) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'El certificado actualizado ya existe. Para volver a subirlo, necesitas solicitar un permiso. Por favor, indica el motivo.';
+                            }
+
+                            return 'Modal para subir y descargar certificado de licencia actualizado';
+                        })
+                        ->modalWidth(function ($record) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'md';
+                            }
+
+                            return '5xl';
+                        })
+                        ->modalSubmitActionLabel(function ($record) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Enviar Solicitud';
+                            }
+
+                            return 'Subir Certificado';
+                        })
                         ->modalCancelActionLabel('Cerrar')
-                        ->form(fn($record) => [
-                            Grid::make(2)
-                                ->schema([
-                                    Section::make('Subir/Actualizar Certificado')
-                                        ->description('Suba o actualice el certificado en formato PDF')
-                                        ->icon('heroicon-o-arrow-up-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            FileUpload::make('certificado_actualizado')
-                                                ->label('Archivo PDF')
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(10240) // 10MB
-                                                ->disk('local')
-                                                ->directory('temp')
-                                                ->visibility('private')
-                                                ->downloadable()
-                                                ->openable()
-                                                ->previewable()
-                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
-                                                ->storeFiles(false)
-                                                ->required(),
+                        ->form(function ($record) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
 
-                                            Hidden::make('lic_id')
-                                                ->default(fn($record) => $record->lic_id),
-                                            Hidden::make('lic_numlic')
-                                                ->default(fn($record) => $record->lic_numlic),
-                                        ]),
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                ->exists();
 
-                                    Section::make('Descargar Certificado')
-                                        ->description('Descargue el certificado actualizado')
-                                        ->icon('heroicon-o-arrow-down-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            TextInput::make('download_status')
-                                                ->label('Estado del Certificado')
-                                                ->default(function () use ($record) {
-                                                    $service = app(CertificadoLicenciaPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixIcon(function () use ($record) {
-                                                    $service = app(CertificadoLicenciaPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
-                                                })
-                                                ->suffixIconColor(function () use ($record) {
-                                                    $service = app(CertificadoLicenciaPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? 'success' : 'warning';
-                                                }),
+                            if ($exists && !$tienePermiso) {
+                                return [
+                                    \Filament\Forms\Components\Textarea::make('observacion')
+                                        ->label('Motivo de la solicitud')
+                                        ->required()
+                                        ->rows(3)
+                                        ->placeholder('Ingrese el motivo por el cual desea volver a subir el certificado...')
+                                ];
+                            }
 
-                                            TextInput::make('download_link')
-                                                ->label('Descargar')
-                                                ->default(function () use ($record) {
-                                                    $service = app(CertificadoLicenciaPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? 'Listo para descargar' : 'No disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixAction(
-                                                    Action::make('download')
-                                                        ->icon('heroicon-o-arrow-down-tray')
-                                                        ->label('Descargar PDF')
-                                                        ->url(fn() => route('certificado-licencia.ver-actualizado', ['id' => $record->lic_id]))
-                                                        ->openUrlInNewTab()
-                                                        ->visible(function () use ($record) {
-                                                            $service = app(CertificadoLicenciaPdfService::class);
-                                                            return $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                        })
-                                                ),
-                                        ]),
-                                ])
-                        ])
+                            return [
+                                Grid::make(2)
+                                    ->schema([
+                                        Section::make('Subir/Actualizar Certificado')
+                                            ->description('Suba o actualice el certificado en formato PDF')
+                                            ->icon('heroicon-o-arrow-up-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                FileUpload::make('certificado_actualizado')
+                                                    ->label('Archivo PDF')
+                                                    ->acceptedFileTypes(['application/pdf'])
+                                                    ->maxSize(10240) // 10MB
+                                                    ->disk('local')
+                                                    ->directory('temp')
+                                                    ->visibility('private')
+                                                    ->downloadable()
+                                                    ->openable()
+                                                    ->previewable()
+                                                    ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
+                                                    ->storeFiles(false)
+                                                    ->required(),
+
+                                                Hidden::make('lic_id')
+                                                    ->default(fn($record) => $record->lic_id),
+                                                Hidden::make('lic_numlic')
+                                                    ->default(fn($record) => $record->lic_numlic),
+                                            ]),
+
+                                        Section::make('Descargar Certificado')
+                                            ->description('Descargue el certificado actualizado')
+                                            ->icon('heroicon-o-arrow-down-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                TextInput::make('download_status')
+                                                    ->label('Estado del Certificado')
+                                                    ->default(function () use ($record) {
+                                                        $service = app(CertificadoLicenciaPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixIcon(function () use ($record) {
+                                                        $service = app(CertificadoLicenciaPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                    })
+                                                    ->suffixIconColor(function () use ($record) {
+                                                        $service = app(CertificadoLicenciaPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? 'success' : 'warning';
+                                                    }),
+
+                                                TextInput::make('download_link')
+                                                    ->label('Descargar')
+                                                    ->default(function () use ($record) {
+                                                        $service = app(CertificadoLicenciaPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? 'Listo para descargar' : 'No disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixAction(
+                                                        Action::make('download')
+                                                            ->icon('heroicon-o-arrow-down-tray')
+                                                            ->label('Descargar PDF')
+                                                            ->url(fn() => route('certificado-licencia.ver-actualizado', ['id' => $record->lic_id]))
+                                                            ->openUrlInNewTab()
+                                                            ->visible(function () use ($record) {
+                                                                $service = app(CertificadoLicenciaPdfService::class);
+                                                                return $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                            })
+                                                    ),
+                                            ]),
+                                    ])
+                            ];
+                        })
                         ->action(function (array $data, $record, Action $action) {
+                            $service = app(CertificadoLicenciaPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                // Logic for permission request
+                                try {
+                                    $existeSolicitud = \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->lic_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', 'PENDIENTE')
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                        ->exists();
+
+                                    if ($existeSolicitud) {
+                                        Notification::make()
+                                            ->title('Solicitud pendiente')
+                                            ->body('Ya existe una solicitud pendiente de actualización para este registro.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    \App\Models\SolicitudPermiso::create([
+                                        'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                        'record_id' => $record->lic_id,
+                                        'user_id' => $user->id,
+                                        'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA,
+                                        'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                        'observacion' => $data['observacion'],
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Solicitud Enviada')
+                                        ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
+                                        ->success()
+                                        ->send();
+
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                                return;
+                            }
+
+                            // Normal Upload Logic (for Authorized or New PDF)
                             $service = app(CertificadoLicenciaPdfService::class);
 
                             // Obtenemos el archivo temporal
@@ -792,6 +1038,18 @@ class CertificadoLicenciaFuncionamientosTable
                                     $action->halt();
                                 }
 
+                                // Si se subió correctamente y el usuario tenía permiso, lo finalizamos
+                                if ($tienePermiso && !($user_role_id === 1 || $user_role_id === 2)) {
+                                    \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->lic_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_LICENCIA)
+                                        ->update([
+                                            'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+                                        ]);
+                                }
+
                                 Notification::make()
                                     ->title('Éxito')
                                     ->body($result['message'])
@@ -814,88 +1072,243 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('heroicon-o-document-check')
                         ->color(Color::Violet)
                         ->tooltip('Gestionar certificado de compatibilidad')
-                        ->modalHeading('Gestión de Certificado de Compatibilidad')
-                        ->modalDescription('Modal para subir y descargar certificado de compatibilidad actualizado')
-                        ->modalWidth('5xl')
-                        ->modalSubmitActionLabel('Subir Certificado')
+                        ->modalHeading(function ($record) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Solicitar Permiso de Actualización';
+                            }
+
+                            return 'Gestión de Certificado de Compatibilidad';
+
+
+
+                        })
+                        ->modalDescription(function ($record) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'El certificado actualizado ya existe. Para volver a subirlo, necesitas solicitar un permiso. Por favor, indica el motivo.';
+                            }
+
+                            return 'Modal para subir y descargar certificado de licencia actualizado';
+                        })
+                        ->modalWidth(function ($record) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'md';
+                            }
+
+                            return '5xl';
+                        })
+                        ->modalSubmitActionLabel(function ($record) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                return 'Enviar Solicitud';
+                            }
+
+                            return 'Subir Certificado';
+                        })
                         ->modalCancelActionLabel('Cerrar')
-                        ->form(fn($record) => [
-                            Grid::make(2)
-                                ->schema([
-                                    Section::make('Subir/Actualizar Compatibilidad')
-                                        ->description('Suba o actualice el certificado de compatibilidad en formato PDF')
-                                        ->icon('heroicon-o-arrow-up-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            FileUpload::make('compatibilidad_actualizado')
-                                                ->label('Archivo PDF')
-                                                ->acceptedFileTypes(['application/pdf'])
-                                                ->maxSize(10240) // 10MB
-                                                ->disk('local')
-                                                ->directory('temp')
-                                                ->visibility('private')
-                                                ->downloadable()
-                                                ->openable()
-                                                ->previewable()
-                                                ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
-                                                ->storeFiles(false)
-                                                ->required(),
+                        ->form(function ($record) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
 
-                                            Hidden::make('lic_id')
-                                                ->default(fn($record) => $record->lic_id),
-                                            Hidden::make('lic_numlic')
-                                                ->default(fn($record) => $record->lic_numlic),
-                                        ]),
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                ->exists();
 
-                                    Section::make('Descargar Compatibilidad')
-                                        ->description('Descargue el certificado de compatibilidad actualizado')
-                                        ->icon('heroicon-o-arrow-down-tray')
-                                        ->columnSpan(1)
-                                        ->schema([
-                                            TextInput::make('compatibilidad_status')
-                                                ->label('Estado del Certificado')
-                                                ->default(function () use ($record) {
-                                                    $service = app(CompatibilidadCertificadoPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixIcon(function () use ($record) {
-                                                    $service = app(CompatibilidadCertificadoPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
-                                                })
-                                                ->suffixIconColor(function () use ($record) {
-                                                    $service = app(CompatibilidadCertificadoPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? 'success' : 'warning';
-                                                }),
+                            if ($exists && !$tienePermiso) {
+                                return [
+                                    \Filament\Forms\Components\Textarea::make('observacion')
+                                        ->label('Motivo de la solicitud')
+                                        ->required()
+                                        ->rows(3)
+                                        ->placeholder('Ingrese el motivo por el cual desea volver a subir la compatibilidad...')
+                                ];
+                            }
 
-                                            TextInput::make('compatibilidad_link')
-                                                ->label('Descargar')
-                                                ->default(function () use ($record) {
-                                                    $service = app(CompatibilidadCertificadoPdfService::class);
-                                                    $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                    return $exists ? 'Listo para descargar' : 'No disponible';
-                                                })
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->suffixAction(
-                                                    Action::make('download_compatibilidad')
-                                                        ->icon('heroicon-o-arrow-down-tray')
-                                                        ->label('Descargar PDF')
-                                                        ->url(fn() => route('certificado-licencia.ver-compatibilidad', ['id' => $record->lic_id]))
-                                                        ->openUrlInNewTab()
-                                                        ->visible(function () use ($record) {
-                                                            $service = app(CompatibilidadCertificadoPdfService::class);
-                                                            return $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
-                                                        })
-                                                ),
-                                        ]),
-                                ])
-                        ])
+                            return [
+                                Grid::make(2)
+                                    ->schema([
+                                        Section::make('Subir/Actualizar Compatibilidad')
+                                            ->description('Suba o actualice el certificado de compatibilidad en formato PDF')
+                                            ->icon('heroicon-o-arrow-up-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                FileUpload::make('compatibilidad_actualizado')
+                                                    ->label('Archivo PDF')
+                                                    ->acceptedFileTypes(['application/pdf'])
+                                                    ->maxSize(10240) // 10MB
+                                                    ->disk('local')
+                                                    ->directory('temp')
+                                                    ->visibility('private')
+                                                    ->downloadable()
+                                                    ->openable()
+                                                    ->previewable()
+                                                    ->helperText('Seleccione un archivo PDF (máx. 10MB) y haga clic en "Subir Certificado"')
+                                                    ->storeFiles(false)
+                                                    ->required(),
+
+                                                Hidden::make('lic_id')
+                                                    ->default(fn($record) => $record->lic_id),
+                                                Hidden::make('lic_numlic')
+                                                    ->default(fn($record) => $record->lic_numlic),
+                                            ]),
+
+                                        Section::make('Descargar Compatibilidad')
+                                            ->description('Descargue el certificado de compatibilidad actualizado')
+                                            ->icon('heroicon-o-arrow-down-tray')
+                                            ->columnSpan(1)
+                                            ->schema([
+                                                TextInput::make('compatibilidad_status')
+                                                    ->label('Estado del Certificado')
+                                                    ->default(function () use ($record) {
+                                                        $service = app(CompatibilidadCertificadoPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? '✓ Certificado Disponible' : '⚠ No Disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixIcon(function () use ($record) {
+                                                        $service = app(CompatibilidadCertificadoPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? 'heroicon-o-check-circle' : 'heroicon-o-exclamation-triangle';
+                                                    })
+                                                    ->suffixIconColor(function () use ($record) {
+                                                        $service = app(CompatibilidadCertificadoPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? 'success' : 'warning';
+                                                    }),
+
+                                                TextInput::make('compatibilidad_link')
+                                                    ->label('Descargar')
+                                                    ->default(function () use ($record) {
+                                                        $service = app(CompatibilidadCertificadoPdfService::class);
+                                                        $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                        return $exists ? 'Listo para descargar' : 'No disponible';
+                                                    })
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->suffixAction(
+                                                        Action::make('download')
+                                                            ->icon('heroicon-o-arrow-down-tray')
+                                                            ->label('Descargar PDF')
+                                                            ->url(fn() => route('certificado-licencia.ver-compatibilidad', ['id' => $record->lic_id]))
+                                                            ->openUrlInNewTab()
+                                                            ->visible(function () use ($record) {
+                                                                $service = app(CompatibilidadCertificadoPdfService::class);
+                                                                return $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+                                                            })
+                                                    ),
+                                            ]),
+                                    ])
+                            ];
+                        })
                         ->action(function (array $data, $record, Action $action) {
+                            $service = app(CompatibilidadCertificadoPdfService::class);
+                            $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
+
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                ->exists();
+
+                            if ($exists && !$tienePermiso) {
+                                // Logic for permission request
+                                try {
+                                    $existeSolicitud = \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->lic_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', 'PENDIENTE')
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                        ->exists();
+
+                                    if ($existeSolicitud) {
+                                        Notification::make()
+                                            ->title('Solicitud pendiente')
+                                            ->body('Ya existe una solicitud pendiente de actualización para este registro.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    \App\Models\SolicitudPermiso::create([
+                                        'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                        'record_id' => $record->lic_id,
+                                        'user_id' => $user->id,
+                                        'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD,
+                                        'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                        'observacion' => $data['observacion'],
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Solicitud Enviada')
+                                        ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
+                                        ->success()
+                                        ->send();
+
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                                return;
+                            }
+
+                            // Normal Upload Logic (for Authorized or New PDF)
                             $service = app(CompatibilidadCertificadoPdfService::class);
 
                             // Obtenemos el archivo temporal
@@ -921,6 +1334,18 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->send();
 
                                     $action->halt();
+                                }
+
+                                // Si se subió correctamente y el usuario tenía permiso, lo finalizamos
+                                if ($tienePermiso && !($user_role_id === 1 || $user_role_id === 2)) {
+                                    \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->lic_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::SUBIR_PDF_COMPATIBILIDAD)
+                                        ->update([
+                                            'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+                                        ]);
                                 }
 
                                 Notification::make()
@@ -951,101 +1376,428 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('ionicon-duplicate-outline')
                         ->tooltip('Duplicar licencia')
                         ->color(Color::Purple)
-                        ->url(
-                            fn(CertificadoLicenciaFuncionamiento $record): string =>
-                            CertificadoLicenciaFuncionamientoResource::getUrl('duplicate', ['record' => $record])
-                        ),
+                        ->url(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DUPLICAR_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? CertificadoLicenciaFuncionamientoResource::getUrl('duplicate', ['record' => $record]) : null;
+                        })
+                        ->modalHeading('Solicitar Permiso de Duplicación')
+                        ->modalDescription('No tienes permisos directos para realizar esta acción. Por favor, indica el motivo para solicitar la duplicación.')
+                        ->modalSubmitActionLabel('Enviar Solicitud')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('observacion')
+                                ->label('Motivo de la solicitud')
+                                ->required()
+                                ->rows(3)
+                                ->placeholder('Ingrese el motivo por el cual desea duplicar...'),
+                        ])
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data) {
+                            try {
+                                $user = auth()->user();
+
+                                $existe = \App\Models\SolicitudPermiso::query()
+                                    ->where('record_id', $record->lic_id)
+                                    ->where('user_id', $user->id)
+                                    ->where('estado', 'PENDIENTE')
+                                    ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DUPLICAR_LICENCIA)
+                                    ->exists();
+
+                                if ($existe) {
+                                    Notification::make()
+                                        ->title('Solicitud pendiente')
+                                        ->body('Ya existe una solicitud pendiente de duplicación para este registro.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                \App\Models\SolicitudPermiso::create([
+                                    'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                    'record_id' => $record->lic_id,
+                                    'user_id' => $user->id,
+                                    'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::DUPLICAR_LICENCIA,
+                                    'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                    'observacion' => $data['observacion'],
+                                ]);
+
+                                Notification::make()
+                                    ->title('Solicitud Enviada')
+                                    ->body('Su solicitud de duplicación ha sido registrada y está pendiente de aprobación.')
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                     Action::make('licencia-transferir')
                         ->label('Transferir licencia')
                         ->icon('lineawesome-handshake')
                         ->tooltip('Transferir licencia')
                         ->color(Color::Teal)
-                        ->url(
-                            fn(CertificadoLicenciaFuncionamiento $record): string =>
-                            CertificadoLicenciaFuncionamientoResource::getUrl('transfer', ['record' => $record])
-                        ),
+                        ->url(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::TRANSFERIR_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? CertificadoLicenciaFuncionamientoResource::getUrl('transfer', ['record' => $record]) : null;
+                        })
+                        ->modalHeading('Solicitar Permiso de Transferencia')
+                        ->modalDescription('No tienes permisos directos para realizar esta acción. Por favor, indica el motivo para solicitar la transferencia.')
+                        ->modalSubmitActionLabel('Enviar Solicitud')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('observacion')
+                                ->label('Motivo de la solicitud')
+                                ->required()
+                                ->rows(3)
+                                ->placeholder('Ingrese el motivo por el cual desea transferir...'),
+                        ])
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data) {
+                            try {
+                                $user = auth()->user();
+
+                                $existe = \App\Models\SolicitudPermiso::query()
+                                    ->where('record_id', $record->lic_id)
+                                    ->where('user_id', $user->id)
+                                    ->where('estado', 'PENDIENTE')
+                                    ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::TRANSFERIR_LICENCIA)
+                                    ->exists();
+
+                                if ($existe) {
+                                    Notification::make()
+                                        ->title('Solicitud pendiente')
+                                        ->body('Ya existe una solicitud pendiente de transferencia para este registro.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                \App\Models\SolicitudPermiso::create([
+                                    'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                    'record_id' => $record->lic_id,
+                                    'user_id' => $user->id,
+                                    'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::TRANSFERIR_LICENCIA,
+                                    'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                    'observacion' => $data['observacion'],
+                                ]);
+
+                                Notification::make()
+                                    ->title('Solicitud Enviada')
+                                    ->body('Su solicitud de transferencia ha sido registrada y está pendiente de aprobación.')
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                     Action::make('licencia-cesionario')
                         ->label('Cesionario licencia')
                         ->icon('gmdi-account-tree-o')
                         ->tooltip('Cesionario licencia')
                         ->color(Color::Yellow)
-                        ->url(
-                            fn(CertificadoLicenciaFuncionamiento $record): string =>
-                            CertificadoLicenciaFuncionamientoResource::getUrl('cesionario', ['record' => $record])
-                        ),
+                        ->url(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::CESIONAR_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? CertificadoLicenciaFuncionamientoResource::getUrl('cesionario', ['record' => $record]) : null;
+                        })
+                        ->modalHeading('Solicitar Permiso de Cesionario')
+                        ->modalDescription('No tienes permisos directos para realizar esta acción. Por favor, indica el motivo para solicitar el cesionario.')
+                        ->modalSubmitActionLabel('Enviar Solicitud')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('observacion')
+                                ->label('Motivo de la solicitud')
+                                ->required()
+                                ->rows(3)
+                                ->placeholder('Ingrese el motivo por el cual desea realizar el cesionario...'),
+                        ])
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data) {
+                            try {
+                                $user = auth()->user();
+
+                                $existe = \App\Models\SolicitudPermiso::query()
+                                    ->where('record_id', $record->lic_id)
+                                    ->where('user_id', $user->id)
+                                    ->where('estado', 'PENDIENTE')
+                                    ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::CESIONAR_LICENCIA)
+                                    ->exists();
+
+                                if ($existe) {
+                                    Notification::make()
+                                        ->title('Solicitud pendiente')
+                                        ->body('Ya existe una solicitud pendiente de cesionario para este registro.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                \App\Models\SolicitudPermiso::create([
+                                    'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                    'record_id' => $record->lic_id,
+                                    'user_id' => $user->id,
+                                    'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::CESIONAR_LICENCIA,
+                                    'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                    'observacion' => $data['observacion'],
+                                ]);
+
+                                Notification::make()
+                                    ->title('Solicitud Enviada')
+                                    ->body('Su solicitud de cesionario ha sido registrada y está pendiente de aprobación.')
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
 
                     Action::make('dar_de_baja')
                         ->label('Dar de baja')
                         ->icon('heroicon-o-archive-box-arrow-down')
                         ->tooltip('Dar de baja licencia')
                         ->color('danger')
-                        ->requiresConfirmation()
-                        ->modalHeading('Dar de baja licencia')
-                        ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?'))
-                        ->fillForm(fn(CertificadoLicenciaFuncionamiento $record): array => [
-                            'nro_expediente' => $record->lic_expnum,
-                            'nro_resolucion' => $record->lic_resnum,
-                            'fecha_resolucion' => $record->lic_fecharesolucion,
-                            'fecha_baja' => now(),
-                        ])
-                        ->form([
-                            TextInput::make('nro_expediente')
-                                ->label('Nro Expediente')
-                                ->required()
-                                ->maxLength(50),
-                            TextInput::make('anexo')
-                                ->label('Anexo')
-                                ->required()
-                                ->maxLength(50),
-                            TextInput::make('nro_resolucion')
-                                ->label('Nro Resolución')
-                                ->required()
-                                ->maxLength(100),
-                            DatePicker::make('fecha_baja')
-                                ->label('Fecha Baja')
-                                ->required()
-                                ->native(false)
-                                ->displayFormat('d/m/Y')
-                                ->default(now()),
-                            DatePicker::make('fecha_resolucion')
-                                ->label('Fecha Resolución')
-                                ->required()
-                                ->native(false)
-                                ->displayFormat('d/m/Y'),
-                        ])
-                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data, Action $action) {
-                            try {
-                                $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
-                                $serviceData = [
-                                    'lic_id' => $record->lic_id,
-                                    'lib_expnum' => $data['nro_expediente'],
-                                    'lib_anexo' => $data['anexo'],
-                                    'lib_resnum' => $data['nro_resolucion'],
-                                    'lib_fecharesolucion' => $data['fecha_resolucion'],
-                                    'lib_fechabaja' => $data['fecha_baja'],
+                        ->modalHeading(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? 'Dar de baja licencia' : 'Solicitar Permiso de Dar de Baja';
+                        })
+                        ->modalDescription(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                ->exists();
+
+                            if ($tienePermiso) {
+                                return new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> esta licencia?');
+                            }
+                            return 'No tienes permisos directos para realizar esta acción. Por favor, indica el motivo para solicitar la baja.';
+                        })
+                        ->modalSubmitActionLabel(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? 'Confirmar Baja' : 'Enviar Solicitud';
+                        })
+                        ->fillForm(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                ->exists();
+
+                            if ($tienePermiso) {
+                                return [
+                                    'nro_expediente' => $record->lic_expnum,
+                                    'nro_resolucion' => $record->lic_resnum,
+                                    'fecha_resolucion' => $record->lic_fecharesolucion,
+                                    'fecha_baja' => now(),
                                 ];
-                                $resultado = $service->bajaLicencia($serviceData);
-                                if ($resultado->error > 0) {
-                                    \Filament\Notifications\Notification::make()
-                                        ->title('Éxito')
-                                        ->body($resultado->mensaje)
-                                        ->success()
-                                        ->send();
-                                } else {
-                                    \Filament\Notifications\Notification::make()
-                                        ->title('Error')
-                                        ->body($resultado->mensaje)
+                            }
+                            return [];
+                        })
+                        ->form(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                ->exists();
+
+                            if ($tienePermiso) {
+                                return [
+                                    TextInput::make('nro_expediente')
+                                        ->label('Nro Expediente')
+                                        ->required()
+                                        ->maxLength(50),
+                                    TextInput::make('anexo')
+                                        ->label('Anexo')
+                                        ->required()
+                                        ->maxLength(50),
+                                    TextInput::make('nro_resolucion')
+                                        ->label('Nro Resolución')
+                                        ->required()
+                                        ->maxLength(100),
+                                    DatePicker::make('fecha_baja')
+                                        ->label('Fecha Baja')
+                                        ->required()
+                                        ->native(false)
+                                        ->displayFormat('d/m/Y')
+                                        ->default(now()),
+                                    DatePicker::make('fecha_resolucion')
+                                        ->label('Fecha Resolución')
+                                        ->required()
+                                        ->native(false)
+                                        ->displayFormat('d/m/Y'),
+                                ];
+                            }
+
+                            return [
+                                \Filament\Forms\Components\Textarea::make('observacion')
+                                    ->label('Motivo de la solicitud')
+                                    ->required()
+                                    ->rows(3)
+                                    ->placeholder('Ingrese el motivo por el cual desea dar de baja...'),
+                            ];
+                        })
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data, Action $action) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                ->exists();
+
+                            if ($tienePermiso) {
+                                try {
+                                    $service = new \App\Services\Sil\Licencias\LicenciaBajaService();
+                                    $serviceData = [
+                                        'lic_id' => $record->lic_id,
+                                        'lib_expnum' => $data['nro_expediente'],
+                                        'lib_anexo' => $data['anexo'],
+                                        'lib_resnum' => $data['nro_resolucion'],
+                                        'lib_fecharesolucion' => $data['fecha_resolucion'],
+                                        'lib_fechabaja' => $data['fecha_baja'],
+                                    ];
+                                    $resultado = $service->bajaLicencia($serviceData);
+                                    if ($resultado->error > 0) {
+                                        Notification::make()
+                                            ->title('Éxito')
+                                            ->body($resultado->mensaje)
+                                            ->success()
+                                            ->send();
+
+                                        // Finalizar el permiso si existe y fue usado con exito
+                                        \App\Models\SolicitudPermiso::query()
+                                            ->where('record_id', $record->lic_id)
+                                            ->where('user_id', auth()->id())
+                                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                            ->update([
+                                                'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+                                            ]);
+                                    } else {
+                                        Notification::make()
+                                            ->title('Error')
+                                            ->body($resultado->mensaje)
+                                            ->danger()
+                                            ->send();
+                                        $action->halt();
+                                    }
+                                } catch (\Throwable $e) {
+                                    Notification::make()
+                                        ->title('Error del Sistema')
+                                        ->body($e->getMessage())
                                         ->danger()
                                         ->send();
                                     $action->halt();
                                 }
-                            } catch (\Throwable $e) {
-                                \Filament\Notifications\Notification::make()
-                                    ->title('Error del Sistema')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                                $action->halt();
+                            } else {
+                                // Solicitud Logic
+                                try {
+                                    $user = auth()->user();
+
+                                    $existe = \App\Models\SolicitudPermiso::query()
+                                        ->where('record_id', $record->lic_id)
+                                        ->where('user_id', $user->id)
+                                        ->where('estado', 'PENDIENTE')
+                                        ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA)
+                                        ->exists();
+
+                                    if ($existe) {
+                                        Notification::make()
+                                            ->title('Solicitud pendiente')
+                                            ->body('Ya existe una solicitud pendiente de baja para este registro.')
+                                            ->warning()
+                                            ->send();
+                                        return;
+                                    }
+
+                                    \App\Models\SolicitudPermiso::create([
+                                        'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                        'record_id' => $record->lic_id,
+                                        'user_id' => $user->id,
+                                        'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::DAR_BAJA_LICENCIA,
+                                        'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                        'observacion' => $data['observacion'],
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Solicitud Enviada')
+                                        ->body('Su solicitud de baja ha sido registrada y está pendiente de aprobación.')
+                                        ->success()
+                                        ->send();
+
+                                } catch (\Exception $e) {
+                                    Notification::make()
+                                        ->title('Error')
+                                        ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
                             }
                         }),
                 ])->label('Estado')

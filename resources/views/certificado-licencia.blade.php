@@ -201,7 +201,7 @@
         }
 
         .data-label-col {
-            width: 140px;
+            width: 95px;
             color: #444;
             font-size: var(--font-size-base);
             font-weight: normal;
@@ -220,6 +220,7 @@
             font-weight: bold;
             line-height: 1.2;
             text-transform: uppercase;
+            text-align: justify;
         }
 
         .highlight-name {
@@ -318,7 +319,10 @@
         <table style="width: 100%; border: none; margin: 0; padding: 0;">
             <tr>
                 <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.2cm;">
-                    <div class="certificate-header">{{ $licencia->NUMERO_LICENCIA ?? '' }}</div>
+                    <div class="certificate-header">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {{$licencia->NUMERO_LICENCIA ?? '' }}
+                    </div>
                 </td>
                 <td
                     style="height: 2.7cm; border: none; vertical-align: top; text-align: right; padding-top: 3.5cm; padding-right: 0;">
@@ -453,10 +457,14 @@
                     $tipoLicencia = strtoupper($licencia->TIPO_LICENCIA ?? '');
                 @endphp
                 VIGENCIA:
-                @if($tipoLicencia === 'INDETERMINADA' || $tipoLicencia === 'TEMPORAL')
+                @if($tipoLicencia === 'INDETERMINADA')
                     {{ $licencia->TIPO_LICENCIA }}
+                @elseif($tipoLicencia === 'TEMPORAL')
+                    {{ $licencia->TIPO_LICENCIA }} hasta el
+                    {{ \Carbon\Carbon::parse($licencia->lic_fecha_fin ?? $licencia->LIC_FECHA_FIN ?? now())->format('d/m/Y') }}
                 @else
-                    Sujeta a la licencia principal.
+                    Sujeta a la licencia principal n°:
+                    {{ $licencia->lic_numlic_principal ?? $licencia->LIC_NUMLIC_PRINCIPAL ?? '' }}
                 @endif
             </div>
 

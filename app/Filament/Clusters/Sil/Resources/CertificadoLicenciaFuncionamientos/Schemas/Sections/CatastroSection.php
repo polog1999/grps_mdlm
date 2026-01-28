@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Sections;
 
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Section;
@@ -212,7 +213,9 @@ class CatastroSection
                 TextInput::make('area_economica')->label('Área Económica')->numeric()->step(0.01)->suffix('m²')->formatStateUsing(fn($state) => $state ? number_format((float) $state, 2, '.', '') : null)->extraInputAttributes(['onchange' => "if(this.value) this.value = parseFloat(this.value).toFixed(2)"])
                     //->disabled()
                     ->dehydrated(),
-                TextInput::make('fiu_id')->label('')->maxLength(20)
+
+                Hidden::make('fiu_id')->label('')
+                    //->maxLength(20)
                     ->disabled()
                     ->dehydrated(),
             ])

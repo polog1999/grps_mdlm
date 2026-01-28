@@ -15,7 +15,9 @@ class ListCertificadoLicenciaFuncionamientos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Registrar Nueva Licencia')
+                ->icon('heroicon-o-plus'),
         ];
     }
 
