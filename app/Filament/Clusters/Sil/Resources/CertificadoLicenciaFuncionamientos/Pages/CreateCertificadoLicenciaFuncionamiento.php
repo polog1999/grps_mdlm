@@ -13,7 +13,7 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
 {
     protected static string $resource = CertificadoLicenciaFuncionamientoResource::class;
     protected static ?string $title = 'Registro de Certificado de Licencia de Funcionamiento';
-
+    protected static bool $canCreateAnother = false;
     /**
      * Intercepta los datos antes de crear el registro
      * Reorganiza los datos por secciones: expediente, catastro, licencias

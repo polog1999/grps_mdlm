@@ -123,11 +123,12 @@ class CertificadoLicenciaFuncionamientosTable
             ->columns([
                 //TextColumn::make('lic_id')->label('ID')->sortable()->searchable(),
 
+                /*
                 TextColumn::make('module_id_debug')
                     ->label('Module ID')
                     ->color('gray')
                     ->getStateUsing(fn() => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id')),
-
+*/
                 TextColumn::make('lic_numlic')
                     ->label('Licencia')
                     ->sortable()
@@ -141,7 +142,7 @@ class CertificadoLicenciaFuncionamientosTable
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'EXPEDIENTE_NRO')),
 
                 TextColumn::make('codcat')
-                    ->label('CodCat')
+                    ->label('Código Catastral')
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'CODIGO_CATASTRAL'))
                     ->sortable(),
 
@@ -369,6 +370,7 @@ class CertificadoLicenciaFuncionamientosTable
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
+                /*
                 Action::make('notificar_licencia')
                     ->label('Notificar')
                     ->icon('heroicon-o-bell-alert')
@@ -550,11 +552,11 @@ class CertificadoLicenciaFuncionamientosTable
 
                             $action->halt();
                         }
-                    }),
+                    }),*/
                 Action::make('edit')
                     ->icon('heroicon-o-pencil')
                     ->iconButton()
-                    ->tooltip('Modificar certificado')
+                    ->tooltip('Modificar')
                     ->color('warning')
                     ->url(function (CertificadoLicenciaFuncionamiento $record) {
                         $user = auth()->user();
@@ -639,7 +641,7 @@ class CertificadoLicenciaFuncionamientosTable
                 Action::make('generar-qr')
                     ->icon('heroicon-o-qr-code')
                     ->iconButton()
-                    ->tooltip('Generar QR')
+                    ->tooltip('Ver QR')
                     ->color('success')
                     ->modalHeading('Código QR de Licencia')
                     ->modalDescription('Escanee este código QR para ver los detalles de la licencia')
@@ -677,7 +679,7 @@ class CertificadoLicenciaFuncionamientosTable
                 Action::make('Ver Itse')
                     ->icon('tabler-clipboard-check')
                     ->iconButton()
-                    ->tooltip('Ver Certificados ITSE')
+                    ->tooltip('Ver Certificado(s) de ITSE')
                     ->color(function ($record) {
                         $service = app(CertificadoLincenciaFuncionamientoService::class);
                         return $service->tieneCertificadoCompleto($record->lic_id) ? Color::Yellow : Color::Stone;
