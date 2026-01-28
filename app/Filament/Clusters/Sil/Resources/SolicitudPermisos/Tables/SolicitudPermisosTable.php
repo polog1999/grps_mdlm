@@ -68,16 +68,6 @@ class SolicitudPermisosTable
                     ->label('Fecha de aprobación')
                     ->dateTime('Y-m-d H:i:s')
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->label('Fecha de creación')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('Fecha de actualización')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

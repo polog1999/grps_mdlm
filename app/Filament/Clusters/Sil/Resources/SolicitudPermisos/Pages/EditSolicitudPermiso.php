@@ -10,6 +10,9 @@ class EditSolicitudPermiso extends EditRecord
 {
     protected static string $resource = SolicitudPermisoResource::class;
 
+    protected static ?string $title = 'Control de Aprobación de Permisos';
+
+    //change tittle
     protected function getHeaderActions(): array
     {
         return [

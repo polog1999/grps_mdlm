@@ -23,7 +23,9 @@ class SolicitudPermisoResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
-    protected static ?string $recordTitleAttribute = 'SolicitudPermiso';
+    protected static ?string $recordTitleAttribute = 'Solicitud de Permisos';
+    protected static ?string $navigationLabel = 'Solicitud de Permisos';
+    protected static ?string $pluralModelLabel = 'Solicitud de Permisos';
 
     public static function form(Schema $schema): Schema
     {
@@ -46,7 +48,7 @@ class SolicitudPermisoResource extends Resource
     {
         return [
             'index' => ListSolicitudPermisos::route('/'),
-            'create' => CreateSolicitudPermiso::route('/create'),
+            //'create' => CreateSolicitudPermiso::route('/create'),
             'edit' => EditSolicitudPermiso::route('/{record}/edit'),
         ];
     }
