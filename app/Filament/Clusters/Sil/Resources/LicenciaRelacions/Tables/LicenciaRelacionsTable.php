@@ -11,6 +11,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Support\Colors\Color;
 
 class LicenciaRelacionsTable
 {
@@ -31,12 +32,36 @@ class LicenciaRelacionsTable
                 TextColumn::make('licencia.tipoEstadoLicencia.esl_descripcion')
                     ->label('Estado Licencia')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color(fn($state) => match (strtoupper($state ?? '')) {
+                        'ACTIVO' => Color::Green,
+                        'ACTUALIZADO' => Color::Teal,
+                        'ANULADO' => Color::Red,
+                        'BAJA' => Color::Rose,
+                        'DUPLICADO' => Color::Orange,
+                        'HISTORICO' => Color::Slate,
+                        'INAC' => Color::Gray,
+                        'SUSTITUIDO' => Color::Amber,
+                        'TRANSFERIDO' => Color::Sky,
+                        default => Color::Gray,
+                    }),
 
                 TextColumn::make('licencia.tipoLicencia.tli_descripcion')
                     ->label('Tipo Licencia')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color(fn($state) => match (strtoupper(trim($state ?? ''))) {
+
+                        'TEMPORAL' => Color::Sky,
+                        'CESIONARIO' => Color::Pink,
+                        'ESPECIAL' => Color::Fuchsia,
+                        'INDETERMINADA' => Color::Emerald,
+                        'CORPORATIVA' => Color::Teal,
+
+                        default => Color::Gray,
+                    }),
                 TextColumn::make('licenciaDependencia.lic_numlic')
                     ->label('Licencia Dependencia')
                     ->sortable()
@@ -44,12 +69,35 @@ class LicenciaRelacionsTable
                 TextColumn::make('licenciaDependencia.tipoEstadoLicencia.esl_descripcion')
                     ->label('Estado Dependencia')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color(fn($state) => match (strtoupper($state ?? '')) {
+                        'ACTIVO' => Color::Green,
+                        'ACTUALIZADO' => Color::Teal,
+                        'ANULADO' => Color::Red,
+                        'BAJA' => Color::Rose,
+                        'DUPLICADO' => Color::Orange,
+                        'HISTORICO' => Color::Slate,
+                        'INAC' => Color::Gray,
+                        'SUSTITUIDO' => Color::Amber,
+                        'TRANSFERIDO' => Color::Sky,
+                        default => Color::Gray,
+                    }),
 
                 TextColumn::make('licenciaDependencia.tipoLicencia.tli_descripcion')
                     ->label('Tipo Dependencia')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color(fn($state) => match (strtoupper(trim($state ?? ''))) {
+                        'TEMPORAL' => Color::Sky,
+                        'CESIONARIO' => Color::Pink,
+                        'ESPECIAL' => Color::Fuchsia,
+                        'INDETERMINADA' => Color::Emerald,
+                        'CORPORATIVA' => Color::Teal,
+
+                        default => Color::Gray,
+                    }),
 
                 TextColumn::make('lil_fecha')
                     ->label('Fecha de Relación')
