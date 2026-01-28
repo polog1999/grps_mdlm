@@ -142,7 +142,7 @@ class CertificadoLicenciaFuncionamientosTable
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'EXPEDIENTE_NRO')),
 
                 TextColumn::make('codcat')
-                    ->label('CodCat')
+                    ->label('Código Catastral')
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'CODIGO_CATASTRAL'))
                     ->sortable(),
 
