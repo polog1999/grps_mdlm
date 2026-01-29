@@ -23,7 +23,9 @@ class CertificadoBorradoResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
-    protected static ?string $recordTitleAttribute = 'CertificadoBorrado';
+    protected static ?string $navigationLabel = 'Certificados Borrados';
+    protected static ?string $pluralModelLabel = 'Certificados Borrados';
+
 
     public static function form(Schema $schema): Schema
     {
