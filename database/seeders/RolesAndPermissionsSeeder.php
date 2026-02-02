@@ -48,6 +48,10 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para DataLevantamiento
             'view::data_levantamiento',
 
+            //Permisos para Ver Ticket
+            'view::solicitud_permisos',
+            //Permisos para Editar Ticket
+            'edit::solicitud_permisos',
 
         ];
 
