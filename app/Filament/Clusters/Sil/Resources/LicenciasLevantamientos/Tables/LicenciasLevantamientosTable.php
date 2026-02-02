@@ -173,6 +173,7 @@ class LicenciasLevantamientosTable
                     ->iconButton()
                     ->tooltip('Ver Acciones Realizadas')
                     ->color(Color::Blue)
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_actions::licencias_levantamientos'))
                     ->modalHeading(fn($record) => "Acciones Realizadas - Licencia #{$record->lic_numlic}")
                     ->modalWidth('5xl')
                     ->form([
@@ -243,6 +244,7 @@ class LicenciasLevantamientosTable
                     ->iconButton()
                     ->tooltip('Ver Data del Levantamiento')
                     ->color(Color::Yellow)
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_data::licencias_levantamientos'))
                     ->modalHeading(fn($record) => "Data de Levantamiento - Licencia #{$record->lic_numlic}")
                     ->modalWidth('5xl')
                     ->infolist(function ($record) {
@@ -360,6 +362,7 @@ class LicenciasLevantamientosTable
                     ->iconButton()
                     ->tooltip('Realizar Acciones')
                     ->color(Color::Orange)
+                    ->visible(fn() => auth()->user()->hasPermissionTo('perform_actions::licencias_levantamientos'))
                     ->modalHeading(fn($record) => "Registrar Acción - Licencia #{$record->lic_numlic}")
                     ->form([
                         \Filament\Forms\Components\Hidden::make('id_estado_levantamiento')
@@ -422,6 +425,7 @@ class LicenciasLevantamientosTable
                     ->iconButton()
                     ->tooltip('Ver Foto de la Licencia')
                     ->color(Color::Green)
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_photo::licencias_levantamientos'))
                     ->url(function ($record) {
                         // Obtener SML de Syscat o Infocat
                         $sml = null;
@@ -472,6 +476,7 @@ class LicenciasLevantamientosTable
                     ->iconButton()
                     ->tooltip('Ver Certificados ITSE')
                     ->color(Color::Stone)
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_itse::licencias_levantamientos'))
                     ->disabled(function ($record) {
                         $service = app(CertificadoLincenciaFuncionamientoService::class);
                         return !$service->tieneCertificadoCompleto($record->lic_id);

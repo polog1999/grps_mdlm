@@ -365,13 +365,32 @@ class CertificadoInspeccionsTable
                     ->icon('heroicon-o-eye')
                     ->iconButton()
                     ->tooltip('Ver detalles del certificado')
-                    ->color('info'),
+                    ->color('info')
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_details::certificado_inspeccion')),
 
                 EditAction::make()
                     ->icon('heroicon-o-pencil')
                     ->iconButton()
                     ->tooltip('Editar certificado')
                     ->color('warning')
+                    ->visible(function ($record) {
+                        $user = auth()->user();
+
+                        // Primero verificar el permiso del sistema
+                        if (!$user->hasPermissionTo('edit::certificado_inspeccion')) {
+                            return false;
+                        }
+
+                        // Luego verificar la lógica de roles o SolicitudPermiso
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        return ($user_role_id === 1 || $user_role_id === 6) ||
+                            \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
+                                ->exists();
+                    })
                     ->url(function ($record) {
                         $user = auth()->user();
                         $user_role_id = $user->modelHasRole?->role_id;
@@ -386,16 +405,6 @@ class CertificadoInspeccionsTable
                             return \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::getUrl('edit', ['record' => $record]);
                         }
                         return null;
-                    })
-                    ->visible(function ($record) {
-                        $user = auth()->user();
-                        $user_role_id = $user->modelHasRole?->role_id;
-                        return ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
-                            ->where('record_id', $record->cin_id)
-                            ->where('user_id', $user->id)
-                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
-                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
-                            ->exists();
                     }),
 
                 Action::make('solicitar_editar')
@@ -460,13 +469,23 @@ class CertificadoInspeccionsTable
                     })
                     ->visible(function ($record) {
                         $user = auth()->user();
+
+                        // Primero verificar que tenga el permiso base
+                        if (!$user->hasPermissionTo('edit::certificado_inspeccion')) {
+                            return false;  // Si no tiene el permiso base, no mostrar ninguna acción de editar
+                        }
+
+                        // Luego verificar la lógica inversa de roles o SolicitudPermiso
                         $user_role_id = $user->modelHasRole?->role_id;
-                        $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) || \App\Models\SolicitudPermiso::query()
-                            ->where('record_id', $record->cin_id)
-                            ->where('user_id', $user->id)
-                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
-                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
-                            ->exists();
+                        $tienePermiso = ($user_role_id === 1 || $user_role_id === 6) ||
+                            \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->cin_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
+                                ->exists();
+
+                        // Mostrar "solicitar_editar" solo si NO tiene permiso directo
                         return !$tienePermiso;
                     }),
                 Action::make('borrar')
@@ -475,6 +494,7 @@ class CertificadoInspeccionsTable
                     ->tooltip('Borrar certificado')
                     ->iconButton()
                     ->color('danger')
+                    ->visible(fn() => auth()->user()->hasPermissionTo('delete::certificado_inspeccion'))
                     ->requiresConfirmation()
                     ->modalHeading('Eliminar Certificado')
                     ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>eliminar</strong> este certificado? Esta acción no se puede revertir. Se registrará el <strong>usuario</strong> que realiza la eliminación y la <strong>fecha/hora</strong> de la acción.'))
@@ -526,7 +546,7 @@ class CertificadoInspeccionsTable
                         ->icon('heroicon-c-check-badge')
                         ->color('gray')
                         ->tooltip('Ver el PDF original generado por el sistema')
-                        ->visible(fn($record) => Storage::disk('certificados_externos')->exists("originales/certificado_inspeccion_id_{$record->cin_id}.pdf"))
+                        ->visible(fn($record) => auth()->user()->hasPermissionTo('view_pdf_original::certificado_inspeccion') && Storage::disk('certificados_externos')->exists("originales/certificado_inspeccion_id_{$record->cin_id}.pdf"))
                         ->url(fn($record) => route('certificado.ver-archivo', ['id' => $record->cin_id, 'tipo' => 'original']))
                         ->openUrlInNewTab(),
 
@@ -535,6 +555,7 @@ class CertificadoInspeccionsTable
                         ->icon('tabler-certificate')
                         ->color('primary')
                         ->tooltip('Gestionar certificado actualizado')
+                        ->visible(fn() => auth()->user()->hasPermissionTo('upload_pdf::certificado_inspeccion'))
                         ->modalHeading(function ($record) {
                             $exists = Storage::disk('certificados_externos')->exists("actualizados/certificado_inspeccion_actualizado_id_{$record->cin_id}.pdf");
 
@@ -812,6 +833,7 @@ class CertificadoInspeccionsTable
                         ->icon('tabler-paperclip')
                         ->color('info')
                         ->tooltip('Gestionar anexos')
+                        ->visible(fn() => auth()->user()->hasPermissionTo('upload_anexos::certificado_inspeccion'))
                         ->modalHeading(function ($record) {
                             $service = app(CertificadoInspeccionAnexoService::class);
                             $exists = $service->existeAnexo($record->cin_id);

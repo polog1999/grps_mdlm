@@ -80,6 +80,12 @@ class SolicitudPermisosTable
                     ->color('warning')
                     ->visible(function ($record) {
                         $user = auth()->user();
+
+                        // Verificar permiso primero
+                        if (!$user->hasPermissionTo('edit::solicitud_permisos')) {
+                            return false;
+                        }
+
                         $user_role_id = $user->modelHasRole?->role_id;
 
                         // Role 1 = Admin (global access)

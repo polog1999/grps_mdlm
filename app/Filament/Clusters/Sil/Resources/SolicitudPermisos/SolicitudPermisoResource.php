@@ -27,6 +27,11 @@ class SolicitudPermisoResource extends Resource
     protected static ?string $navigationLabel = 'Solicitud de Permisos';
     protected static ?string $pluralModelLabel = 'Solicitud de Permisos';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::solicitud_permisos');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return SolicitudPermisoForm::configure($schema);

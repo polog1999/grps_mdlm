@@ -10,6 +10,7 @@ use App\Actions\Sil\ProcesarBusquedaExpedienteAction;
 use App\DTOs\Sil\BusquedaExpedienteResult;
 class BusquedaStep
 {
+
     public static function make(): Step
     {
         return Step::make('Búsqueda')

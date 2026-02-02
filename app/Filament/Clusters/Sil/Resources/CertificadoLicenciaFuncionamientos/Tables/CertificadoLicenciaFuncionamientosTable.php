@@ -558,6 +558,29 @@ class CertificadoLicenciaFuncionamientosTable
                     ->iconButton()
                     ->tooltip('Modificar')
                     ->color('warning')
+                    ->visible(function (CertificadoLicenciaFuncionamiento $record) {
+                        $user = auth()->user();
+
+                        // Primero verificar el permiso del sistema
+                        if (!$user->hasPermissionTo('edit::certificado_licencia_funcionamiento')) {
+                            return false;
+                        }
+
+                        // Luego verificar la lógica de roles o SolicitudPermiso
+                        $user_role_id = $user->modelHasRole?->role_id;
+
+                        // Super-permisos: roles 1 y 2
+                        if ($user_role_id === 1 || $user_role_id === 2) {
+                            return true;
+                        }
+
+                        // Otros roles: necesitan SolicitudPermiso APROBADO
+                        return \App\Models\SolicitudPermiso::query()
+                            ->where('record_id', $record->lic_id)
+                            ->where('user_id', $user->id)
+                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                            ->exists();
+                    })
                     ->url(function (CertificadoLicenciaFuncionamiento $record) {
                         $user = auth()->user();
                         $user_role_id = $user->modelHasRole?->role_id;
@@ -643,6 +666,7 @@ class CertificadoLicenciaFuncionamientosTable
                     ->iconButton()
                     ->tooltip('Ver QR')
                     ->color('success')
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_qr::certificado_licencia_funcionamiento'))
                     ->modalHeading('Código QR de Licencia')
                     ->modalDescription('Escanee este código QR para ver los detalles de la licencia')
                     ->modalWidth('md')
@@ -680,6 +704,7 @@ class CertificadoLicenciaFuncionamientosTable
                     ->icon('tabler-clipboard-check')
                     ->iconButton()
                     ->tooltip('Ver Certificado(s) de ITSE')
+                    ->visible(fn() => auth()->user()->hasPermissionTo('view_itse::certificado_licencia_funcionamiento'))
                     ->color(function ($record) {
                         $service = app(CertificadoLincenciaFuncionamientoService::class);
                         return $service->tieneCertificadoCompleto($record->lic_id) ? Color::Yellow : Color::Stone;
@@ -765,6 +790,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('heroicon-o-document-text')
                         ->tooltip('Generar certificado')
                         ->color(Color::Stone)
+                        ->visible(fn() => auth()->user()->hasPermissionTo('generate_certificate::certificado_licencia_funcionamiento'))
                         ->url(
                             fn(CertificadoLicenciaFuncionamiento $record): string =>
                             route('certificado-licencia.mostrar', ['licenciaId' => $record->lic_id])
@@ -776,6 +802,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('tabler-certificate')
                         ->color('primary')
                         ->tooltip('Gestionar certificado actualizado')
+                        ->visible(fn() => auth()->user()->hasPermissionTo('upload_pdf::certificado_licencia_funcionamiento'))
                         ->modalHeading(function ($record) {
                             $service = app(CertificadoLicenciaPdfService::class);
                             $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
@@ -1072,6 +1099,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('heroicon-o-document-check')
                         ->color(Color::Violet)
                         ->tooltip('Gestionar certificado de compatibilidad')
+                        ->visible(fn() => auth()->user()->hasPermissionTo('upload_compatibility::certificado_licencia_funcionamiento'))
                         ->modalHeading(function ($record) {
                             $service = app(CompatibilidadCertificadoPdfService::class);
                             $exists = $service->existePdfActualizado($record->lic_numlic ?? '', $record->lic_id);
@@ -1376,6 +1404,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('ionicon-duplicate-outline')
                         ->tooltip('Duplicar licencia')
                         ->color(Color::Purple)
+                        ->visible(fn() => auth()->user()->hasPermissionTo('duplicate::certificado_licencia_funcionamiento'))
                         ->url(function (CertificadoLicenciaFuncionamiento $record) {
                             $user = auth()->user();
                             $user_role_id = $user->modelHasRole?->role_id;
@@ -1447,6 +1476,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('lineawesome-handshake')
                         ->tooltip('Transferir licencia')
                         ->color(Color::Teal)
+                        ->visible(fn() => auth()->user()->hasPermissionTo('transfer::certificado_licencia_funcionamiento'))
                         ->url(function (CertificadoLicenciaFuncionamiento $record) {
                             $user = auth()->user();
                             $user_role_id = $user->modelHasRole?->role_id;
@@ -1518,6 +1548,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('gmdi-account-tree-o')
                         ->tooltip('Cesionario licencia')
                         ->color(Color::Yellow)
+                        ->visible(fn() => auth()->user()->hasPermissionTo('assign::certificado_licencia_funcionamiento'))
                         ->url(function (CertificadoLicenciaFuncionamiento $record) {
                             $user = auth()->user();
                             $user_role_id = $user->modelHasRole?->role_id;
@@ -1590,6 +1621,7 @@ class CertificadoLicenciaFuncionamientosTable
                         ->icon('heroicon-o-archive-box-arrow-down')
                         ->tooltip('Dar de baja licencia')
                         ->color('danger')
+                        ->visible(fn() => auth()->user()->hasPermissionTo('deactivate::certificado_licencia_funcionamiento'))
                         ->modalHeading(function (CertificadoLicenciaFuncionamiento $record) {
                             $user = auth()->user();
                             $user_role_id = $user->modelHasRole?->role_id;

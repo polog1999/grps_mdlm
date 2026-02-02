@@ -22,6 +22,7 @@ class ListPersonas extends ListRecords
             Action::make('create')
                 ->label('Crear Persona')
                 ->icon('heroicon-o-plus')
+                ->visible(fn() => auth()->user()->hasPermissionTo('create::persona'))
                 ->modalWidth('xl')
                 ->form([
                     Grid::make(2)->schema([
