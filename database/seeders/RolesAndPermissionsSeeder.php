@@ -53,6 +53,40 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para Editar Ticket
             'edit::solicitud_permisos',
 
+            //Permisos para acciones de CertificadoLicenciaFuncionamiento
+            'create::certificado_licencia_funcionamiento', // Registrar Nueva Licencia
+            'edit::certificado_licencia_funcionamiento', // Modificar licencia
+            'view_qr::certificado_licencia_funcionamiento', // Ver QR
+            'view_itse::certificado_licencia_funcionamiento', // Ver Certificados ITSE
+            'generate_certificate::certificado_licencia_funcionamiento', // Generar certificado
+            'upload_pdf::certificado_licencia_funcionamiento', // Subir PDF actualizado
+            'upload_compatibility::certificado_licencia_funcionamiento', // Subir compatibilidad
+            'duplicate::certificado_licencia_funcionamiento', // Duplicar licencia
+            'transfer::certificado_licencia_funcionamiento', // Transferir licencia
+            'assign::certificado_licencia_funcionamiento', // Cesionar licencia
+            'deactivate::certificado_licencia_funcionamiento', // Dar de baja licencia
+
+            //Permisos para acciones de CertificadoInspeccion
+            'create::certificado_inspeccion', // Registrar Certificado de Inspección
+            'view_details::certificado_inspeccion', // Ver detalles
+            'edit::certificado_inspeccion', // Editar certificado
+            'delete::certificado_inspeccion', // Borrar certificado
+            'view_pdf_original::certificado_inspeccion', // Ver PDF original
+            'upload_pdf::certificado_inspeccion', // Subir PDF actualizado
+            'upload_anexos::certificado_inspeccion', // Subir anexos
+            'export::certificado_inspeccion', // Exportar certificados
+
+            //Permisos para acciones de LicenciasLevantamientos
+            'view_actions::licencias_levantamientos', // Ver acciones realizadas
+            'view_data::licencias_levantamientos', // Ver data del levantamiento
+            'perform_actions::licencias_levantamientos', // Realizar acciones
+            'view_photo::licencias_levantamientos', // Ver foto levantamiento
+            'view_itse::licencias_levantamientos', // Ver certificados ITSE
+
+            //Permisos para acciones de Personas
+            'create::persona', // Crear persona
+            'edit::persona', // Editar persona
+
         ];
 
         foreach ($permissions as $permission) {

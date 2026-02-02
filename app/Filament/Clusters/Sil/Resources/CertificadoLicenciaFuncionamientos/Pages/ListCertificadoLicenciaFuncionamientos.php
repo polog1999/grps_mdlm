@@ -17,7 +17,8 @@ class ListCertificadoLicenciaFuncionamientos extends ListRecords
         return [
             CreateAction::make()
                 ->label('Registrar Nueva Licencia')
-                ->icon('heroicon-o-plus'),
+                ->icon('heroicon-o-plus')
+                ->visible(fn() => auth()->user()->hasPermissionTo('create::certificado_licencia_funcionamiento')),
         ];
     }
 

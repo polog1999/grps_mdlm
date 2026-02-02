@@ -99,7 +99,8 @@ class PersonasTable
                     ->icon('heroicon-o-pencil')
                     ->iconButton()
                     ->tooltip('Editar persona')
-                    ->color('warning'),
+                    ->color('warning')
+                    ->visible(fn() => auth()->user()->hasPermissionTo('edit::persona')),
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
                 // BulkActionGroup removed

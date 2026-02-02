@@ -18,8 +18,10 @@ class ListCertificadoInspeccions extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('Registrar Certificado de Inspeccion'),
-            ExportCertificadoAction::make(),
+                ->label('Registrar Certificado de Inspeccion')
+                ->visible(fn() => auth()->user()->hasPermissionTo('create::certificado_inspeccion')),
+            ExportCertificadoAction::make()
+                ->visible(fn() => auth()->user()->hasPermissionTo('export::certificado_inspeccion')),
         ];
     }
 
