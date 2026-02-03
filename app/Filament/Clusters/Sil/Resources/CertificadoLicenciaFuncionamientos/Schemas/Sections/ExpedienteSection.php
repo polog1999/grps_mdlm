@@ -311,7 +311,6 @@ class ExpedienteSection
                     //->numeric()
                     ->columnSpan(1),
             ])
-            ->headerActions(SectionHeaderActions::make('expediente'))
             ->columnSpanFull()
             ->columns(2);
     }

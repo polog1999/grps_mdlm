@@ -219,7 +219,6 @@ class CatastroSection
                     ->disabled()
                     ->dehydrated(),
             ])
-            ->headerActions(SectionHeaderActions::make('catastro'))
             ->columnSpanFull()
             ->columns(3);
     }

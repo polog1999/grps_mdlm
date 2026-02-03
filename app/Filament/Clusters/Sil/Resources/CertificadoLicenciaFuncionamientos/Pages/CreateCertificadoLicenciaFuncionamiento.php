@@ -16,13 +16,44 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
     protected static bool $canCreateAnother = false;
     /**
      * Intercepta los datos antes de crear el registro
-     * Reorganiza los datos por secciones: expediente, catastro, licencias
+     * Valida si el numero_licencia ya existe y obtiene el siguiente si es necesario
      */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Mantenemos este método por si Filament necesita hacer algo con los datos,
-        // pero la lógica principal se ha movido a handleRecordCreation.
-        // Solo retornamos los datos tal cual.
+        // Validar si el numero_licencia ya existe
+        $numeroLicencia = $data['numero_licencia'] ?? null;
+
+        if ($numeroLicencia) {
+            // Verificar si ya existe una licencia con ese número
+            $existeLicencia = CertificadoLicenciaFuncionamiento::where('lic_numlic', $numeroLicencia)->exists();
+
+            if ($existeLicencia) {
+                \Log::warning('Número de licencia duplicado detectado', [
+                    'numero_licencia_original' => $numeroLicencia
+                ]);
+
+                // Obtener el siguiente número disponible
+                $service = app(\App\Services\Sil\Licencias\NumeroSiguienteLicenciaService::class);
+                $nuevoNumero = $service->obtenerSiguienteNumeroLicencia();
+
+                if ($nuevoNumero) {
+                    $data['numero_licencia'] = $nuevoNumero;
+
+                    \Log::info('Número de licencia actualizado automáticamente', [
+                        'numero_original' => $numeroLicencia,
+                        'nuevo_numero' => $nuevoNumero
+                    ]);
+
+                    Notification::make()
+                        ->title('Número de Licencia Actualizado')
+                        ->body("El número {$numeroLicencia} ya existía. Se asignó automáticamente el número: {$nuevoNumero}")
+                        ->warning()
+                        ->duration(8000)
+                        ->send();
+                }
+            }
+        }
+
         return $data;
     }
 
