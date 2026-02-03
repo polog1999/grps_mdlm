@@ -566,15 +566,13 @@ class CertificadoLicenciaFuncionamientosTable
                             return false;
                         }
 
-                        // Luego verificar la lógica de roles o SolicitudPermiso
+                        // Roles 1 y 2: pueden editar directamente
                         $user_role_id = $user->modelHasRole?->role_id;
-
-                        // Super-permisos: roles 1 y 2
                         if ($user_role_id === 1 || $user_role_id === 2) {
                             return true;
                         }
 
-                        // Otros roles: necesitan SolicitudPermiso APROBADO
+                        // Otros roles: solo si tienen SolicitudPermiso APROBADA
                         return \App\Models\SolicitudPermiso::query()
                             ->where('record_id', $record->lic_id)
                             ->where('user_id', $user->id)
@@ -582,27 +580,37 @@ class CertificadoLicenciaFuncionamientosTable
                             ->exists();
                     })
                     ->url(function (CertificadoLicenciaFuncionamiento $record) {
-                        $user = auth()->user();
-                        $user_role_id = $user->modelHasRole?->role_id;
+                        return CertificadoLicenciaFuncionamientoResource::getUrl('edit', ['record' => $record]);
+                    }),
 
-                        // 1. Super-permisos: Entran directo                       
-                        if ($user_role_id === 1 || $user_role_id === 2) {
-                            return CertificadoLicenciaFuncionamientoResource::getUrl('edit', ['record' => $record]);
+                // Acción para solicitar permiso de edición (para usuarios con permiso pero sin acceso directo)
+                Action::make('solicitar_editar')
+                    ->icon('heroicon-o-pencil')
+                    ->iconButton()
+                    ->tooltip('Solicitar permiso para editar')
+                    ->color('warning')
+                    ->visible(function (CertificadoLicenciaFuncionamiento $record) {
+                        $user = auth()->user();
+
+                        // Primero verificar el permiso del sistema
+                        if (!$user->hasPermissionTo('edit::certificado_licencia_funcionamiento')) {
+                            return false;
                         }
 
-                        // 2. Otros roles: Solo entran si tienen permiso APROBADO
-                        // Usamos AND (&&) para verificar que NO sea admin Y que tenga el permiso
-                        $tienePermisoAprobado = \App\Models\SolicitudPermiso::query()
+                        // Roles 1 y 2: NO muestran esta acción (ya ven el botón de edición directa)
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        if ($user_role_id === 1 || $user_role_id === 2) {
+                            return false;
+                        }
+
+                        // Otros roles: mostrar solo si NO tienen SolicitudPermiso APROBADA
+                        $tieneSolicitudAprobada = \App\Models\SolicitudPermiso::query()
                             ->where('record_id', $record->lic_id)
                             ->where('user_id', $user->id)
                             ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
                             ->exists();
 
-                        if ($tienePermisoAprobado) {
-                            return CertificadoLicenciaFuncionamientoResource::getUrl('edit', ['record' => $record]);
-                        }
-
-                        return null;
+                        return !$tieneSolicitudAprobada;
                     })
                     ->modalHeading('Solicitar Permiso de Edición')
                     ->modalDescription('No tienes permisos directos para editar este registro. Por favor, indica el motivo para solicitar la edición.')
@@ -616,7 +624,6 @@ class CertificadoLicenciaFuncionamientosTable
                             ->placeholder('Ingrese el motivo por el cual desea editar el registro...'),
                     ])
                     ->action(function (array $data, CertificadoLicenciaFuncionamiento $record) {
-                        //que hacer cuando se envie la solicitud
                         try {
                             $user = auth()->user();
 
@@ -658,7 +665,6 @@ class CertificadoLicenciaFuncionamientosTable
                                 ->danger()
                                 ->send();
                         }
-
                     }),
 
                 Action::make('generar-qr')
