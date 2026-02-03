@@ -53,6 +53,7 @@ class LicenciasSection
                 Select::make('tipo_resolucion')->label('Tipo Resolución')->options(self::tiposResolucion())->default(6)->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('n_resolucion')
                     ->label('N° Resolución')
+                    ->placeholder('Ej: 1111-2026-MDLM-GDEIP/SPEA')
                     ->maxLength(255)
                     //->disabled()
                     ->dehydrated(),
@@ -79,7 +80,14 @@ class LicenciasSection
                     ->disabled(fn($get) => $get('_section_licencias_saved'))
                     ->dehydrated(),
                 Radio::make('mype')->label('Mype')->options(['1' => 'Sí', '0' => 'No'])->default('0')->inline()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
-                TextInput::make('compatibilidad')->label('Compatibilidad')->maxLength(255)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                Select::make('compatibilidad')->label('Compatibilidad')->options(['CONFORME' => 'CONFORME', 'NO CONFORME' => 'NO CONFORME'])->searchable()->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
+                TextInput::make('nro_compatibilidad')
+                    ->label('Nro. Compatibilidad')
+                    ->placeholder('Ej: 0058-2026-MDLM-GDEIP/SPEA')
+                    ->maxLength(255)
+                    ->disabled(fn($get) => $get('_section_licencias_saved'))
+                    ->dehydrated(),
+                /* Comentado temporalmente - Lógica de búsqueda de resoluciones
                 Select::make('nro_compatibilidad')
                     ->label('Nro. Compatibilidad')
                     ->searchable()
@@ -94,6 +102,7 @@ class LicenciasSection
                     ->getOptionLabelUsing(fn($value): ?string => $value)
                     ->disabled(fn($get) => $get('_section_licencias_saved'))
                     ->dehydrated(),
+                */
                 DatePicker::make('fecha_compatibilidad')->label('Fecha Compatibilidad')->displayFormat('d/m/Y')->native(false)->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
 
                 Select::make('horario_atencion')
@@ -246,7 +255,6 @@ class LicenciasSection
                     ->columnSpanFull(),
 
             ])
-            ->headerActions(SectionHeaderActions::make('licencias'))
             ->columnSpanFull()
             ->columns(3);
     }
