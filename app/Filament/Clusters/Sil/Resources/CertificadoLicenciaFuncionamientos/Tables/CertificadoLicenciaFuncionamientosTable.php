@@ -120,6 +120,7 @@ class CertificadoLicenciaFuncionamientosTable
 
             ->defaultSort('lic_filafecha', 'desc')
             ->defaultPaginationPageOption(10)
+            ->recordUrl(null)
             ->columns([
                 //TextColumn::make('lic_id')->label('ID')->sortable()->searchable(),
 
