@@ -48,7 +48,7 @@ class DatosCompletosStep
             $exp = (array) $data['expediente'];
 
             // Campos básicos del expediente
-            foreach (['exp_num', 'exp_fec', 'exp_nomrec'] as $field) {
+            foreach (['exp_num', 'exp_fec', 'exp_nomrec', 'exp_codcon'] as $field) {
                 $set($field, $exp[$field] ?? null);
             }
 

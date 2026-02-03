@@ -178,233 +178,143 @@ class SeleccionCoincidenciasStep
     {
         return [
             Section::make('Vincular Persona al Expediente')
-                ->description("El expediente encontrado no tiene un solicitante identificado...")
+                ->description("El expediente encontrado no tiene un solicitante identificado. Puede crear una nueva persona con los datos del expediente o buscar una existente.")
                 ->icon('heroicon-o-user-plus')
                 ->schema([
-                    // Información del nombre buscado desde Oracle
+                    // Información del expediente desde Oracle
                     Placeholder::make('_info_nombre_oracle')
                         ->label('Nombre buscado')
                         ->content(fn($get) => $get('exp_nomrec') ?? 'No disponible')
                         ->columnSpanFull()
                         ->extraAttributes(['class' => 'text-sm text-gray-600']),
 
-                    // Campo 1: Nombre y Apellidos
-                    TextInput::make('_temp_nombre_apellidos')
-                        ->label('Nombre y Apellidos')
-                        ->placeholder('Buscar persona...')
+                    Placeholder::make('_info_numdoc')
+                        ->label('Numero de Documento')
+                        ->content(fn($get) => $get('numdoc') ?? 'No disponible')
+                        ->columnSpan(1)
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
+                    Placeholder::make('_info_codcontrib')
+                        ->label('Codigo de Contribuyente')
+                        ->content(fn($get) => $get('exp_codcon') ?? 'No disponible')
+                        ->columnSpan(1)
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
+                    Placeholder::make('_info_telefono')
+                        ->label('Telefono')
+                        ->content(fn($get) => $get('numtel') ?? 'No disponible')
+                        ->columnSpan(1)
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
+                    Placeholder::make('_info_direccion')
+                        ->label('Direccion')
+                        ->content(fn($get) => $get('domfis') ?? 'No disponible')
+                        ->columnSpan(2)
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
+                    Placeholder::make('_info_correo')
+                        ->label('Correo Electronico')
+                        ->content(fn($get) => $get('correo') ?? 'No disponible')
+                        ->columnSpan(1)
+                        ->extraAttributes(['class' => 'text-sm text-gray-600']),
+
+                    // Botón para crear persona con datos de Oracle
+                    TextInput::make('_accion_crear_persona')
+                        ->label('Crear Nueva Persona')
+                        ->placeholder('Clic en el botón para crear')
+                        ->disabled()
                         ->dehydrated(false)
                         ->columnSpan(1)
-                        ->required()
-                        ->validationMessages([
-                            'required' => 'Debes buscar y seleccionar una Persona Natural.',
-                        ])
-                        ->validationAttribute('Nombre y Apellidos')
+                        ->hint('Datos recuperados del Gestrad')
                         ->suffixAction(
-                            Action::make('buscar_nombre_modal')
-                                ->icon('heroicon-o-magnifying-glass')
-                                ->modalHeading('Buscar Nombre y Apellidos')
-                                ->modalDescription('Seleccione una persona de la lista y visualice sus datos')
-                                ->modalSubmitActionLabel('Seleccionar')
-                                ->modalWidth('5xl')
-                                ->form([
-                                    Select::make('_persona_nombre_temp')
-                                        ->label('Buscar Persona')
-                                        ->options(function () {
-                                            $service = app(LicenciaPersonaService::class);
-                                            return $service->getPersonasFormateadas();
-                                        })
-                                        ->searchable()
-                                        ->required()
-                                        ->placeholder('Busque por nombre o razón social...')
-                                        ->live(onBlur: false)
-                                        ->afterStateUpdated(function ($state, callable $set) {
-                                            if ($state) {
-                                                $service = app(LicenciaPersonaService::class);
-                                                $personas = $service->getLicenciaPersonaNombre();
-                                                $persona = $personas->firstWhere('per_id', $state);
+                            Action::make('crear_persona_oracle')
+                                ->icon('heroicon-o-user-plus')
+                                ->color('success')
+                                ->requiresConfirmation()
+                                ->modalHeading('Confirmar Creación de Persona')
+                                ->modalDescription(fn($get) => 'Se creará una nueva persona con el nombre: "' . ($get('exp_nomrec') ?? 'Sin nombre') . '". ¿Desea continuar?')
+                                ->modalSubmitActionLabel('Crear Persona')
+                                ->action(function ($set, $get) {
+                                    try {
+                                        $service = app(\App\Services\Sil\Personas\PersonaService::class);
 
-                                                if ($persona) {
-                                                    $set('preview_nombre', $persona->per_nombrerazonsocial ?? '');
-                                                    $set('preview_ruc', $persona->per_ruc ?? '');
-                                                    $set('preview_direccion', $persona->per_direccion ?? '');
-                                                    $set('preview_telefono', $persona->per_telefono ?? '');
-                                                    $set('preview_email', $persona->per_email ?? '');
-                                                    $set('preview_expediente', $persona->per_expcodcon ?? '');
+                                        // Mapear datos del formulario (que vienen de Oracle)
+                                        $dataToSend = [
+                                            'per_nombrerazonsocial' => $get('exp_nomrec') ?? '',
+                                            'per_ruc' => $get('numdoc') ?? '',
+                                            'per_direccion' => $get('domfis') ?? '',
+                                            'per_telefono' => $get('numtel') ?? '',
+                                            'per_email' => $get('correo') ?? '',
+                                            'per_expcodcon' => $get('exp_codcon') ?? '',
+                                        ];
+
+                                        $result = $service->create_unico($dataToSend);
+
+                                        if ($result['success']) {
+                                            // Éxito - Vincular persona al expediente
+                                            $perId = $result['per_id'];
+
+                                            // Actualizar campos del formulario
+                                            $set('exp_nomrec_id', $perId);
+                                            $set('exp_razsoc_id', $perId);
+
+                                            // Actualizar _datos_completos
+                                            $datosRaw = $get('_datos_completos');
+                                            $datosCompletos = is_string($datosRaw) ? json_decode($datosRaw, true) : ($datosRaw ?? []);
+
+                                            if (!empty($datosCompletos)) {
+                                                $expediente = $datosCompletos['expediente'] ?? [];
+                                                if (is_object($expediente)) {
+                                                    $expediente = (array) $expediente;
                                                 }
-                                            } else {
-                                                $set('preview_nombre', '');
-                                                $set('preview_ruc', '');
-                                                $set('preview_direccion', '');
-                                                $set('preview_telefono', '');
-                                                $set('preview_email', '');
-                                                $set('preview_expediente', '');
+                                                $expediente['per_id'] = $perId;
+                                                $expediente['exp_nomrec_id'] = $perId;
+                                                $expediente['exp_razsoc_id'] = $perId;
+                                                $datosCompletos['expediente'] = $expediente;
+                                                $set('_datos_completos', $datosCompletos);
                                             }
-                                        })
-                                        ->columnSpanFull(),
 
-                                    Section::make('Datos de la Persona')
-                                        ->schema([
-                                            TextInput::make('preview_nombre')
-                                                ->label('Nombre / Razón Social')
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->columnSpan(2),
-                                            TextInput::make('preview_ruc')
-                                                ->label('RUC/DNI')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                            TextInput::make('preview_expediente')
-                                                ->label('Expediente')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                            TextInput::make('preview_direccion')
-                                                ->label('Dirección')
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->columnSpan(2),
-                                            TextInput::make('preview_telefono')
-                                                ->label('Teléfono')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                            TextInput::make('preview_email')
-                                                ->label('Email')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                        ])
-                                        ->columns(3)
-                                        ->columnSpanFull()
-                                        ->visible(fn($get) => $get('_persona_nombre_temp') !== null),
-                                ])
-                                ->action(function (array $data, $set, $get) {
-                                    if (isset($data['_persona_nombre_temp'])) {
-                                        $service = app(LicenciaPersonaService::class);
-                                        $personas = $service->getLicenciaPersonaNombre();
-                                        $personaSeleccionada = $personas->firstWhere('per_id', $data['_persona_nombre_temp']);
+                                            // Limpiar flag de persona requerida
+                                            $set('_persona_requerida', false);
 
-                                        if ($personaSeleccionada) {
-                                            $set('_temp_nombre_apellidos', $personaSeleccionada->per_nombrerazonsocial);
+                                            Notification::make()
+                                                ->title('¡Persona Creada!')
+                                                ->body($result['message'] . ' (ID: ' . $perId . ')')
+                                                ->success()
+                                                ->duration(5000)
+                                                ->send();
+                                        } else {
+                                            // Manejar errores según el tipo
+                                            $notif = Notification::make()->duration(6000);
 
-                                            $set('exp_nomrec', $personaSeleccionada->per_nombrerazonsocial);
-                                            $set('exp_nomrec_id', $personaSeleccionada->per_id);
+                                            switch ($result['type']) {
+                                                case 'validation':
+                                                    $notif->title('Validación Fallida')->body($result['message'])->warning();
+                                                    break;
+                                                case 'duplicate':
+                                                    $notif->title('Registro Duplicado')->body($result['message'])->warning();
+                                                    break;
+                                                case 'internal':
+                                                case 'exception':
+                                                    $notif->title('Error del Sistema')->body($result['message'])->danger();
+                                                    break;
+                                                default:
+                                                    $notif->title('Error')->body($result['message'] ?? 'Error desconocido')->danger();
+                                            }
 
-                                            self::actualizarPersonaEnDatos($get, $set, 'exp_nomrec', $personaSeleccionada->per_nombrerazonsocial, $personaSeleccionada->per_id);
+                                            $notif->send();
                                         }
+                                    } catch (\Exception $e) {
+                                        Notification::make()
+                                            ->title('Error Crítico')
+                                            ->body('Error inesperado: ' . $e->getMessage())
+                                            ->danger()
+                                            ->duration(10000)
+                                            ->send();
                                     }
                                 })
-                        ),
-
-                    // Campo 2: Razón Social
-                    TextInput::make('_temp_razon_social')
-                        ->label('Razón Social')
-                        ->placeholder('Buscar razón social...')
-                        ->dehydrated(false)
-                        ->columnSpan(1)
-                        ->required()
-                        ->validationMessages([
-                            'required' => 'Debes buscar y seleccionar una Razón Social (Empresa).',
-                        ])
-                        ->validationAttribute('Razón Social')
-                        ->suffixAction(
-                            Action::make('buscar_razon_modal')
-                                ->icon('heroicon-o-magnifying-glass')
-                                ->modalHeading('Buscar Razón Social')
-                                ->modalDescription('Seleccione una razón social de la lista y visualice sus datos')
-                                ->modalSubmitActionLabel('Seleccionar')
-                                ->modalWidth('5xl')
-                                ->form([
-                                    Select::make('_persona_razon_temp')
-                                        ->label('Buscar Razón Social')
-                                        ->options(function () {
-                                            $service = app(LicenciaPersonaService::class);
-                                            return $service->getPersonasFormateadas();
-                                        })
-                                        ->searchable()
-                                        ->required()
-                                        ->placeholder('Busque por razón social...')
-                                        ->live(onBlur: false)
-                                        ->afterStateUpdated(function ($state, callable $set) {
-                                            if ($state) {
-                                                $service = app(LicenciaPersonaService::class);
-                                                $personas = $service->getLicenciaPersonaNombre();
-                                                $persona = $personas->firstWhere('per_id', $state);
-
-                                                if ($persona) {
-                                                    $set('preview_nombre_rs', $persona->per_nombrerazonsocial ?? '');
-                                                    $set('preview_ruc_rs', $persona->per_ruc ?? '');
-                                                    $set('preview_direccion_rs', $persona->per_direccion ?? '');
-                                                    $set('preview_telefono_rs', $persona->per_telefono ?? '');
-                                                    $set('preview_email_rs', $persona->per_email ?? '');
-                                                    $set('preview_expediente_rs', $persona->per_expcodcon ?? '');
-                                                }
-                                            } else {
-                                                $set('preview_nombre_rs', '');
-                                                $set('preview_ruc_rs', '');
-                                                $set('preview_direccion_rs', '');
-                                                $set('preview_telefono_rs', '');
-                                                $set('preview_email_rs', '');
-                                                $set('preview_expediente_rs', '');
-                                            }
-                                        })
-                                        ->columnSpanFull(),
-
-                                    Section::make('Datos de la Razón Social')
-                                        ->schema([
-                                            TextInput::make('preview_nombre_rs')
-                                                ->label('Nombre / Razón Social')
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->columnSpan(2),
-                                            TextInput::make('preview_ruc_rs')
-                                                ->label('RUC/DNI')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                            TextInput::make('preview_expediente_rs')
-                                                ->label('Expediente')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                            TextInput::make('preview_direccion_rs')
-                                                ->label('Dirección')
-                                                ->disabled()
-                                                ->dehydrated(false)
-                                                ->columnSpan(2),
-                                            TextInput::make('preview_telefono_rs')
-                                                ->label('Teléfono')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                            TextInput::make('preview_email_rs')
-                                                ->label('Email')
-                                                ->disabled()
-                                                ->dehydrated(false),
-                                        ])
-                                        ->columns(3)
-                                        ->columnSpanFull()
-                                        ->visible(fn($get) => $get('_persona_razon_temp') !== null),
-                                ])
-                                ->action(function (array $data, $set, $get) {
-                                    if (isset($data['_persona_razon_temp'])) {
-                                        $service = app(LicenciaPersonaService::class);
-                                        $personas = $service->getLicenciaPersonaNombre();
-                                        $personaSeleccionada = $personas->firstWhere('per_id', $data['_persona_razon_temp']);
-
-                                        if ($personaSeleccionada) {
-                                            $set('_temp_razon_social', $personaSeleccionada->per_nombrerazonsocial);
-
-                                            // Actualizar campos de Razón Social
-                                            $set('exp_razsoc', $personaSeleccionada->per_nombrerazonsocial);
-                                            $set('exp_razsoc_id', $personaSeleccionada->per_id);
-
-                                            // Actualizar campos adicionales del formulario
-                                            $set('numdoc', $personaSeleccionada->per_ruc ?? '');
-                                            $set('numtel', $personaSeleccionada->per_telefono ?? '');
-                                            $set('correo', $personaSeleccionada->per_email ?? '');
-                                            $set('domfis', $personaSeleccionada->per_direccion ?? '');
-
-                                            self::actualizarPersonaEnDatos($get, $set, 'exp_razsoc', $personaSeleccionada->per_nombrerazonsocial, $personaSeleccionada->per_id);
-                                        }
-                                    }
-                                })
-                        ),
-                ])->columns(2)->compact()
+                        )
+                ])->columns(3)->compact()
         ];
     }
     private static function actualizarPersonaEnDatos(callable $get, callable $set, string $campo, string $nombre, int $personaId): void
