@@ -376,12 +376,18 @@ class CertificadoInspeccionsTable
                     ->visible(function ($record) {
                         $user = auth()->user();
 
-                        // Si tiene el permiso del sistema, puede ver el botón de editar
-                        if ($user->hasPermissionTo('edit::certificado_inspeccion')) {
+                        // Primero verificar el permiso del sistema
+                        if (!$user->hasPermissionTo('edit::certificado_inspeccion')) {
+                            return false;
+                        }
+
+                        // Roles 1 y 6: pueden editar directamente
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        if ($user_role_id === 1 || $user_role_id === 6) {
                             return true;
                         }
 
-                        // Si no tiene el permiso, verificar si tiene SolicitudPermiso APROBADA
+                        // Otros roles: solo si tienen SolicitudPermiso APROBADA
                         return \App\Models\SolicitudPermiso::query()
                             ->where('record_id', $record->cin_id)
                             ->where('user_id', $user->id)
@@ -390,25 +396,7 @@ class CertificadoInspeccionsTable
                             ->exists();
                     })
                     ->url(function ($record) {
-                        $user = auth()->user();
-
-                        // Si tiene el permiso del sistema, puede editar directamente
-                        if ($user->hasPermissionTo('edit::certificado_inspeccion')) {
-                            return \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::getUrl('edit', ['record' => $record]);
-                        }
-
-                        // Si no tiene el permiso, verificar si tiene SolicitudPermiso APROBADA
-                        $tienePermiso = \App\Models\SolicitudPermiso::query()
-                            ->where('record_id', $record->cin_id)
-                            ->where('user_id', $user->id)
-                            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
-                            ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::EDITAR_DATOS_ITSE)
-                            ->exists();
-
-                        if ($tienePermiso) {
-                            return \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::getUrl('edit', ['record' => $record]);
-                        }
-                        return null;
+                        return \App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource::getUrl('edit', ['record' => $record]);
                     }),
 
                 Action::make('solicitar_editar')
@@ -474,12 +462,18 @@ class CertificadoInspeccionsTable
                     ->visible(function ($record) {
                         $user = auth()->user();
 
-                        // Si tiene el permiso del sistema, NO mostrar solicitar_editar (ya puede editar directamente)
-                        if ($user->hasPermissionTo('edit::certificado_inspeccion')) {
+                        // Primero verificar el permiso del sistema
+                        if (!$user->hasPermissionTo('edit::certificado_inspeccion')) {
                             return false;
                         }
 
-                        // Si no tiene el permiso, mostrar solicitar_editar solo si NO tiene SolicitudPermiso APROBADA
+                        // Roles 1 y 6: NO muestran esta acción (ya ven el botón de edición directa)
+                        $user_role_id = $user->modelHasRole?->role_id;
+                        if ($user_role_id === 1 || $user_role_id === 6) {
+                            return false;
+                        }
+
+                        // Otros roles: mostrar solo si NO tienen SolicitudPermiso APROBADA
                         $tieneSolicitudAprobada = \App\Models\SolicitudPermiso::query()
                             ->where('record_id', $record->cin_id)
                             ->where('user_id', $user->id)
