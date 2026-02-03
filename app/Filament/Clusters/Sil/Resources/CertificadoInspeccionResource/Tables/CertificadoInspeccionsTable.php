@@ -73,6 +73,7 @@ class CertificadoInspeccionsTable
         return $table
             ->defaultSort('cin_fecha', 'desc')
             ->searchable(true)
+            ->recordUrl(null)
             ->columns([
                 TextColumn::make('tipoEdificacion.tie_descripcion')
                     ->label('Edificación')
