@@ -129,7 +129,7 @@
         }
 
         .certificate-header {
-            font-size: 14pt;
+            font-size: 14.3pt;
             font-weight: bold;
             color: #000;
             text-align: left;
@@ -318,10 +318,10 @@
     <div class="container">
         <table style="width: 100%; border: none; margin: 0; padding: 0;">
             <tr>
-                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.6cm;">
+                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.5cm;">
                     <div class="certificate-header">
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         {{$licencia->NUMERO_LICENCIA ?? '' }}
                     </div>
                 </td>
