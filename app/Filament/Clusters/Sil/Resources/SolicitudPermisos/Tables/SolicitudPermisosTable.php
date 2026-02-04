@@ -17,6 +17,7 @@ class SolicitudPermisosTable
     {
         return $table
             ->defaultSort('id', 'desc')
+            ->recordUrl(null)
             ->modifyQueryUsing(function (Builder $query) {
                 $user = auth()->user();
                 $user_role_id = $user->modelHasRole?->role_id;
@@ -24,13 +25,17 @@ class SolicitudPermisosTable
                 // Role 1 = Admin (global access)
                 // Role 2 = SPEA (only Licencias - module_id=2)
                 // Role 6 = ITSE (only ITSE - module_id=1)
-                if ($user_role_id === 2) {
+                if ($user_role_id === 1) {
+                    // Admin ve todos los tickets
+                } elseif ($user_role_id === 2) {
                     $query->where('module_id', 2); // Only Licencias
                 } elseif ($user_role_id === 6) {
                     $query->where('module_id', 1); // Only ITSE
+                } else {
+                    // Otros usuarios solo ven sus propios tickets
+                    $query->where('user_id', $user->id);
                 }
-                // Role 1 sees all, no filter needed
-    
+
                 return $query->where('estado', '!=', SolicitudPermisoEstado::FINALIZADO);
             })
             ->columns([
