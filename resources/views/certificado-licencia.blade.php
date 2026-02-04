@@ -318,14 +318,15 @@
     <div class="container">
         <table style="width: 100%; border: none; margin: 0; padding: 0;">
             <tr>
-                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.2cm;">
+                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.6cm;">
                     <div class="certificate-header">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         {{$licencia->NUMERO_LICENCIA ?? '' }}
                     </div>
                 </td>
                 <td
-                    style="height: 2.7cm; border: none; vertical-align: top; text-align: right; padding-top: 3.5cm; padding-right: 0;">
+                    style="height: 3.8cm; border: none; vertical-align: top; text-align: right; padding-top: 3.5cm; padding-right: 0;">
                     @if(isset($qrImage) && $qrImage)
                         <img src="{{ $qrImage }}" alt="QR" class="qr-image" style="margin-right: -20px;">
                     @endif
