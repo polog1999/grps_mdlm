@@ -57,7 +57,7 @@ class LicenciasSection
                     ->maxLength(255)
                     ->required()
                     ->validationMessages([
-                        'required' => 'El documento no se encuentra cargado en el sistema GESTRAD',
+                        'required' => 'Documento no disponible > El archivo solicitado no figura en el sistema de trámite. Por favor, cargue el documento para habilitar su consulta.',
                     ])
                     ->disabled()
                     ->dehydrated(),
