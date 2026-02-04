@@ -55,7 +55,11 @@ class LicenciasSection
                     ->label('N° Resolución')
                     ->placeholder('Ej: 1111-2026-MDLM-GDEIP/SPEA')
                     ->maxLength(255)
-                    //->disabled()
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El documento no se encuentra cargado en el sistema GESTRAD',
+                    ])
+                    ->disabled()
                     ->dehydrated(),
                 DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
