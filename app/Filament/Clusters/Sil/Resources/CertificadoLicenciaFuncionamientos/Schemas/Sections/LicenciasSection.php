@@ -56,10 +56,10 @@ class LicenciasSection
                     ->placeholder('Ej: 1111-2026-MDLM-GDEIP/SPEA')
                     ->maxLength(255)
                     ->required()
-                    ->validationMessages([
+                    /*->validationMessages([
                         'required' => 'Documento no disponible > El archivo solicitado no figura en el sistema de trámite. Por favor, cargue el documento para habilitar su consulta.',
-                    ])
-                    ->disabled()
+                    ])*/
+                    //->disabled()
                     ->dehydrated(),
                 DatePicker::make('fecha_resolucion')->label('Fecha Resolución')->displayFormat('d/m/Y')->native(false)->live()->afterStateUpdated(fn($state, callable $set) => $set('fecha_emision', $state))->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
