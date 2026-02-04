@@ -26,6 +26,7 @@ class SolicitudPermisoResource extends Resource
     protected static ?string $recordTitleAttribute = 'Solicitud de Permisos';
     protected static ?string $navigationLabel = 'Solicitud de Permisos';
     protected static ?string $pluralModelLabel = 'Solicitud de Permisos';
+    protected static ?int $navigationSort = 5;
 
     public static function canAccess(): bool
     {
