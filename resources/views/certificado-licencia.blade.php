@@ -318,7 +318,7 @@
     <div class="container">
         <table style="width: 100%; border: none; margin: 0; padding: 0;">
             <tr>
-                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.5cm;">
+                <td style="height: 2.7cm; border: none; vertical-align: top; padding-top: 1.6cm;">
                     <div class="certificate-header">
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
