@@ -46,11 +46,18 @@ class CertificadoLicenciaPdfController extends Controller
         }
 
         // Obtener giros de la licencia con sus descripciones
+        // Prioridad: si lig_giroespecifico tiene valor, usarlo; sino, usar gir_descripcion
         $giros = \App\Models\LicenciaGiro::where('lic_id', $licenciaId)
             ->with('giro')
             ->get()
             ->map(function ($licenciaGiro) {
-                return $licenciaGiro->giro->gir_descripcion ?? $licenciaGiro->lig_giroespecifico;
+                // Verificar si lig_giroespecifico tiene valor (no vacío, no solo espacios)
+                $giroEspecifico = trim($licenciaGiro->lig_giroespecifico ?? '');
+                if (!empty($giroEspecifico)) {
+                    return $giroEspecifico;
+                }
+                // Fallback: usar la descripción del giro
+                return $licenciaGiro->giro->gir_descripcion ?? null;
             })
             ->filter()
             ->toArray();
@@ -110,11 +117,18 @@ class CertificadoLicenciaPdfController extends Controller
         }
 
         // Obtener giros de la licencia con sus descripciones
+        // Prioridad: si lig_giroespecifico tiene valor, usarlo; sino, usar gir_descripcion
         $giros = \App\Models\LicenciaGiro::where('lic_id', $licenciaId)
             ->with('giro')
             ->get()
             ->map(function ($licenciaGiro) {
-                return $licenciaGiro->giro->gir_descripcion ?? $licenciaGiro->lig_giroespecifico;
+                // Verificar si lig_giroespecifico tiene valor (no vacío, no solo espacios)
+                $giroEspecifico = trim($licenciaGiro->lig_giroespecifico ?? '');
+                if (!empty($giroEspecifico)) {
+                    return $giroEspecifico;
+                }
+                // Fallback: usar la descripción del giro
+                return $licenciaGiro->giro->gir_descripcion ?? null;
             })
             ->filter()
             ->toArray();
