@@ -2,13 +2,17 @@
 
 namespace App\Filament\Clusters\Sil\Resources\SolicitudPermisos\Tables;
 
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use App\Enums\SolicitudPermisoEstado;
 
 class SolicitudPermisosTable
@@ -112,7 +116,54 @@ class SolicitudPermisosTable
                     })
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([
+                BulkActionGroup::make([
+                    BulkAction::make('cambiar_estado')
+                        ->label('Cambiar Estado')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('primary')
+                        ->form([
+                            Select::make('estado')
+                                ->label('Nuevo Estado')
+                                ->options([
+                                    SolicitudPermisoEstado::PENDIENTE->value => SolicitudPermisoEstado::PENDIENTE->getLabel(),
+                                    SolicitudPermisoEstado::APROBADO->value => SolicitudPermisoEstado::APROBADO->getLabel(),
+                                    SolicitudPermisoEstado::RECHAZADO->value => SolicitudPermisoEstado::RECHAZADO->getLabel(),
+                                    SolicitudPermisoEstado::FINALIZADO->value => SolicitudPermisoEstado::FINALIZADO->getLabel(),
+                                ])
+                                ->required()
+                                ->native(false),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $nuevoEstado = $data['estado'];
+                            $count = $records->count();
 
+                            $records->each(function ($record) use ($nuevoEstado) {
+                                $record->update([
+                                    'estado' => $nuevoEstado,
+                                    'admin_id' => auth()->id(),
+                                    'fecha_aprobacion' => now(),
+                                ]);
+                            });
+
+                            Notification::make()
+                                ->success()
+                                ->title('Estados actualizados')
+                                ->body("Se actualizaron {$count} solicitudes al estado: {$nuevoEstado}")
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->requiresConfirmation()
+                        ->modalHeading('Cambiar estado de solicitudes')
+                        ->modalDescription('¿Está seguro de cambiar el estado de las solicitudes seleccionadas?')
+                        ->modalSubmitActionLabel('Cambiar Estado')
+                        ->visible(function () {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+                            // Solo Admin y Coordinador pueden usar bulk actions
+                            return in_array($user_role_id, [1, 11]);
+                        }),
+                ]),
             ]);
     }
 }
+
