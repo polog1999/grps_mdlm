@@ -23,10 +23,11 @@ class SolicitudPermisosTable
                 $user_role_id = $user->modelHasRole?->role_id;
 
                 // Role 1 = Admin (global access)
+                // Role 11 = Coordinador SPEA & ITSE (global access)
                 // Role 2 = SPEA (only Licencias - module_id=2)
                 // Role 6 = ITSE (only ITSE - module_id=1)
-                if ($user_role_id === 1) {
-                    // Admin ve todos los tickets
+                if (in_array($user_role_id, [1, 11])) {
+                    // Admin y Coordinador ven todos los tickets
                 } elseif ($user_role_id === 2) {
                     $query->where('module_id', 2); // Only Licencias
                 } elseif ($user_role_id === 6) {
@@ -94,7 +95,8 @@ class SolicitudPermisosTable
                         $user_role_id = $user->modelHasRole?->role_id;
 
                         // Role 1 = Admin (global access)
-                        if ($user_role_id === 1) {
+                        // Role 11 = Coordinador SPEA & ITSE (global access)
+                        if (in_array($user_role_id, [1, 11])) {
                             return true;
                         }
                         // Role 2 = SPEA (only Licencias - module_id=2)

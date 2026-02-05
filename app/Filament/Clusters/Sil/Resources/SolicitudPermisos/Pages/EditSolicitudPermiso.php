@@ -21,16 +21,33 @@ class EditSolicitudPermiso extends EditRecord
 
     protected function beforeSave(): void
     {
-        if ($this->record->module_id === 2 && !in_array(auth()->id(), [1, 2])) {
+        $user = auth()->user();
+        $user_role_id = $user->modelHasRole?->role_id;
 
-            \Filament\Notifications\Notification::make()
-                ->warning()
-                ->title('Acceso denegado')
-                ->body('Solo los usuarios autorizados pueden editar tickets ')
-                ->send();
-
-            $this->halt();
+        // Role 1 = Admin (global access)
+        // Role 11 = Coordinador SPEA & ITSE (global access)
+        if (in_array($user_role_id, [1, 11])) {
+            return; // Acceso permitido
         }
+
+        // Role 2 = SPEA (only Licencias - module_id=2)
+        if ($user_role_id === 2 && $this->record->module_id === 2) {
+            return; // Acceso permitido
+        }
+
+        // Role 6 = ITSE (only ITSE - module_id=1)
+        if ($user_role_id === 6 && $this->record->module_id === 1) {
+            return; // Acceso permitido
+        }
+
+        // Si llegamos aquí, no tiene acceso
+        \Filament\Notifications\Notification::make()
+            ->warning()
+            ->title('Acceso denegado')
+            ->body('Solo los usuarios autorizados pueden editar tickets de este módulo.')
+            ->send();
+
+        $this->halt();
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
