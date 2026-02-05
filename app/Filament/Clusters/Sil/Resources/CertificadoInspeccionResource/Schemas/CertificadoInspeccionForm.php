@@ -247,7 +247,6 @@ class CertificadoInspeccionForm
                             ->placeholder('Ej. Empresa XYZ S.A.C.')
                             ->required()
                             ->maxLength(255)
-                            ->disabled(fn(callable $get) => (bool) $get('cin_establecimiento_autofilled'))
                             ->dehydrated()
                             ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_establecimiento_autofilled') ? '1' : '0',
