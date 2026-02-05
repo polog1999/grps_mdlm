@@ -65,7 +65,7 @@ class LicenciasSection
                 TextInput::make('numero_licencia')->label('Número Licencia')->maxLength(100)->default(fn() => app(NumeroSiguienteLicenciaService::class)->obtenerSiguienteNumeroLicencia())->disabled(fn($get) => $get('_section_licencias_saved'))->dehydrated(),
                 Select::make('tipo_licencia')
                     ->label('Tipo Licencia')
-                    ->options(self::tiposLicencia())
+                    ->options(fn(string $operation) => self::tiposLicencia($operation))
                     ->searchable()
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
@@ -263,9 +263,25 @@ class LicenciasSection
             ->columns(3);
     }
 
-    private static function tiposLicencia(): array
+    private static function tiposLicencia(string $operation = 'create'): array
     {
-        return self::obtenerOpciones(TipoLicenciaService::class, 'getTipoLicencias', 'tli_descripcion', 'tli_id');
+        try {
+            $service = app(TipoLicenciaService::class);
+            $items = $service->getTipoLicencias();
+
+            // Filtrar opciones que contengan "CESIONARIO" solo al CREAR nueva licencia
+            if ($operation === 'create') {
+                $items = $items->filter(function ($item) {
+                    $descripcion = strtoupper($item->tli_descripcion ?? '');
+                    return strpos($descripcion, 'CESIONARIO') === false;
+                });
+            }
+
+            return $items->pluck('tli_descripcion', 'tli_id')->toArray();
+        } catch (\Exception $e) {
+            Log::error("Error obteniendo tipos de licencia: " . $e->getMessage());
+            return [];
+        }
     }
     private static function tiposResolucion(): array
     {

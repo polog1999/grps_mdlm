@@ -464,7 +464,7 @@
                     {{ $licencia->TIPO_LICENCIA }} hasta el
                     {{ \Carbon\Carbon::parse($licencia->lic_fecha_fin ?? $licencia->LIC_FECHA_FIN ?? now())->format('d/m/Y') }}
                 @else
-                    Sujeta a la licencia principal n°:
+                    Sujeta a la licencia principal N°:
                     {{ $licencia->lic_numlic_principal ?? $licencia->LIC_NUMLIC_PRINCIPAL ?? '' }}
                 @endif
             </div>
@@ -498,8 +498,12 @@
         <div class="footer-section">
             <table class="footer-table">
                 <tr>
-                    <td class="footer-right">La Molina, {{ now()->format('d') }} de
-                        {{ now()->locale('es')->translatedFormat('F') }} de {{ now()->format('Y') }}
+                    @php
+                        $fechaEmision = $licencia->lic_fechaemision ?? $licencia->LIC_FECHAEMISION ?? $licencia->FECHA_EMISION ?? now();
+                        $fechaCarbon = \Carbon\Carbon::parse($fechaEmision);
+                    @endphp
+                    <td class="footer-right">La Molina, {{ $fechaCarbon->format('d') }} de
+                        {{ $fechaCarbon->locale('es')->translatedFormat('F') }} de {{ $fechaCarbon->format('Y') }}
                     </td>
                 </tr>
             </table>
