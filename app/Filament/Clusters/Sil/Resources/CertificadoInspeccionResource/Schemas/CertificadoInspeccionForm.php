@@ -419,7 +419,16 @@ class CertificadoInspeccionForm
                     ->live()
                     ->default(true)
                     ->inline(false)
-                    ->helperText('Activar si el certificado no tiene fecha de vencimiento')
+                    ->helperText('Activar si la licencia tiene fecha de vencimiento (NO temporal). Desactivar si es temporal.')
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        // Si se activa (NO temporal), autocompletar fecha fin con +2 años
+                        if ($state && $get('cin_fec_inicio')) {
+                            $fechaFin = Carbon::parse($get('cin_fec_inicio'))
+                                ->addYears(self::YEARS_VIGENCIA)
+                                ->toDateString();
+                            $set('cin_fec_fin', $fechaFin);
+                        }
+                    })
                     ->columnSpanFull(),
 
                 Grid::make(2)
@@ -430,9 +439,9 @@ class CertificadoInspeccionForm
                             ->required()
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn(callable $get) => $get('cin_indeterminado'))
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                if ($state) {
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                // Si NO es temporal (cin_indeterminado = true), autocompletar fecha fin
+                                if ($state && $get('cin_indeterminado')) {
                                     $fechaFin = Carbon::parse($state)
                                         ->addYears(self::YEARS_VIGENCIA)
                                         ->toDateString();
@@ -440,9 +449,7 @@ class CertificadoInspeccionForm
                                 }
                             })
                             ->suffixIcon('heroicon-o-play')
-                            //->disabled(fn(callable $get) => (bool) $get('cin_fecha_inicio_autofilled') && !$get('cin_es_temporal'))
                             ->dehydrated()
-
                             ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_fecha_inicio_autofilled') ? '1' : '0',
                                 'style' => self::getAutofilledStyle($get, 'cin_fecha_inicio_autofilled'),
@@ -462,14 +469,19 @@ class CertificadoInspeccionForm
                             ->required()
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn(callable $get) => $get('cin_indeterminado'))
                             ->dehydrated()
                             ->suffixIcon('heroicon-o-stop')
-                            ->disabled(fn(callable $get) => (bool) $get('cin_fecha_fin_autofilled') && !$get('cin_es_temporal'))
+                            // Solo deshabilitado si NO es temporal (cin_indeterminado = true)
+                            ->disabled(fn(callable $get) => (bool) $get('cin_indeterminado'))
                             ->dehydrated()
                             ->rules([
                                 function (callable $get) {
                                     return function (string $attribute, $value, $fail) use ($get) {
+                                        // Solo validar si NO es temporal (cin_indeterminado = true)
+                                        if (!$get('cin_indeterminado')) {
+                                            return; // Es temporal, no validar los 2 años exactos
+                                        }
+
                                         $fechaInicio = $get('cin_fec_inicio');
 
                                         // Si no hay fecha de inicio, no validar
@@ -510,12 +522,11 @@ class CertificadoInspeccionForm
                             ])
                             ->helperText(
                                 fn(callable $get) =>
-                                $get('cin_fecha_fin_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Debe ser exactamente 2 años después de la fecha de inicio'
+                                $get('cin_indeterminado')
+                                ? '✓ Calculado automáticamente (+2 años)'
+                                : 'Editable para licencias temporales'
                             ),
-                    ])
-                    ->hidden(fn(callable $get) => $get('cin_indeterminado')),
+                    ]),
             ])
             ->collapsible()
             ->columnSpan('full');
@@ -1245,7 +1256,6 @@ class CertificadoInspeccionForm
 
         // Fechas de vigencia
         if (!empty($licenciaData->lic_fechaemision)) {
-            $set('cin_indeterminado', false);
             $set('cin_fec_inicio', $licenciaData->lic_fechaemision);
             $set('cin_fecha_inicio_autofilled', !empty($licenciaData->lic_fechaemision));
 
@@ -1280,11 +1290,10 @@ class CertificadoInspeccionForm
 
         $set('cin_es_temporal', $esTemporal);
 
-        if ($esTemporal) {
-            $set('cin_indeterminado', false);
-            // Si es temporal, aseguramos que las fechas se puedan editar (la lógica disabled lo manejará)
-            // y tal vez queramos notificar al usuario o simplemente dejarlo editar.
-        }
+        // Configurar el toggle cin_indeterminado según temporalidad
+        // cin_indeterminado = true -> NO temporal (fecha fin autocalculada +2 años)
+        // cin_indeterminado = false -> temporal (ambas fechas editables)
+        $set('cin_indeterminado', !$esTemporal);
 
         // Fetch and set resolution number
         if (!empty($expediente) && empty($resolucion)) {
