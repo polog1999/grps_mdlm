@@ -19,6 +19,10 @@
     $fechaCaducidadFormatted = $fechaCaducidad->format('d/m/Y');
     $fechaExpedicionFormatted = $fechaExpedicion->format('d/m/Y');
 
+    // Calcular años de vigencia dinámicamente
+    $aniosVigencia = (int) $fechaExpedicion->diffInYears($fechaCaducidad);
+    $textoAnios = $aniosVigencia == 1 ? 'AÑO' : 'AÑOS';
+
     $capacidad = $record->cin_capacidad;
     $capacidadTexto = strtoupper($numberTransformer->toWords($capacidad));
 @endphp
@@ -361,7 +365,7 @@
 
     <!-- Vigencia -->
     <div class="vigencia-section">
-        VIGENCIA: &nbsp;&nbsp;&nbsp; 2 AÑOS*
+        VIGENCIA: &nbsp;&nbsp;&nbsp; {{ $aniosVigencia }} {{ $textoAnios }}*
     </div>
 
     <table class="fecha-table">
