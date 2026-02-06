@@ -601,7 +601,7 @@ class CertificadoInspeccionForm
                             ->label('Número de Expediente')
                             ->placeholder('E-13608-2025')
                             ->suffixIcon('heroicon-o-folder-open')
-                            ->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
+                            //->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
                             ->dehydrated()
 
                             ->extraInputAttributes(fn(callable $get) => [
