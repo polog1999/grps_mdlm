@@ -2,6 +2,7 @@
     use Carbon\Carbon;
     use NumberToWords\NumberToWords;
 
+    // --- Lógica de Anexos ---
     $tipoEdificacion = $record->tie_id;
     if ($tipoEdificacion == 5 || $tipoEdificacion == 6) {
         $textoTipoEdificacion = "DE RIESGO BAJO O RIESGO MEDIO";
@@ -9,24 +10,37 @@
     } else if ($tipoEdificacion == 7 || $tipoEdificacion == 8) {
         $textoTipoEdificacion = "DE RIESGO ALTO O RIESGO MUY ALTO";
         $numeroAnexo = 14;
+    } else {
+        // Valor por defecto para evitar errores si no es ninguno
+        $textoTipoEdificacion = "RIESGO NO DEFINIDO";
+        $numeroAnexo = "";
     }
 
     $numberToWords = new NumberToWords();
     $numberTransformer = $numberToWords->getNumberTransformer('es');
-    $fechaCaducidad = Carbon::parse($record->cin_fec_fin);
-    $fechaExpedicion = Carbon::parse($record->cin_fecha);
-    $fechaRenovacion = $fechaCaducidad->copy()->subWeekdays(30)->format('d/m/Y');
-    $fechaCaducidadFormatted = $fechaCaducidad->format('d/m/Y');
-    $fechaExpedicionFormatted = $fechaExpedicion->format('d/m/Y');
 
-    // Calcular años de vigencia dinámicamente
-    $aniosVigencia = (int) $fechaExpedicion->diffInYears($fechaCaducidad);
+    // --- 1. Definición de Fechas Base ---
+    $fechaCaducidad = Carbon::parse($record->cin_fec_fin);
+    $fechaInicio = Carbon::parse($record->cin_fec_inicio);
+
+    // --- 2. Formateo de Fechas (CORREGIDO: Nombres exactos) ---
+    // Mantenemos el nombre $fechaRenovacion porque así lo llama tu HTML
+    $fechaRenovacion = $fechaCaducidad->copy()->subWeekdays(30)->format('d/m/Y');
+
+    $fechaCaducidadFormatted = $fechaCaducidad->format('d/m/Y');
+
+    // Si tienes fecha de expedición, úsala. Si no, usa la de inicio.
+    $fechaExpedicionRaw = $record->cin_fec_expedicion;
+    $fechaExpedicionFormatted = Carbon::parse($fechaExpedicionRaw)->format('d/m/Y');
+
+    // --- 3. Cálculo de VIGENCIA (Usando cin_fec_inicio) ---
+    $aniosVigencia = (int) $fechaInicio->diffInYears($fechaCaducidad);
     $textoAnios = $aniosVigencia == 1 ? 'AÑO' : 'AÑOS';
 
+    // --- Datos extra ---
     $capacidad = $record->cin_capacidad;
     $capacidadTexto = strtoupper($numberTransformer->toWords($capacidad));
 @endphp
-
 <!DOCTYPE html>
 <html lang="es">
 
