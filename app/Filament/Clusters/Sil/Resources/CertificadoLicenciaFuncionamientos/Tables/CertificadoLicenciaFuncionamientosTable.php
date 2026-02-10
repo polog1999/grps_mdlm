@@ -145,7 +145,14 @@ class CertificadoLicenciaFuncionamientosTable
                 TextColumn::make('codcat')
                     ->label('Código Catastral')
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'CODIGO_CATASTRAL'))
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereIn('lic_id', function ($subquery) use ($search) {
+                            $subquery->select('lic_id')
+                                ->from('licencia.vu_licencia')
+                                ->where('codigocatastral', 'ILIKE', '%' . $search . '%');
+                        });
+                    }),
 
                 TextColumn::make('lic_razonsocial')
                     ->label('Razón Social')
