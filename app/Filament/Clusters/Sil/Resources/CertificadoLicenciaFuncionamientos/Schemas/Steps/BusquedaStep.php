@@ -35,8 +35,15 @@ class BusquedaStep
             return;
 
         try {
+            Log::info('BusquedaStep: Iniciando búsqueda', ['expediente' => $state]);
             $action = app(ProcesarBusquedaExpedienteAction::class);
             $result = $action->execute($state);
+            Log::info('BusquedaStep: Resultado búsqueda', [
+                'status' => $result->status,
+                'message' => $result->message,
+                'data_keys' => array_keys($result->data ?? []),
+                'matches_count' => count($result->matches ?? [])
+            ]);
 
             $set('_catastro_coincidencias', null);
             $set('_resolucion_areas_coincidencias', null);

@@ -15,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\Placeholder;
 use App\Services\Sil\Licencias\LicenciaPersonaService;
+use Illuminate\Support\Facades\Log;
 
 class SeleccionCoincidenciasStep
 {
@@ -50,6 +51,13 @@ class SeleccionCoincidenciasStep
         $areasResolucion = $get('_resolucion_areas_coincidencias') ?? [];
         $catastroCoincidencias = $get('_catastro_coincidencias') ?? [];
         $itseCoincidencias = $get('_itse_coincidencias') ?? [];
+
+        Log::info('SeleccionCoincidenciasStep: Generando interfaz', [
+            'itse_count' => count($itseCoincidencias),
+            'areas_count' => count($areasResolucion),
+            'catastro_count' => count($catastroCoincidencias),
+            'persona_requerida' => $get('_persona_requerida')
+        ]);
 
         // Prioridad: ITSE > Áreas > Catastro > Persona
         if (!empty($itseCoincidencias)) {
