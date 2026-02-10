@@ -83,10 +83,10 @@ class ProcesarBusquedaExpedienteAction
             return BusquedaExpedienteResult::requireItseSelection($datos, $itses);
         }
 
-        // Regla 1: Error Crítico de Catastro
+        // Regla 1: Catastro no encontrado -> Se permite continuar pero sin datos de catastro
         if ($catastroResult->status === CatastroSearchResult::STATUS_NOT_FOUND) {
             $codcat = $datos['expediente']->ecc_codcat ?? 'N/A';
-            return BusquedaExpedienteResult::notFound("Código catastral no encontrado: $codcat");
+            \Log::warning("BusquedaExpediente: Código catastral no encontrado ($codcat) para expediente {$datos['expediente']->exp_num}. Se continúa sin catastro.");
         }
 
         // Regla 2: Falta Persona (Retorna data parcial)

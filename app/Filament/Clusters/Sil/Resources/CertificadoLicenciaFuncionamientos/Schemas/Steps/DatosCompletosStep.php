@@ -7,6 +7,7 @@ use Filament\Schemas\Components\Wizard\Step;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Sections\ExpedienteSection;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Sections\CatastroSection;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\Sections\LicenciasSection;
+use Illuminate\Support\Facades\Log;
 
 class DatosCompletosStep
 {
@@ -43,6 +44,7 @@ class DatosCompletosStep
 
     public static function autocompletarDatos(array $data, callable $set): void
     {
+        Log::info('DatosCompletosStep: Autocompletando datos', ['data' => $data]);
         // Expediente
         if (isset($data['expediente'])) {
             $exp = (array) $data['expediente'];
