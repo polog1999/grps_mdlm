@@ -30,7 +30,7 @@
     $fechaCaducidadFormatted = $fechaCaducidad->format('d/m/Y');
 
     // Si tienes fecha de expedición, úsala. Si no, usa la de inicio.
-    $fechaExpedicionRaw = $record->cin_fec_expedicion;
+    $fechaExpedicionRaw = $record->cin_fecha;
     $fechaExpedicionFormatted = Carbon::parse($fechaExpedicionRaw)->format('d/m/Y');
 
     // --- 3. Cálculo de VIGENCIA (Usando cin_fec_inicio) ---
