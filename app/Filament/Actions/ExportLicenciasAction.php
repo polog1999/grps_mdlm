@@ -99,7 +99,8 @@ class ExportLicenciasAction
                 'tipoEstadoLicencia',
                 'nivelRiesgo',
                 'licenciaCatastro.fichaUbicacionSyscat',
-                'licenciaCatastro.fichaUbicacionInfocat'
+                'licenciaCatastro.fichaUbicacionInfocat',
+                'personaRazonSocial'
             ])
             ->get();
     }
@@ -165,12 +166,48 @@ class ExportLicenciasAction
                 'default_col' => 'D',
                 'format_as_text' => true, // Evitar notación científica
             ],
+            // RUC: número de RUC de la razón social
+            [
+                'header' => 'RUC',
+                'header_variations' => ['ruc', 'Ruc', 'RUC'],
+                'data' => $records->map(function ($record) {
+                    return $record->personaRazonSocial?->per_ruc ?? '';
+                })->toArray(),
+                'default_col' => 'E',
+            ],
+            // DIRECCION: dirección de la licencia
+            [
+                'header' => 'DIRECCION',
+                'header_variations' => ['direccion', 'Direccion', 'DIRECCION'],
+                'data' => $records->pluck('lic_direccion')->toArray(),
+                'default_col' => 'F',
+            ],
+            // ZONIFICACION: zonificación (prioriza syscat sobre infocat)
+            [
+                'header' => 'ZONIFICACION',
+                'header_variations' => ['zonificacion', 'Zonificacion', 'ZONIFICACION'],
+                'data' => $records->map(function ($record) {
+                    // Priorizar syscat (más reciente) sobre infocat (antiguo)
+                    $zonificacion = $record->licenciaCatastro?->fichaUbicacionSyscat?->fiu_zonificacion
+                        ?? $record->licenciaCatastro?->fichaUbicacionInfocat?->fiu_zonificacion
+                        ?? '';
+                    return $zonificacion;
+                })->toArray(),
+                'default_col' => 'G',
+            ],
+            // RESOLUCION: número de resolución
+            [
+                'header' => 'RESOLUCION',
+                'header_variations' => ['resolucion', 'Resolucion', 'RESOLUCION', 'NUMERO RESOLUCION'],
+                'data' => $records->pluck('lic_resnum')->toArray(),
+                'default_col' => 'H',
+            ],
             // RAZON SOCIAL: razón social
             [
                 'header' => 'RAZON SOCIAL',
                 'header_variations' => ['razon social', 'Razon Social', 'RAZON_SOCIAL', 'razon_social'],
                 'data' => $records->pluck('lic_razonsocial')->toArray(),
-                'default_col' => 'E',
+                'default_col' => 'I',
             ],
             // RIESGO LICENCIA: nivel de riesgo
             [
@@ -179,7 +216,7 @@ class ExportLicenciasAction
                 'data' => $records->map(function ($record) {
                     return $record->nivelRiesgo?->nir_descripcion ?? '';
                 })->toArray(),
-                'default_col' => 'F',
+                'default_col' => 'J',
             ],
             // TIPO LICENCIA: tipo de licencia
             [
@@ -188,7 +225,7 @@ class ExportLicenciasAction
                 'data' => $records->map(function ($record) {
                     return $record->tipoLicencia?->tli_descripcion ?? '';
                 })->toArray(),
-                'default_col' => 'G',
+                'default_col' => 'K',
             ],
             // ESTADO LICENCIA: estado de la licencia
             [
@@ -197,7 +234,7 @@ class ExportLicenciasAction
                 'data' => $records->map(function ($record) {
                     return $record->tipoEstadoLicencia?->esl_descripcion ?? '';
                 })->toArray(),
-                'default_col' => 'H',
+                'default_col' => 'L',
             ],
         ];
     }
