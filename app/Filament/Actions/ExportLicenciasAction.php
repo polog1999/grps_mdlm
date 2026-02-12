@@ -101,6 +101,63 @@ class ExportLicenciasAction
             $query->whereDate('lic_filafecha', '<=', $tableFilters['lic_filafecha']['hasta']);
         }
 
+        // Filtro de código catastral (búsqueda en vista)
+        if (isset($tableFilters['codigocatastral']['codigocatastral']) && !empty($tableFilters['codigocatastral']['codigocatastral'])) {
+            $query->whereIn('lic_id', function ($subquery) use ($tableFilters) {
+                $subquery->select('lic_id')
+                    ->from('licencia.vu_licencia')
+                    ->where('codigocatastral', 'LIKE', '%' . $tableFilters['codigocatastral']['codigocatastral'] . '%');
+            });
+        }
+
+        // Filtro de RUC personas (búsqueda en vista)
+        if (isset($tableFilters['per_ruc']['per_ruc']) && !empty($tableFilters['per_ruc']['per_ruc'])) {
+            $query->whereIn('lic_id', function ($subquery) use ($tableFilters) {
+                $subquery->select('lic_id')
+                    ->from('licencia.vu_licencia')
+                    ->where('per_ruc', 'LIKE', '%' . $tableFilters['per_ruc']['per_ruc'] . '%');
+            });
+        }
+
+        // Filtro de número dirección (búsqueda en lic_direccion)
+        if (isset($tableFilters['numero']['numero']) && !empty($tableFilters['numero']['numero'])) {
+            $query->whereRaw("lic_direccion LIKE ?", ['%' . $tableFilters['numero']['numero'] . '%']);
+        }
+
+        // Filtro de dirección licencia
+        if (isset($tableFilters['lic_direccion']['lic_direccion']) && !empty($tableFilters['lic_direccion']['lic_direccion'])) {
+            $query->where('lic_direccion', 'ILIKE', '%' . $tableFilters['lic_direccion']['lic_direccion'] . '%');
+        }
+
+        // Filtro de dirección solicitante (búsqueda en vista)
+        if (isset($tableFilters['per_direccionsol']['per_direccionsol']) && !empty($tableFilters['per_direccionsol']['per_direccionsol'])) {
+            $query->whereIn('lic_id', function ($subquery) use ($tableFilters) {
+                $subquery->select('lic_id')
+                    ->from('licencia.vu_licencia')
+                    ->where('per_direccionsol', 'ILIKE', '%' . $tableFilters['per_direccionsol']['per_direccionsol'] . '%');
+            });
+        }
+
+        // Filtro de tiene ITSE (TernaryFilter)
+        if (isset($tableFilters['tiene_itse']['value'])) {
+            if ($tableFilters['tiene_itse']['value'] === true) {
+                // Solo con ITSE
+                $query->whereIn('lic_id', function ($subquery) {
+                    $subquery->select('lic_id')
+                        ->from('licencia.vu_licencia')
+                        ->whereNotNull('cin_numero');
+                });
+            } elseif ($tableFilters['tiene_itse']['value'] === false) {
+                // Sin ITSE
+                $query->whereNotIn('lic_id', function ($subquery) {
+                    $subquery->select('lic_id')
+                        ->from('licencia.vu_licencia')
+                        ->whereNotNull('cin_numero');
+                });
+            }
+            // Si es null/blank, no aplicar filtro
+        }
+
         return $query->orderBy('lic_fechaemision', 'desc')
             ->with([
                 'tipoLicencia',
