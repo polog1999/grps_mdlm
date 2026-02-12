@@ -93,6 +93,14 @@ class ExportLicenciasAction
             $query->whereDate('lic_fechavencimiento', '<=', $tableFilters['lic_fechavencimiento']['to']);
         }
 
+        // Filtro de fecha de fila (lic_filafecha - rango)
+        if (isset($tableFilters['lic_filafecha']['desde']) && !empty($tableFilters['lic_filafecha']['desde'])) {
+            $query->whereDate('lic_filafecha', '>=', $tableFilters['lic_filafecha']['desde']);
+        }
+        if (isset($tableFilters['lic_filafecha']['hasta']) && !empty($tableFilters['lic_filafecha']['hasta'])) {
+            $query->whereDate('lic_filafecha', '<=', $tableFilters['lic_filafecha']['hasta']);
+        }
+
         return $query->orderBy('lic_fechaemision', 'desc')
             ->with([
                 'tipoLicencia',
