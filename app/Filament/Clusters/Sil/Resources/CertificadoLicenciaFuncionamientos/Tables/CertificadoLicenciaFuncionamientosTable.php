@@ -374,6 +374,42 @@ class CertificadoLicenciaFuncionamientosTable
                     )
                     ->indicator('ITSE'),
 
+                Filter::make('lic_filafecha')
+                    ->form([
+                        DatePicker::make('desde')
+                            ->label('Desde')
+                            ->placeholder('Seleccione fecha inicial')
+                            ->native(false),
+                        DatePicker::make('hasta')
+                            ->label('Hasta')
+                            ->placeholder('Seleccione fecha final')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                !empty($data['desde']),
+                                fn(Builder $query) => $query->whereDate('lic_filafecha', '>=', $data['desde'])
+                            )
+                            ->when(
+                                !empty($data['hasta']),
+                                fn(Builder $query) => $query->whereDate('lic_filafecha', '<=', $data['hasta'])
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if (!empty($data['desde'])) {
+                            $indicators[] = 'Desde: ' . \Carbon\Carbon::parse($data['desde'])->format('d/m/Y');
+                        }
+
+                        if (!empty($data['hasta'])) {
+                            $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse($data['hasta'])->format('d/m/Y');
+                        }
+
+                        return $indicators;
+                    }),
+
             ], layout: FiltersLayout::Modal)
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
