@@ -193,9 +193,20 @@ class LicenciasSection
                 Select::make('giros_seleccionar')
                     ->label('Giros encontrados')
                     ->multiple()
-                    ->options(function () {
-                        return Giro::where('gir_usos', true)
-                            ->get()
+                    ->options(function (\Livewire\Component $livewire) {
+                        $clasesSinFiltro = [
+                            \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento::class,
+                            \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\DuplicateCertificadoLicenciaFuncionamiento::class,
+                            \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CesionarioCertificadoLicenciaFuncionamiento::class,
+                        ];
+
+                        $query = Giro::query();
+
+                        if (!in_array(get_class($livewire), $clasesSinFiltro)) {
+                            $query->where('gir_usos', true);
+                        }
+
+                        return $query->get()
                             ->mapWithKeys(function ($giro) {
                                 // Aquí concatenamos el código y la descripción
                                 $label = "{$giro->gir_descripcion} - {$giro->gir_girocodi} ";
