@@ -141,7 +141,7 @@ class ExportLicenciasAction
         // Filtro de tiene ITSE (TernaryFilter)
         if (isset($tableFilters['tiene_itse']['value'])) {
             if ($tableFilters['tiene_itse']['value'] === true) {
-                // Solo con ITSE
+                // Solo con ITSEZ
                 $query->whereIn('lic_id', function ($subquery) {
                     $subquery->select('lic_id')
                         ->from('licencia.vu_licencia')

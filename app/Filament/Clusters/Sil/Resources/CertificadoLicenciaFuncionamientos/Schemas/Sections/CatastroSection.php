@@ -11,6 +11,8 @@ use Filament\Actions\Action;
 use App\Services\Sil\Syscat\FichaUbicacionService;
 use App\Services\Sil\Syscat\ViaService;
 use App\Services\Sil\Licencias\TipoEstablecimientoService;
+use App\Services\Sil\Infocat\FichaUbicacionService as FichaUbicacionInfocatService;
+use App\Services\Sil\Licencias\LicenciaCatastroService;
 use Illuminate\Support\Facades\Log;
 
 class CatastroSection
@@ -68,7 +70,8 @@ class CatastroSection
                                                 $ficha->fiu_intdpto ?? 'N/A',
                                                 $ficha->fiu_blockedif ?? 'N/A',
                                                 $ficha->fiu_zonificacion ?? 'N/A',
-                                                $ficha->fiu_areaeconomica ? number_format($ficha->fiu_areaeconomica, 2) : 'N/A'
+                                                $ficha->fiu_areaeconomica ? number_format($ficha->fiu_areaeconomica, 2) : 'N/A',
+
                                             );
 
                                             return [$ficha->fiu_id => $label];
@@ -209,9 +212,85 @@ class CatastroSection
                     ->disabled()
                     ->dehydrated(),
 
-                TextInput::make('zonificacion')->label('Zonificación')->maxLength(100)->dehydrated(),
-                TextInput::make('area_economica')->label('Área Económica')->numeric()->step(0.01)->suffix('m²')->formatStateUsing(fn($state) => $state ? number_format((float) $state, 2, '.', '') : null)->extraInputAttributes(['onchange' => "if(this.value) this.value = parseFloat(this.value).toFixed(2)"])
-                    //->disabled()
+                TextInput::make('zonificacion')
+                    ->label('Zonificación')
+                    ->maxLength(100)
+                    ->afterStateHydrated(function ($state, $record, callable $set) {
+                        // 0. Inicio del Log
+                        Log::info('--- INICIO DEBUG ZONIFICACION POR ID (Hydrate) ---');
+                        Log::info('Estado inicial del campo visual:', ['state' => $state]);
+
+                        // 1. Si el campo YA tiene un valor guardado en la BD, no hacemos nada.
+                        if (!empty($state)) {
+                            Log::info('El campo ya tiene valor (probablemente guardado previamente). Se respeta y salimos.');
+                            return;
+                        }
+
+                        $valorFinal = 'INCOMPLETO';
+
+                        // Validar que tengamos registro
+                        if (!$record) {
+                            Log::warning('El $record es NULO (Estamos en modo Crear o error de carga).');
+                        } else {
+                            Log::info('Registro de Licencia ID:', ['id' => $record->getKey()]);
+                            Log::info('Valor de fiu_id en este registro:', ['fiu_id' => $record->fiu_id]);
+                        }
+
+                        // 2. Verificamos si existe el registro y obtenemos el ID de ficha correcto
+                        if ($record) {
+                            try {
+                                Log::info('Intentando conectar al servicio Infocat...');
+
+                                // Obtenemos el ID de la ficha usando el servicio de LicenciaCatastro
+                                $licenciaCatastroService = app(LicenciaCatastroService::class);
+                                $fiuId = $licenciaCatastroService->obtenerIdFichaUbicacion($record->lic_id);
+
+                                if (!$fiuId) {
+                                    Log::warning('⚠️ No se encontró un ID de ficha (infocat/syscat) para esta licencia.');
+                                    return;
+                                }
+
+                                // Instanciamos el servicio (Usando el alias de Infocat)
+                                $service = app(FichaUbicacionInfocatService::class);
+
+                                // CAMBIO PRINCIPAL: Buscamos por ID resuelto
+                                Log::info('Ejecutando obtenerPorId...', ['id_buscado' => $fiuId]);
+                                $ficha = $service->obtenerPorId($fiuId);
+
+                                // 3. Analizar respuesta del servicio
+                                if ($ficha) {
+                                    Log::info('✅ Ficha ENCONTRADA en Infocat:', [
+                                        'fiu_id_retornado' => $ficha->fiu_id ?? 'null',
+                                        'fiu_zonificacion' => $ficha->fiu_zonificacion ?? 'null'
+                                    ]);
+
+                                    // Si tiene zonificación, la usamos
+                                    if (!empty($ficha->fiu_zonificacion)) {
+                                        $valorFinal = $ficha->fiu_zonificacion;
+                                        Log::info('Zonificación recuperada exitosamente.');
+                                    } else {
+                                        Log::warning('La ficha existe, pero la columna fiu_zonificacion está vacía.');
+                                    }
+                                } else {
+                                    Log::error('❌ El servicio devolvió NULL. No existe ficha con ese ID en Infocat.');
+                                }
+
+                            } catch (\Exception $e) {
+                                Log::error('🔥 EXCEPCIÓN CRÍTICA al consultar Infocat:', [
+                                    'mensaje' => $e->getMessage(),
+                                    'linea' => $e->getLine()
+                                ]);
+                            }
+                        } else {
+                            Log::warning('⚠️ No se intentó buscar: El registro no tiene "fiu_id" guardado en la tabla de licencias.');
+                        }
+
+                        // 4. Asignamos el resultado
+                        Log::info('Estableciendo valor final en el formulario:', ['valor' => $valorFinal]);
+                        $set('zonificacion', $valorFinal);
+
+                        Log::info('--- FIN DEBUG ---');
+                    })
                     ->dehydrated(),
 
                 Hidden::make('fiu_id')->label('')
