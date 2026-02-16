@@ -60,6 +60,40 @@ class ExportLicenciasAction
         $tableFilters = $livewire->tableFilters ?? [];
         $query = CertificadoLicenciaFuncionamiento::query()->where('lic_filaeliminada', false);
 
+        // Búsqueda Global (Search Bar)
+        $searchTerm = null;
+        if (isset($livewire->tableSearch)) {
+            $searchTerm = $livewire->tableSearch;
+        } elseif (method_exists($livewire, 'getTableSearch')) {
+            try {
+                $searchTerm = $livewire->getTableSearch();
+            } catch (\Throwable $e) {
+                $searchTerm = null;
+            }
+        }
+
+        if (!empty($searchTerm) && trim((string) $searchTerm) !== '') {
+            $search = trim((string) $searchTerm);
+            $query->where(function ($q) use ($search) {
+                $q->where('lic_numlic', 'ILIKE', "%{$search}%")
+                    ->orWhere('lic_expnum', 'ILIKE', "%{$search}%")
+                    ->orWhere('lic_razonsocial', 'ILIKE', "%{$search}%")
+                    ->orWhere('lic_direccion', 'ILIKE', "%{$search}%")
+                    // Subquery para Código Catastral
+                    ->orWhereIn('lic_id', function ($subquery) use ($search) {
+                        $subquery->select('lic_id')
+                            ->from('licencia.vu_licencia')
+                            ->where('codigocatastral', 'ILIKE', "%{$search}%");
+                    })
+                    // Subquery para RUC
+                    ->orWhereIn('lic_id', function ($subquery) use ($search) {
+                        $subquery->select('lic_id')
+                            ->from('licencia.vu_licencia')
+                            ->where('per_ruc', 'LIKE', "%{$search}%");
+                    });
+            });
+        }
+
         // Filtros simples (comparación exacta)
         $simpleFilters = [
             'tli_id',
