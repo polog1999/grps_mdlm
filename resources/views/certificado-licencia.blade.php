@@ -415,6 +415,16 @@
             </div>
 
             <div class="title-text-common title-type">{{ $licencia->TIPO_LICENCIA ?? 'ESPECIAL' }}</div>
+
+            @if(isset($antecedente) && !empty($antecedente))
+                <div class="title-text-common" style="margin-top: 5px; font-size: 10pt; font-weight: bold;">
+                    ({{ $antecedente }}
+                    @if(isset($numeroLicenciaPadre) && !empty($numeroLicenciaPadre))
+                        DE LA LICENCIA N° {{ $numeroLicenciaPadre }}
+                    @endif
+                    )
+                </div>
+            @endif
         </div>
 
         <div class="data-section">
