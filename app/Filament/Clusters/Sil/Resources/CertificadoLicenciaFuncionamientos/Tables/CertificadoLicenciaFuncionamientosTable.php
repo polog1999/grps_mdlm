@@ -819,12 +819,17 @@ class CertificadoLicenciaFuncionamientosTable
                                                 ->copyable()
                                                 ->copyMessage('Resolución copiada'),
                                             TextEntry::make('cin_fecha')
-                                                ->label('Fecha')
+                                                ->label('Fecha Emisión')
                                                 ->date('d/m/Y')
                                                 ->icon('heroicon-o-calendar'),
-                                            TextEntry::make('cin_vigencia_c')
-                                                ->label('Tiempo de la vigencia')
-                                                ->icon('heroicon-o-calendar')
+                                            TextEntry::make('cin_fec_inicio')
+                                                ->label('Fecha Inicio')
+                                                ->date('d/m/Y')
+                                                ->icon('heroicon-o-calendar'),
+                                            TextEntry::make('cin_fec_fin')
+                                                ->label('Fecha Fin')
+                                                ->date('d/m/Y')
+                                                ->icon('heroicon-o-calendar'),
                                         ])
                                         ->columns(3)
                                         ->contained(true)
