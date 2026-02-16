@@ -194,18 +194,31 @@ class LicenciasSection
                     ->label('Giros encontrados')
                     ->multiple()
                     ->options(function () {
-                        $giros = Giro::where('gir_usos', true)->get();
-                        return $giros->pluck('gir_descripcion', 'gir_id')->toArray();
+                        return Giro::where('gir_usos', true)
+                            ->get()
+                            ->mapWithKeys(function ($giro) {
+                                // Aquí concatenamos el código y la descripción
+                                $label = "{$giro->gir_descripcion} - {$giro->gir_girocodi} ";
+
+                                // Retornamos [ID => Etiqueta]
+                                return [$giro->gir_id => $label];
+                            })
+                            ->toArray();
                     })
-                    ->searchable()
+                    ->searchable() // Al ser searchable, buscará tanto por código como por descripción gracias al cambio anterior
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
                         if (empty($state)) {
                             $set('tabla_giros', []);
                             return;
                         }
+
+                        // Opcional: Si también quieres que en la tabla de abajo se vea el código, 
+                        // aplica la misma lógica de concatenación aquí.
                         $todosLosGiros = Giro::all();
-                        $mapaGiros = $todosLosGiros->pluck('gir_descripcion', 'gir_id')->toArray();
+                        $mapaGiros = $todosLosGiros->mapWithKeys(function ($giro) {
+                            return [$giro->gir_id => "{$giro->gir_girocodi} - {$giro->gir_descripcion}"];
+                        })->toArray();
 
                         $filas = [];
                         foreach ((array) $state as $giroId) {
