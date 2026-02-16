@@ -28,7 +28,7 @@ class CatastroSection
                     ->label('Código Catastral')
                     ->maxLength(50)
                     ->extraAttributes(['inputmode' => 'numeric'])
-                    ->rule('regex:/^[0-9]+$/')
+                    //->rule('regex:/^[0-9]+$/')
                     ->suffixAction(
                         Action::make('seleccionar_catastro')
                             ->icon('heroicon-o-pencil-square')
