@@ -114,4 +114,5 @@ class FichaUbicacionInfocat extends Model
 
         return DataLevantamientoConsolida::where('sml', $sml)->first();
     }
+
 }
