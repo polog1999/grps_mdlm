@@ -212,6 +212,11 @@ class CatastroSection
                     ->disabled()
                     ->dehydrated(),
 
+                TextInput::make('area_economica')
+                    ->label('Área Económica')
+                    ->maxLength(20)
+                    ->dehydrated(),
+
                 TextInput::make('zonificacion')
                     ->label('Zonificación')
                     ->maxLength(100)
