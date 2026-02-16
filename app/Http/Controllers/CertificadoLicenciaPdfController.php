@@ -62,11 +62,59 @@ class CertificadoLicenciaPdfController extends Controller
             ->filter()
             ->toArray();
 
+        // Lógica para determinar antecedente (origen)
+        $antecedente = null;
+        $numeroLicenciaPadre = null;
+        try {
+            \Log::info("--- INICIO BUSQUEDA ANTECEDENTE PARA LICENCIA ID: {$licenciaId} ---");
+
+            // Buscar si esta licencia es dependiente de otra
+            $relacion = \App\Models\LicenciaRelacion::where('lic_id_dependencia', $licenciaId)->first();
+
+            if ($relacion) {
+                // Obtener el ID de la licencia padre
+                $licenciaPadreId = $relacion->lic_id;
+                \Log::info("1. Relación encontrada en BD. ID Licencia Padre: {$licenciaPadreId}");
+
+                // Buscar la licencia padre para ver su estado
+                $licenciaPadre = \App\Models\CertificadoLicenciaFuncionamiento::find($licenciaPadreId);
+
+                if ($licenciaPadre) {
+                    $numeroLicenciaPadre = $licenciaPadre->lic_numlic;
+                    \Log::info("2. Modelo Licencia Padre encontrado. Número recuperado: " . ($numeroLicenciaPadre ?? 'NULO'));
+
+                    if ($licenciaPadre->esl_id) {
+                        $estado = $licenciaPadre->tipoEstadoLicencia;
+                        if ($estado) {
+                            $antecedente = $estado->esl_descripcion;
+                            \Log::info("3. Estado (Antecedente) recuperado: {$antecedente}");
+                        } else {
+                            \Log::warning("3. El padre tiene esl_id {$licenciaPadre->esl_id} pero no se encontró la descripción en tipoEstadoLicencia.");
+                        }
+                    } else {
+                        \Log::info("3. La licencia padre no tiene un estado (esl_id es nulo).");
+                    }
+                } else {
+                    \Log::error("2. ERROR: Existe relación ID {$licenciaPadreId} pero no se encontró el registro en CertificadoLicenciaFuncionamiento.");
+                }
+            } else {
+                \Log::info("1. No se encontró relación de dependencia (Es una licencia nueva o el trámite no registró el padre).");
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('CRITICAL ERROR al obtener antecedente', [
+                'id' => $licenciaId,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         // Renderizar la vista Blade a HTML
         $html = view('certificado-licencia', [
             'licencia' => $datosLicencia,
             'qrImage' => $qrDataUri,
             'giros' => $giros,
+            'antecedente' => $antecedente,
+            'numeroLicenciaPadre' => $numeroLicenciaPadre,
         ])->render();
 
         // Configurar opciones de Dompdf
