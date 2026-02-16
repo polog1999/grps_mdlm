@@ -53,6 +53,8 @@ class CertificadoLincenciaFuncionamientoService
                     'cin_resolucion',
                     'cin_fecha',
                     'cin_vigencia_c',
+                    'cin_fec_inicio',
+                    'cin_fec_fin'
                 )
                 ->where('lic_id', $lic_id)
                 ->orderBy('lic_id', 'desc')
