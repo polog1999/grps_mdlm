@@ -160,6 +160,24 @@ class CertificadoLicenciaFuncionamientosTable
                     ->searchable()
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'RAZON_SOCIAL')),
 
+                TextColumn::make('ruc')
+                    ->label('RUC')
+                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereIn('lic_id', function ($subquery) use ($search) {
+                            $subquery->select('lic_id')
+                                ->from('licencia.vu_licencia')
+                                ->where('per_ruc', 'LIKE', '%' . $search . '%');
+                        });
+                    })
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'RUC')),
+
+                TextColumn::make('lic_direccion')
+                    ->label('Dirección')
+                    ->sortable()
+                    ->searchable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'LIC_DIRECCION') ?? $record->lic_direccion),
+
                 TextColumn::make('tipoLicencia.tli_descripcion')
                     ->label('Tipo Licencia')
                     ->sortable()
