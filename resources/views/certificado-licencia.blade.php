@@ -363,9 +363,30 @@
                         </div>
                     </td>
                     <td class="header-right-col">
+                        @php
+                            $zonificacion = $licencia->ZONIFICACION ?? '';
+                            try {
+                                $licenciaId = $licencia->lic_id ?? $licencia->LIC_ID ?? null;
+                                if ($licenciaId) {
+                                    $licenciaCatastroService = app(\App\Services\Sil\Licencias\LicenciaCatastroService::class);
+                                    $fiuId = $licenciaCatastroService->obtenerIdFichaUbicacion($licenciaId);
+
+                                    if ($fiuId) {
+                                        $fichaService = app(\App\Services\Sil\Infocat\FichaUbicacionService::class);
+                                        $ficha = $fichaService->obtenerPorId($fiuId);
+
+                                        if ($ficha && !empty($ficha->fiu_zonificacion)) {
+                                            $zonificacion = $ficha->fiu_zonificacion;
+                                        }
+                                    }
+                                }
+                            } catch (\Exception $e) {
+                                // Silent fallback
+                            }
+                        @endphp
                         <div class="field-row">
                             <span class="field-label">Zonificación........................ :</span>
-                            <span class="field-value">{{ $licencia->ZONIFICACION ?? '' }}</span>
+                            <span class="field-value">{{ $zonificacion }}</span>
                         </div>
                     </td>
                 </tr>
