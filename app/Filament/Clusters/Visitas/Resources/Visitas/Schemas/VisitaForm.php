@@ -31,6 +31,7 @@ class VisitaForm
                             ->required(),
                         TextInput::make('numero_documento')
                             ->required()
+                            ->live()
                             ->suffixAction(
                                 Action::make('buscar_visitante')
                                     ->icon('heroicon-m-magnifying-glass')
@@ -86,7 +87,7 @@ class VisitaForm
                                                 ->send();
                                         }
                                     })
-                            )->live(),
+                            ),
                         Hidden::make('pide_fallo')->default(false)->live(),
                         TextInput::make('nombres')
                             ->required()
