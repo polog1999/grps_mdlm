@@ -106,7 +106,7 @@ class TrabajadorForm
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
                                 $get('foto_url')
-                                    ? '<img src="' . asset($get('foto_url')) . '" class="w-32 h-auto rounded shadow">'
+                                    ? '<img src="' . asset($get('foto_url')) . '" class="flex items-center justify-center w-24 h-28 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600">'
                                     : '<p class="text-gray-400 text-xs">Sin foto</p>'
                             )),
 
