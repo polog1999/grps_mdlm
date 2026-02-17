@@ -89,10 +89,17 @@ class TrabajadorForm
 
                                             // Gestión de FOTO del PIDE
                                             if (!empty($datosPide['foto'])) {
-                                                $fotoNombre = $state . '_' . time() . '.jpg';
-                                                $path = 'fotos_personas/' . $fotoNombre;
+                                                $fotoNombre = $state . '_' . time() . '.png';
+                                                $path = 'fotos_dni/' . $fotoNombre;
                                                 // Guardar en /storage/app/public/fotos_personas
-                                                Storage::disk('public')->put($path, base64_decode($datosPide['foto']));
+                                                // 2. Limpieza del contenido (Por si viene con basura o es base64 puro)
+                                                $fotoData = $datosPide['foto'];
+
+                                                // A veces SOAP devuelve un recurso de stream, lo convertimos a string
+                                                if (is_resource($fotoData)) {
+                                                    $fotoData = stream_get_contents($fotoData);
+                                                }
+                                                Storage::disk('public')->put($path, $fotoData);
                                                 $set('foto_url', Storage::url($path));
                                             }
                                         } else {
