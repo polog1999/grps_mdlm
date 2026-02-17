@@ -195,6 +195,6 @@ class PideService
         //     return $registro;
         // }
         
-        return response()->json($registro);
+        return $registro;
     }
 }
