@@ -3,11 +3,14 @@
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Schemas;
 
 use App\Models\Area;
+use App\Models\PersonaUno;
 use App\Models\Trabajador;
+use App\Services\PideService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -26,12 +29,62 @@ class VisitaForm
                             ->live()
                             ->required(),
                         TextInput::make('numero_documento')
-                        ->required()
+                            ->required()
                             ->suffixAction(
                                 Action::make('buscar_visitante')
                                     ->icon('heroicon-m-magnifying-glass')
                                     ->visible(fn(Get $get) => $get('tipo_documento_id') == 1)
-                                    ->action(fn($state, Set $set) => self::buscarVisitante($state, $set))
+                                    ->action(function ($state, Set $set, Get $get) {
+                                        if (!$state) return;
+
+                                        // 1. Validar si ya existe como TRABAJADOR
+                                        // $existeTrabajador = PersonaUno::where('numero_documento', $state)
+                                        //     ->whereHas('trabajador')
+                                        //     ->exists();
+
+                                        // if ($existeTrabajador) {
+                                        //     Notification::make()
+                                        //         ->title('El trabajador ya se encuentra registrado.')
+                                        //         ->danger()
+                                        //         ->send();
+                                        //     return;
+                                        // }
+
+                                        // 2. Buscar en tabla PERSONAS (Si ya fue visitante antes)
+                                        $persona = PersonaUno::where('numero_documento', $state)->first();
+
+                                        if ($persona) {
+                                            $set('persona_id', $persona->id);
+                                            $set('nombres', $persona->nombres);
+                                            $set('apellido_paterno', $persona->apellido_paterno);
+                                            $set('apellido_materno', $persona->apellido_materno);
+                                            $set('foto_url', $persona->foto_url); // Traer foto de la BD
+                                            return;
+                                        }
+
+                                        // 3. Si no existe en BD, Consultar al PIDE
+                                        // Supongamos que tienes un Service: PideService::consultar($dni)
+                                        $datosPide = PideService::ws_reniec($state);
+
+                                        if ($datosPide['codResu'] === '0000') {
+                                            $set('pide_fallo', false); // Activamos edición manual
+                                            $set('nombres', $datosPide['nombre']);
+                                            $set('apellido_paterno', $datosPide['paterno']);
+                                            $set('apellido_materno', $datosPide['materno']);
+                                            $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
+                                        } else {
+                                            // FALLÓ EL PIDE
+                                            $set('pide_fallo', true); // Activamos edición manual
+                                            $set('nombres', null);
+                                            $set('apellido_paterno', null);
+                                            $set('apellido_materno', null);
+                                            Notification::make()
+                                                ->title('PIDE no disponible')
+                                                ->body('Complete los datos manualmente.')
+                                                ->warning()
+                                                ->send();
+                                        }
+    })
                             )->live(),
                         TextInput::make('nombres')
                             ->required()
