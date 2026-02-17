@@ -87,7 +87,7 @@ class TrabajadorForm
                                             $set('nombres', $datosPide['nombre']);
                                             $set('apellido_paterno', $datosPide['paterno']);
                                             $set('apellido_materno', $datosPide['materno']);
-                                            $set('foto_url', '/uploads/foto_dni/' . $state . 'png');
+                                            $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
                                         } else {
                                             // FALLÓ EL PIDE
                                             $set('pide_fallo', true); // Activamos edición manual
