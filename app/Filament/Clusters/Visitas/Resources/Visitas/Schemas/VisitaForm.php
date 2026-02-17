@@ -8,6 +8,7 @@ use App\Models\Trabajador;
 use App\Services\PideService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -84,8 +85,9 @@ class VisitaForm
                                                 ->warning()
                                                 ->send();
                                         }
-    })
+                                    })
                             )->live(),
+                        Hidden::make('pide_fallo')->default(false)->live(),
                         TextInput::make('nombres')
                             ->required()
                             ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
@@ -98,7 +100,15 @@ class VisitaForm
                             ->required()
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
-                        Hidden::make('pide_fallo')->default(false)->live(),
+                        Placeholder::make('foto_visual')
+                            ->label('Foto RENIEC')
+                            ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
+                                $get('foto_url') && $get('foto_url') == ''
+                                    ? '<img src="' . asset($get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
+                                    : '<p class="text-gray-400 text-xs">Sin foto</p>'
+                            )),
+                        Hidden::make('foto_url'),
+
 
                     ])->columns(2),
 
