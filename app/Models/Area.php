@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Area extends Model
+{
+    protected $table = 'visitas.areas';
+    // protected $primaryKey = 'id_area';
+
+    protected $fillable = [
+        'sede_id',
+        'nombre',
+        'parent',
+        'nc_area',
+        'nu_orden'
+    ];
+
+    // Relación: Una Área pertenece a una Sede
+    public function sede(): BelongsTo
+    {
+        return $this->belongsTo(Sede::class, 'sede_id');
+    }
+
+    // Relación: Una Área puede tener un área padre
+    public function parentArea(): BelongsTo
+    {
+        return $this->belongsTo(Area::class, 'parent', 'id');
+    }
+}
