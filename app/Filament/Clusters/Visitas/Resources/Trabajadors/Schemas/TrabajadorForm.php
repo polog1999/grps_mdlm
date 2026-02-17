@@ -11,6 +11,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -86,22 +87,7 @@ class TrabajadorForm
                                             $set('nombres', $datosPide['nombre']);
                                             $set('apellido_paterno', $datosPide['paterno']);
                                             $set('apellido_materno', $datosPide['materno']);
-
-                                            // Gestión de FOTO del PIDE
-                                            if (!empty($datosPide['foto'])) {
-                                                $fotoNombre = $state . '_' . time() . '.png';
-                                                $path = 'fotos_dni/' . $fotoNombre;
-                                                // Guardar en /storage/app/public/fotos_personas
-                                                // 2. Limpieza del contenido (Por si viene con basura o es base64 puro)
-                                                $fotoData = $datosPide['foto'];
-
-                                                // A veces SOAP devuelve un recurso de stream, lo convertimos a string
-                                                if (is_resource($fotoData)) {
-                                                    $fotoData = stream_get_contents($fotoData);
-                                                }
-                                                Storage::disk('public')->put($path, $fotoData);
-                                                $set('foto_url', Storage::url($path));
-                                            }
+                                            $set('foto_url', '/uploads/foto_dni/' . $state . 'png');
                                         } else {
                                             // FALLÓ EL PIDE
                                             $set('pide_fallo', true); // Activamos edición manual
@@ -116,6 +102,13 @@ class TrabajadorForm
                                         }
                                     })
                             ),
+                        Placeholder::make('foto_visual')
+                            ->label('Foto RENIEC')
+                            ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
+                                $get('foto_url')
+                                    ? '<img src="' . asset($get('foto_url')) . '" class="w-32 h-auto rounded shadow">'
+                                    : '<p class="text-gray-400 text-xs">Sin foto</p>'
+                            )),
 
                         // Campo oculto para controlar el estado de edición
                         Hidden::make('pide_fallo')->default(false)->live(),
