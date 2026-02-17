@@ -186,20 +186,9 @@ trait HasLicenciaFormHandling
         $selectedIds = $data['giros_seleccionar'] ?? [];
         $repeaterItems = $data['tabla_giros'] ?? [];
 
-        $specificMap = [];
-        foreach ($repeaterItems as $item) {
-            if (isset($item['giro'])) {
-                $specificMap[$item['giro']] = $item['giro_especifico'] ?? '';
-            }
-        }
-
-        $giroService = app(GiroLicenciaService::class);
-        $allGiros = $giroService->buscarGiros('');
-        $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
-
-        foreach ($selectedIds as $girId) {
-            $name = $idToName[$girId] ?? '';
-            $specific = $specificMap[$name] ?? '';
+        // Map by index since tabla_giros and giros_seleccionar should be in sync
+        foreach ($selectedIds as $index => $girId) {
+            $specific = $repeaterItems[$index]['giro_especifico'] ?? '';
 
             $giros[] = [
                 'gir_id' => $girId,
@@ -219,25 +208,16 @@ trait HasLicenciaFormHandling
         $selectedIds = $data['giros_seleccionar'] ?? [];
         $repeaterItems = $data['tabla_giros'] ?? [];
 
-        $specificMap = [];
-        foreach ($repeaterItems as $item) {
-            if (isset($item['giro'])) {
-                $specificMap[$item['giro']] = $item['giro_especifico'] ?? '';
-            }
-        }
-
         $giroService = app(GiroLicenciaService::class);
-        $allGiros = $giroService->buscarGiros('');
-        $idToName = $allGiros->pluck('gir_descripcion', 'gir_id')->toArray();
 
         // Obtener giros existentes en la BD
         $existingGiros = $giroService->obtenerLicenciaGiros($record->lic_id);
         $existingByGirId = $existingGiros->keyBy('gir_id');
         $processedGirIds = [];
 
-        foreach ($selectedIds as $girId) {
-            $name = $idToName[$girId] ?? '';
-            $specific = $specificMap[$name] ?? '';
+        // Map by index since tabla_giros and giros_seleccionar should be in sync
+        foreach ($selectedIds as $index => $girId) {
+            $specific = $repeaterItems[$index]['giro_especifico'] ?? '';
 
             if ($existingByGirId->has($girId)) {
                 // Actualizar existente

@@ -48,6 +48,7 @@ class CertificadoLicenciaPdfController extends Controller
         // Obtener giros de la licencia con sus descripciones
         // Prioridad: si lig_giroespecifico tiene valor, usarlo; sino, usar gir_descripcion
         $giros = \App\Models\LicenciaGiro::where('lic_id', $licenciaId)
+            ->where('lig_filaeliminada', false) // Filtra solo los no eliminados    
             ->with('giro')
             ->get()
             ->map(function ($licenciaGiro) {
