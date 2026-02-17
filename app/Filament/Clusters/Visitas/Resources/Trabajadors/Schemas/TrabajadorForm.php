@@ -102,7 +102,7 @@ class TrabajadorForm
                                         }
                                     })
                             ),
-                        
+
 
                         // Campo oculto para controlar el estado de edición
                         Hidden::make('pide_fallo')->default(false)->live(),
@@ -122,13 +122,7 @@ class TrabajadorForm
                             ->required()
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
-                        Placeholder::make('foto_visual')
-                            ->label('Foto RENIEC')
-                            ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
-                                $get('foto_url')
-                                    ? '<img src="' . asset($get('foto_url')) . '" class="flex items-center justify-center w-[50px] bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600">'
-                                    : '<p class="text-gray-400 text-xs">Sin foto</p>'
-                            )),
+
                         Select::make('clasificacion_id')
                             ->relationship('clasificacion', 'nombre')
                             ->label('Clasificación')
@@ -140,6 +134,13 @@ class TrabajadorForm
                         DatePicker::make('fecha_ingreso')
                             ->default(now())
                             ->required(),
+                        Placeholder::make('foto_visual')
+                            ->label('Foto RENIEC')
+                            ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
+                                $get('foto_url')
+                                    ? '<img src="' . asset($get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
+                                    : '<p class="text-gray-400 text-xs">Sin foto</p>'
+                            )),
 
                         Hidden::make('foto_url'),
                     ])->columns(2),
