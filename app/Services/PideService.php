@@ -64,7 +64,7 @@ class PideService
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
-        
+
         $context = stream_context_create([
             'ssl' => [
                 'verify_peer' => false,
@@ -153,23 +153,22 @@ class PideService
                     $registro['direccion']   = (string)$d->direccion;
                     $registro['ubigeo']      = (string) $d->ubigeo;
                     $registro['restriccion'] = (string)$d->restriccion;
-                    $registro['foto'] = (string)$d->foto;
-                    // if (!empty($d->foto)) {
+                    if (!empty($d->foto)) {
 
-                    //     $folderPath = public_path("uploads/foto_dni/");
-
-
-                    //     if (!file_exists($folderPath)) {
-                    //         mkdir($folderPath, 0777, true);
-                    //     }
-
-                    //     $fileName = $nro_docu . ".png";
-                    //     $fullPath = $folderPath . $fileName;
+                        $folderPath = public_path("uploads/foto_dni/");
 
 
-                    //     file_put_contents($fullPath, $d->foto);
-                    //     $registro['foto'] = $nro_docu;
-                    // }
+                        if (!file_exists($folderPath)) {
+                            mkdir($folderPath, 0777, true);
+                        }
+
+                        $fileName = $nro_docu . ".png";
+                        $fullPath = $folderPath . $fileName;
+
+
+                        file_put_contents($fullPath, $d->foto);
+                        $registro['foto'] = $nro_docu;
+                    }
                 }
             } else {
                 // DEPURACIÃƒâ€œN: Si llega aquÃƒÂ­, veremos quÃƒÂ© estructura devolviÃƒÂ³ realmente PIDE
@@ -194,7 +193,7 @@ class PideService
         // } else {
         //     return $registro;
         // }
-        
+
         return $registro;
     }
 }
