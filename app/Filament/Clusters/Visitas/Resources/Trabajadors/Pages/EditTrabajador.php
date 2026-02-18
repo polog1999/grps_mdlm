@@ -40,7 +40,7 @@ class EditTrabajador extends EditRecord
             ->map(fn($h) => [
                 'cargo_id'     => $h->cargo_id,
                 'area_id'      => $h->area_id,
-                'de_cargo'      => $h->de_cargo
+                'de_cargo'      => $h->de_cargo,
                 // 'sede_id'      => $h->sede_id,
                 'fecha_inicio' => $h->fecha_inicio,
             ])
