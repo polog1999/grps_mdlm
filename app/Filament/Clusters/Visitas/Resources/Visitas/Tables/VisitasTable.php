@@ -16,7 +16,7 @@ class VisitasTable
     public static function configure(Table $table): Table
     {
         return $table
-        ->modifyQueryUsing(fn($query) => $query->leftjoin('personas', 'visitas.persona_id','=','visitas.id'))->select('visitas.*')
+        ->modifyQueryUsing(fn($query) => $query->leftjoin('personas', 'visitas.persona_id','=','visitas.id')->select('visitas.*'))
         ->columns([
             TextColumn::make('persona.numero_documento')->label('Nombres y Apellidos')->searchable()->sortable(),
             TextColumn::make('persona.full_nombre')->label('N° documento')->searchable()->sortable(),
