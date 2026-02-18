@@ -20,7 +20,6 @@ class TrabajadorsTable
                 ImageColumn::make('persona.foto_url')
                     ->label('Foto')
                     ->disk('public') // Filament buscará dentro de storage/app/public/
-                    ->prefix('uploads/foto_dni/')
                     ->circular(),
 
                 // 2. Datos de la tabla Personas (Relación)
