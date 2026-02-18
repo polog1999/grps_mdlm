@@ -76,6 +76,11 @@ class TrabajadorForm
                                             $set('apellido_paterno', $persona->apellido_paterno);
                                             $set('apellido_materno', $persona->apellido_materno);
                                             $set('foto_url', $persona->foto_url); // Traer foto de la BD
+                                            Notification::make()
+                                                ->title('BD local')
+                                                ->body('Datos de la Base de Datos local')
+                                                ->success()
+                                                ->send();
                                             return;
                                         }
 
@@ -89,6 +94,11 @@ class TrabajadorForm
                                             $set('apellido_paterno', $datosPide['paterno']);
                                             $set('apellido_materno', $datosPide['materno']);
                                             $set('foto_url', 'uploads/foto_dni/' . $state . '.png');
+                                            Notification::make()
+                                                ->title('Datos del PIDE')
+                                                ->body('Se consumió el PIDE')
+                                                ->success()
+                                                ->send();
                                         } else {
                                             // FALLÓ EL PIDE
                                             $set('pide_fallo', true); // Activamos edición manual
