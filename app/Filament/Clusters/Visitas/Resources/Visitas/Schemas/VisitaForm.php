@@ -61,6 +61,11 @@ class VisitaForm
                                             $set('apellido_paterno', $persona->apellido_paterno);
                                             $set('apellido_materno', $persona->apellido_materno);
                                             $set('foto_url', $persona->foto_url); // Traer foto de la BD
+                                            Notification::make()
+                                                ->title('BD local')
+                                                ->body('Datos de la Base de Datos local')
+                                                ->success()
+                                                ->send();
                                             return;
                                         }
 
@@ -74,6 +79,12 @@ class VisitaForm
                                             $set('apellido_paterno', $datosPide['paterno']);
                                             $set('apellido_materno', $datosPide['materno']);
                                             $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
+                                            Notification::make()
+                                                ->title('Datos del PIDE')
+                                                ->body('Se consumió el PIDE')
+                                                ->success()
+                                                ->send();
+                                        
                                         } else {
                                             // FALLÓ EL PIDE
                                             $set('pide_fallo', true); // Activamos edición manual
@@ -101,11 +112,12 @@ class VisitaForm
                             ->required()
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
+                        Placeholder::make('espacio_blanco'),
                         Placeholder::make('foto_visual')
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
                                 $get('foto_url')
-                                    ? '<img src="' . asset($get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
+                                    ? '<img src="' . asset('storage/'.$get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
                                     : '<p class="text-gray-400 text-xs">Sin foto</p>'
                             )),
                         Hidden::make('foto_url'),
