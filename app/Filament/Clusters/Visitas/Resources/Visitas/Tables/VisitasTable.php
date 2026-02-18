@@ -17,6 +17,7 @@ class VisitasTable
     {
         return $table
         ->columns([
+            TextColumn::make('persona.numero_documento')->label('Nombres y Apellidos')->searchable()->sortable(),
             TextColumn::make('persona.full_nombre')->label('Nombres y Apellidos')->searchable()->sortable(),
             TextColumn::make('area.nombre')->label('Area'),
             TextColumn::make('trabajadorAutoriza.persona.full_nombre')->label('Autorizado por'),
