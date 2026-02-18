@@ -114,7 +114,7 @@ class VisitaForm
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
                         Placeholder::make('espacio_blanco')
-                        ->label(''),
+                        ->label(false),
                         Placeholder::make('foto_visual')
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
