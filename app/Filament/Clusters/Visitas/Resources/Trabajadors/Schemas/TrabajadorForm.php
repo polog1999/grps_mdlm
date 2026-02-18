@@ -42,6 +42,7 @@ class TrabajadorForm
                         TextInput::make('numero_documento')
                             ->label('Nro. Documento')
                             ->required()
+                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1?8:20)
                             ->live()
                             // Acción para buscar en BD o PIDE
                             ->suffixAction(
