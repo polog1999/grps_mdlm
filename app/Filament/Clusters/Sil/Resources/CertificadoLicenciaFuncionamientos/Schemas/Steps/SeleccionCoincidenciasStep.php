@@ -25,7 +25,11 @@ class SeleccionCoincidenciasStep
             ->description(fn($get) => self::getDescription($get))
             ->icon('heroicon-m-clipboard-document-check')
             ->schema(fn($get) => self::generarInterfazSeleccion($get))
-            // Solo visible si hay coincidencias pendientes
+            ->beforeValidation(function ($get, $set) {
+                if ($get('_persona_requerida')) {
+                    self::ejecutarCreacionPersonaAlSiguiente($get, $set);
+                }
+            })
             ->visible(
                 fn($get) =>
                 !empty($get('_catastro_coincidencias')) ||
@@ -35,7 +39,66 @@ class SeleccionCoincidenciasStep
             );
 
     }
+    private static function ejecutarCreacionPersonaAlSiguiente(callable $get, callable $set): void
+    {
+        try {
+            $service = app(\App\Services\Sil\Personas\PersonaService::class);
 
+            // Mapeo de datos desde el estado actual del formulario
+            $dataToSend = [
+                'per_nombrerazonsocial' => $get('exp_nomrec') ?? '',
+                'per_ruc' => $get('numdoc') ?? '',
+                'per_direccion' => $get('domfis') ?? '',
+                'per_telefono' => $get('numtel') ?? '',
+                'per_email' => $get('correo') ?? '',
+                'per_expcodcon' => $get('exp_codcon') ?? '',
+            ];
+
+            $result = $service->create_unico($dataToSend);
+
+            if (!$result['success']) {
+                // Si falla, enviamos notificación y lanzamos error para detener el Wizard
+                Notification::make()->title('Error')->body($result['message'])->danger()->send();
+
+                // Esto evita que el Wizard pase al siguiente paso
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    '_accion_crear_persona' => $result['message'],
+                ]);
+            }
+
+            // Éxito: Vincular IDs
+            $perId = $result['per_id'];
+            $set('exp_nomrec_id', $perId);
+            $set('exp_razsoc_id', $perId);
+
+            // Actualizar _datos_completos
+            $datosRaw = $get('_datos_completos');
+            $datosCompletos = is_string($datosRaw) ? json_decode($datosRaw, true) : ($datosRaw ?? []);
+
+            if (!empty($datosCompletos)) {
+                $expediente = (array) ($datosCompletos['expediente'] ?? []);
+                $expediente['per_id'] = $perId;
+                $expediente['exp_nomrec_id'] = $perId;
+                $expediente['exp_razsoc_id'] = $perId;
+                $datosCompletos['expediente'] = $expediente;
+                $set('_datos_completos', $datosCompletos);
+            }
+
+            $set('_persona_requerida', false);
+
+            Notification::make()
+                ->title('¡Persona Creada y Vinculada!')
+                ->success()
+                ->send();
+
+        } catch (\Exception $e) {
+            Notification::make()->title('Error Crítico')->body($e->getMessage())->danger()->send();
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                '_accion_crear_persona' => 'No se pudo crear la persona automáticamente.',
+            ]);
+        }
+    }
     private static function getDescription(callable $get): string
     {
         if (!empty($get('_itse_coincidencias'))) {
@@ -226,102 +289,6 @@ class SeleccionCoincidenciasStep
                         ->columnSpan(1)
                         ->extraAttributes(['class' => 'text-sm text-gray-600']),
 
-                    // Botón para crear persona con datos de Oracle
-                    TextInput::make('_accion_crear_persona')
-                        ->label('Crear Nueva Persona')
-                        ->placeholder('Clic en el botón para crear')
-                        ->disabled()
-                        ->dehydrated(false)
-                        ->columnSpan(1)
-                        ->hint('Datos recuperados del Gestrad')
-                        ->suffixAction(
-                            Action::make('crear_persona_oracle')
-                                ->icon('heroicon-o-user-plus')
-                                ->color('success')
-                                ->requiresConfirmation()
-                                ->modalHeading('Confirmar Creación de Persona')
-                                ->modalDescription(fn($get) => 'Se creará una nueva persona con el nombre: "' . ($get('exp_nomrec') ?? 'Sin nombre') . '". ¿Desea continuar?')
-                                ->modalSubmitActionLabel('Crear Persona')
-                                ->action(function ($set, $get) {
-                                    try {
-                                        $service = app(\App\Services\Sil\Personas\PersonaService::class);
-
-                                        // Mapear datos del formulario (que vienen de Oracle)
-                                        $dataToSend = [
-                                            'per_nombrerazonsocial' => $get('exp_nomrec') ?? '',
-                                            'per_ruc' => $get('numdoc') ?? '',
-                                            'per_direccion' => $get('domfis') ?? '',
-                                            'per_telefono' => $get('numtel') ?? '',
-                                            'per_email' => $get('correo') ?? '',
-                                            'per_expcodcon' => $get('exp_codcon') ?? '',
-                                        ];
-
-                                        $result = $service->create_unico($dataToSend);
-
-                                        if ($result['success']) {
-                                            // Éxito - Vincular persona al expediente
-                                            $perId = $result['per_id'];
-
-                                            // Actualizar campos del formulario
-                                            $set('exp_nomrec_id', $perId);
-                                            $set('exp_razsoc_id', $perId);
-
-                                            // Actualizar _datos_completos
-                                            $datosRaw = $get('_datos_completos');
-                                            $datosCompletos = is_string($datosRaw) ? json_decode($datosRaw, true) : ($datosRaw ?? []);
-
-                                            if (!empty($datosCompletos)) {
-                                                $expediente = $datosCompletos['expediente'] ?? [];
-                                                if (is_object($expediente)) {
-                                                    $expediente = (array) $expediente;
-                                                }
-                                                $expediente['per_id'] = $perId;
-                                                $expediente['exp_nomrec_id'] = $perId;
-                                                $expediente['exp_razsoc_id'] = $perId;
-                                                $datosCompletos['expediente'] = $expediente;
-                                                $set('_datos_completos', $datosCompletos);
-                                            }
-
-                                            // Limpiar flag de persona requerida
-                                            $set('_persona_requerida', false);
-
-                                            Notification::make()
-                                                ->title('¡Persona Creada!')
-                                                ->body($result['message'] . ' (ID: ' . $perId . ')')
-                                                ->success()
-                                                ->duration(5000)
-                                                ->send();
-                                        } else {
-                                            // Manejar errores según el tipo
-                                            $notif = Notification::make()->duration(6000);
-
-                                            switch ($result['type']) {
-                                                case 'validation':
-                                                    $notif->title('Validación Fallida')->body($result['message'])->warning();
-                                                    break;
-                                                case 'duplicate':
-                                                    $notif->title('Registro Duplicado')->body($result['message'])->warning();
-                                                    break;
-                                                case 'internal':
-                                                case 'exception':
-                                                    $notif->title('Error del Sistema')->body($result['message'])->danger();
-                                                    break;
-                                                default:
-                                                    $notif->title('Error')->body($result['message'] ?? 'Error desconocido')->danger();
-                                            }
-
-                                            $notif->send();
-                                        }
-                                    } catch (\Exception $e) {
-                                        Notification::make()
-                                            ->title('Error Crítico')
-                                            ->body('Error inesperado: ' . $e->getMessage())
-                                            ->danger()
-                                            ->duration(10000)
-                                            ->send();
-                                    }
-                                })
-                        )
                 ])->columns(3)->compact()
         ];
     }
