@@ -21,6 +21,7 @@ class VisitasTable
             TextColumn::make('area.nombre')->label('Area'),
             TextColumn::make('trabajadorAutoriza.persona.full_nombre')->label('Autorizado por'),
             TextColumn::make('fecha_ingreso')->dateTime('H:i A'),
+            TextColumn::make('fecha_salida')->dateTime('H:i A'),
             TextColumn::make('motivo'),
             TextColumn::make('fecha_visita')->badge()
                 ->label('Estado')

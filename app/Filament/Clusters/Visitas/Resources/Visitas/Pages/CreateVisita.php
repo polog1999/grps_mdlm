@@ -18,6 +18,7 @@ class CreateVisita extends CreateRecord
             'nombres' => $data['nombres'],
             'apellido_paterno' => $data['apellido_paterno'],
             'apellido_materno' => $data['apellido_materno'],
+            'foto_url' => $data['foto_url'] ?? null,
         ]
     );
 
