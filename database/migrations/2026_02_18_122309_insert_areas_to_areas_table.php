@@ -71,8 +71,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('ALTER TABLE areas DISABLE TRIGGER ALL;');
+        // DB::statement('ALTER TABLE visitas.areas DISABLE TRIGGER ALL;');
         DB::table('visitas.areas')->delete();
-        DB::statement('ALTER TABLE areas ENABLE TRIGGER ALL;');
+        // DB::statement('ALTER TABLE visitas.areas ENABLE TRIGGER ALL;');
     }
 };

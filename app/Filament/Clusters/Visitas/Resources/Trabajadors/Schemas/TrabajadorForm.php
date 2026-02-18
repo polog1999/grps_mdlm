@@ -177,10 +177,10 @@ class TrabajadorForm
                                     ->options(\App\Models\Area::pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
-                                Select::make('sede_id')
-                                ->label('Sede')
-                                    ->options(\App\Models\Sede::pluck('nombre', 'id'))
-                                    ->required(),
+                                // Select::make('sede_id')
+                                // ->label('Sede')
+                                //     ->options(\App\Models\Sede::pluck('nombre', 'id'))
+                                //     ->required(),
                                 DatePicker::make('fecha_inicio')
                                     ->default(now())
                                     ->required(),
