@@ -87,7 +87,7 @@ class TrabajadorForm
                                             $set('nombres', $datosPide['nombre']);
                                             $set('apellido_paterno', $datosPide['paterno']);
                                             $set('apellido_materno', $datosPide['materno']);
-                                            $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
+                                            $set('foto_url', 'uploads/foto_dni/' . $state . '.png');
                                         } else {
                                             // FALLÓ EL PIDE
                                             $set('pide_fallo', true); // Activamos edición manual
@@ -138,7 +138,7 @@ class TrabajadorForm
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
                                 $get('foto_url')
-                                    ? '<img src="' . asset($get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
+                                    ? '<img src="' . asset('storage/'.$get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
                                     : '<p class="text-gray-400 text-xs">Sin foto</p>'
                             )),
 

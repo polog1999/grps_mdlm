@@ -16,44 +16,47 @@ class TrabajadorsTable
     {
         return $table
             ->columns([
-            // 1. Mostrar la foto que guardamos en la carpeta/URL
-            ImageColumn::make('persona.foto_url')
-                ->label('Foto')
-                ->circular(),
+                // 1. Mostrar la foto que guardamos en la carpeta/URL
+                ImageColumn::make('persona.foto_url')
+                    ->label('Foto')
+                    ->disk('public') // Filament buscará dentro de storage/app/public/
+                    ->prefix('uploads/foto_dni/')
+                    ->circular(),
 
-            // 2. Datos de la tabla Personas (Relación)
-            TextColumn::make('persona.numero_documento')
-                ->label('DNI')
-                ->searchable()
-                ->sortable(),
+                // 2. Datos de la tabla Personas (Relación)
+                TextColumn::make('persona.numero_documento')
+                    ->label('DNI')
+                    ->searchable()
+                    ->sortable(),
 
-            TextColumn::make('persona.full_nombre') // Usando el accesor que creamos en el modelo Persona
-                ->label('Trabajador')
-                ->searchable(['nombres', 'apellido_paterno', 'apellido_materno']),
+                TextColumn::make('persona.full_nombre') // Usando el accesor que creamos en el modelo Persona
+                    ->label('Trabajador')
+                    ->searchable(['nombres', 'apellido_paterno', 'apellido_materno']),
 
-            // 3. Mostrar el Cargo Actual (Buscando en el historial)
-            // Esto asume que el trabajador tiene una relación 'cargoActual' o 'historiales'
-            TextColumn::make('historiales')
-                ->label('Cargo Actual')
-                ->formatStateUsing(function ($record) {
-                    // Obtenemos el registro del historial que no tiene fecha_fin o es_actual
-                    $actual = $record->historiales->where('es_actual', true)->first();
-                    return $actual ? $actual->cargo->nombre : 'Sin cargo';
-                })
-                ->description(fn ($record) => 
-                    $record->historiales->where('es_actual', true)->first()?->area->nombre ?? ''
-                ),
+                // 3. Mostrar el Cargo Actual (Buscando en el historial)
+                // Esto asume que el trabajador tiene una relación 'cargoActual' o 'historiales'
+                TextColumn::make('historiales')
+                    ->label('Cargo Actual')
+                    ->formatStateUsing(function ($record) {
+                        // Obtenemos el registro del historial que no tiene fecha_fin o es_actual
+                        $actual = $record->historiales->where('es_actual', true)->first();
+                        return $actual ? $actual->cargo->nombre : 'Sin cargo';
+                    })
+                    ->description(
+                        fn($record) =>
+                        $record->historiales->where('es_actual', true)->first()?->area->nombre ?? ''
+                    ),
 
-            // 4. Datos propios de la tabla Trabajadores
-            TextColumn::make('fecha_ingreso')
-                ->label('Ingreso')
-                ->date('d/m/Y')
-                ->sortable(),
+                // 4. Datos propios de la tabla Trabajadores
+                TextColumn::make('fecha_ingreso')
+                    ->label('Ingreso')
+                    ->date('d/m/Y')
+                    ->sortable(),
 
-            IconColumn::make('estado')
-                ->label('Estado')
-                ->boolean(),
-        ])
+                IconColumn::make('estado')
+                    ->label('Estado')
+                    ->boolean(),
+            ])
             ->filters([
                 //
             ])
