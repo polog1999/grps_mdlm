@@ -155,7 +155,8 @@ class PideService
                     $registro['restriccion'] = (string)$d->restriccion;
                     if (!empty($d->foto)) {
 
-                        $folderPath = public_path("uploads/foto_dni/");
+                        // $folderPath = public_path("uploads/foto_dni/");
+                        $folderPath = storage_path("app/public/uploads/foto_dni/");
 
 
                         if (!file_exists($folderPath)) {
