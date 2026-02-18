@@ -130,10 +130,10 @@ class VisitaForm
 
                 Section::make('Detalles de la Visita')
                     ->schema([
-                        Hidden::make('sede_id')->default(1),
-                        Hidden::make('user_id_ingreso')
-                            ->default(auth()->id())
-                            ->dehydrated(),
+                        // Hidden::make('sede_id')->default(1),
+                        // Hidden::make('user_id_ingreso')
+                        //     ->default(auth()->id())
+                        //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(Area::pluck('nombre', 'id'))

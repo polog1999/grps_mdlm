@@ -25,7 +25,7 @@ class CreateVisita extends CreateRecord
     $data['fecha_ingreso'] = now();
     $data['user_id_ingreso'] = auth()->id();
 
-    unset($data['tipo_documento_id'], $data['numero_documento'], $data['nombres'], $data['trabajador_id'], $data['user_id_ingreso'],
+    unset($data['tipo_documento_id'], $data['numero_documento'], $data['nombres'], $data['trabajador_id'],
               $data['apellido_paterno'], $data['apellido_materno'], $data['foto_url'], 
               $data['pide_fallo']);
     return $data;
