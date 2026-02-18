@@ -26,6 +26,7 @@ class VisitaForm
                 Section::make('Datos del Visitante')
                     ->schema([
                         Select::make('tipo_documento_id')
+                            ->label('Tipo de Documento')
                             ->relationship('persona.tipoDocumento', 'nombre')
                             ->live()
                             ->required(),
@@ -140,7 +141,7 @@ class VisitaForm
                             ->required(),
 
                         Select::make('trabajador_id_autoriza')
-                            ->label('Persona a quien visita')
+                            ->label('Autorizado por')
                             ->options(function (Get $get) {
                                 $areaId = $get('area_id');
                                 if (!$areaId) return [];
