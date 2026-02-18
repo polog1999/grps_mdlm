@@ -154,17 +154,21 @@ class TrabajadorForm
                             ->label('Lista de Cargos')
                             ->schema([
                                 Select::make('cargo_id')
+                                ->label('Cargo')
                                     ->options(\App\Models\Cargo::pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
                                 TextInput::make('de_cargo')
+                                ->label('Descripción de Cargo')
                                 ->maxLength('300')
                                 ->required(),
                                 Select::make('area_id')
+                                ->label('Área')
                                     ->options(\App\Models\Area::pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
                                 Select::make('sede_id')
+                                ->label('Sede')
                                     ->options(\App\Models\Sede::pluck('nombre', 'id'))
                                     ->required(),
                                 DatePicker::make('fecha_inicio')
