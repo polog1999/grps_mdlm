@@ -363,6 +363,7 @@
                         </div>
                     </td>
                     <td class="header-right-col">
+                        <!--
                         @php
                             $zonificacion = $licencia->ZONIFICACION ?? '';
                             try {
@@ -384,9 +385,10 @@
                                 // Silent fallback
                             }
                         @endphp
+                        -->
                         <div class="field-row">
                             <span class="field-label">Zonificación........................ :</span>
-                            <span class="field-value">{{ $zonificacion }}</span>
+                            <span class="field-value">{{ $licencia->ZONIFICACION ?? ''}}</span>
                         </div>
                     </td>
                 </tr>
