@@ -95,6 +95,7 @@ class TrabajadorForm
                                             $set('nombres', null);
                                             $set('apellido_paterno', null);
                                             $set('apellido_materno', null);
+                                            $set('foto_url', null);
                                             Notification::make()
                                                 ->title('PIDE no disponible')
                                                 ->body('Complete los datos manualmente.')
@@ -156,6 +157,9 @@ class TrabajadorForm
                                     ->options(\App\Models\Cargo::pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
+                                TextInput::make('de_cargo')
+                                ->maxLength('300')
+                                ->required(),
                                 Select::make('area_id')
                                     ->options(\App\Models\Area::pluck('nombre', 'id'))
                                     ->required()
