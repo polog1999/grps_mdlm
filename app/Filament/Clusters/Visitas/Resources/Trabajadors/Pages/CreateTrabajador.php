@@ -47,7 +47,7 @@ class CreateTrabajador extends CreateRecord
             $trabajador->historiales()->create([
                 'cargo_id'     => $item['cargo_id'],
                 'area_id'      => $item['area_id'],
-                'sede_id'      => $item['sede_id'],
+                // 'sede_id'      => $item['sede_id'],
                 'fecha_inicio' => $item['fecha_inicio'],
                 'es_actual'    => true,
                 'user_id_creo' => auth()->id(),
