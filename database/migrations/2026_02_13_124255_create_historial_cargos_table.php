@@ -22,8 +22,8 @@ return new class extends Migration
             $table->date('fecha_fin')->nullable();
             $table->boolean('es_actual')->default(true);
             $table->smallInteger('estado')->default(1);
-            $table->foreignId('user_id_ingreso')->nullable()->constrained('users');
-            $table->foreignId('user_id_salida')->nullable()->constrained('users');
+            $table->foreignId('user_id_creo')->nullable()->constrained('users');
+            $table->foreignId('user_id_modi')->nullable()->constrained('users');
             $table->timestamps();
         });;
     }

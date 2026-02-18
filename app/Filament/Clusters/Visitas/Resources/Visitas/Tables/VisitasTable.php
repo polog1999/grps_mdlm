@@ -36,7 +36,7 @@ class VisitasTable
                 ->action(function ($record) {
                     $record->update([
                         'fecha_salida' => now(),
-                        // 'user_id_salida' => auth()->id(),
+                        'user_id_salida' => auth()->id(),
                     ]);
                     Notification::make()->title('Salida registrada')->success()->send();
                 })

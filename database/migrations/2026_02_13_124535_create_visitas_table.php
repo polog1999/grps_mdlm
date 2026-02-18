@@ -17,8 +17,10 @@ return new class extends Migration
             $table->foreignId('sede_id')->constrained('visitas.sedes');
             $table->foreignId('area_id')->constrained('visitas.areas');
             $table->foreignId('trabajador_id_autoriza')->constrained('visitas.trabajadores');
-            $table->foreignId('user_id_registra')->constrained('users');
+            $table->foreignId('user_id_ingreso')->constrained('users');
+            $table->foreignId('user_id_salida')->constrained('users');
             $table->string('motivo');
+            $table->string('obs');
             $table->timestamp('fecha_ingreso');
             $table->timestamp('fecha_salida')->nullable();
             $table->boolean('es_manual')->default(false);
