@@ -40,6 +40,7 @@ class EditTrabajador extends EditRecord
             ->map(fn($h) => [
                 'cargo_id'     => $h->cargo_id,
                 'area_id'      => $h->area_id,
+                'de_cargo'      => $h->de_cargo
                 // 'sede_id'      => $h->sede_id,
                 'fecha_inicio' => $h->fecha_inicio,
             ])
@@ -104,6 +105,7 @@ class EditTrabajador extends EditRecord
             $trabajador->historiales()->create([
                 'cargo_id'     => $item['cargo_id'],
                 'area_id'      => $item['area_id'],
+                'de_cargo'      => $item['de_cargo'],
                 // 'sede_id'      => $item['sede_id'],
                 'fecha_inicio' => $item['fecha_inicio'],
                 'es_actual'    => true, // Vuelven a ser actuales
