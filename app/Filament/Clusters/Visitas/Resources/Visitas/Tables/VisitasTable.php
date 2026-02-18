@@ -19,7 +19,7 @@ class VisitasTable
         ->modifyQueryUsing(fn($query) => $query->leftjoin('visitas.personas', 'visitas.visitas.persona_id','=','visitas.personas.id')->select('visitas.visitas.*'))
         ->columns([
             TextColumn::make('persona.numero_documento')->label('Nombres y Apellidos')->searchable()->sortable(),
-            TextColumn::make('persona.full_nombre')->label('N° documento')->searchable()->sortable(),
+            TextColumn::make('persona.full_nombre')->label('N° documento'),
             TextColumn::make('area.nombre')->label('Area'),
             TextColumn::make('trabajadorAutoriza.persona.full_nombre')->label('Autorizado por'),
             TextColumn::make('fecha_ingreso')->dateTime('H:i A'),
