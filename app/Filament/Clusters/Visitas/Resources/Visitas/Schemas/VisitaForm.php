@@ -91,6 +91,7 @@ class VisitaForm
                                             $set('nombres', null);
                                             $set('apellido_paterno', null);
                                             $set('apellido_materno', null);
+                                            $set('foto_url', null);
                                             Notification::make()
                                                 ->title('PIDE no disponible')
                                                 ->body('Complete los datos manualmente.')
@@ -112,7 +113,8 @@ class VisitaForm
                             ->required()
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
-                        Placeholder::make('espacio_blanco'),
+                        Placeholder::make('espacio_blanco')
+                        ->label(''),
                         Placeholder::make('foto_visual')
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
