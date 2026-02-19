@@ -416,13 +416,17 @@
                 <span class="title-sub">LICENCIA DE FUNCIONAMIENTO</span>
             </div>
 
-            <div class="title-text-common title-type">{{ $licencia->TIPO_LICENCIA ?? 'ESPECIAL' }}</div>
+            <div class="title-text-common title-type">{{ $licencia->TIPO_LICENCIA ?? 'NO ENCONTRADO' }}</div>
 
             @if(isset($antecedente) && !empty($antecedente))
                 <div class="title-text-common" style="margin-top: 5px; font-size: 10pt; font-weight: bold;">
                     ({{ $antecedente }}
                     @if(isset($numeroLicenciaPadre) && !empty($numeroLicenciaPadre))
-                        DE LA LICENCIA N° {{ $numeroLicenciaPadre }}
+                        @if(($licencia->TIPO_LICENCIA ?? '') === 'ESPECIAL')
+                            DE LA AUTORIZACIÓN N° {{ $numeroLicenciaPadre }}
+                        @else
+                            DE LA LICENCIA N° {{ $numeroLicenciaPadre }}
+                        @endif
                     @endif
                     )
                 </div>
@@ -496,6 +500,8 @@
                 @elseif($tipoLicencia === 'TEMPORAL')
                     {{ $licencia->TIPO_LICENCIA }} hasta el
                     {{ \Carbon\Carbon::parse($licencia->lic_fecha_fin ?? $licencia->LIC_FECHA_FIN ?? now())->format('d/m/Y') }}
+                @elseif($tipoLicencia === 'ESPECIAL')
+                    Sujeto a la Ordenanza N° 062/MDLM
                 @else
                     Sujeta a la licencia principal N°:
                     {{ $licencia->lic_numlic_principal ?? $licencia->LIC_NUMLIC_PRINCIPAL ?? '' }}
