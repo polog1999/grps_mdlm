@@ -10,23 +10,24 @@ use Filament\Notifications\Notification;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class VisitasTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn($query) => $query->leftjoin('visitas.personas as p', 'visitas.visitas.persona_id', '=', 'p.id')
-            ->select('visitas.visitas.*', 'p.nombres', 'p.apellido_paterno','p.apellido_materno'))
             ->columns([
-                TextColumn::make('persona.numero_documento')->label('N° documento')->searchable()->sortable(),
-                TextColumn::make('full_nombre')->label('Nombres y Apellidos')
-                    ->formatStateUsing(fn($state, $record) => "{$record->nombres} {$record->apellido_paterno} {$record->apellido_materno}")
-                    ->searchable(fn($query, $search) => $query->where(function($q)use($search){
-                        $q->where('p.nombres', 'ilike', "%{$search}%")
-                        ->orWhere('p.apellido_paterno', 'ilike', "%{$search}%")
-                        ->orWhere('p.apellido_materno', 'ilike', "%{$search}%");
-                    })),
+                TextColumn::make('persona.numero_documento')->label('N° documento')->searchable(),
+                TextColumn::make('persona.full_nombre')->label('Nombres y Apellidos')
+                ->searchable(query: function (Builder $query, string $search): Builder {
+        return $query->whereHas('persona', function($q)use($search){
+                        $q->where('nombres', 'ilike', "%{$search}%")
+                        ->orWhere('apellido_paterno', 'ilike', "%{$search}%")
+                        ->orWhere('apellido_materno', 'ilike', "%{$search}%");
+                    } );
+    }),
+                    
                 TextColumn::make('area.nombre')->label('Area'),
                 TextColumn::make('trabajadorAutoriza.persona.full_nombre')->label('Autorizado por'),
                 TextColumn::make('fecha_ingreso')->dateTime('H:i A'),
