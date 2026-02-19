@@ -39,7 +39,7 @@ class TrabajadorsTable
                     ->formatStateUsing(function ($record) {
                         // Obtenemos el registro del historial que no tiene fecha_fin o es_actual
                         $actual = $record->historiales->where('es_actual', true)->first();
-                        return $actual ? $actual->cargo->nombre : 'Sin cargo';
+                        return $actual ? $actual->cargo?->nombre : 'Sin cargo';
                     })
                     ->description(
                         fn($record) =>

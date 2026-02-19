@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('visitas.visitas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('persona_id')->constrained('visitas.personas');
-            // $table->foreignId('sede_id')->constrained('visitas.sedes');
-            $table->foreignId('area_id')->constrained('visitas.areas');
+            $table->foreignId('sede_id')->constrained('visitas.sedes');
+            $table->foreignId('area_id')->nullable()->constrained('visitas.areas');
             $table->foreignId('trabajador_id_autoriza')->constrained('visitas.trabajadores');
             $table->foreignId('user_id_ingreso')->constrained('users');
             $table->foreignId('user_id_salida')->nullable()->constrained('users');
-            $table->string('motivo');
+            $table->string('motivo')->nullable();
             $table->string('obs')->nullable();
             $table->timestamp('fecha_ingreso');
             $table->timestamp('fecha_salida')->nullable();

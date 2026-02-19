@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('trabajador_id')->constrained('visitas.trabajadores');
             $table->foreignId('cargo_id')->constrained('visitas.cargos');
             $table->foreignId('area_id')->constrained('visitas.areas');
-            $table->string('de_cargo', 300);
+            $table->string('de_cargo', 300)->nullable();
             // $table->foreignId('sede_id')->constrained('visitas.sedes');
             $table->date('fecha_inicio');
             $table->date('fecha_fin')->nullable();
