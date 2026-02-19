@@ -28,23 +28,27 @@ class LicenciasLevantamientosTable
             ->modifyQueryUsing(function ($query) {
 
                 $tableName = (new DataLevantamientoConsolida())->getTable();
-                return $query->where(function ($q) use ($tableName) {
-                    // Caso 1: Existe a través de Syscat
-                    $q->whereHas('licenciaCatastro.fichaUbicacionSyscat', function ($sub) use ($tableName) {
-                        $sub->whereExists(function ($existsQuery) use ($tableName) {
-                            $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
-                                ->from($tableName) // La tabla que usa tu servicio
-                                ->whereRaw("{$tableName}.sml = SUBSTRING(fiu_coduca, 7, 6)");
-                        });
+                return $query
+                    ->whereHas('tipoLicencia', function ($q) {
+                        $q->where('tli_descripcion', '!=', 'BAJA');
                     })
-                        ->orWhereHas('licenciaCatastro.fichaUbicacionInfocat', function ($sub) use ($tableName) {
-                        $sub->whereExists(function ($existsQuery) use ($tableName) {
-                            $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
-                                ->from($tableName) // La tabla que usa tu servicio
-                                ->whereRaw("{$tableName}.sml = SUBSTRING(fiu_codcat, 3, 6)");
+                    ->where(function ($q) use ($tableName) {
+                        // Caso 1: Existe a través de Syscat
+                        $q->whereHas('licenciaCatastro.fichaUbicacionSyscat', function ($sub) use ($tableName) {
+                            $sub->whereExists(function ($existsQuery) use ($tableName) {
+                                $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
+                                    ->from($tableName) // La tabla que usa tu servicio
+                                    ->whereRaw("{$tableName}.sml = SUBSTRING(fiu_coduca, 7, 6)");
+                            });
+                        })
+                            ->orWhereHas('licenciaCatastro.fichaUbicacionInfocat', function ($sub) use ($tableName) {
+                            $sub->whereExists(function ($existsQuery) use ($tableName) {
+                                $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
+                                    ->from($tableName) // La tabla que usa tu servicio
+                                    ->whereRaw("{$tableName}.sml = SUBSTRING(fiu_codcat, 3, 6)");
+                            });
                         });
                     });
-                });
             })
             ->defaultSort('lic_filafecha', 'desc')
             ->columns([
@@ -107,6 +111,10 @@ class LicenciasLevantamientosTable
                     )
                     ->searchable(),
 
+                //tipo de licencia
+                TextColumn::make('tipoLicencia.tli_descripcion')
+                    ->label('Tipo de Licencia')
+                    ->searchable(),
 
                 TextColumn::make('lic_fechaemision')
                     ->label('Fecha Emisión De Licencia')
