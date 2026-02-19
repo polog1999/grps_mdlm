@@ -6,9 +6,11 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -20,14 +22,14 @@ class VisitasTable
             ->columns([
                 TextColumn::make('persona.numero_documento')->label('N° documento')->searchable(),
                 TextColumn::make('persona.full_nombre')->label('Nombres y Apellidos')
-                ->searchable(query: function (Builder $query, string $search): Builder {
-        return $query->whereHas('persona', function($q)use($search){
-                        $q->where('nombres', 'ilike', "%{$search}%")
-                        ->orWhere('apellido_paterno', 'ilike', "%{$search}%")
-                        ->orWhere('apellido_materno', 'ilike', "%{$search}%");
-                    } );
-    }),
-                    
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('persona', function ($q) use ($search) {
+                            $q->where('nombres', 'ilike', "%{$search}%")
+                                ->orWhere('apellido_paterno', 'ilike', "%{$search}%")
+                                ->orWhere('apellido_materno', 'ilike', "%{$search}%");
+                        });
+                    }),
+
                 TextColumn::make('area.nombre')->label('Area'),
                 TextColumn::make('trabajadorAutoriza.persona.full_nombre')->label('Autorizado por'),
                 TextColumn::make('fecha_ingreso')->dateTime('H:i A'),
@@ -38,6 +40,20 @@ class VisitasTable
                     ->state(fn($record) => $record->fecha_salida ? 'Salió' : 'En Sede')
                     ->color(fn($record) => $record->fecha_salida ? 'gray' : 'success'),
             ])
+             ->filters([ 
+            Filter::make('fecha_ingreso')
+                ->schema([
+                    DatePicker::make('fecha'),
+                ])
+                 ->query(function ($query, array $data) {
+            return $query
+                ->when(
+                    $data['fecha'],
+                    fn ($query, $date) =>
+                        $query->whereDate('fecha_ingreso', $date)
+                );
+        }),
+        ])
 
             ->actions([
                 Action::make('marcar_salida')
