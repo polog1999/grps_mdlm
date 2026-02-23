@@ -18,6 +18,14 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\Placeholder;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use Illuminate\Support\Facades\Log;
+use App\Models\Colores;
+use App\Models\Materiales;
+use App\Models\TipoAnuncio;
+use App\Models\CaracteristicasFisicas;
+use App\Models\DocumentosAnuncio;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\TipoDocumento;
+use Filament\Forms\Components\Repeater;
+
 class AnunciosForm
 {
     public static function configure(Schema $schema): Schema
@@ -377,7 +385,6 @@ class AnunciosForm
                                         ->label('Teléfono Persona Legal'),
                                 ])->columns(2),
 
-                            //section para dos campos, n pago y monto
                             Section::make('Información de Pago')
                                 ->schema([
                                     TextInput::make('n_pago')
@@ -386,22 +393,61 @@ class AnunciosForm
                                         ->required()
                                         ->numeric(),
                                 ])->columns(2),
+
+                            Section::make('Documentos del Anuncio')
+                                ->schema([
+                                    Repeater::make('documentos')
+                                        ->relationship('documentos')
+                                        ->schema([
+                                            Select::make('tipo_documento')
+                                                ->label('Tipo de Documento')
+                                                ->options(TipoDocumento::class)
+                                                ->required(),
+                                            TextInput::make('n_documento')
+                                                ->label('N° de Documento')
+                                                ->required(),
+                                            DatePicker::make('fecha_emision')
+                                                ->label('Fecha de Emisión'),
+                                        ])
+                                        ->columns(3)
+                                        ->columnSpanFull()
+                                        ->defaultItems(0)
+                                        ->reorderable(false)
+                                        ->addActionLabel('Agregar Documento'),
+                                ]),
+
+
                             Section::make('Información Técnica del Anuncio')
                                 ->schema([
                                     TextInput::make('n_anuncio')
-                                        ->required(),
-                                    Select::make('expediente_id')
-                                        ->relationship('expediente', 'id')
                                         ->required(),
                                     DatePicker::make('fecha_recepcion_evaluar'),
                                     Textarea::make('asunto')
                                         ->columnSpanFull(),
                                     Select::make('caracteristica_fisica_id')
-                                        ->relationship('caracteristicaFisica', 'id')
+                                        ->label('Características Físicas')
+                                        ->relationship('caracteristicaFisica', 'descripcion')
+                                        ->searchable()
+                                        ->preload()
                                         ->required(),
                                     Select::make('tipo_anuncio_id')
-                                        ->relationship('tipoAnuncio', 'id')
+                                        ->label('Tipo de Anuncio')
+                                        ->relationship('tipoAnuncio', 'descripcion')
+                                        ->searchable()
+                                        ->preload()
                                         ->required(),
+                                    Select::make('colores')
+                                        ->label('Colores')
+                                        ->multiple()
+                                        ->relationship('colores', 'descripcion')
+                                        ->searchable()
+                                        ->preload(),
+                                    Select::make('materiales')
+                                        ->label('Materiales')
+                                        ->multiple()
+                                        ->relationship('materiales', 'descripcion')
+                                        ->searchable()
+                                        ->preload(),
                                 ])->columns(2),
 
 
