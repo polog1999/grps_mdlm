@@ -18,15 +18,7 @@ class CargoForm
                 TextInput::make('nombre_corto'),
                 Toggle::make('estado')
                     ->default(true)
-                    ->required(),
-                Hidden::make('user_id_creo')
-                    ->default(auth()->id())
-                    ->dehydrated(),
-                Hidden::make('user_id_modi')
-                    ->default(auth()->id())
-                    // Esta línea fuerza que, al guardar, siempre se use el ID del usuario actual
-                    ->formatStateUsing(fn() => auth()->id())
-                    ->dehydrated(),
+                    ->required()
             ]);
     }
 }
