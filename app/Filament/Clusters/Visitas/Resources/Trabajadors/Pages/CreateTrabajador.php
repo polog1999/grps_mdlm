@@ -20,6 +20,7 @@ class CreateTrabajador extends CreateRecord
                 'nombres' => $data['nombres'],
                 'apellido_paterno' => $data['apellido_paterno'],
                 'apellido_materno' => $data['apellido_materno'],
+                'fecha_nacimiento' => $data['fecha_nacimiento'],
                 'foto_url' => $data['foto_url'] ?? null,
             ]
         );
@@ -30,6 +31,7 @@ class CreateTrabajador extends CreateRecord
         // para evitar el error SQL de "columna no existe"
         unset($data['tipo_documento_id'], $data['numero_documento'], $data['nombres'], 
               $data['apellido_paterno'], $data['apellido_materno'], $data['foto_url'], 
+              $data['fecha_nacimiento'],
               $data['pide_fallo'], $data['cargos_activos']);
 
         return $data;

@@ -40,26 +40,30 @@ class VisitasTable
                     ->state(fn($record) => $record->fecha_salida ? 'Salió' : 'En Sede')
                     ->color(fn($record) => $record->fecha_salida ? 'gray' : 'success'),
             ])
-             ->filters([ 
-            Filter::make('fecha_ingreso')
-                ->schema([
-                    DatePicker::make('fecha'),
-                ])
-                 ->query(function ($query, array $data) {
-            return $query
-                ->when(
-                    $data['fecha'],
-                    fn ($query, $date) =>
-                        $query->whereDate('fecha_ingreso', $date)
-                );
-        }),
-        ])
+            ->filters([
+                Filter::make('fecha_ingreso')
+                    ->schema([
+                        DatePicker::make('fecha'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['fecha'],
+                                fn($query, $date) =>
+                                $query->whereDate('fecha_ingreso', $date)
+                            );
+                    }),
+            ])
 
             ->actions([
                 Action::make('marcar_salida')
                     ->label('Registrar Salida')
                     ->icon('heroicon-o-arrow-right-on-rectangle')
                     ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('¿Marcar salida?')
+                    ->modalDescription('¿Estás seguro de que desea marcar la salida para este visitante? Esta acción registrará la hora actual.')
+                    ->modalSubmitActionLabel('Sí, marcar salida')
                     ->visible(fn($record) => $record->fecha_salida === null) // Solo si no ha salido
                     ->action(function ($record) {
                         $record->update([

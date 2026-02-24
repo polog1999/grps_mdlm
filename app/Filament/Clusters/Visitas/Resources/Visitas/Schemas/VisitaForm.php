@@ -137,6 +137,7 @@ class VisitaForm
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(Area::pluck('nombre', 'id'))
+                            ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required(),
 
