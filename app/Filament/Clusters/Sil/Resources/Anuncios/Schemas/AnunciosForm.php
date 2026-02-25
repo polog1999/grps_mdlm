@@ -48,10 +48,11 @@ class AnunciosForm
                                 ->label('Número de Expediente')
                                 ->placeholder('Ej: 2024-0001')
                                 ->live()
-                                ->required()
+                                ->required(fn($record) => $record === null)
                                 ->validationMessages([
                                     'required' => 'Es obligatorio vincular un expediente válido para continuar.',
                                 ])
+
                                 ->afterStateUpdated(function ($state, $set) {
                                     if (blank($state)) {
                                         return;
@@ -201,11 +202,13 @@ class AnunciosForm
 
                                     TextInput::make('snapshot_lic_giro')
                                         ->label('Giro Específico')
+                                        ->disabled()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
                                     TextInput::make('snapshot_lic_tipo')
                                         ->label('Tipo de Licencia (INDETERMINADA - TEMPORAL)')
                                         ->live()
+                                        ->disabled()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
                                     DatePicker::make('lic_fecha_inicio')
@@ -367,8 +370,10 @@ class AnunciosForm
                                             }
                                         }),
                                     TextInput::make('snapshot_lic_giro')
+                                        ->disabled()
                                         ->label('Giro Específico'),
                                     TextInput::make('snapshot_lic_tipo')
+                                        ->disabled()
                                         ->label('Tipo de Licencia'),
                                     TextInput::make('form_direccion_predio')
                                         ->label('Dirección del Predio Materia a Evaluar')
@@ -522,7 +527,9 @@ class AnunciosForm
                                 ])->columns(2),
                         ]),
                 ])
+                    ->startOnStep(fn($record) => $record ? 4 : 1)
                     ->columnSpanFull(),
+
             ]);
     }
 }

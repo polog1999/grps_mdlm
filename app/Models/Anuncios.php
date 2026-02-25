@@ -15,7 +15,6 @@ use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio;
 
 
-
 class Anuncios extends Model
 {
     use HasUuids, SoftDeletes;
@@ -83,6 +82,11 @@ class Anuncios extends Model
     public function tipoAnuncio(): BelongsTo
     {
         return $this->belongsTo(TipoAnuncio::class, 'tipo_anuncio_id');
+    }
+
+    public function licencia(): BelongsTo
+    {
+        return $this->belongsTo(CertificadoLicenciaFuncionamiento::class, 'id_licencia');
     }
 
     public function colores(): BelongsToMany
