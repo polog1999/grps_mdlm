@@ -137,6 +137,7 @@ class VisitaForm
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(Area::pluck('nombre', 'id'))
+                            ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required(),
 
@@ -151,12 +152,14 @@ class VisitaForm
                                         $query->where('area_id', $areaId)
                                             ->where('es_actual', true);
                                     })
+                                    ->whereNot('regimen_id',['5','6','7','14'])
+                                    ->where('estado',true)
                                     ->with('persona') // Eager loading para evitar consultas lentas
                                     ->get()
                                     ->mapWithKeys(function ($trabajador) {
                                         // Forzamos que el label sea un string y no null
-                                        $nombre = $trabajador->persona->full_nombre ?? "Trabajador {$trabajador->id}";
-                                        return [$trabajador->id => $nombre];
+                                        $nombre = $trabajador->persona->full_nombre ?? "Trabajador {$trabajador->persona->id}";
+                                        return [$trabajador->persona->id => $nombre];
                                     });
                             })
                             ->searchable()

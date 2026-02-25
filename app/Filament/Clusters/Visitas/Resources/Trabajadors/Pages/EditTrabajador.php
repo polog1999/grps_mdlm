@@ -17,7 +17,10 @@ class EditTrabajador extends EditRecord
             DeleteAction::make(),
         ];
     }
-
+   protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $trabajador = $this->getRecord();
@@ -30,6 +33,7 @@ class EditTrabajador extends EditRecord
             $data['nombres']           = $persona->nombres;
             $data['apellido_paterno']  = $persona->apellido_paterno;
             $data['apellido_materno']  = $persona->apellido_materno;
+            $data['fecha_nacimiento'] = $persona->fecha_nacimiento;
             $data['foto_url']          = $persona->foto_url;
         }
 
@@ -73,6 +77,7 @@ class EditTrabajador extends EditRecord
                 'nombres'           => $data['nombres'],
                 'apellido_paterno'  => $data['apellido_paterno'],
                 'apellido_materno'  => $data['apellido_materno'],
+                'fecha_nacimiento'  => $data['fecha_nacimiento'],
                 'foto_url'          => $data['foto_url'] ?? $trabajador->persona->foto_url,
             ]);
         }
@@ -84,6 +89,7 @@ class EditTrabajador extends EditRecord
             'nombres',
             'apellido_paterno',
             'apellido_materno',
+            'fecha_nacimiento',
             'foto_url',
             'pide_fallo',
             'cargos_activos'

@@ -135,6 +135,10 @@ class TrabajadorForm
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
 
+                        DatePicker::make('fecha_nacimiento')
+                        ->required(),
+                        
+
                         Select::make('clasificacion_id')
                             ->relationship('clasificacion', 'nombre')
                             ->label('Clasificación')

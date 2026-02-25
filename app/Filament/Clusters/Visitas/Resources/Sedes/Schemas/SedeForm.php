@@ -52,15 +52,8 @@ class SedeForm
                             ->default(true)
                             ->helperText('Define si la sede está disponible para recibir visitas.'),
 
-                    ]),
-                Hidden::make('user_id_creo')
-                    ->default(auth()->id())
-                    ->dehydrated(),
-                Hidden::make('user_id_modi')
-                    ->default(auth()->id())
-                    // Esta línea fuerza que, al guardar, siempre se use el ID del usuario actual
-                    ->formatStateUsing(fn() => auth()->id())
-                    ->dehydrated(),
+                    ])
+                
             ]);
     }
 }
