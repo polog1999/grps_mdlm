@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\AsuntoAnuncio;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\VigenciaAnuncio;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio;
+
 
 
 class Anuncios extends Model
@@ -58,7 +63,12 @@ class Anuncios extends Model
         'fecha_inicio_vigencia' => 'date',
         'fecha_fin_vigencia' => 'date',
         'fecha_derivado' => 'date',
+        'asunto' => AsuntoAnuncio::class,
+        'vigencia' => VigenciaAnuncio::class,
+        'dictamen' => Dictamen::class,
+        'estado_anuncio' => EstadoAnuncio::class,
     ];
+
 
     public function expediente(): BelongsTo
     {

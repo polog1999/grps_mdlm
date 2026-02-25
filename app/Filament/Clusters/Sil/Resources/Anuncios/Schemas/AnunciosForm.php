@@ -29,7 +29,9 @@ use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\TipoDocumento;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\AsuntoAnuncio;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\VigenciaAnuncio;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio;
 use App\Models\User;
+
 use Filament\Forms\Components\Repeater;
 
 class AnunciosForm
@@ -68,8 +70,10 @@ class AnunciosForm
                                         // Mapear datos a campos del formulario (si existen en el esquema)
                                         $set('snapshot_solicitante_dni', $expediente->numdoc);
                                         $set('snapshot_solicitante_nombre_completo', str($expediente->nomcom)->upper());
-                                        $set('snapshot_solicitante_direccion', str($expediente->domfis)->upper());
+                                        $set('form_domicilio_fiscal', str($expediente->domfis)->upper());
                                         $set('snapshot_solicitante_telefono', $expediente->exp_telefono);
+
+
                                         $set('n_expediente', $expediente->exp_num);
                                         $set('folios', $expediente->exp_numfol + 1);
                                     } else {
@@ -84,7 +88,7 @@ class AnunciosForm
                                 ->label('DNI/RUC Solicitante'),
                             TextInput::make('snapshot_solicitante_nombre_completo')
                                 ->label('Nombre Completo Solicitante'),
-                            TextInput::make('snapshot_solicitante_direccion')
+                            TextInput::make('form_domicilio_fiscal')
                                 ->label('Dirección Fiscal'),
                             TextInput::make('snapshot_solicitante_telefono')
                                 ->label('Teléfono Solicitante'),
@@ -125,7 +129,7 @@ class AnunciosForm
                                     $set('id_licencia', null);
                                     $set('snapshot_lic_giro', null);
                                     $set('snapshot_lic_tipo', null);
-                                    $set('snapshot_lic_direccion', null);
+                                    $set('form_direccion_predio', null);
                                 }),
 
                             Section::make('Detalles de la Licencia')
@@ -155,7 +159,7 @@ class AnunciosForm
                                                 Log::warning('El ID de licencia está vacío, limpiando campos snapshot.');
                                                 $set('snapshot_lic_giro', null);
                                                 $set('snapshot_lic_tipo', null);
-                                                $set('snapshot_lic_direccion', null);
+                                                $set('form_direccion_predio', null);
                                                 return;
                                             }
 
@@ -177,14 +181,14 @@ class AnunciosForm
 
                                                     $set('snapshot_lic_giro', str($giroFinal)->upper() ?? null);
                                                     $set('snapshot_lic_tipo', str($tipo)->upper() ?? null);
-                                                    $set('snapshot_lic_direccion', str($datos->LIC_DIRECCION)->upper() ?? null);
+                                                    $set('form_direccion_predio', str($datos->LIC_DIRECCION)->upper() ?? null);
                                                 } else {
                                                     // LOG 3: No hay resultados
                                                     Log::warning('El servicio no devolvió datos para la licencia ID: ' . $state);
 
                                                     $set('snapshot_lic_giro', null);
                                                     $set('snapshot_lic_tipo', null);
-                                                    $set('snapshot_lic_direccion', null);
+                                                    $set('form_direccion_predio', null);
                                                 }
                                             } catch (\Exception $e) {
                                                 // LOG 4: Error crítico en el servicio o DB
@@ -197,12 +201,10 @@ class AnunciosForm
 
                                     TextInput::make('snapshot_lic_giro')
                                         ->label('Giro Específico')
-                                        ->readonly()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
                                     TextInput::make('snapshot_lic_tipo')
                                         ->label('Tipo de Licencia (INDETERMINADA - TEMPORAL)')
-                                        ->readonly()
                                         ->live()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
@@ -221,9 +223,8 @@ class AnunciosForm
                                         ->displayFormat('d/m/Y')
                                         ->afterOrEqual('lic_fecha_inicio'),
 
-                                    TextInput::make('snapshot_lic_direccion')
+                                    TextInput::make('form_direccion_predio')
                                         ->label('Dirección del Predio Materia a Evaluar')
-                                        ->readonly()
                                         ->placeholder('Se completará al seleccionar la licencia')
                                         ->columnSpanFull(),
                                 ])
@@ -276,11 +277,9 @@ class AnunciosForm
                                     }
                                 }),
                             TextInput::make('snapshot_persona_legal_nombre_completo')
-                                ->label('Nombre Completo Persona Legal')
-                                ->readonly(),
+                                ->label('Nombre Completo Persona Legal'),
                             TextInput::make('snapshot_persona_legal_telefono')
-                                ->label('Teléfono Persona Legal')
-                                ->readonly(),
+                                ->label('Teléfono Persona Legal'),
                         ]),
                     Step::make('Detalles del Anuncio')
                         ->description('Complete la información técnica del anuncio')
@@ -302,7 +301,7 @@ class AnunciosForm
                                             if ($expediente) {
                                                 $set('snapshot_solicitante_dni', $expediente->numdoc);
                                                 $set('snapshot_solicitante_nombre_completo', str($expediente->nomcom)->upper());
-                                                $set('snapshot_solicitante_direccion', str($expediente->domfis)->upper());
+                                                $set('form_domicilio_fiscal', str($expediente->domfis)->upper());
                                                 $set('snapshot_solicitante_telefono', $expediente->exp_telefono);
                                                 $set('folios', $expediente->exp_numfol + 1);
                                             }
@@ -311,7 +310,7 @@ class AnunciosForm
                                         ->label('DNI/RUC Solicitante'),
                                     TextInput::make('snapshot_solicitante_nombre_completo')
                                         ->label('Nombre Completo Solicitante'),
-                                    TextInput::make('snapshot_solicitante_direccion')
+                                    TextInput::make('form_domicilio_fiscal')
                                         ->label('Dirección Fiscal'),
                                     TextInput::make('snapshot_solicitante_telefono')
                                         ->label('Teléfono Solicitante'),
@@ -347,7 +346,7 @@ class AnunciosForm
                                             if (blank($state)) {
                                                 $set('snapshot_lic_giro', null);
                                                 $set('snapshot_lic_tipo', null);
-                                                $set('snapshot_lic_direccion', null);
+                                                $set('form_direccion_predio', null);
                                                 return;
                                             }
 
@@ -361,7 +360,7 @@ class AnunciosForm
 
                                                     $set('snapshot_lic_giro', str($giroFinal)->upper() ?? null);
                                                     $set('snapshot_lic_tipo', str($tipo)->upper() ?? null);
-                                                    $set('snapshot_lic_direccion', str($datos->LIC_DIRECCION)->upper() ?? null);
+                                                    $set('form_direccion_predio', str($datos->LIC_DIRECCION)->upper() ?? null);
                                                 }
                                             } catch (\Exception $e) {
                                                 Log::error('Error al consultar licencia en paso final: ' . $e->getMessage());
@@ -371,7 +370,7 @@ class AnunciosForm
                                         ->label('Giro Específico'),
                                     TextInput::make('snapshot_lic_tipo')
                                         ->label('Tipo de Licencia'),
-                                    TextInput::make('snapshot_lic_direccion')
+                                    TextInput::make('form_direccion_predio')
                                         ->label('Dirección del Predio Materia a Evaluar')
                                         ->columnSpanFull(),
                                 ])->columns(2),
@@ -498,8 +497,11 @@ class AnunciosForm
 
                             Section::make('Estados y Vigencia')
                                 ->schema([
-                                    TextInput::make('estado_anuncio')
+                                    Select::make('estado_anuncio')
+                                        ->options(EstadoAnuncio::class)
+                                        ->default(EstadoAnuncio::VIGENTE->value)
                                         ->required(),
+
                                     Select::make('derivado_a_legal_user_id')
                                         ->label('Derivado a Legal')
                                         ->relationship('derivadoLegal', 'name')

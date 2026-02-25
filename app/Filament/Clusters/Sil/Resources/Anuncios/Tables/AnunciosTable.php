@@ -17,14 +17,28 @@ class AnunciosTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID'),
+
                 TextColumn::make('n_anuncio')
+                    ->label('N° Anuncio')
                     ->searchable(),
-                TextColumn::make('expediente.id')
+                TextColumn::make('expediente.n_expediente')
+                    ->label('N° Expediente')
+                    ->searchable(),
+                TextColumn::make('expediente.snapshot_solicitante_nombre_completo')
+                    ->label('Solicitante')
+                    ->searchable(),
+                TextColumn::make('expediente.snapshot_solicitante_dni')
+                    ->label('DNI/RUC Solicitante')
+                    ->searchable(),
+                TextColumn::make('expediente.snapshot_legal_nombre')
+                    ->label('Representante Legal')
+                    ->searchable(),
+                TextColumn::make('expediente.snapshot_legal_dni_ruc')
+                    ->label('DNI/RUC Representante Legal')
                     ->searchable(),
                 TextColumn::make('fecha_recepcion_evaluar')
-                    ->date()
+                    ->label('Fecha Recepción Evaluar')
+                    ->date('d/m/Y')
                     ->sortable(),
                 TextColumn::make('caracteristicaFisica.id')
                     ->searchable(),

@@ -28,7 +28,7 @@ class CreateAnuncios extends CreateRecord
 
         'snapshot_solicitante_dni',
         'snapshot_solicitante_nombre_completo',
-        'snapshot_solicitante_direccion',
+        'form_domicilio_fiscal',
         'snapshot_solicitante_telefono',
         'snapshot_persona_legal_dni',
         'snapshot_persona_legal_nombre_completo',
@@ -36,7 +36,7 @@ class CreateAnuncios extends CreateRecord
         // Snapshots de licencia ya no necesarios en anuncios
         'snapshot_lic_giro',
         'snapshot_lic_tipo',
-        'snapshot_lic_direccion',
+        'form_direccion_predio',
         'zonificacion_id',
     ];
 
@@ -59,10 +59,14 @@ class CreateAnuncios extends CreateRecord
                 'snapshot_solicitante_nombre_completo' => $data['snapshot_solicitante_nombre_completo'] ?? null,
                 'snapshot_solicitante_dni' => $data['snapshot_solicitante_dni'] ?? null,
                 'snapshot_solicitante_telefono' => $data['snapshot_solicitante_telefono'] ?? null,
-                'snapshot_solicitante_direccion' => $data['snapshot_solicitante_direccion'] ?? null,
+                'snapshot_solicitante_direccion' => $data['form_direccion_predio'] ?? null,
                 'snapshot_legal_nombre' => $data['snapshot_persona_legal_nombre_completo'] ?? null,
                 'snapshot_legal_dni_ruc' => $data['snapshot_persona_legal_dni'] ?? null,
                 'snapshot_legal_telefono' => $data['snapshot_persona_legal_telefono'] ?? null,
+                'snapshot_legal_direccion' => $data['form_domicilio_fiscal'] ?? null,
+
+
+
                 'folios' => $data['folios'] ?? 0,
                 'recibo_pago_id' => $recibo->id,
                 'zonificacion_id' => $data['zonificacion_id'] ?? null,
