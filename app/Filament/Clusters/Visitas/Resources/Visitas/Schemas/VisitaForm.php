@@ -29,10 +29,10 @@ class VisitaForm
                             ->label('Tipo de Documento')
                             ->relationship('persona.tipoDocumento', 'nombre')
                             ->live()
-                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1?8:20)
                             ->required(),
                         TextInput::make('numero_documento')
                             ->required()
+                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1?8:20)
                             ->live()
                             ->suffixAction(
                                 Action::make('buscar_visitante')
