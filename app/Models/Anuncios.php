@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\User;
+
 
 class Anuncios extends Model
 {
@@ -42,6 +44,7 @@ class Anuncios extends Model
         'estado_anuncio',
         'derivado_a_legal_user_id',
         'fecha_derivado',
+        'materiales_descripcion',
         'created_by_user_id',
         'updated_by_user_id',
     ];
@@ -82,18 +85,15 @@ class Anuncios extends Model
         );
     }
 
-    public function materiales(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Materiales::class,
-            'anuncios.anuncio_material',
-            'anuncio_id',
-            'material_id'
-        );
-    }
 
     public function documentos(): HasMany
     {
         return $this->hasMany(DocumentosAnuncio::class, 'anuncio_id');
     }
+
+    public function derivadoLegal(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'derivado_a_legal_user_id');
+    }
 }
+

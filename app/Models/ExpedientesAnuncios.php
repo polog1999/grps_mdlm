@@ -21,12 +21,10 @@ class ExpedientesAnuncios extends Model
     protected $fillable = [
         'id',
         'n_expediente',
-        'per_id_solicitante',
         'snapshot_solicitante_nombre_completo',
         'snapshot_solicitante_dni',
         'snapshot_solicitante_telefono',
         'snapshot_solicitante_direccion',
-        'per_id_legal',
         'snapshot_legal_nombre',
         'snapshot_legal_dni_ruc',
         'snapshot_legal_telefono',
@@ -35,6 +33,7 @@ class ExpedientesAnuncios extends Model
         'zonificacion_id',
         'recibo_pago_id',
     ];
+
 
     protected $casts = [
         'folios' => 'integer',

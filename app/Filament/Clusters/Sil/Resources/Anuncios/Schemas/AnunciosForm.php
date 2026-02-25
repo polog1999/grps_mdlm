@@ -19,11 +19,17 @@ use Filament\Forms\Components\Placeholder;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use Illuminate\Support\Facades\Log;
 use App\Models\Colores;
-use App\Models\Materiales;
 use App\Models\TipoAnuncio;
+
 use App\Models\CaracteristicasFisicas;
 use App\Models\DocumentosAnuncio;
+use App\Models\Zonificacion;
+
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\TipoDocumento;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\AsuntoAnuncio;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\VigenciaAnuncio;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
+use App\Models\User;
 use Filament\Forms\Components\Repeater;
 
 class AnunciosForm
@@ -75,21 +81,25 @@ class AnunciosForm
                                     }
                                 }),
                             TextInput::make('snapshot_solicitante_dni')
-                                ->label('DNI/RUC Solicitante')
-                                ->readonly(),
+                                ->label('DNI/RUC Solicitante'),
                             TextInput::make('snapshot_solicitante_nombre_completo')
-                                ->label('Nombre Completo Solicitante')
-                                ->readonly(),
+                                ->label('Nombre Completo Solicitante'),
                             TextInput::make('snapshot_solicitante_direccion')
-                                ->label('Dirección Fiscal')
-                                ->readonly(),
+                                ->label('Dirección Fiscal'),
                             TextInput::make('snapshot_solicitante_telefono')
-                                ->label('Teléfono Solicitante')
-                                ->readonly(),
+                                ->label('Teléfono Solicitante'),
                             TextInput::make('folios')
-                                ->label('Folios')
-                                ->readonly(),
+                                ->label('Folios'),
+                            Select::make('zonificacion_id')
+                                ->label('Zonificación')
+                                ->options(fn() => Zonificacion::query()
+                                    ->get()
+                                    ->mapWithKeys(fn($z) => [$z->id => "{$z->siglas} - {$z->descripcion}"]))
+                                ->searchable()
+                                ->preload()
+                                ->required(),
                         ]),
+
                     Step::make('Datos Licencia de Funcionamiento')
                         ->description('Indique si cuenta con licencia de funcionamiento')
                         ->schema([
@@ -308,7 +318,16 @@ class AnunciosForm
                                     TextInput::make('folios')
                                         ->label('Folios')
                                         ->numeric(),
+                                    Select::make('zonificacion_id')
+                                        ->label('Zonificación')
+                                        ->options(fn() => Zonificacion::query()
+                                            ->get()
+                                            ->mapWithKeys(fn($z) => [$z->id => "{$z->siglas} - {$z->descripcion}"]))
+                                        ->searchable()
+                                        ->preload()
+                                        ->required(),
                                 ])->columns(2),
+
 
                             Section::make('Resumen de Licencia')
                                 ->collapsed()
@@ -422,7 +441,9 @@ class AnunciosForm
                                     TextInput::make('n_anuncio')
                                         ->required(),
                                     DatePicker::make('fecha_recepcion_evaluar'),
-                                    Textarea::make('asunto')
+                                    Select::make('asunto')
+                                        ->options(AsuntoAnuncio::class)
+                                        ->required()
                                         ->columnSpanFull(),
                                     Select::make('caracteristica_fisica_id')
                                         ->label('Características Físicas')
@@ -442,12 +463,10 @@ class AnunciosForm
                                         ->relationship('colores', 'descripcion')
                                         ->searchable()
                                         ->preload(),
-                                    Select::make('materiales')
+                                    Textarea::make('materiales_descripcion')
                                         ->label('Materiales')
-                                        ->multiple()
-                                        ->relationship('materiales', 'descripcion')
-                                        ->searchable()
-                                        ->preload(),
+                                        ->columnSpanFull(),
+
                                 ])->columns(2),
 
 
@@ -470,9 +489,9 @@ class AnunciosForm
                                     TextInput::make('ubicacion_del_anuncio'),
                                     TextInput::make('n_de_caras')
                                         ->required()
-                                        ->numeric()
                                         ->default(1),
-                                    TextInput::make('dictamen'),
+                                    Select::make('dictamen')
+                                        ->options(Dictamen::class),
                                     Textarea::make('obs')
                                         ->columnSpanFull(),
                                 ])->columns(2),
@@ -481,17 +500,21 @@ class AnunciosForm
                                 ->schema([
                                     TextInput::make('estado_anuncio')
                                         ->required(),
-                                    TextInput::make('derivado_a_legal_user_id')
-                                        ->numeric(),
+                                    Select::make('derivado_a_legal_user_id')
+                                        ->label('Derivado a Legal')
+                                        ->relationship('derivadoLegal', 'name')
+                                        ->searchable()
+                                        ->preload(),
                                     DatePicker::make('fecha_derivado'),
                                     TextInput::make('created_by_user_id')
                                         ->required()
                                         ->numeric(),
                                     TextInput::make('updated_by_user_id')
                                         ->numeric(),
-                                    TextInput::make('vigencia')
+                                    Select::make('vigencia')
+                                        ->options(VigenciaAnuncio::class)
                                         ->required()
-                                        ->default('INDETERMINADA'),
+                                        ->default(VigenciaAnuncio::INDETERMINADA->value),
                                     DatePicker::make('fecha_inicio_vigencia'),
                                     DatePicker::make('fecha_fin_vigencia'),
                                 ])->columns(2),

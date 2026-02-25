@@ -4,11 +4,10 @@ namespace App\Filament\Clusters\Sil\Resources\Anuncios\Enums;
 
 use Filament\Support\Contracts\HasLabel;
 
-enum Dictamen: string implements HasLabel
+enum AsuntoAnuncio: string implements HasLabel
 {
-    case PROCEDENTE = 'PROCEDENTE';
-    case IMPROCEDENTE = 'IMPROCEDENTE';
-    case OBSERVADO = 'OBSERVADO';
+    case ASUNTO_PUBLICITARIO = 'ASUNTO PUBLICITARIO';
+    case LETRAS_RECORTADAS = 'LETRAS RECORTADAS';
 
     public function getLabel(): ?string
     {
