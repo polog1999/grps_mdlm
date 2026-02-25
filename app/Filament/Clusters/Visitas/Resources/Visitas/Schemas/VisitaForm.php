@@ -158,8 +158,8 @@ class VisitaForm
                                     ->get()
                                     ->mapWithKeys(function ($trabajador) {
                                         // Forzamos que el label sea un string y no null
-                                        $nombre = $trabajador->persona->full_nombre ?? "Trabajador {$trabajador->id}";
-                                        return [$trabajador->id => $nombre];
+                                        $nombre = $trabajador->persona->full_nombre ?? "Trabajador {$trabajador->persona->id}";
+                                        return [$trabajador->persona->id => $nombre];
                                     });
                             })
                             ->searchable()

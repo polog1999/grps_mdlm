@@ -17,7 +17,10 @@ class EditTrabajador extends EditRecord
             DeleteAction::make(),
         ];
     }
-
+   protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $trabajador = $this->getRecord();

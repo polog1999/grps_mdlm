@@ -9,6 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateTrabajador extends CreateRecord
 {
     protected static string $resource = TrabajadorResource::class;
+       protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // 1. Buscamos o creamos la persona antes de crear el trabajador

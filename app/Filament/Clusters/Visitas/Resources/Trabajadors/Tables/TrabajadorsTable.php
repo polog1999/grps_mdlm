@@ -56,6 +56,7 @@ class TrabajadorsTable
                     ->label('Estado')
                     ->boolean(),
             ])
+            ->defaultSort('updated_at','desc')
             ->filters([
                 //
             ])

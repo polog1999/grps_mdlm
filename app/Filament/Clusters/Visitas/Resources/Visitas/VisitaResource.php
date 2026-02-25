@@ -9,15 +9,17 @@ use App\Filament\Clusters\Visitas\Resources\Visitas\Schemas\VisitaForm;
 use App\Filament\Clusters\Visitas\Resources\Visitas\Tables\VisitasTable;
 use App\Filament\Clusters\Visitas\VisitasCluster;
 use App\Models\Visita;
+use App\Models\VisitaHistorico;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class VisitaResource extends Resource
 {
-    protected static ?string $model = Visita::class;
+    protected static ?string $model = VisitaHistorico::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
@@ -25,9 +27,11 @@ class VisitaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Visita';
 
+  
+
     public static function form(Schema $schema): Schema
     {
-        return VisitaForm::configure($schema);
+        return VisitaForm::configure($schema)->model(Visita::class);
     }
 
     public static function table(Table $table): Table

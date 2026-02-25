@@ -31,6 +31,11 @@ class UsersTable
                     ->badge()
                     ->separator(',')
                     ->searchable(),
+                TextColumn::make('sede.nombre')
+                    ->label('Sede')
+                    ->badge()
+                    ->separator(',')
+                    ->searchable(),
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('role')
