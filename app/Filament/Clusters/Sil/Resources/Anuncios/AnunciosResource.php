@@ -16,6 +16,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum; // Asegúrate de importar esto arriba si no está
 
 class AnunciosResource extends Resource
 {
@@ -25,6 +26,7 @@ class AnunciosResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Anuncios';
     protected static ?string $recordTitleAttribute = 'Anuncios';
 
     public static function form(Schema $schema): Schema

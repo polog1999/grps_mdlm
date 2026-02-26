@@ -2,6 +2,8 @@
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Tables;
 
+use App\Models\Anuncios;
+use App\Services\Sil\Anuncios\InformeAnuncioService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -101,8 +103,12 @@ class AnunciosTable
                     ->tooltip('Generar Informe')
                     ->color(Color::Cyan)
                     ->icon('heroicon-o-document-text')
-                    ->action(function (Anuncio $record) {
-
+                    ->action(function (Anuncios $record) {
+                        $path = app(InformeAnuncioService::class)->generarInforme($record);
+                        return response()->download(
+                            $path,
+                            'Informe_' . ($record->n_anuncio ?? $record->id) . '.docx'
+                        )->deleteFileAfterSend(true);
                     }),
                 Action::make('Generar Carta')
                     ->label('Generar Carta')
@@ -110,7 +116,7 @@ class AnunciosTable
                     ->tooltip('Generar Carta')
                     ->color(Color::Yellow)
                     ->icon('heroicon-o-envelope')
-                    ->action(function (Anuncio $record) {
+                    ->action(function (Anuncios $record) {
 
                     }),
                 Action::make('Dar de Baja')
@@ -119,7 +125,7 @@ class AnunciosTable
                     ->tooltip('Dar de Baja')
                     ->color(Color::Red)
                     ->icon('heroicon-o-trash')
-                    ->action(function (Anuncio $record) {
+                    ->action(function (Anuncios $record) {
 
                     })
             ], position: RecordActionsPosition::BeforeCells)
