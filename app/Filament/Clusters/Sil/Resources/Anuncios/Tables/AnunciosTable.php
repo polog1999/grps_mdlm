@@ -10,6 +10,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\TrashedFilter;
@@ -103,8 +104,14 @@ class AnunciosTable
                     ->tooltip('Generar Informe')
                     ->color(Color::Cyan)
                     ->icon('heroicon-o-document-text')
-                    ->action(function (Anuncios $record) {
-                        $path = app(InformeAnuncioService::class)->generarInforme($record);
+                    ->form([
+                        TextInput::make('n_informe_tecnico')
+                            ->label('N° Informe Técnico')
+                            ->placeholder('Ej. 001-2026')
+                            ->required(),
+                    ])
+                    ->action(function (Anuncios $record, array $data) {
+                        $path = app(InformeAnuncioService::class)->generarInforme($record, $data['n_informe_tecnico'] ?? '');
                         return response()->download(
                             $path,
                             'Informe_' . ($record->n_anuncio ?? $record->id) . '.docx'
