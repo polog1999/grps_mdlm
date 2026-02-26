@@ -115,7 +115,7 @@ class VisitaForm
                             ->required()
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
-                        Placeholder::make('espacio_blanco')
+                        Placeholder::make('.')
                         ->label(false),
                         Placeholder::make('foto_visual')
                             ->label('Foto RENIEC')
@@ -137,7 +137,7 @@ class VisitaForm
                         //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
-                            ->options(Area::pluck('nombre', 'id'))
+                            ->options(Area::orderBy('nombre', 'asc')->pluck('nombre', 'id'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required(),

@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Visitas\Resources\Trabajadors\Schemas;
 use Filament\Schemas\Schema;
 use App\Models\Persona;
 use App\Models\PersonaUno;
+use App\Models\Regimen;
 use App\Models\Trabajador;
 use App\Services\PideService;
 use BackedEnum;
@@ -145,6 +146,7 @@ class TrabajadorForm
                             ->required(),
                         Select::make('regimen_id')
                             ->relationship('regimen', 'cregimen')
+                            ->options(Regimen::where('estado',true)->where('parent_id','>',0)->orderBy('parent_id','asc')->pluck('cregimen', 'id'))
                             ->label('Régimen')
                             ->required(),
                         DatePicker::make('fecha_ingreso')

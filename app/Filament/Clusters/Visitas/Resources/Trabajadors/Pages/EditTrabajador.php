@@ -96,28 +96,75 @@ class EditTrabajador extends EditRecord
         ]));
     }
 
+    // protected function afterSave(): void
+    // {
+    //     $trabajador = $this->getRecord();
+    //     $data = $this->form->getRawState();
+    //     $nuevosCargos = $data['cargos_activos'] ?? [];
+
+    //     // 1. Marcar como NO ACTUALES los cargos que ya no están en el repeater
+    //     // (Opcional: Si quieres que al borrar del repeater se borre de la vigencia)
+    //     $trabajador->historiales()->where('es_actual', true)->update(['es_actual' => false]);
+
+    //     // 2. Insertar/Actualizar los cargos que vienen en el repeater
+    //     foreach ($nuevosCargos as $item) {
+    //         $trabajador->historiales()->create([
+    //             'cargo_id'     => $item['cargo_id'],
+    //             'area_id'      => $item['area_id'],
+    //             'de_cargo'      => $item['de_cargo'],
+    //             // 'sede_id'      => $item['sede_id'],
+    //             'fecha_inicio' => $item['fecha_inicio'],
+    //             'es_actual'    => true, // Vuelven a ser actuales
+    //             'user_id_creo' => auth()->id(),
+    //             'user_id_modi' => auth()->id(),
+    //         ]);
+    //     }
+    // }
     protected function afterSave(): void
-    {
-        $trabajador = $this->getRecord();
-        $data = $this->form->getRawState();
-        $nuevosCargos = $data['cargos_activos'] ?? [];
+{
+    $trabajador = $this->getRecord();
+    $data = $this->form->getRawState();
+    $nuevosCargos = $data['cargos_activos'] ?? [];
 
-        // 1. Marcar como NO ACTUALES los cargos que ya no están en el repeater
-        // (Opcional: Si quieres que al borrar del repeater se borre de la vigencia)
-        $trabajador->historiales()->where('es_actual', true)->update(['es_actual' => false]);
+    // 1. Obtener los IDs de los cargos que ya estaban en la base de datos como actuales
+    $cargosAnteriores = $trabajador->historiales()
+        ->where('es_actual', true)
+        ->get();
 
-        // 2. Insertar/Actualizar los cargos que vienen en el repeater
-        foreach ($nuevosCargos as $item) {
-            $trabajador->historiales()->create([
-                'cargo_id'     => $item['cargo_id'],
-                'area_id'      => $item['area_id'],
-                'de_cargo'      => $item['de_cargo'],
-                // 'sede_id'      => $item['sede_id'],
-                'fecha_inicio' => $item['fecha_inicio'],
-                'es_actual'    => true, // Vuelven a ser actuales
-                'user_id_creo' => auth()->id(),
+    // 2. Marcar con FECHA FIN los que ya no están en el repeater
+    foreach ($cargosAnteriores as $cargoAnterior) {
+        // Buscamos si el cargo anterior sigue existiendo en el array que viene del formulario
+        $sigueExistiendo = collect($nuevosCargos)->contains(function ($item) use ($cargoAnterior) {
+            // Comparamos por cargo y área (o por ID si lo tuvieras oculto en el repeater)
+            return $item['cargo_id'] == $cargoAnterior->cargo_id && 
+                   $item['area_id'] == $cargoAnterior->area_id;
+        });
+
+        if (!$sigueExistiendo) {
+            $cargoAnterior->update([
+                'es_actual' => false,
+                'fecha_fin' => now(), // <--- AQUÍ SE MARCA LA FECHA FIN
                 'user_id_modi' => auth()->id(),
             ]);
         }
     }
+
+    // 3. Procesar los cargos del repeater (Insertar nuevos o mantener actuales)
+    foreach ($nuevosCargos as $item) {
+        // Usamos updateOrCreate para no duplicar si el cargo ya existe y sigue siendo actual
+        $trabajador->historiales()->updateOrCreate(
+            [
+                'cargo_id' => $item['cargo_id'],
+                'area_id'  => $item['area_id'],
+                'es_actual' => true,
+            ],
+            [
+                'de_cargo'     => $item['de_cargo'],
+                'fecha_inicio' => $item['fecha_inicio'],
+                'user_id_creo' => auth()->id(),
+                'user_id_modi' => auth()->id(),
+            ]
+        );
+    }
+}
 }

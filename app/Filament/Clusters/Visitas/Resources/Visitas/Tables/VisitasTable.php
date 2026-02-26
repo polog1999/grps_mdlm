@@ -34,10 +34,14 @@ class VisitasTable
                         // }
                     ),
 
-                TextColumn::make('area')->label('Area'),
-                TextColumn::make('Autorizado por')->label('Autorizado por'),
-                TextColumn::make('hora_ingreso')->dateTime('H:i A'),
-                TextColumn::make('hora_salida')->dateTime('H:i A'),
+                TextColumn::make('area')->label('Area')
+                ->searchable(),
+                TextColumn::make('Autorizado por')->label('Autorizado por')
+                ->searchable(),
+                TextColumn::make('hora_ingreso')->dateTime('H:i A')
+                ->searchable(),
+                TextColumn::make('hora_salida')->dateTime('H:i A')
+                ->searchable(),
                 TextColumn::make('motivo'),
                 TextColumn::make('fecha_visita')->badge()
                     ->label('Estado')
