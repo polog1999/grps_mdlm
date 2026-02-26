@@ -14,7 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use UnitEnum;
 class LicenciasLevantamientoResource extends Resource
 {
     protected static ?string $model = CertificadoLicenciaFuncionamiento::class;
@@ -29,6 +29,7 @@ class LicenciasLevantamientoResource extends Resource
         return auth()->user()?->can('view::data_levantamiento') ?? false;
     }
 
+    protected static string|UnitEnum|null $navigationGroup = 'Licencias de Funcionamiento';
 
     protected static ?string $recordTitleAttribute = 'CertificadoLicenciaFuncionamiento';
 
