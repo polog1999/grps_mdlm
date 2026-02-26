@@ -14,7 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use UnitEnum;
 class CertificadoBorradoResource extends Resource
 {
     protected static ?string $model = CertificadoBorrado::class;
@@ -26,6 +26,7 @@ class CertificadoBorradoResource extends Resource
     protected static ?string $navigationLabel = 'Certificados Borrados';
     protected static ?string $pluralModelLabel = 'Certificados Borrados';
 
+    protected static string|UnitEnum|null $navigationGroup = 'Auditoría';
 
     public static function form(Schema $schema): Schema
     {
