@@ -14,12 +14,13 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use UnitEnum;
 class SolicitudPermisoResource extends Resource
 {
     protected static ?string $model = SolicitudPermiso::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'ionicon-ticket-outline';
+    protected static string|UnitEnum|null $navigationGroup = 'Auditoría';
 
     protected static ?string $cluster = SilCluster::class;
 

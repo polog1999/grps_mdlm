@@ -14,13 +14,14 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use UnitEnum;
 class PersonaResource extends Resource
 {
     protected static ?string $model = Persona::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'ik-person';
     protected static ?int $navigationSort = 3;
+    protected static string|UnitEnum|null $navigationGroup = 'Personas';
 
     protected static ?string $cluster = SilCluster::class;
 

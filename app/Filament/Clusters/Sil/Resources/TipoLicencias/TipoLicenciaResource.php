@@ -14,7 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use UnitEnum;
 class TipoLicenciaResource extends Resource
 {
     protected static ?string $model = TipoLicencia::class;
@@ -23,6 +23,7 @@ class TipoLicenciaResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $cluster = SilCluster::class;
+    protected static string|UnitEnum|null $navigationGroup = 'Licencias de Funcionamiento';
 
     public static function canAccess(): bool
     {
