@@ -65,7 +65,7 @@ class EditAnuncios extends EditRecord
                         ? $datosLicencia->GIRO_ESPECIFICOS
                         : ($datosLicencia->GIRO ?? 'GIRO NO DEFINIDO');
 
-                    $data['snapshot_lic_giro'] = str($giroFinal)->upper();
+                    $data['giro_especifico_snapshot'] = $this->record->giro_especifico_snapshot ?? str($giroFinal)->upper();
                     $data['snapshot_lic_tipo'] = str($datosLicencia->TIPO_LICENCIA)->upper()->trim()->toString();
                     // La dirección ya se recuperó del expediente (predio), pero si se prefiere del servicio:
                     // $data['form_direccion_predio'] = str($datosLicencia->LIC_DIRECCION)->upper();
@@ -123,7 +123,6 @@ class EditAnuncios extends EditRecord
             'snapshot_persona_legal_dni',
             'snapshot_persona_legal_nombre_completo',
             'snapshot_persona_legal_telefono',
-            'snapshot_lic_giro',
             'snapshot_lic_tipo',
             'form_direccion_predio',
             'zonificacion_id',

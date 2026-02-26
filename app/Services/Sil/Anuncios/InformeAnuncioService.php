@@ -17,7 +17,7 @@ class InformeAnuncioService
         // Asegurar que la relación expediente esté cargada
         $anuncio->loadMissing('expediente');
 
-        $templatePath = storage_path('app/templates/anuncios/template_informe_anuncio.docx');
+        $templatePath = app_path('Filament/Clusters/Sil/Resources/Anuncios/Template/template_informe_anuncio.docx');
 
         $processor = new TemplateProcessor($templatePath);
 
@@ -27,12 +27,12 @@ class InformeAnuncioService
         $expediente = $anuncio->expediente;
         $this->setVar($processor, 'N_EXPEDIENTE', $expediente?->n_expediente ?? '');
         $this->setVar($processor, 'SOLICITANTE', $expediente?->snapshot_solicitante_nombre_completo ?? '');
-        $this->setVar($processor, 'SOLICITANTE_DNI', $expediente?->snapshot_solicitante_dni ?? '');
-        $this->setVar($processor, 'SOLICITANTE_TELEFONO', $expediente?->snapshot_solicitante_telefono ?? '');
-        $this->setVar($processor, 'SOLICITANTE_DIRECCION', $expediente?->snapshot_solicitante_direccion ?? '');
-        $this->setVar($processor, 'DOMICILIO_FISCAL', $expediente?->snapshot_legal_direccion ?? '');
-        $this->setVar($processor, 'LEGAL_NOMBRE', $expediente?->snapshot_legal_nombre ?? '');
-        $this->setVar($processor, 'LEGAL_DNI', $expediente?->snapshot_legal_dni_ruc ?? '');
+        $this->setVar($processor, 'DNI_RUC', $expediente?->snapshot_solicitante_dni ?? '');
+        $this->setVar($processor, 'TELEFONO_SISTEMADECLARADO', $expediente?->snapshot_solicitante_telefono ?? '');
+        $this->setVar($processor, 'DIRECCION_DEL_PREDIO_MATERIA_A_EVALUAR', $expediente?->snapshot_solicitante_direccion ?? '');
+        $this->setVar($processor, 'DIRECCION_FISCAL', $expediente?->snapshot_legal_direccion ?? '');
+        $this->setVar($processor, 'REPRESENTANTE_LEGAL_O_APODERADO', $expediente?->snapshot_legal_nombre ?? '');
+        $this->setVar($processor, 'DNI_CARNET_DE_EXT', $expediente?->snapshot_legal_dni_ruc ?? '');
 
         // -------------------------------------------------------
         // Datos del Anuncio
@@ -40,15 +40,30 @@ class InformeAnuncioService
         $this->setVar($processor, 'N_ANUNCIO', $anuncio->n_anuncio ?? '');
         $this->setVar($processor, 'FECHA_RECEPCION', $anuncio->fecha_recepcion_evaluar ? \Carbon\Carbon::parse($anuncio->fecha_recepcion_evaluar)->format('d/m/Y') : '');
 
-        $this->setVar($processor, 'UBICACION', $anuncio->ubicacion_del_anuncio ?? '');
+        $this->setVar($processor, 'UBICACIÓN_DEL_ANUNCIO', $anuncio->ubicacion_del_anuncio ?? '');
         $this->setVar($processor, 'ANCHO', $anuncio->ancho_m ?? '');
         $this->setVar($processor, 'ALTO', $anuncio->alto_m ?? '');
         $this->setVar($processor, 'ESPESOR', $anuncio->espesor_cm ?? '');
+
+        // Formatear MEDIDAS: "10.58 m ancho x 1.35 m alto x 1 cm espesor"
+        $medidasParts = [];
+        if (!empty($anuncio->ancho_m)) {
+            $medidasParts[] = "{$anuncio->ancho_m} m ancho";
+        }
+        if (!empty($anuncio->alto_m)) {
+            $medidasParts[] = "{$anuncio->alto_m} m alto";
+        }
+        if (!empty($anuncio->espesor_cm)) {
+            $medidasParts[] = "{$anuncio->espesor_cm} cm espesor";
+        }
+        $this->setVar($processor, 'MEDIDAS', implode(' x ', $medidasParts));
         $this->setVar($processor, 'N_CARAS', $anuncio->n_de_caras ?? '');
         $this->setVar($processor, 'DESCRIPCION', $anuncio->descripcion ?? '');
         $this->setVar($processor, 'MATERIALES', $anuncio->materiales_descripcion ?? '');
         $this->setVar($processor, 'DICTAMEN', $anuncio->dictamen?->value ?? '');
         $this->setVar($processor, 'ESTADO', $anuncio->estado_anuncio?->value ?? '');
+        $this->setVar($processor, 'VIGENCIA', $anuncio->vigencia ?? '');
+
 
         // -------------------------------------------------------
         // Guardar en archivo temporal y devolver la ruta

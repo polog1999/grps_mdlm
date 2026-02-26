@@ -128,7 +128,7 @@ class AnunciosForm
                                 ->inline()
                                 ->afterStateUpdated(function ($set) {
                                     $set('id_licencia', null);
-                                    $set('snapshot_lic_giro', null);
+                                    $set('giro_especifico_snapshot', null);
                                     $set('snapshot_lic_tipo', null);
                                     $set('form_direccion_predio', null);
                                 }),
@@ -158,7 +158,7 @@ class AnunciosForm
 
                                             if (blank($state)) {
                                                 Log::warning('El ID de licencia está vacío, limpiando campos snapshot.');
-                                                $set('snapshot_lic_giro', null);
+                                                $set('giro_especifico_snapshot', null);
                                                 $set('snapshot_lic_tipo', null);
                                                 $set('form_direccion_predio', null);
                                                 return;
@@ -180,14 +180,14 @@ class AnunciosForm
                                                         'tipo' => $tipo
                                                     ]);
 
-                                                    $set('snapshot_lic_giro', str($giroFinal)->upper() ?? null);
+                                                    $set('giro_especifico_snapshot', str($giroFinal)->upper() ?? null);
                                                     $set('snapshot_lic_tipo', str($tipo)->upper() ?? null);
                                                     $set('form_direccion_predio', str($datos->LIC_DIRECCION)->upper() ?? null);
                                                 } else {
                                                     // LOG 3: No hay resultados
                                                     Log::warning('El servicio no devolvió datos para la licencia ID: ' . $state);
 
-                                                    $set('snapshot_lic_giro', null);
+                                                    $set('giro_especifico_snapshot', null);
                                                     $set('snapshot_lic_tipo', null);
                                                     $set('form_direccion_predio', null);
                                                 }
@@ -200,9 +200,8 @@ class AnunciosForm
                                             }
                                         }),
 
-                                    TextInput::make('snapshot_lic_giro')
+                                    TextInput::make('giro_especifico_snapshot')
                                         ->label('Giro Específico')
-                                        ->disabled()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
                                     TextInput::make('snapshot_lic_tipo')
@@ -347,7 +346,7 @@ class AnunciosForm
                                         ->live()
                                         ->afterStateUpdated(function ($state, $set) {
                                             if (blank($state)) {
-                                                $set('snapshot_lic_giro', null);
+                                                $set('giro_especifico_snapshot', null);
                                                 $set('snapshot_lic_tipo', null);
                                                 $set('form_direccion_predio', null);
                                                 return;
@@ -361,7 +360,7 @@ class AnunciosForm
                                                     $giroFinal = !empty($datos->GIRO_ESPECIFICOS) ? $datos->GIRO_ESPECIFICOS : ($datos->GIRO ?? 'GIRO NO DEFINIDO');
                                                     $tipo = str($datos->TIPO_LICENCIA)->upper()->trim()->toString();
 
-                                                    $set('snapshot_lic_giro', str($giroFinal)->upper() ?? null);
+                                                    $set('giro_especifico_snapshot', str($giroFinal)->upper() ?? null);
                                                     $set('snapshot_lic_tipo', str($tipo)->upper() ?? null);
                                                     $set('form_direccion_predio', str($datos->LIC_DIRECCION)->upper() ?? null);
                                                 }
@@ -369,8 +368,7 @@ class AnunciosForm
                                                 Log::error('Error al consultar licencia en paso final: ' . $e->getMessage());
                                             }
                                         }),
-                                    TextInput::make('snapshot_lic_giro')
-                                        ->disabled()
+                                    TextInput::make('giro_especifico_snapshot')
                                         ->label('Giro Específico'),
                                     TextInput::make('snapshot_lic_tipo')
                                         ->disabled()

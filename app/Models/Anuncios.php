@@ -51,6 +51,7 @@ class Anuncios extends Model
         'materiales_descripcion',
         'created_by_user_id',
         'updated_by_user_id',
+        'giro_especifico_snapshot',
     ];
 
     protected $casts = [

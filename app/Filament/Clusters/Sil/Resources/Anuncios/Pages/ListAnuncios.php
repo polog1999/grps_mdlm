@@ -40,25 +40,6 @@ class ListAnuncios extends ListRecords
                         ->success()
                         ->send();
                 }),
-            Action::make('create_material')
-                ->label('Material')
-                ->icon('heroicon-o-plus')
-                ->color('primary')
-                ->form([
-                    TextInput::make('descripcion')
-                        ->label('Descripción del Material')
-                        ->required()
-                        ->maxLength(100)
-                        ->unique(ignoreRecord: true),
-                ])
-                ->action(function ($data) {
-                    $material = (new CreateMaterialAction())->execute($data['descripcion']);
-
-                    Notification::make()
-                        ->title('Material creado exitosamente')
-                        ->success()
-                        ->send();
-                }),
             Action::make('create_caracteristica_fisica')
                 ->label('Caract. Fisica')
                 ->icon('heroicon-o-plus')
@@ -72,7 +53,6 @@ class ListAnuncios extends ListRecords
                 ])
                 ->action(function ($data) {
                     $caracteristicaFisica = (new CreateCaracteristicasFisicasAction())->execute($data['descripcion']);
-
                     Notification::make()
                         ->title('Caracteristica Fisica creada exitosamente')
                         ->success()

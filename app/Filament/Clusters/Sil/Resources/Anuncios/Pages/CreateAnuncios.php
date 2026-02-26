@@ -34,7 +34,6 @@ class CreateAnuncios extends CreateRecord
         'snapshot_persona_legal_nombre_completo',
         'snapshot_persona_legal_telefono',
         // Snapshots de licencia ya no necesarios en anuncios
-        'snapshot_lic_giro',
         'snapshot_lic_tipo',
         'form_direccion_predio',
         'zonificacion_id',
