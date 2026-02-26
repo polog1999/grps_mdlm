@@ -196,7 +196,7 @@ class TrabajadorForm
                             ->dehydrated(false), // EVITA EL ERROR SQL: Filament ignorará esto al hacer el UPDATE principal
                     ]),
 
-                Section::make('Historial de Movimientos (Pasados)')
+                Section::make('Historial de Cargos (Pasados)')
                     ->collapsed()
                     ->schema([
                         Repeater::make('historial_visual')
@@ -206,8 +206,9 @@ class TrabajadorForm
                                 TextInput::make('cargo_nombre')->label('Cargo')->disabled(),
                                 TextInput::make('area_nombre')->label('Área')->disabled(),
                                 TextInput::make('fecha_inicio')->label('Fecha Inicio')->disabled(),
+                                TextInput::make('fecha_fin')->label('Fecha Fin')->disabled(),
                                 Hidden::make('es_actual') // O un checkbox disabled
-                            ])
+                            ])->columns(2)
                             ->addable(false)
                             ->deletable(false)
                             ->reorderable(false)

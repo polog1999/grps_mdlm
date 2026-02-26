@@ -34,9 +34,9 @@ class TrabajadorsTable
 
                 // 3. Mostrar el Cargo Actual (Buscando en el historial)
                 // Esto asume que el trabajador tiene una relación 'cargoActual' o 'historiales'
-                TextColumn::make('historiales')
+                TextColumn::make('cargo_actual')
                     ->label('Cargo Actual')
-                    ->formatStateUsing(function ($record) {
+                    ->getStateUsing(function ($record) {
                         // Obtenemos el registro del historial que no tiene fecha_fin o es_actual
                         $actual = $record->historiales->where('es_actual', true)->first();
                         return $actual ? $actual->cargo?->nombre : 'Sin cargo';
