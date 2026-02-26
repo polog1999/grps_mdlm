@@ -22,7 +22,7 @@ use Filament\Support\Enums\TextSize;
 use Filament\Support\Enums\FontWeight;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Schemas\Components\Group;
-
+use UnitEnum;
 
 /**
  * Recurso de Filament para Certificados de Inspección.
@@ -53,6 +53,7 @@ class CertificadoInspeccionResource extends Resource
 
     protected static ?string $cluster = SilCluster::class;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Certificados de Inspección';
 
 
     //ICON FOR NAVIGATIONGROUP

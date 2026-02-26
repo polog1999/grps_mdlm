@@ -14,7 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use UnitEnum;
 class AuditoriaLicenciaResource extends Resource
 {
     protected static ?string $model = AuditoriaLicencia::class;
@@ -22,6 +22,7 @@ class AuditoriaLicenciaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'tabler-eye-cog';
 
+    protected static string|UnitEnum|null $navigationGroup = 'Auditoría';
     protected static ?string $cluster = SilCluster::class;
 
     public static function canAccess(): bool

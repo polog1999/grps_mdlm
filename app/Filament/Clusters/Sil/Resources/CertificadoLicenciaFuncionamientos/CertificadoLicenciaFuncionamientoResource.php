@@ -18,7 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-
+use UnitEnum;
 class CertificadoLicenciaFuncionamientoResource extends Resource
 {
     protected static ?string $model = CertificadoLicenciaFuncionamiento::class;
@@ -26,6 +26,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
     protected static ?string $recordTitleAttribute = 'Certificado Licencia de Funcionamiento';
     protected static ?string $navigationLabel = 'Certificados de Licencia de Funcionamiento';
     protected static ?string $pluralModelLabel = 'Certificados de Licencia de Funcionamiento';
+    protected static string|UnitEnum|null $navigationGroup = 'Licencias de Funcionamiento';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $cluster = SilCluster::class;
