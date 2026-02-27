@@ -43,6 +43,7 @@ class EditAnuncios extends EditRecord
             $data['snapshot_persona_legal_dni'] = $expediente->snapshot_legal_dni_ruc;
             $data['snapshot_persona_legal_nombre_completo'] = $expediente->snapshot_legal_nombre;
             $data['snapshot_persona_legal_telefono'] = $expediente->snapshot_legal_telefono;
+            $data['snapshot_persona_legal_distrito'] = $expediente->snapshot_legal_distrito;
 
             // Información de Pago
             $recibo = $expediente->reciboPago;
@@ -97,6 +98,7 @@ class EditAnuncios extends EditRecord
                 'snapshot_legal_nombre' => $data['snapshot_persona_legal_nombre_completo'] ?? $expediente->snapshot_legal_nombre,
                 'snapshot_legal_dni_ruc' => $data['snapshot_persona_legal_dni'] ?? $expediente->snapshot_legal_dni_ruc,
                 'snapshot_legal_telefono' => $data['snapshot_persona_legal_telefono'] ?? $expediente->snapshot_legal_telefono,
+                'snapshot_legal_distrito' => $data['snapshot_persona_legal_distrito'] ?? $expediente->snapshot_legal_distrito,
             ]);
 
             // 2. Actualizar datos del Recibo de Pago
@@ -108,7 +110,10 @@ class EditAnuncios extends EditRecord
             }
         }
 
-        // 3. Limpiar campos auxiliares para que no fallen al guardar el Anuncio (la tabla no tiene estas columnas)
+        // 3. Asignar auditoria
+        $data['updated_by_user_id'] = auth()->id();
+
+        // 4. Limpiar campos auxiliares para que no fallen al guardar el Anuncio (la tabla no tiene estas columnas)
         $auxiliaryFields = [
             'n_expediente_search',
             'tiene_licencia',
@@ -123,6 +128,7 @@ class EditAnuncios extends EditRecord
             'snapshot_persona_legal_dni',
             'snapshot_persona_legal_nombre_completo',
             'snapshot_persona_legal_telefono',
+            'snapshot_persona_legal_distrito',
             'snapshot_lic_tipo',
             'form_direccion_predio',
             'zonificacion_id',

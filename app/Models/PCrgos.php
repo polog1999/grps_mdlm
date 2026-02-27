@@ -44,4 +44,9 @@ class PCrgos extends Model
     {
         return $this->hasMany(RCrgosLgin::class, 'cdgo_crgo', 'cdgo_crgo');
     }
+
+    public function pDtoTrmtes()
+    {
+        return $this->hasMany(PDtoTrmtes::class, 'cdgo_area', 'cdgo_area');
+    }
 }

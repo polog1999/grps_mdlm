@@ -4,23 +4,122 @@ namespace App\Services\Sil\Anuncios;
 
 use App\Models\Anuncios;
 use PhpOffice\PhpWord\TemplateProcessor;
+use App\Services\Sil\Anuncios\DatosTramiteService;
 
 class InformeAnuncioService
 {
+
+    protected $datosTramiteService;
+
+    // Inyectamos el servicio de trámites para tener acceso a la data de Gestrad
+    public function __construct(DatosTramiteService $datosTramiteService)
+    {
+        $this->datosTramiteService = $datosTramiteService;
+    }
+
     /**
      * Reemplaza los placeholders {{VAR}} del template Word
      * con los datos reales del Anuncio y devuelve la ruta del
      * archivo temporal generado.
      */
-    public function generarInforme(Anuncios $anuncio, string $nInformeTecnico = ''): string
+
+    public function generarInforme(Anuncios $anuncio, ?string $nExpediente = null): string
     {
-        // Asegurar que la relación expediente esté cargada
-        $anuncio->loadMissing('expediente');
+        // Asegurar que las relaciones necesarias estén cargadas antes de procesar
+        $anuncio->loadMissing(['expediente', 'documentos', 'tipoAnuncio', 'licencia']);
+
+        if (!$nExpediente) {
+            $nExpediente = $anuncio->expediente?->n_expediente ?? '';
+        }
+
+        // Recuperar el número de informe técnico de los documentos del anuncio
+        $informeTecnicoDoc = $anuncio->documentos->where('tipo_documento', 'INFORME TÉCNICO')->first();
+        $nInformeTecnico = $informeTecnicoDoc?->n_documento ?? '';
+
+        $datosGestrad = $this->datosTramiteService->getDatosTramite($nInformeTecnico, $nExpediente);
 
         $templatePath = app_path('Filament/Clusters/Sil/Resources/Anuncios/Template/template_informe_anuncio.docx');
 
         $processor = new TemplateProcessor($templatePath);
 
+
+        if ($datosGestrad) {
+            // Reemplazamos ANIO_DESCRIP por el campo no_anio_fscal (ej: AÑO DE LA ESPERANZA...)
+            $this->setVar(
+                $processor,
+                'ANIO_DESCRIP',
+                $datosGestrad->aAnio->no_anio_fscal ?? ''
+            );
+            // Formatear OBSV_ASUNTO: Primera letra en mayúscula, lo demás en minúscula excepto después de "/"
+            $asuntoRaw = $datosGestrad->de_obser ?? '';
+            $asuntoFormatted = '';
+            if (!empty($asuntoRaw)) {
+                $lower = mb_strtolower($asuntoRaw, 'UTF-8');
+                // Capitalizar primera letra
+                $temp = mb_strtoupper(mb_substr($lower, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($lower, 1, null, 'UTF-8');
+                // Capitalizar después de "/" (incluyendo espacios opcionales)
+                $asuntoFormatted = preg_replace_callback('/(\/\s*)([a-z]|[áéíóúñ])/u', function ($matches) {
+                    return $matches[1] . mb_strtoupper($matches[2], 'UTF-8');
+                }, $temp);
+            }
+
+            $this->setVar(
+                $processor,
+                'OBSV_ASUNTO',
+                $asuntoFormatted
+            );
+
+            $this->setVar(
+                $processor,
+                'NU_INFORM_COMPLETO',
+                $datosGestrad->nu_tram_cmplto ?? ''
+            );
+
+            // Obtenemos los objetos intermedios para mayor claridad y seguridad
+            $pCrgo = $datosGestrad->pDtoTrmte?->pCrgos?->first();
+            $rCrgoLgin = $pCrgo?->rCrgosLgins?->first();
+
+            $this->setVar(
+                $processor,
+                'USR_DESTINO',
+                $rCrgoLgin?->pLgin?->pUsrio?->no_crto ? mb_convert_case($rCrgoLgin->pLgin->pUsrio->no_crto, MB_CASE_TITLE, "UTF-8") : ''
+            );
+
+            $cargoRaw = $pCrgo?->de_crgo ?? '';
+
+            $cargoFormateado = '';
+            if (!empty($cargoRaw)) {
+                // 1. Convertimos todo a formato Título
+                $cargoTitulo = mb_convert_case($cargoRaw, MB_CASE_TITLE, "UTF-8");
+
+                // 2. Buscamos lo que esté entre paréntesis y lo pasamos a MAYÚSCULAS
+                $cargoFormateado = preg_replace_callback('/\((.*?)\)/', function ($matches) {
+                    return '(' . mb_strtoupper($matches[1], 'UTF-8') . ')';
+                }, $cargoTitulo);
+            }
+
+            $this->setVar($processor, 'USR_DESTINO_CARGO', $cargoFormateado);
+
+            // Acceso correcto a la colección aSmllaIntrnos
+            $smlla = $datosGestrad->aSmllaIntrnos?->first();
+            $this->setVar(
+                $processor,
+                'FECHA_INFORME_TECNICO_GESTRAD',
+                ($smlla && $smlla->ts_usua_modi) ? \Carbon\Carbon::parse($smlla->ts_usua_modi)->format('d/m/Y') : ''
+            );
+
+            $this->setVar(
+                $processor,
+                'USR_ORIGEN',
+                $datosGestrad->pLgin->pUsrio->no_crto ? mb_convert_case($datosGestrad->pLgin->pUsrio->no_crto, MB_CASE_TITLE, "UTF-8") : ''
+            );
+
+            $this->setVar(
+                $processor,
+                'FECHA_INGRESO_GESTRAD',
+                $datosGestrad->pDtoTrmte?->fe_ingr_trmte ? \Carbon\Carbon::parse($datosGestrad->pDtoTrmte?->fe_ingr_trmte)->format('d/m/Y') : ''
+            );
+        }
         // -------------------------------------------------------
         // Datos del Expediente
         // -------------------------------------------------------
@@ -31,6 +130,7 @@ class InformeAnuncioService
         $this->setVar($processor, 'TELEFONO_SISTEMADECLARADO', $expediente?->snapshot_solicitante_telefono ?? '');
         $this->setVar($processor, 'DIRECCION_DEL_PREDIO_MATERIA_A_EVALUAR', $expediente?->snapshot_solicitante_direccion ?? '');
         $this->setVar($processor, 'DIRECCION_FISCAL', $expediente?->snapshot_legal_direccion ?? '');
+        $this->setVar($processor, 'DISTRITO_LEGAL', $expediente?->snapshot_legal_distrito ? mb_convert_case($expediente->snapshot_legal_distrito, MB_CASE_TITLE, "UTF-8") : '');
         $this->setVar($processor, 'REPRESENTANTE_LEGAL_O_APODERADO', $expediente?->snapshot_legal_nombre ?? '');
         $this->setVar($processor, 'DNI_CARNET_DE_EXT', $expediente?->snapshot_legal_dni_ruc ?? '');
 
@@ -49,6 +149,8 @@ class InformeAnuncioService
         // -------------------------------------------------------
         $this->setVar($processor, 'N_INFORME_TECNICO', $nInformeTecnico);
         $this->setVar($processor, 'N_ANUNCIO', $anuncio->n_anuncio ?? '');
+        $this->setVar($processor, 'TIPO_ANUNCIO', $anuncio->tipoAnuncio?->descripcion ? mb_convert_case($anuncio->tipoAnuncio->descripcion, MB_CASE_TITLE, "UTF-8") : '');
+        $this->setVar($processor, 'LICENCIA_ANIO', $anuncio->licencia?->lic_filafecha ? $anuncio->licencia->lic_filafecha->format('Y') : '');
         $this->setVar($processor, 'FECHA_RECEPCION', $anuncio->fecha_recepcion_evaluar ? \Carbon\Carbon::parse($anuncio->fecha_recepcion_evaluar)->format('d/m/Y') : '');
 
         $this->setVar($processor, 'UBICACIÓN_DEL_ANUNCIO', $anuncio->ubicacion_del_anuncio ?? '');
@@ -68,7 +170,24 @@ class InformeAnuncioService
             $medidasParts[] = "{$anuncio->espesor_cm} cm espesor";
         }
         $this->setVar($processor, 'MEDIDAS', implode(' x ', $medidasParts));
-        $this->setVar($processor, 'N_DE_CARAS', $anuncio->n_de_caras ?? '');
+        $nCaras = (int) ($anuncio->n_de_caras ?? 1);
+        $nombresNumeros = [
+            1 => 'Una',
+            2 => 'Dos',
+            3 => 'Tres',
+            4 => 'Cuatro',
+            5 => 'Cinco',
+            6 => 'Seis',
+            7 => 'Siete',
+            8 => 'Ocho',
+            9 => 'Nueve',
+            10 => 'Diez'
+        ];
+        $nombre = $nombresNumeros[$nCaras] ?? (string) $nCaras;
+        $label = $nCaras === 1 ? 'cara' : 'caras';
+        $nFormatted = str_pad($nCaras, 2, '0', STR_PAD_LEFT);
+        $carasTexto = "{$nombre} ({$nFormatted}) {$label}";
+        $this->setVar($processor, 'N_DE_CARAS', $carasTexto);
         $this->setVar($processor, 'DESCRIPCION', $anuncio->descripcion ?? '');
         $this->setVar($processor, 'MATERIALES', $anuncio->materiales_descripcion ?? '');
         $this->setVar($processor, 'DICTAMEN', $anuncio->dictamen?->value ?? '');

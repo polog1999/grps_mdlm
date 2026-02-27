@@ -104,4 +104,9 @@ class PDtoTrmtes extends Model
     {
         return $this->belongsTo(AAnios::class, 'cdgo_anio', 'cdgo_anio');
     }
+
+    public function pCrgos()
+    {
+        return $this->hasMany(PCrgos::class, 'cdgo_area', 'cdgo_area');
+    }
 }

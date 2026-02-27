@@ -29,6 +29,7 @@ class ExpedientesAnuncios extends Model
         'snapshot_legal_dni_ruc',
         'snapshot_legal_telefono',
         'snapshot_legal_direccion',
+        'snapshot_legal_distrito',
         'folios',
         'zonificacion_id',
         'recibo_pago_id',

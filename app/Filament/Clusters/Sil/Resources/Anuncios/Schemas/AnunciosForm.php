@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\Placeholder;
 use App\Models\CertificadoLicenciaFuncionamiento;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Colores;
 use App\Models\TipoAnuncio;
 
@@ -250,6 +251,7 @@ class AnunciosForm
                                     if (blank($state)) {
                                         $set('snapshot_persona_legal_nombre_completo', null);
                                         $set('snapshot_persona_legal_telefono', null);
+                                        $set('snapshot_persona_legal_distrito', null);
                                         return;
                                     }
 
@@ -260,6 +262,7 @@ class AnunciosForm
                                         if ($persona) {
                                             $set('snapshot_persona_legal_nombre_completo', str($persona->nomcom)->upper()->trim()->toString());
                                             $set('snapshot_persona_legal_telefono', $persona->numtel ?? null);
+                                            $set('snapshot_persona_legal_distrito', str($persona->nomdis)->upper()->trim()->toString() ?? null);
 
                                             Notification::make()
                                                 ->title('Datos de persona legal encontrados')
@@ -282,6 +285,8 @@ class AnunciosForm
                                 ->label('Nombre Completo Persona Legal'),
                             TextInput::make('snapshot_persona_legal_telefono')
                                 ->label('Teléfono Persona Legal'),
+                            TextInput::make('snapshot_persona_legal_distrito')
+                                ->label('Distrito Persona Legal'),
                         ]),
                     Step::make('Detalles del Anuncio')
                         ->description('Complete la información técnica del anuncio')
@@ -395,6 +400,7 @@ class AnunciosForm
                                                 if ($persona) {
                                                     $set('snapshot_persona_legal_nombre_completo', str($persona->nomcom)->upper()->trim()->toString());
                                                     $set('snapshot_persona_legal_telefono', $persona->numtel ?? null);
+                                                    $set('snapshot_persona_legal_distrito', str($persona->nomdis)->upper()->trim()->toString() ?? null);
                                                 }
                                             } catch (\Exception $e) {
                                                 Log::error('Error al buscar persona legal en paso final: ' . $e->getMessage());
@@ -404,6 +410,8 @@ class AnunciosForm
                                         ->label('Nombre Completo Persona Legal'),
                                     TextInput::make('snapshot_persona_legal_telefono')
                                         ->label('Teléfono Persona Legal'),
+                                    TextInput::make('snapshot_persona_legal_distrito')
+                                        ->label('Distrito Persona Legal'),
                                 ])->columns(2),
 
                             Section::make('Información de Pago')
@@ -441,7 +449,8 @@ class AnunciosForm
                             Section::make('Información Técnica del Anuncio')
                                 ->schema([
                                     TextInput::make('n_anuncio')
-                                        ->required(),
+                                        ->required()
+                                        ->default(fn() => DB::select('SELECT anuncios.fn_obtener_siguiente_n_anuncio() as n')[0]->n ?? null),
                                     DatePicker::make('fecha_recepcion_evaluar'),
                                     Select::make('asunto')
                                         ->options(AsuntoAnuncio::class)
@@ -511,11 +520,6 @@ class AnunciosForm
                                         ->searchable()
                                         ->preload(),
                                     DatePicker::make('fecha_derivado'),
-                                    TextInput::make('created_by_user_id')
-                                        ->required()
-                                        ->numeric(),
-                                    TextInput::make('updated_by_user_id')
-                                        ->numeric(),
                                     Select::make('vigencia')
                                         ->options(VigenciaAnuncio::class)
                                         ->required()

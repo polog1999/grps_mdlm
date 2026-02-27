@@ -25,9 +25,15 @@ class AnunciosTable
             ->recordUrl(null)
             ->columns([
 
-                TextColumn::make('n_anuncio')
-                    ->label('N° Anuncio')
-                    ->searchable(),
+                TextColumn::make('documentos')
+                    ->label('N° Informe Técnico')
+                    ->getStateUsing(fn(Anuncios $record) => $record->documentos()->where('tipo_documento', 'INFORME TÉCNICO')->first()?->n_documento)
+                    ->searchable(query: function ($query, string $search) {
+                        $query->whereHas('documentos', function ($q) use ($search) {
+                            $q->where('tipo_documento', 'INFORME TÉCNICO')
+                                ->where('n_documento', 'like', "%{$search}%");
+                        });
+                    }),
                 TextColumn::make('expediente.n_expediente')
                     ->label('N° Expediente')
                     ->searchable(),
@@ -104,17 +110,12 @@ class AnunciosTable
                     ->tooltip('Generar Informe')
                     ->color(Color::Cyan)
                     ->icon('heroicon-o-document-text')
-                    ->form([
-                        TextInput::make('n_informe_tecnico')
-                            ->label('N° Informe Técnico')
-                            ->placeholder('Ej. 001-2026')
-                            ->required(),
-                    ])
-                    ->action(function (Anuncios $record, array $data) {
-                        $path = app(InformeAnuncioService::class)->generarInforme($record, $data['n_informe_tecnico'] ?? '');
+                    ->action(function (Anuncios $record) {
+                        $path = app(InformeAnuncioService::class)->generarInforme($record, $record->expediente?->n_expediente);
+                        $nInforme = $record->documentos()->where('tipo_documento', 'INFORME TÉCNICO')->first()?->n_documento ?? $record->id;
                         return response()->download(
                             $path,
-                            'Informe_' . ($record->n_anuncio ?? $record->id) . '.docx'
+                            'Informe_' . $nInforme . '.docx'
                         )->deleteFileAfterSend(true);
                     }),
                 Action::make('Generar Carta')

@@ -33,6 +33,7 @@ class CreateAnuncios extends CreateRecord
         'snapshot_persona_legal_dni',
         'snapshot_persona_legal_nombre_completo',
         'snapshot_persona_legal_telefono',
+        'snapshot_persona_legal_distrito',
         // Snapshots de licencia ya no necesarios en anuncios
         'snapshot_lic_tipo',
         'form_direccion_predio',
@@ -63,6 +64,7 @@ class CreateAnuncios extends CreateRecord
                 'snapshot_legal_dni_ruc' => $data['snapshot_persona_legal_dni'] ?? null,
                 'snapshot_legal_telefono' => $data['snapshot_persona_legal_telefono'] ?? null,
                 'snapshot_legal_direccion' => $data['form_domicilio_fiscal'] ?? null,
+                'snapshot_legal_distrito' => $data['snapshot_persona_legal_distrito'] ?? null,
 
 
 
@@ -94,7 +96,12 @@ class CreateAnuncios extends CreateRecord
         $this->documentosParaSync = $data['documentos'] ?? [];
 
         // -------------------------------------------------------
-        // 5. Limpiar campos auxiliares que no son columnas de anuncios
+        // 5. Asignar auditoria
+        // -------------------------------------------------------
+        $data['created_by_user_id'] = auth()->id();
+
+        // -------------------------------------------------------
+        // 6. Limpiar campos auxiliares que no son columnas de anuncios
         // -------------------------------------------------------
         foreach ($this->auxiliaryFields as $field) {
             unset($data[$field]);
@@ -108,10 +115,13 @@ class CreateAnuncios extends CreateRecord
     }
 
     /**
-     * Después de crear el Anuncio principal, sincronizar relaciones.
+     * Después de crear el Anuncio principal, sincronizar relaciones y actualizar secuencia.
      */
     protected function afterCreate(): void
     {
+        // Actualizar la secuencia del correlativo de anuncios para asegurar que el siguiente sea correcto
+        DB::statement("SELECT setval('anuncios.anuncio_correlativo_seq', (SELECT MAX(CAST(n_anuncio AS INTEGER)) FROM anuncios.anuncios))");
+
         // Sincronizar colores (BelongsToMany)
         if (!empty($this->coloresParaSync)) {
             $this->record->colores()->sync($this->coloresParaSync);

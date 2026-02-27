@@ -3,12 +3,13 @@
 namespace App\Services\Sil\Anuncios;
 
 use App\Models\DtoNtrnosGestrad;
+use App\Models\PDtoTrmtes;
 use Illuminate\Support\Facades\Log;
 
 
 class DatosTramiteService
 {
-    public function getDatosTramite(string $nAnuncio)
+    public function getDatosTramite(string $nAnuncio, string $nExpediente)
     {
         if (blank($nAnuncio)) {
             Log::warning('getDatosTramite: El número de anuncio proporcionado está vacío.');
@@ -25,11 +26,10 @@ class DatosTramiteService
                 'nu_tram',
                 'cdgo_dto_trmte',
                 'de_obser',
-                'fe_ingrso'
+                'fe_ingrso',
+                'nu_tram_cmplto',
             ])
-
                 ->with([
-
                     'aAnio' => function ($query) {
                         $query->select('cdgo_anio', 'de_anio', 'no_anio_fscal');
                     },
@@ -41,9 +41,7 @@ class DatosTramiteService
                                 }
                             ]);
                     },
-                    'pDtoTrmte' => function ($query) {
-                        $query->select('cdgo_dto_trmte', 'nu_expe_todo', 'fe_ingr_trmte');
-                    },
+                    /*
                     'rTrmtesNtrnos' => function ($query) {
                         $query->select('cdgo_trmtes_ntrnos', 'cdgo_dtos_ntrnos', 'cdgo_crgo_en', 'de_obser_ntrnos')
                             ->with([
@@ -66,7 +64,7 @@ class DatosTramiteService
                                         ]);
                                 }
                             ]);
-                    },
+                    },*/
                     'aSmllaIntrnos' => function ($query) {
                         $query->select('cdgo_dtos_ntrnos', 'ts_usua_modi');
                     }
@@ -80,6 +78,33 @@ class DatosTramiteService
                 Log::warning("getDatosTramite: No se encontró el trámite para nu_tram_todo: {$nAnuncio} con los filtros de área 29 y tipo 8");
                 return null;
             }
+
+            // Buscamos los datos del trámite base por el número de expediente
+            $dtoNtrno->setRelation('pDtoTrmte', PDtoTrmtes::select('cdgo_dto_trmte', 'nu_expe_todo', 'fe_ingr_trmte', 'cdgo_area')
+                ->where('nu_expe_todo', $nExpediente)
+                ->with([
+                    'pCrgos' => function ($query) {
+                        $query->select('cdgo_crgo', 'cdgo_area', 'de_crgo', 'nu_orde')
+                            ->where('nu_orde', 1)
+                            ->with([
+                                'rCrgosLgins' => function ($query) {
+                                    $query->select('cdgo_crgo_lgin', 'cdgo_lgin', 'cdgo_crgo', 'ts_usua_modi', 'in_esta', 'in_crgo_prmro')
+                                        ->where('in_crgo_prmro', 1)
+                                        ->with([
+                                            'pLgin' => function ($query) {
+                                                $query->select('cdgo_lgin', 'de_lgin', 'cdgo_usrios')
+                                                    ->with([
+                                                        'pUsrio' => function ($query) {
+                                                            $query->select('cdgo_usrios', 'no_crto', 'nu_docu');
+                                                        }
+                                                    ]);
+                                            }
+                                        ]);
+                                }
+                            ]);
+                    }
+                ])
+                ->first());
 
             return $dtoNtrno;
 

@@ -29,7 +29,8 @@ class ExpedienteAnuncioService
 
                     'DS_VALORES.VU_PERSONA2.numdoc',
                     'DS_VALORES.VU_PERSONA2.nomcom',
-                    'DS_VALORES.VU_PERSONA2.domfis'
+                    'DS_VALORES.VU_PERSONA2.domfis',
+                    'DS_VALORES.VU_PERSONA2.nomdis'
                 ])
                 ->where('DS_VALORES.DUR_EXPEDIENTE.EXP_NUM', $n_expediente)
                 ->first();
@@ -54,7 +55,8 @@ class ExpedienteAnuncioService
             $sql = "SELECT 
                         NUMDOC, 
                         NOMCOM,
-                        NUMTEL
+                        NUMTEL,
+                        NOMDIS
                     FROM DS_VALORES.VU_PERSONA2 
                     WHERE TRIM(NUMDOC) = :dni 
                     AND ROWNUM = 1";
