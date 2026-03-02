@@ -116,7 +116,62 @@ class DatosTramiteService
             return null;
         }
     }
+
+
+    //Recuperar el numero de pago y el monto del oracle por el num exp
+
+    public function getPagoPorExpediente(string $nExpediente)
+    {
+        try {
+            // 1. Obtener el cgonumero de PostgreSQL (Gestrad)
+            $pagoPostgre = PDtoTrmtes::select('cdgo_dto_trmte', 'nu_expe_todo', 'cgonumero')
+                ->where('nu_expe_todo', $nExpediente)
+                ->first();
+
+            if (!$pagoPostgre || empty($pagoPostgre->cgonumero)) {
+                Log::warning("getPagoPorExpediente: No se encontró cgonumero en Postgre para expediente: {$nExpediente}");
+                return null;
+            }
+
+            $cgoNumero = trim($pagoPostgre->cgonumero);
+
+            // 2. Consultar detalles del pago en Oracle usando el cgonumero
+            // Se usa DB::connection('oracle')->select() ya que no hay modelo Eloquent mapeado en Oracle para esta tabla
+            $pagoOracle = \DB::connection('oracle')->select("
+                SELECT PAGIDENTIF, PAGMONTOTA 
+                FROM SHIRECACABE 
+                WHERE CGONUMERO = :cgonumero
+            ", ['cgonumero' => $cgoNumero]);
+
+            if (empty($pagoOracle)) {
+                Log::warning("getPagoPorExpediente: No se encontraron datos en SHIRECACABE (Oracle) para CGONUMERO: {$cgoNumero}");
+                return (object) [
+                    'cgonumero' => $cgoNumero,
+                    'pagidentif' => null,
+                    'pagmontota' => null
+                ];
+            }
+
+            $detalle = $pagoOracle[0];
+
+            return (object) [
+                'cgonumero' => $cgoNumero,
+                'pagidentif' => $detalle->pagidentif ?? $detalle->PAGIDENTIF ?? null,
+                'pagmontota' => $detalle->pagmontota ?? $detalle->PAGMONTOTA ?? null
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener datos del pago (Postgre/Oracle): ' . $e->getMessage(), [
+                'nExpediente' => $nExpediente,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
+    }
+
     //get first 100 filas de DtoNtrnosGestrad without cdgo area or cdgo tip tramite
+
+
     public function getFirst100rows()
     {
         try {

@@ -25,6 +25,7 @@ use App\Models\TipoAnuncio;
 use App\Models\CaracteristicasFisicas;
 use App\Models\DocumentosAnuncio;
 use App\Models\Zonificacion;
+use App\Services\Sil\Anuncios\DatosTramiteService;
 
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\TipoDocumento;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\AsuntoAnuncio;
@@ -78,6 +79,18 @@ class AnunciosForm
 
                                         $set('n_expediente', $expediente->exp_num);
                                         $set('folios', $expediente->exp_numfol + 1);
+
+                                        // Autocompletar Información de Pago desde PostgreSQL/Oracle
+                                        try {
+                                            $pagoService = app(DatosTramiteService::class);
+                                            $pago = $pagoService->getPagoPorExpediente($state);
+                                            if ($pago) {
+                                                $set('n_pago', $pago->pagidentif);
+                                                $set('monto', $pago->pagmontota);
+                                            }
+                                        } catch (\Exception $e) {
+                                            Log::error('Error al autocompletar pago en AnunciosForm: ' . $e->getMessage());
+                                        }
                                     } else {
                                         Notification::make()
                                             ->title('Expediente no encontrado')
