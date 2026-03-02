@@ -14,9 +14,11 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Support\Colors\Color;
+use Illuminate\Database\Eloquent\Builder;
 
 class AnunciosTable
 {
@@ -105,7 +107,19 @@ class AnunciosTable
                     ->sortable(),
             ])
             ->filters([
-                TrashedFilter::make(),
+                SelectFilter::make('mes')
+                    ->label('Filtrar por Mes')
+                    ->options([
+                        '01' => 'Enero',
+                        '02' => 'Febrero',
+                        '03' => 'Marzo',
+                        // ... completa los meses
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        if (!empty($data['value'])) {
+                            $query->whereMonth('anuncios.anuncios.created_at', $data['value']);
+                        }
+                    }),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
