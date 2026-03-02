@@ -1465,6 +1465,14 @@ class CertificadoLicenciaFuncionamientosTable
                                 $action->halt();
                             }
                         }),
+
+                    Action::make('consulta_licencia')
+                        ->label('Consulta Licencia')
+                        ->icon('heroicon-o-qr-code')
+                        ->tooltip('Consulta Licencia (QR)')
+                        ->color(Color::Blue)
+                        ->url(fn(CertificadoLicenciaFuncionamiento $record) => app(\App\Services\Sil\Licencias\QrCodeService::class)->obtenerUrlConsulta($record->lic_id))
+                        ->openUrlInNewTab(),
                 ])->label('Docum.')
                     ->icon('heroicon-o-document-duplicate')
                     ->color(Color::Teal)
