@@ -21,8 +21,10 @@ class UserForm
                     ->email()
                     ->required(),
                 Select::make('user_id')
+                ->label('Sede')
                 ->relationship('sede', 'nombre'),
                 Select::make('trabajador_id')
+                ->label('Trabajador')
                 ->options(function () {
                                 return \App\Models\Trabajador::query()
                                     // ->whereNot('regimen_id',['5','6','7','14'])

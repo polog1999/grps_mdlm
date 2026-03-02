@@ -43,7 +43,7 @@ class TrabajadorForm
                         TextInput::make('numero_documento')
                             ->label('Nro. Documento')
                             ->required()
-                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1?8:20)
+                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
                             ->live()
                             // Acción para buscar en BD o PIDE
                             ->suffixAction(
@@ -137,8 +137,8 @@ class TrabajadorForm
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
 
                         DatePicker::make('fecha_nacimiento')
-                        ->required(),
-                        
+                            ->required(),
+
 
                         Select::make('clasificacion_id')
                             ->relationship('clasificacion', 'nombre')
@@ -146,7 +146,7 @@ class TrabajadorForm
                             ->required(),
                         Select::make('regimen_id')
                             ->relationship('regimen', 'cregimen')
-                            ->options(Regimen::where('estado',true)->where('parent_id','>',0)->orderBy('parent_id','asc')->pluck('cregimen', 'id'))
+                            ->options(Regimen::where('estado', true)->where('parent_id', '>', 0)->orderBy('parent_id', 'asc')->pluck('cregimen', 'id'))
                             ->label('Régimen')
                             ->required(),
                         DatePicker::make('fecha_ingreso')
@@ -156,7 +156,7 @@ class TrabajadorForm
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
                                 $get('foto_url')
-                                    ? '<img src="' . asset('storage/'.$get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
+                                    ? '<img src="' . asset('storage/' . $get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
                                     : '<p class="text-gray-400 text-xs">Sin foto</p>'
                             )),
 
@@ -170,16 +170,27 @@ class TrabajadorForm
                             ->label('Lista de Cargos')
                             ->schema([
                                 Select::make('cargo_id')
-                                ->label('Cargo')
-                                    ->options(\App\Models\Cargo::pluck('nombre', 'id'))
+                                    ->label('Cargo')
+                                    ->options(fn() => \App\Models\Cargo::pluck('nombre', 'id'))
+                                    ->createOptionForm([
+                                        TextInput::make('nombre')
+                                            ->required(),
+                                        TextInput::make('nombre_corto'),
+                                    ])
+                                    ->createOptionUsing(function (array $data) {
+                                        // Guardamos en la tabla de cargos y devolvemos la llave primaria
+                                        return \App\Models\Cargo::create($data)->id;
+                                    })
+                                    
                                     ->required()
-                                    ->searchable(),
+                                    ->searchable()
+                                    ->live(),
                                 TextInput::make('de_cargo')
-                                ->label('Descripción de Cargo')
-                                ->maxLength('300')
-                                ->required(),
+                                    ->label('Descripción de Cargo')
+                                    ->maxLength('300')
+                                    ->required(),
                                 Select::make('area_id')
-                                ->label('Área')
+                                    ->label('Área')
                                     ->options(\App\Models\Area::pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
