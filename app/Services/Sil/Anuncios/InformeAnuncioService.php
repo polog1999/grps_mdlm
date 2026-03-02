@@ -133,6 +133,8 @@ class InformeAnuncioService
         $this->setVar($processor, 'DISTRITO_LEGAL', $expediente?->snapshot_legal_distrito ? mb_convert_case($expediente->snapshot_legal_distrito, MB_CASE_TITLE, "UTF-8") : '');
         $this->setVar($processor, 'REPRESENTANTE_LEGAL_O_APODERADO', $expediente?->snapshot_legal_nombre ?? '');
         $this->setVar($processor, 'DNI_CARNET_DE_EXT', $expediente?->snapshot_legal_dni_ruc ?? '');
+        $this->setVar($processor, 'N_RESOLUCION', $expediente?->n_resolucion_subgerencial ?? '');
+        $this->setVar($processor, 'FECHA_RESOLUCION', $expediente?->fecha_resolucion_subgerencial ? \Carbon\Carbon::parse($expediente->fecha_resolucion_subgerencial)->format('d/m/Y') : '');
 
         $zonificacionStr = '';
         if ($expediente && $expediente->zonificacion) {

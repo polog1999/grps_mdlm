@@ -527,6 +527,19 @@ class AnunciosForm
                                     DatePicker::make('fecha_inicio_vigencia'),
                                     DatePicker::make('fecha_fin_vigencia'),
                                 ])->columns(2),
+
+                            Section::make('Resolución Subgerencial')
+                                ->schema([
+                                    TextInput::make('n_resolucion_subgerencial')
+                                        ->label('N° Resolución Subgerencial')
+                                        ->placeholder('0410-2026')
+                                        ->regex('/^[0-9-]+$/')
+                                        ->validationMessages([
+                                            'regex' => 'Solo se permiten números y guiones.',
+                                        ]),
+                                    DatePicker::make('fecha_resolucion_subgerencial')
+                                        ->label('Fecha Resolución Subgerencial'),
+                                ])->columns(2),
                         ]),
                 ])
                     ->startOnStep(fn($record) => $record ? 4 : 1)

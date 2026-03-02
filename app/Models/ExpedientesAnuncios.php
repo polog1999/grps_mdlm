@@ -33,6 +33,8 @@ class ExpedientesAnuncios extends Model
         'folios',
         'zonificacion_id',
         'recibo_pago_id',
+        'n_resolucion_subgerencial',
+        'fecha_resolucion_subgerencial',
     ];
 
 

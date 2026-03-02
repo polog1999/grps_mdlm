@@ -38,6 +38,8 @@ class CreateAnuncios extends CreateRecord
         'snapshot_lic_tipo',
         'form_direccion_predio',
         'zonificacion_id',
+        'n_resolucion_subgerencial',
+        'fecha_resolucion_subgerencial',
     ];
 
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -71,6 +73,8 @@ class CreateAnuncios extends CreateRecord
                 'folios' => $data['folios'] ?? 0,
                 'recibo_pago_id' => $recibo->id,
                 'zonificacion_id' => $data['zonificacion_id'] ?? null,
+                'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? null,
+                'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? null,
             ]
         );
 
@@ -80,6 +84,8 @@ class CreateAnuncios extends CreateRecord
             $expediente->update([
                 'recibo_pago_id' => $recibo->id,
                 'zonificacion_id' => $data['zonificacion_id'] ?? $expediente->zonificacion_id,
+                'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? $expediente->n_resolucion_subgerencial,
+                'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? $expediente->fecha_resolucion_subgerencial,
             ]);
         }
 

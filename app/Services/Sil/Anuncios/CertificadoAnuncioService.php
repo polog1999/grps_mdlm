@@ -27,13 +27,15 @@ class CertificadoAnuncioService
         $this->setVar($processor, 'SOLICITANTE', $expediente?->snapshot_solicitante_nombre_completo ?? '');
         $this->setVar($processor, 'DNI_RUC', $expediente?->snapshot_solicitante_dni ?? '');
         $this->setVar($processor, 'DIRECCION_PREDIO', $expediente?->snapshot_solicitante_direccion ?? '');
+        $this->setVar($processor, 'N_RESOLUCION', $expediente?->n_resolucion_subgerencial ?? '');
+        $this->setVar($processor, 'FECHA_RESOLUCION', $expediente?->fecha_resolucion_subgerencial ? \Carbon\Carbon::parse($expediente->fecha_resolucion_subgerencial)->format('d/m/Y') : '');
 
         // -------------------------------------------------------
         // Datos del Anuncio
         // -------------------------------------------------------
         $this->setVar($processor, 'N_ANUNCIO', $anuncio->n_anuncio ?? '');
         $this->setVar($processor, 'DESCRIPCION_LEYENDA', $anuncio->descripcion ?? '');
-        $this->setVar($processor, 'CARACTERISTICAS_FISICAS', $anuncio->caracteristicaFisica?->descripcion ?? '');
+        $this->setVar($processor, 'CARACTERISTICAS_FISICAS', $anuncio->caracteristicaFisica?->descripcion ? mb_convert_case($anuncio->caracteristicaFisica->descripcion, MB_CASE_TITLE, "UTF-8") : '');
         $this->setVar($processor, 'TIPO_ANUNCIO', $anuncio->tipoAnuncio?->descripcion ? mb_convert_case($anuncio->tipoAnuncio->descripcion, MB_CASE_TITLE, "UTF-8") : '');
         $this->setVar($processor, 'MATERIALES', $anuncio->materiales_descripcion ?? '');
         $this->setVar($processor, 'UBICACIÓN_ANUNCIO', $anuncio->ubicacion_del_anuncio ?? '');
@@ -82,6 +84,8 @@ class CertificadoAnuncioService
             $meses = (int) $inicio->diffInMonths($fin);
             $unid = $meses == 1 ? 'Mes' : 'Meses';
             $vigenciaStr = "Temporal ({$meses} {$unid}) " . $inicio->format('d/m/Y') . " - " . $fin->format('d/m/Y');
+        } else {
+            $vigenciaStr = mb_convert_case($vigenciaStr, MB_CASE_TITLE, "UTF-8");
         }
         $this->setVar($processor, 'VIGENCIA', $vigenciaStr);
 

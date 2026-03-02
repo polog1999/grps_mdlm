@@ -29,6 +29,8 @@ class EditAnuncios extends EditRecord
             $data['n_expediente'] = $expediente->n_expediente;
             $data['folios'] = $expediente->folios;
             $data['zonificacion_id'] = $expediente->zonificacion_id;
+            $data['n_resolucion_subgerencial'] = $expediente->n_resolucion_subgerencial;
+            $data['fecha_resolucion_subgerencial'] = $expediente->fecha_resolucion_subgerencial;
 
             // Mapeo de Solicitante
             $data['snapshot_solicitante_dni'] = $expediente->snapshot_solicitante_dni;
@@ -99,6 +101,8 @@ class EditAnuncios extends EditRecord
                 'snapshot_legal_dni_ruc' => $data['snapshot_persona_legal_dni'] ?? $expediente->snapshot_legal_dni_ruc,
                 'snapshot_legal_telefono' => $data['snapshot_persona_legal_telefono'] ?? $expediente->snapshot_legal_telefono,
                 'snapshot_legal_distrito' => $data['snapshot_persona_legal_distrito'] ?? $expediente->snapshot_legal_distrito,
+                'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? $expediente->n_resolucion_subgerencial,
+                'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? $expediente->fecha_resolucion_subgerencial,
             ]);
 
             // 2. Actualizar datos del Recibo de Pago
@@ -132,6 +136,8 @@ class EditAnuncios extends EditRecord
             'snapshot_lic_tipo',
             'form_direccion_predio',
             'zonificacion_id',
+            'n_resolucion_subgerencial',
+            'fecha_resolucion_subgerencial',
         ];
 
         foreach ($auxiliaryFields as $field) {
