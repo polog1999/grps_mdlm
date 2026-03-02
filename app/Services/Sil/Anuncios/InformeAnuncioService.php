@@ -147,6 +147,30 @@ class InformeAnuncioService
         $this->setVar($processor, 'MONTO', $recibo?->monto ?? '');
 
         // -------------------------------------------------------
+        // Insertar Código QR
+        // -------------------------------------------------------
+        if (!empty($nInformeTecnico)) {
+            $qrPath = $this->datosTramiteService->getQrImageByInforme($nInformeTecnico);
+            if ($qrPath && file_exists($qrPath)) {
+                try {
+                    $processor->setImageValue('IMAGEN_QR', [
+                        'path' => $qrPath,
+                        'width' => 120, // Ajustar el ancho según sea necesario
+                        'height' => 120, // Ajustar el alto según sea necesario
+                        'ratio' => false
+                    ]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Error al insertar imagen QR en Word: ' . $e->getMessage());
+                    $this->setVar($processor, 'IMAGEN_QR', '');
+                }
+            } else {
+                $this->setVar($processor, 'IMAGEN_QR', '');
+            }
+        } else {
+            $this->setVar($processor, 'IMAGEN_QR', '');
+        }
+
+        // -------------------------------------------------------
         // Datos del Anuncio
         // -------------------------------------------------------
         $this->setVar($processor, 'N_INFORME_TECNICO', $nInformeTecnico);

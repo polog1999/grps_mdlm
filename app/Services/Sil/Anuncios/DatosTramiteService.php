@@ -5,6 +5,7 @@ namespace App\Services\Sil\Anuncios;
 use App\Models\DtoNtrnosGestrad;
 use App\Models\PDtoTrmtes;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 
 class DatosTramiteService
@@ -164,6 +165,56 @@ class DatosTramiteService
             Log::error('Error al obtener datos del pago (Postgre/Oracle): ' . $e->getMessage(), [
                 'nExpediente' => $nExpediente,
                 'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Descarga la imagen QR del informe técnico desde el servidor SFTP de Gestrad
+     * de manera temporal y retorna la ruta local absoluta de la imagen.
+     * Retorna null si no se encuentra.
+     */
+    public function getQrImageByInforme(string $nInformeTecnico): ?string
+    {
+        if (empty($nInformeTecnico)) {
+            return null;
+        }
+
+        try {
+            $disk = Storage::disk('sftp_gestrad_qr');
+
+            // Construimos los posibles nombres del archivo (mayúsculas o minúsculas asumiendo .png)
+            $filename = "inter_{$nInformeTecnico}S.P.E.A..png";
+
+            Log::info("Buscando código QR en SFTP: {$filename}");
+
+            // Verificamos si el archivo existe en el SFTP
+            if ($disk->exists($filename)) {
+                // Descargamos el contenido
+                $fileContent = $disk->get($filename);
+
+                // Guardamos en un directorio temporal local
+                $tempDir = storage_path('app/temp/qr');
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0755, true);
+                }
+
+                $localPath = $tempDir . DIRECTORY_SEPARATOR . $filename;
+
+                // Escribimos el contenido en el disco local temporalmente
+                file_put_contents($localPath, $fileContent);
+
+                Log::info("El código QR se descargó temporalmente a: {$localPath}");
+                return $localPath;
+            } else {
+                Log::warning("No se encontró el archivo del QR en el SFTP: {$filename}");
+                return null;
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Error al descargar la imagen QR desde SFTP: " . $e->getMessage(), [
+                'nInforme' => $nInformeTecnico,
             ]);
             return null;
         }
