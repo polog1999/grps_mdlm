@@ -4,6 +4,7 @@ namespace App\Filament\Clusters\Sil\Resources\Anuncios\Tables;
 
 use App\Models\Anuncios;
 use App\Services\Sil\Anuncios\InformeAnuncioService;
+use App\Services\Sil\Anuncios\CertificadoAnuncioService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -22,8 +23,12 @@ class AnunciosTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->recordUrl(null)
             ->columns([
+                TextColumn::make('n_anuncio')
+                    ->label('N° Anuncio')
+                    ->searchable(),
 
                 TextColumn::make('documentos')
                     ->label('N° Informe Técnico')
@@ -118,14 +123,18 @@ class AnunciosTable
                             'Informe_' . $nInforme . '.docx'
                         )->deleteFileAfterSend(true);
                     }),
-                Action::make('Generar Carta')
-                    ->label('Generar Carta')
+                Action::make('Generar Certificado')
+                    ->label('Generar Certificado')
                     ->iconButton()
-                    ->tooltip('Generar Carta')
+                    ->tooltip('Generar Certificado')
                     ->color(Color::Yellow)
                     ->icon('heroicon-o-envelope')
                     ->action(function (Anuncios $record) {
-
+                        $path = app(CertificadoAnuncioService::class)->generarCertificado($record);
+                        return response()->download(
+                            $path,
+                            'Certificado_' . ($record->n_anuncio ?? $record->id) . '.docx'
+                        )->deleteFileAfterSend(true);
                     }),
                 Action::make('Dar de Baja')
                     ->label('Dar de Baja')
