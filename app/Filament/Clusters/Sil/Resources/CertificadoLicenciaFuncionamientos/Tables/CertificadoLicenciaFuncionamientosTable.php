@@ -187,6 +187,12 @@ class CertificadoLicenciaFuncionamientosTable
                     ->label('Estado')
                     ->sortable()
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'esl_descripcion')),
+                //poner observaciones
+                TextColumn::make('lic_licobs')
+                    ->label('Observación')
+                    ->sortable()
+                    ->searchable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'OBSERVACIONES')),
             ])
 
             ->filters([
