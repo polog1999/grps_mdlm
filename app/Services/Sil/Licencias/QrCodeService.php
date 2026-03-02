@@ -58,8 +58,8 @@ class QrCodeService
             $response = Http::timeout($timeout)
                 ->retry($retryTimes, $retryDelay)
                 ->get("{$baseUrl}/api/licenses/{$licenciaId}/pdf", [
-                        'signature' => $signature
-                    ]);
+                    'signature' => $signature
+                ]);
             if (!$response->successful()) {
                 Log::error('API Error', ['status' => $response->status()]);
                 throw new \RuntimeException("API Error: " . $response->status());
@@ -183,6 +183,21 @@ class QrCodeService
     // =========================================================================
     //  MÉTODOS PÚBLICOS
     // =========================================================================
+
+    /**
+     * Obtiene la URL a la que redirige el QR para consultas directas sin necesidad de escanear.
+     *
+     * @param int $licenciaId ID de la licencia
+     * @return string URL firmada para la consulta
+     */
+    public function obtenerUrlConsulta(int $licenciaId): string
+    {
+        $baseUrl = config('services.qr_api.base_url');
+        $secret = config('services.qr_api.secret');
+        $signature = hash_hmac('sha256', (string) $licenciaId, $secret);
+
+        return "{$baseUrl}/api/licenses/{$licenciaId}/pdf?signature={$signature}";
+    }
 
     /**
      * Genera el código QR y retorna como Data URI (base64)
