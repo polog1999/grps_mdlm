@@ -12,7 +12,7 @@ use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
 use App\Http\Controllers\TipoLicenciaController;
 use App\Http\Controllers\GiroLicenciaController;
-
+Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
  * Archivo de rutas web para la aplicación Laravel.
  *
