@@ -12,7 +12,6 @@ use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
 use App\Http\Controllers\TipoLicenciaController;
 use App\Http\Controllers\GiroLicenciaController;
-use App\Http\Controllers\AnuncioPdfController;
 
 /**
  * Archivo de rutas web para la aplicación Laravel.
@@ -58,20 +57,11 @@ Route::get('/certificado-licencia/{licenciaId}', [App\Http\Controllers\Certifica
  * Requiere que el usuario esté autenticado y haya verificado su email.
  */
 Route::middleware(['auth', 'verified'])->group(function () {
-
-
-
-    Route::get('/anuncios/{anuncio}/certificado-pdf', [AnuncioPdfController::class, 'mostrar'])
-        ->name('anuncios.certificado-pdf');
-
-
     /**
      * Ruta para el dashboard del usuario autenticado.
      *
      * Renderiza la vista 'dashboard' usando Inertia.
      */
-
-
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
@@ -261,7 +251,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('giros.listarTodos');
     });
 });
-
 
 
 
