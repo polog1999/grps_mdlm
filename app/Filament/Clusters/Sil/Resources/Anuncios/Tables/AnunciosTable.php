@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Sil\Resources\Anuncios\Tables;
 use App\Models\Anuncios;
 use App\Services\Sil\Anuncios\InformeAnuncioService;
 use App\Services\Sil\Anuncios\CertificadoAnuncioService;
+use Dotswan\MapPicker\Fields\Map;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -18,6 +19,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Support\Colors\Color;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 
 class AnunciosTable
@@ -105,6 +107,13 @@ class AnunciosTable
                 TextColumn::make('fecha_fin_vigencia')
                     ->date('d/m/Y')
                     ->sortable(),
+                TextColumn::make('maps_url')
+                    ->label('Ubicación')
+                    ->getStateUsing(fn(Anuncios $record) => ($record->latitud && $record->longitud) ? 'Ver Mapa' : 'No Asignado')
+                    ->url(fn(Anuncios $record) => ($record->latitud && $record->longitud) ? $record->maps_url : null)
+                    ->color(fn(Anuncios $record) => ($record->latitud && $record->longitud) ? 'info' : 'gray')
+                    ->icon(fn(Anuncios $record) => ($record->latitud && $record->longitud) ? 'heroicon-o-map-pin' : null)
+                    ->openUrlInNewTab(),
             ])
             ->filters([
                 SelectFilter::make('mes')
@@ -158,6 +167,70 @@ class AnunciosTable
                     ->icon('heroicon-o-trash')
                     ->action(function (Anuncios $record) {
 
+                    }),
+                Action::make('Geolocalizar')
+                    ->label('Geolocalizar')
+                    ->iconButton()
+                    ->tooltip('Ubicación Geográfica')
+                    ->color('success')
+                    ->icon('heroicon-o-map-pin')
+                    ->fillForm(fn($record): array => [
+                        // Si hay data en DB, la usamos. Si no, forzamos TUS coordenadas.
+                        'latitud' => $record->latitud ?? -12.081884296809166,
+                        'longitud' => $record->longitud ?? -76.9134418482905,
+                        'location' => [
+                            'lat' => $record->latitud ?? -12.081884296809166,
+                            'lng' => $record->longitud ?? -76.9134418482905,
+                        ],
+                    ])
+                    ->form([
+                        Map::make('location')
+                            ->label('Ubicación del Anuncio')
+                            ->columnSpanFull()
+                            ->defaultLocation(
+                                latitude: -12.081884296809166,
+                                longitude: -76.9134418482905
+                            )
+                            ->afterStateUpdated(function (array $state, callable $set): void {
+                                $set('latitud', $state['lat'] ?? null);
+                                $set('longitud', $state['lng'] ?? null);
+                            })
+                            ->extraStyles([
+                                'min-height: 400px',
+                                'border-radius: 8px'
+                            ])
+                            ->live(onBlur: true)
+                            ->showMarker()
+                            ->markerColor("#2563eb")
+                            ->showFullscreenControl()
+                            ->showZoomControl()
+                            ->draggable()
+                            ->clickable(true),
+
+                        // Cambiamos disabled() por readOnly() para que la data viaje en el submit
+                        TextInput::make('latitud')->numeric()->readOnly()->hidden(),
+                        TextInput::make('longitud')->numeric()->readOnly()->hidden(),
+                    ])
+                    // AQUÍ ESTÁ LA MAGIA: Le decimos a Filament cómo guardar
+                    ->action(function (array $data, $record): void {
+                        try {
+                            // Actualizamos el registro en la base de datos
+                            $record->update([
+                                'latitud' => $data['location']['lat'] ?? $data['latitud'],
+                                'longitud' => $data['location']['lng'] ?? $data['longitud'],
+                            ]);
+
+                            Notification::make()
+                                ->title('Ubicación actualizada correctamente')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Error al actualizar la ubicación')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
                     })
             ], position: RecordActionsPosition::BeforeCells)
             ->toolbarActions([

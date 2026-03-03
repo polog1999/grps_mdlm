@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Schemas;
 
+use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -553,6 +554,7 @@ class AnunciosForm
                                     DatePicker::make('fecha_resolucion_subgerencial')
                                         ->label('Fecha Resolución Subgerencial'),
                                 ])->columns(2),
+
                         ]),
                 ])
                     ->startOnStep(fn($record) => $record ? 4 : 1)

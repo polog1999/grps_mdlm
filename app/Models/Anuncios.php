@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,6 +53,8 @@ class Anuncios extends Model
         'created_by_user_id',
         'updated_by_user_id',
         'giro_especifico_snapshot',
+        'latitud',
+        'longitud',
     ];
 
     protected $casts = [
@@ -67,6 +70,8 @@ class Anuncios extends Model
         'vigencia' => VigenciaAnuncio::class,
         'dictamen' => Dictamen::class,
         'estado_anuncio' => EstadoAnuncio::class,
+        'latitud' => 'decimal:8',
+        'longitud' => 'decimal:8',
     ];
 
 
@@ -109,6 +114,14 @@ class Anuncios extends Model
     public function derivadoLegal(): BelongsTo
     {
         return $this->belongsTo(User::class, 'derivado_a_legal_user_id');
+    }
+
+    protected function mapsUrl(): Attribute
+    {
+        return Attribute::make()
+            ->get(function ($value, $attributes) {
+                return "https://www.google.com/maps/search/?api=1&query=" . $attributes['latitud'] . "," . $attributes['longitud'];
+            });
     }
 }
 
