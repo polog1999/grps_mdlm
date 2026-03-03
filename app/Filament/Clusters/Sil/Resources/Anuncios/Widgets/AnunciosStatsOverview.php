@@ -18,8 +18,8 @@ class AnunciosStatsOverview extends BaseWidget
         $ingresosMes = Anuncios::query()
             ->join('anuncios.expedientes', 'anuncios.anuncios.expediente_id', '=', 'anuncios.expedientes.id')
             ->join('anuncios.recibo_pago', 'anuncios.expedientes.recibo_pago_id', '=', 'anuncios.recibo_pago.id')
-            ->whereMonth('anuncios.expedientes.created_at', now()->month)
-            ->whereYear('anuncios.expedientes.created_at', now()->year)
+            ->whereMonth('anuncios.anuncios.created_at', now()->month)
+            ->whereYear('anuncios.anuncios.created_at', now()->year)
             ->sum('anuncios.recibo_pago.monto') ?? 0;
 
         return [

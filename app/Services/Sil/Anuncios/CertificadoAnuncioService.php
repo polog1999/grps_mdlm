@@ -4,7 +4,6 @@ namespace App\Services\Sil\Anuncios;
 
 use App\Models\Anuncios;
 use Log;
-use NcJoes\OfficeConverter\OfficeConverter;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class CertificadoAnuncioService
@@ -103,47 +102,7 @@ class CertificadoAnuncioService
         $wordOutputPath = $outputDir . DIRECTORY_SEPARATOR . $baseFilename . '.docx';
         $processor->saveAs($wordOutputPath);
 
-        // -------------------------------------------------------
-        // 5. CONVERSIÓN A PDF (Parche para Windows)
-        // -------------------------------------------------------
-        try {
-            // Solución al error "Undefined array key HOME"
-            $tempProfileDir = $outputDir . DIRECTORY_SEPARATOR . 'libreoffice_profile';
-            if (!is_dir($tempProfileDir))
-                mkdir($tempProfileDir, 0755, true);
-
-            $_SERVER['HOME'] = $tempProfileDir;
-            putenv("HOME={$tempProfileDir}");
-
-            // Ruta al ejecutable de LibreOffice
-            $binPath = 'C:\Program Files\LibreOffice\program\soffice.exe';
-
-            if (!file_exists($binPath)) {
-                throw new \Exception("No se encontró el ejecutable de LibreOffice en: " . $binPath);
-            }
-
-            $converter = new OfficeConverter($wordOutputPath, $outputDir, $binPath);
-
-            $pdfFilename = $baseFilename . '.pdf';
-            $converter->convertTo($pdfFilename);
-
-            $pdfOutputPath = $outputDir . DIRECTORY_SEPARATOR . $pdfFilename;
-
-            // Limpiar el archivo Word temporal
-            if (file_exists($wordOutputPath)) {
-                unlink($wordOutputPath);
-            }
-
-            if (!file_exists($pdfOutputPath)) {
-                throw new \Exception("El proceso de conversión terminó sin generar el archivo PDF.");
-            }
-
-            return $pdfOutputPath;
-
-        } catch (\Exception $e) {
-            Log::error("Error en generación de PDF: " . $e->getMessage());
-            throw $e;
-        }
+        return $wordOutputPath;
     }
 
     /**
