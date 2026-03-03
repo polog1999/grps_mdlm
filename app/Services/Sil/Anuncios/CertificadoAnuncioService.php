@@ -3,9 +3,9 @@
 namespace App\Services\Sil\Anuncios;
 
 use App\Models\Anuncios;
-use Log;
 use PhpOffice\PhpWord\TemplateProcessor;
-
+use Illuminate\Support\Facades\Log;
+use NcJoes\OfficeConverter\OfficeConverter;
 class CertificadoAnuncioService
 {
     /**
@@ -14,6 +14,9 @@ class CertificadoAnuncioService
      */
     public function generarCertificado(Anuncios $anuncio): string
     {
+
+        Log::info("Iniciando generación de certificado para anuncio ID: {$anuncio->id}");
+
         // Cargar relaciones necesarias
         $anuncio->loadMissing(['expediente', 'tipoAnuncio', 'licencia', 'colores', 'caracteristicaFisica']);
 
@@ -29,7 +32,17 @@ class CertificadoAnuncioService
         $this->setVar($processor, 'DNI_RUC', $expediente?->snapshot_solicitante_dni ?? '');
         $this->setVar($processor, 'DIRECCION_PREDIO', $expediente?->snapshot_solicitante_direccion ?? '');
         $this->setVar($processor, 'N_RESOLUCION', $expediente?->n_resolucion_subgerencial ?? '');
-        $this->setVar($processor, 'FECHA_RESOLUCION', $expediente?->fecha_resolucion_subgerencial ? \Carbon\Carbon::parse($expediente->fecha_resolucion_subgerencial)->format('d/m/Y') : '');
+        if ($expediente?->fecha_resolucion_subgerencial) {
+            \Carbon\Carbon::setLocale('es');
+            $fechaObj = \Carbon\Carbon::parse($expediente->fecha_resolucion_subgerencial);
+            $fechaResolucionFormato = str_pad($fechaObj->format('d'), 2, '0', STR_PAD_LEFT) . ' de ' . ucfirst($fechaObj->translatedFormat('F')) . ' de ' . $fechaObj->format('Y');
+            $this->setVar($processor, 'FECHA_RESOLUCION', $fechaResolucionFormato);
+        } else {
+            $this->setVar($processor, 'FECHA_RESOLUCION', '');
+        }
+
+        $this->setVar($processor, 'LICENCIA_DE_F', $anuncio->licencia?->lic_numlic ?? '');
+        $this->setVar($processor, 'LICENCIA_ANIO', $anuncio->licencia?->lic_filafecha ? \Carbon\Carbon::parse($anuncio->licencia->lic_filafecha)->format('Y') : '');
 
         // -------------------------------------------------------
         // Datos del Anuncio
@@ -100,9 +113,60 @@ class CertificadoAnuncioService
 
         $baseFilename = 'certificado_anuncio_' . ($anuncio->id) . '_' . now()->format('YmdHis');
         $wordOutputPath = $outputDir . DIRECTORY_SEPARATOR . $baseFilename . '.docx';
+
+        Log::info("Guardando archivo DOCX temporal en: {$wordOutputPath}");
         $processor->saveAs($wordOutputPath);
 
-        return $wordOutputPath;
+        try {
+            Log::info("Preparando entorno de LibreOffice...");
+
+            $tempProfileDir = storage_path('app/temp/libreoffice_profile');
+            if (!is_dir($tempProfileDir)) {
+                mkdir($tempProfileDir, 0755, true);
+            }
+            $_SERVER['HOME'] = $tempProfileDir;
+            putenv("HOME={$tempProfileDir}");
+
+            Log::info("Iniciando conversión a PDF...");
+
+            $binPath = config('services.libreoffice.bin');
+            $converter = new OfficeConverter($wordOutputPath, $outputDir, $binPath);
+
+            $pdfFilename = $baseFilename . '.pdf';
+            $converter->convertTo($pdfFilename);
+
+            $pdfOutputPath = $outputDir . DIRECTORY_SEPARATOR . $pdfFilename;
+
+            Log::info("Conversión finalizada. Verificando existencia de archivo PDF...");
+
+            // Validar que el PDF realmente exista
+            if (!file_exists($pdfOutputPath)) {
+                throw new \Exception("El comando de conversión se ejecutó pero no generó el archivo en: {$pdfOutputPath}");
+            }
+
+            // Limpieza: borrar el .docx para ahorrar espacio
+            if (file_exists($wordOutputPath)) {
+                Log::info("Eliminando archivo DOCX temporal.");
+                unlink($wordOutputPath);
+            }
+
+            Log::info("Proceso completado con éxito. Devolviendo ruta del PDF.");
+            return $pdfOutputPath;
+
+        } catch (\Exception $e) {
+            Log::error("Error crítico durante la conversión a PDF", [
+                'anuncio_id' => $anuncio->id,
+                'mensaje' => $e->getMessage(),
+                'linea' => $e->getLine(),
+                'archivo' => $e->getFile()
+            ]);
+
+            if (file_exists($wordOutputPath)) {
+                unlink($wordOutputPath);
+            }
+
+            throw new \Exception("No se pudo generar el documento PDF. Revise los logs del sistema.");
+        }
     }
 
     /**

@@ -51,4 +51,7 @@ return [
         'secret' => env('MUNI_API_KEY'),
     ],
 
+    'libreoffice' => [
+        'bin' => env('LIBREOFFICE_BIN', 'libreoffice'),
+    ],
 ];

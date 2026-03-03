@@ -152,13 +152,9 @@ class AnunciosTable
                     ->tooltip('Generar Certificado')
                     ->color(Color::Yellow)
                     ->icon('heroicon-o-envelope')
-                    ->action(function (Anuncios $record) {
-                        $path = app(CertificadoAnuncioService::class)->generarCertificado($record);
-                        return response()->download(
-                            $path,
-                            'Certificado_' . ($record->n_anuncio ?? $record->id) . '.docx'
-                        )->deleteFileAfterSend(true);
-                    }),
+                    ->url(fn(Anuncios $record) => route('anuncios.certificado-pdf', ['anuncio' => $record->id]))
+                    ->openUrlInNewTab(),
+                /*
                 Action::make('Dar de Baja')
                     ->label('Dar de Baja')
                     ->iconButton()
@@ -168,6 +164,7 @@ class AnunciosTable
                     ->action(function (Anuncios $record) {
 
                     }),
+                */
                 Action::make('Geolocalizar')
                     ->label('Geolocalizar')
                     ->iconButton()
