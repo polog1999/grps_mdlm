@@ -22,8 +22,9 @@ class VisitasTable
     {
         return $table
             ->columns([
+                TextColumn::make('fecha')->label('Fecha')->date('d/m/Y')->searchable(),
                 TextColumn::make('numero_documento')->label('N° documento')->searchable(),
-                TextColumn::make('Apellidos y nombres')->label('Nombres y Apellidos')
+                TextColumn::make('Apellidos y nombres')->label('Visitante')
                     ->searchable(
                         //     query: function (Builder $query, string $search): Builder {
                         //     return $query->whereHas('persona', function ($q) use ($search) {
@@ -88,7 +89,8 @@ class VisitasTable
                             Notification::make()->title('Salida registrada')->success()->send();
                         }
                     }),
-                    ViewAction::make(), // Abre un modal de solo lectura
+                    // ViewAction::make()
+                    // , // Abre un modal de solo lectura
             ]);
     }
 }
