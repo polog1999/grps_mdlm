@@ -20,13 +20,13 @@ use App\Http\Controllers\GiroLicenciaController;
     
 //     if (File::exists($path)) {
 //         File::deleteDirectory($path);
-//         return "Ã‰xito: La carpeta en " . $path . " fue eliminada.";
+//         return "Éxito: La carpeta en " . $path . " fue eliminada.";
 //     }
 
-//     // Si dice que no existe, listamos quÃ© hay en /public para ver el nombre real
+//     // Si dice que no existe, listamos qué hay en /public para ver el nombre real
 //     $archivosEnPublic = scandir(public_path());
 //     return response()->json([
-//         "mensaje" => "No se encontrÃ³ la carpeta uploads__1",
+//         "mensaje" => "No se encontró la carpeta uploads__1",
 //         "ruta_buscada" => $path,
 //         "lo_que_hay_en_public" => $archivosEnPublic
 //     ]);
@@ -34,21 +34,21 @@ use App\Http\Controllers\GiroLicenciaController;
 
 Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
- * Archivo de rutas web para la aplicaciÃ³n Laravel.
+ * Archivo de rutas web para la aplicación Laravel.
  *
- * Este archivo define las rutas accesibles vÃ­a web (HTTP). Incluye rutas pÃºblicas
- * y protegidas por autenticaciÃ³n. Utiliza Inertia.js para renderizar vistas
- * del frontend y Fortify para caracterÃ­sticas de autenticaciÃ³n.
+ * Este archivo define las rutas accesibles vía web (HTTP). Incluye rutas públicas
+ * y protegidas por autenticación. Utiliza Inertia.js para renderizar vistas
+ * del frontend y Fortify para características de autenticación.
  *
  * Rutas principales:
- * - PÃ¡gina de inicio (home): Muestra la vista de bienvenida con opciÃ³n de registro.
- * - Dashboard: PÃ¡gina protegida para usuarios autenticados.
+ * - Página de inicio (home): Muestra la vista de bienvenida con opción de registro.
+ * - Dashboard: Página protegida para usuarios autenticados.
  */
 
 /**
- * Ruta pÃºblica para la pÃ¡gina de inicio.
+ * Ruta pública para la página de inicio.
  *
- * Renderiza la vista 'welcome' usando Inertia, pasando si el registro estÃ¡ habilitado.
+ * Renderiza la vista 'welcome' usando Inertia, pasando si el registro está habilitado.
  */
 Route::get('/', function () {
     return redirect('/admin');
@@ -56,7 +56,7 @@ Route::get('/', function () {
 
 
 /**
- * Ruta pÃºblica para mostrar el QR de una licencia.
+ * Ruta pública para mostrar el QR de una licencia.
  *
  * @param int $idLicencia ID de la licencia.
  */
@@ -64,7 +64,7 @@ Route::get('/qr-generado/{idLicencia}', [App\Http\Controllers\QrLicenciaControll
     ->name('qr.mostrar');
 
 /**
- * Ruta pÃºblica para mostrar el certificado de licencia en formato PDF.
+ * Ruta pública para mostrar el certificado de licencia en formato PDF.
  *
  * @param int $licenciaId ID de la licencia.
  */
@@ -72,9 +72,9 @@ Route::get('/certificado-licencia/{licenciaId}', [App\Http\Controllers\Certifica
     ->name('certificado-licencia.mostrar');
 
 /**
- * Grupo de rutas protegidas por autenticaciÃ³n y verificaciÃ³n.
+ * Grupo de rutas protegidas por autenticación y verificación.
  *
- * Requiere que el usuario estÃ© autenticado y haya verificado su email.
+ * Requiere que el usuario esté autenticado y haya verificado su email.
  */
 Route::middleware(['auth', 'verified'])->group(function () {
     /**
@@ -100,7 +100,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Usamos el disco personalizado configurado anteriormente
         $disk = Storage::disk('certificados_externos');
 
-        // Definimos el nombre del archivo segÃºn el tipo
+        // Definimos el nombre del archivo según el tipo
         if ($tipo === 'original') {
             $filename = "originales/certificado_inspeccion_id_{$id}.pdf";
             $downloadName = "Certificado_Original_{$id}.pdf";
@@ -140,7 +140,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Usamos el disco de licencias externas
         $disk = Storage::disk('licencias_externas');
 
-        // Obtenemos el nÃºmero de licencia para construir el nombre del archivo
+        // Obtenemos el número de licencia para construir el nombre del archivo
         $licencia = \App\Models\CertificadoLicenciaFuncionamiento::find($id);
         if (!$licencia) {
             abort(404, "Licencia no encontrada");
@@ -173,7 +173,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Usamos el disco de licencias externas
         $disk = Storage::disk('licencias_externas');
 
-        // Obtenemos el nÃºmero de licencia para construir el nombre del archivo
+        // Obtenemos el número de licencia para construir el nombre del archivo
         $licencia = \App\Models\CertificadoLicenciaFuncionamiento::find($id);
         if (!$licencia) {
             abort(404, "Licencia no encontrada");
@@ -195,7 +195,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     /**
-     * Ruta para obtener la lista de tipos de edificaciÃ³n.
+     * Ruta para obtener la lista de tipos de edificación.
      *
      * Endpoint protegido que delega al controlador TipoEdificacionController.
      */
@@ -205,11 +205,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     /**
      * Grupo de rutas de prueba para consultas a la base de datos.
      *
-     * Prefijo 'test' y nombre base 'test.'. Todas requieren autenticaciÃ³n.
+     * Prefijo 'test' y nombre base 'test.'. Todas requieren autenticación.
      */
     Route::prefix('test')->name('test.')->group(function () {
         /**
-         * Buscar ubicaciones para certificados de inspecciÃ³n.
+         * Buscar ubicaciones para certificados de inspección.
          *
          * Endpoint para autocompletado de ubicaciones.
          */
@@ -217,7 +217,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('certificadoInspeccion.buscarUbicacion');
 
         /**
-         * Exportar PDF de un certificado de inspecciÃ³n.
+         * Exportar PDF de un certificado de inspección.
          *
          * @param int $certificadoId ID del certificado.
          */
