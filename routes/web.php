@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -12,6 +12,26 @@ use App\Http\Controllers\CertificadoInspeccionController;
 use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
 use App\Http\Controllers\TipoLicenciaController;
 use App\Http\Controllers\GiroLicenciaController;
+
+
+Route::get('/borrar', function () {
+    // Usamos el helper de Laravel para evitar errores de ruta manual
+    $path = public_path('uploads__1'); 
+    
+    if (File::exists($path)) {
+        File::deleteDirectory($path);
+        return "Éxito: La carpeta en " . $path . " fue eliminada.";
+    }
+
+    // Si dice que no existe, listamos qué hay en /public para ver el nombre real
+    $archivosEnPublic = scandir(public_path());
+    return response()->json([
+        "mensaje" => "No se encontró la carpeta uploads__1",
+        "ruta_buscada" => $path,
+        "lo_que_hay_en_public" => $archivosEnPublic
+    ]);
+});
+
 Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
  * Archivo de rutas web para la aplicación Laravel.
