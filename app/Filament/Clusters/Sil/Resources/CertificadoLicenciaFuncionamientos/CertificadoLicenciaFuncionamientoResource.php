@@ -8,6 +8,7 @@ use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CesionarioCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\ListCertificadoLicenciaFuncionamientos;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\ViewLicencia;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\CertificadoLicenciaFuncionamientoForm;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Tables\CertificadoLicenciaFuncionamientosTable;
 use App\Filament\Clusters\Sil\SilCluster;
@@ -80,6 +81,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
             'duplicate' => DuplicateCertificadoLicenciaFuncionamiento::route('/{record}/duplicate'),
             'transfer' => TransferirCertificadoLicenciaFuncionamiento::route('/{record}/transfer'),
             'cesionario' => CesionarioCertificadoLicenciaFuncionamiento::route('/{record}/cesionario'),
+            'view' => ViewLicencia::route('/{record}/view'),
         ];
     }
 
