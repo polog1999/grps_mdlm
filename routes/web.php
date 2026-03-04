@@ -14,23 +14,23 @@ use App\Http\Controllers\TipoLicenciaController;
 use App\Http\Controllers\GiroLicenciaController;
 
 
-Route::get('/borrar', function () {
-    // Usamos el helper de Laravel para evitar errores de ruta manual
-    $path = public_path('uploads__1'); 
+// Route::get('/borrar', function () {
+//     // Usamos el helper de Laravel para evitar errores de ruta manual
+//     $path = public_path('uploads__1'); 
     
-    if (File::exists($path)) {
-        File::deleteDirectory($path);
-        return "Éxito: La carpeta en " . $path . " fue eliminada.";
-    }
+//     if (File::exists($path)) {
+//         File::deleteDirectory($path);
+//         return "Éxito: La carpeta en " . $path . " fue eliminada.";
+//     }
 
-    // Si dice que no existe, listamos qué hay en /public para ver el nombre real
-    $archivosEnPublic = scandir(public_path());
-    return response()->json([
-        "mensaje" => "No se encontró la carpeta uploads__1",
-        "ruta_buscada" => $path,
-        "lo_que_hay_en_public" => $archivosEnPublic
-    ]);
-});
+//     // Si dice que no existe, listamos qué hay en /public para ver el nombre real
+//     $archivosEnPublic = scandir(public_path());
+//     return response()->json([
+//         "mensaje" => "No se encontró la carpeta uploads__1",
+//         "ruta_buscada" => $path,
+//         "lo_que_hay_en_public" => $archivosEnPublic
+//     ]);
+// });
 
 Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
