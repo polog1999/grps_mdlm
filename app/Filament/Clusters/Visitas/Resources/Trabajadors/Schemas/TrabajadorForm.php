@@ -185,10 +185,10 @@ class TrabajadorForm
                                     ->required()
                                     ->searchable()
                                     ->live(),
-                                TextInput::make('de_cargo')
-                                    ->label('Descripción de Cargo')
-                                    ->maxLength('300')
-                                    ->required(),
+                                // TextInput::make('de_cargo')
+                                //     ->label('Descripción de Cargo')
+                                //     ->maxLength('300')
+                                //     ->required(),
                                 Select::make('area_id')
                                     ->label('Área')
                                     ->options(\App\Models\Area::pluck('nombre', 'id'))
