@@ -675,7 +675,10 @@ class CertificadoInspeccionForm
                     ->suffixIcon('heroicon-o-briefcase')
                     ->disabled(fn(callable $get) => (bool) $get('cin_giro_autofilled'))
                     ->dehydrated()
-
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El giro es obligatorio',
+                    ])
                     ->extraInputAttributes(fn(callable $get) => [
                         'data-autofilled' => $get('cin_giro_autofilled') ? '1' : '0',
                         'style' => self::getAutofilledStyle($get, 'cin_giro_autofilled'),
