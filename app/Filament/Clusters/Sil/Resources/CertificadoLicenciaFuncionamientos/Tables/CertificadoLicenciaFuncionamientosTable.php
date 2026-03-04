@@ -65,6 +65,7 @@ class CertificadoLicenciaFuncionamientosTable
 
     public static function configure(Table $table): Table
     {
+
         if (!isset(self::$service)) {
             self::$service = new CertificadoLincenciaFuncionamientoService();
         }
@@ -120,6 +121,9 @@ class CertificadoLicenciaFuncionamientosTable
 
             ->defaultSort('lic_filafecha', 'desc')
             ->defaultPaginationPageOption(10)
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession()
             ->recordUrl(null)
             ->columns([
                 //TextColumn::make('lic_id')->label('ID')->sortable()->searchable(),
