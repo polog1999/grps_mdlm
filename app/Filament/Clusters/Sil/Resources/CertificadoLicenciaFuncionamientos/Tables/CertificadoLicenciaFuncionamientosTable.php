@@ -438,6 +438,18 @@ class CertificadoLicenciaFuncionamientosTable
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
+                Action::make('ver_licencia')
+                    ->label('Ver')
+                    ->icon('heroicon-o-eye')
+                    ->iconButton()
+                    ->tooltip('Ver licencia de funcionamiento')
+                    ->color('info')
+                    ->visible(fn() => auth()->user()->can('view_details::certificado_licencia_funcionamiento'))
+                    ->url(function ($record): string {
+                        // Envuélvelo en un array: ['record' => $record]
+                        return CertificadoLicenciaFuncionamientoResource::getUrl('view', ['record' => $record]);
+                    }),
+
                 /*
                 Action::make('notificar_licencia')
                     ->label('Notificar')

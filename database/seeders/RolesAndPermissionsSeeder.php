@@ -56,6 +56,7 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para acciones de CertificadoLicenciaFuncionamiento
             'create::certificado_licencia_funcionamiento', // Registrar Nueva Licencia
             'edit::certificado_licencia_funcionamiento', // Modificar licencia
+            'view_details::certificado_licencia_funcionamiento', // Ver detalles de la licencia
             'view_qr::certificado_licencia_funcionamiento', // Ver QR
             'view_itse::certificado_licencia_funcionamiento', // Ver Certificados ITSE
             'generate_certificate::certificado_licencia_funcionamiento', // Generar certificado
