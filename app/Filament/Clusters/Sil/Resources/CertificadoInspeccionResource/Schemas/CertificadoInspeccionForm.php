@@ -546,6 +546,8 @@ class CertificadoInspeccionForm
             ->schema([
                 Grid::make(2)
                     ->schema([
+
+
                         TextInput::make('cin_resolucion')
                             ->label('Número de Resolución')
                             ->placeholder('1942-2025')
@@ -578,25 +580,6 @@ class CertificadoInspeccionForm
                                 'style' => self::getAutofilledStyle($get, 'cin_solicitante_autofilled'),
                             ])
                             ->helperText('Identificador de la municipalidad'),
-                    ]),
-            ])
-            ->collapsible()
-            ->columnSpan('full');
-    }
-
-    /**
-     * Genera la sección de información de licencia (expediente y número de licencia).
-     *
-     * @return Section Sección con campos relacionados a la licencia.
-     */
-    public static function seccionLicencia(): Section
-    {
-        return Section::make('Información de Licencia')
-            ->description('Datos relacionados con la licencia de funcionamiento')
-            ->icon('heroicon-o-document-check')
-            ->schema([
-                Grid::make(2)
-                    ->schema([
                         TextInput::make('cin_expediente')
                             ->label('Número de Expediente')
                             ->placeholder('E-13608-2025')
@@ -617,6 +600,26 @@ class CertificadoInspeccionForm
                                 ? '✓ Autocompletado'
                                 : 'Ingrese manualmente'
                             ),
+                    ]),
+            ])
+            ->collapsible()
+            ->columnSpan('full');
+    }
+
+    /**
+     * Genera la sección de información de licencia (expediente y número de licencia).
+     *
+     * @return Section Sección con campos relacionados a la licencia.
+     */
+    public static function seccionLicencia(): Section
+    {
+        return Section::make('Información de Licencia')
+            ->description('Datos relacionados con la licencia de funcionamiento')
+            ->icon('heroicon-o-document-check')
+            ->schema([
+                Grid::make(2)
+                    ->schema([
+
 
                         TextInput::make('cin_licencia')
                             ->label('Número de Licencia')
