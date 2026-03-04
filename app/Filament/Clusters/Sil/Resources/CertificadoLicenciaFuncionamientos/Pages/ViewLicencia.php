@@ -232,7 +232,11 @@ class ViewLicencia extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            // EditAction::make(),
+            \Filament\Actions\Action::make('back')
+                ->label('Volver al listado')
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray')
+                ->url($this->getResource()::getUrl('index')),
         ];
     }
 }
