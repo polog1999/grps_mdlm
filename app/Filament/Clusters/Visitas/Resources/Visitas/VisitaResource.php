@@ -23,11 +23,15 @@ class VisitaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $navigationLabel = 'Visitas'; // <-- Cambia el nombre en el menú
+    protected static ?string $pluralModelLabel = 'Visitas'; // Corrige el título principal y las migas de pan
+    protected static ?string $modelLabel = 'Visita'; // Nombre en singular para botones de "Crear
+
     protected static ?string $cluster = VisitasCluster::class;
 
     protected static ?string $recordTitleAttribute = 'Visita';
 
-  
+
 
     public static function form(Schema $schema): Schema
     {

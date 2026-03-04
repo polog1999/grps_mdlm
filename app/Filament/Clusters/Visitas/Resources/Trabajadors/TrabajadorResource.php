@@ -25,6 +25,8 @@ class TrabajadorResource extends Resource
     protected static ?string $cluster = VisitasCluster::class;
 
     protected static ?string $recordTitleAttribute = 'Trabajador';
+    protected static ?string $navigationLabel = 'Trabajadores'; // <-- Cambia el nombre en el menú
+    protected static ?string $pluralModelLabel = 'Trabajadores'; // Corrige el título principal y las migas de pan
 
     public static function form(Schema $schema): Schema
     {
@@ -43,10 +45,10 @@ class TrabajadorResource extends Resource
         ];
     }
     public static function getEloquentQuery(): Builder
-{
-    return parent::getEloquentQuery()
-        ->with(['historiales.cargo', 'historiales.area']); 
-}
+    {
+        return parent::getEloquentQuery()
+            ->with(['historiales.cargo', 'historiales.area']);
+    }
 
     public static function getPages(): array
     {

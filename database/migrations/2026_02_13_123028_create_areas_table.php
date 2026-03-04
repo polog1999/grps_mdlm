@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('visitas.areas'); // parent
             $table->foreignId('sede_id')->nullable()->constrained('visitas.sedes');
             $table->string('nombre_corto')->nullable();
-            $table->integer('orden');
+            $table->integer('orden')->nullable();
             $table->boolean('estado')->default(true);
             $table->foreignId('user_id_creo')->nullable()->constrained('users');
             $table->foreignId('user_id_modi')->nullable()->constrained('users');

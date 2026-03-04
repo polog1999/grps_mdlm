@@ -27,6 +27,6 @@ class Area extends Model
     // Relación: Una Área puede tener un área padre
     public function parentArea(): BelongsTo
     {
-        return $this->belongsTo(Area::class, 'parent', 'id');
+        return $this->belongsTo(Area::class, 'parent_id', 'id');
     }
 }

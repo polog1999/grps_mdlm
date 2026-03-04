@@ -12,51 +12,51 @@ use SoapFault;
 
 class PideService
 {
-    public static function consultarDni(string $dni)
-    {
-        try {
-            // Aquí pones la URL de tu API del PIDE
-            $response = Http::timeout(10)->get("https://api.pide.gob.pe/reniec", [
-                'dni' => $dni,
-                'token' => config('services.pide.token'), // Guardado en config/services.php
-            ]);
+    // public static function consultarDni(string $dni)
+    // {
+    //     try {
+    //         // Aquí pones la URL de tu API del PIDE
+    //         $response = Http::timeout(10)->get("https://api.pide.gob.pe/reniec", [
+    //             'dni' => $dni,
+    //             'token' => config('services.pide.token'), // Guardado en config/services.php
+    //         ]);
 
-            if ($response->failed()) return null;
+    //         if ($response->failed()) return null;
 
-            $data = $response->json();
+    //         $data = $response->json();
 
-            // Lógica para la foto
-            $fotoUrl = null;
-            if (isset($data['foto_base64'])) {
-                $fotoUrl = self::guardarFotoPersona($dni, $data['foto_base64']);
-            }
+    //         // Lógica para la foto
+    //         $fotoUrl = null;
+    //         if (isset($data['foto_base64'])) {
+    //             $fotoUrl = self::guardarFotoPersona($dni, $data['foto_base64']);
+    //         }
 
-            return [
-                'nombres'          => $data['nombres'] ?? '',
-                'apellido_paterno' => $data['apellidoPaterno'] ?? '',
-                'apellido_materno' => $data['apellidoMaterno'] ?? '',
-                'foto_url'         => $fotoUrl,
-            ];
-        } catch (\Exception $e) {
-            Log::error("Error PIDE: " . $e->getMessage());
-            return null;
-        }
-    }
+    //         return [
+    //             'nombres'          => $data['nombres'] ?? '',
+    //             'apellido_paterno' => $data['apellidoPaterno'] ?? '',
+    //             'apellido_materno' => $data['apellidoMaterno'] ?? '',
+    //             'foto_url'         => $fotoUrl,
+    //         ];
+    //     } catch (\Exception $e) {
+    //         Log::error("Error PIDE: " . $e->getMessage());
+    //         return null;
+    //     }
+    // }
 
-    private static function guardarFotoPersona($dni, $base64String)
-    {
-        // 1. Nombre de archivo único
-        $nombreArchivo = "fotos_personas/{$dni}_" . Str::random(5) . ".jpg";
+    // private static function guardarFotoPersona($dni, $base64String)
+    // {
+    //     // 1. Nombre de archivo único
+    //     $nombreArchivo = "fotos_personas/{$dni}_" . Str::random(5) . ".jpg";
 
-        // 2. Limpiar el string base64 si trae el header (data:image/jpeg;base64,...)
-        $imagenBinaria = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $base64String));
+    //     // 2. Limpiar el string base64 si trae el header (data:image/jpeg;base64,...)
+    //     $imagenBinaria = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $base64String));
 
-        // 3. Guardar en el disco 'public' (carpeta storage/app/public)
-        Storage::disk('public')->put($nombreArchivo, $imagenBinaria);
+    //     // 3. Guardar en el disco 'public' (carpeta storage/app/public)
+    //     Storage::disk('public')->put($nombreArchivo, $imagenBinaria);
 
-        // 4. Retornar la URL pública
-        return Storage::url($nombreArchivo);
-    }
+    //     // 4. Retornar la URL pública
+    //     return Storage::url($nombreArchivo);
+    // }
     public static function ws_reniec($dni)
     {
         // 1. LIBERAR SESIÃ“N (Crucial para evitar el 504 en el navegador)
@@ -156,7 +156,8 @@ class PideService
                     if (!empty($d->foto)) {
 
                         // $folderPath = public_path("uploads/foto_dni/");
-                        $folderPath = storage_path("app/public/uploads/foto_dni/");
+                        // $folderPath = storage_path("app/public/uploads/foto_dni/");
+                        $folderPath = base_path("../foto_dni/");
 
 
                         if (!file_exists($folderPath)) {
