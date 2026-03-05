@@ -87,6 +87,16 @@ class RolesAndPermissionsSeeder extends Seeder
             'create::persona', // Crear persona
             'edit::persona', // Editar persona
 
+
+            //PERMISOS PARA VISITAS DEL MODULO AREAS
+            
+            'view::visitas_area',              // Ver listado de visitas
+            'edit::visitas_area',         // Ver detalle o información específica de una visita
+            'create::visitas_area',            // Registrar/Crear una nueva visita
+
+            //VER, CREAR Y EDITAR DE AREAS
+
+
         ];
 
         foreach ($permissions as $permission) {

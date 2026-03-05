@@ -42,6 +42,12 @@ class AreaResource extends Resource
         ];
     }
 
+     public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_area');
+    }
+
+
     public static function getPages(): array
     {
         return [
