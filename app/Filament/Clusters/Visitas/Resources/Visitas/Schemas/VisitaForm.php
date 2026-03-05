@@ -90,7 +90,7 @@ class VisitaForm
                                         } else {
                                             $datosApiPeru = PideService::apiPeruDni($state);
                                             if ($datosApiPeru['success']) {
-                                                dd('probando')
+                                                dd('probando');
                                                 $set('pide_fallo', false); // Activamos edición manual
                                                 $set('nombres', $datosApiPeru['data']['nombres']);
                                                 $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
