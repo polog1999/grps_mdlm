@@ -103,6 +103,33 @@ class CertificadoAnuncioService
         }
         $this->setVar($processor, 'VIGENCIA', $vigenciaStr);
 
+        // Lógica para VIGENCIA_LICENCIA usando LicenciaService
+        $vigenciaLicenciaStr = '.'; // Valor por defecto si no es temporal o falla
+        if ($anuncio->licencia && $anuncio->licencia->lic_id) {
+            try {
+                $licenciaService = app(\App\Services\Sil\Licencias\LicenciaService::class);
+                $datosLicencia = $licenciaService->obtenerDatosPorIdLicenciaDirecta($anuncio->licencia->lic_id);
+
+                if ($datosLicencia) {
+                    $tipoLicencia = $datosLicencia->TIPO_LICENCIA ?? '';
+                    $fechaEmision = $datosLicencia->FECHA_EMISION ?? null;
+                    $fechaVencimiento = $datosLicencia->FECHA_VENCIMIENTO ?? null;
+
+                    if (strtoupper($tipoLicencia) === 'TEMPORAL' && $fechaEmision && $fechaVencimiento) {
+                        $inicio = \Carbon\Carbon::parse($fechaEmision);
+                        $fin = \Carbon\Carbon::parse($fechaVencimiento);
+                        $meses = (int) $inicio->diffInMonths($fin);
+                        $unid = $meses == 1 ? 'Mes' : 'Meses';
+                        $vigenciaLicenciaStr = ", de vigencia Temporal ({$meses} {$unid}) " . $inicio->format('d/m/Y') . " - " . $fin->format('d/m/Y');
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error("Error obteniendo datos de licencia para VIGENCIA_LICENCIA anuncio ID: {$anuncio->id}", ['error' => $e->getMessage()]);
+            }
+        }
+
+        $this->setVar($processor, 'VIGENCIA_LICENCIA', $vigenciaLicenciaStr);
+
         // -------------------------------------------------------
         // Guardar en archivo temporal y devolver la ruta
         // -------------------------------------------------------
