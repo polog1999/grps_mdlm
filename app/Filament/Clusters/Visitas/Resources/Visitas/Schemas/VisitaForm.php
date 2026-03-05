@@ -101,7 +101,7 @@ class VisitaForm
                                                     ->body('Se consumió el Apis')
                                                     ->success()
                                                     ->send();
-                                            } else {
+                                            } else if($datosApiPeru['error'] == 'No se pudo consultar el DNI'){
                                                 // FALLÓ EL PIDE
                                                 $set('pide_fallo', true); // Activamos edición manual
                                                 $set('nombres', null);
