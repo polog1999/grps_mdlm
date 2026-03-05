@@ -38,6 +38,7 @@ class TrabajadorForm
                         Select::make('tipo_documento_id')
                             ->relationship('persona.tipoDocumento', 'nombre')
                             ->label('Tipo de Documento')
+                            ->default(1)
                             ->required()
                             ->live(),
                         TextInput::make('numero_documento')

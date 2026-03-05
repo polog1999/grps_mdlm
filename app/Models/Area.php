@@ -13,9 +13,10 @@ class Area extends Model
     protected $fillable = [
         'sede_id',
         'nombre',
-        'parent',
-        'nc_area',
-        'nu_orden'
+        'parent_id',
+        'nombre_corto',
+        'orden',
+        'estado'
     ];
 
     // Relación: Una Área pertenece a una Sede

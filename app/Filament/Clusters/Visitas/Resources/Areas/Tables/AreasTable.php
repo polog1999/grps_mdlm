@@ -8,6 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class AreasTable
 {
@@ -17,7 +18,7 @@ class AreasTable
             ->columns([
                 TextColumn::make('nombre')
                     ->searchable(),
-                
+
                 TextColumn::make('nombre_corto')
                     ->searchable(),
                 TextColumn::make('parentArea.nombre')
@@ -28,7 +29,7 @@ class AreasTable
                     ->sortable(),
                 IconColumn::make('estado')
                     ->boolean(),
-               
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -38,12 +39,13 @@ class AreasTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('orden','asc')
+            ->defaultSort('orden', 'asc')
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn() => auth()->user()->hasPermissionTo('edit::visitas_area')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

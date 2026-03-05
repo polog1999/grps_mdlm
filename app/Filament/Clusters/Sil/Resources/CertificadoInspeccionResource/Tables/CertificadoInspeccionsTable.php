@@ -451,7 +451,6 @@ class CertificadoInspeccionsTable
                                 ->body('Su solicitud de edición ha sido registrada y está pendiente de aprobación.')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error')
@@ -761,7 +760,6 @@ class CertificadoInspeccionsTable
                                         ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
-
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
@@ -813,7 +811,6 @@ class CertificadoInspeccionsTable
                                     ->body($result['message'])
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error del Sistema')
@@ -1047,7 +1044,6 @@ class CertificadoInspeccionsTable
                                         ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
-
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
@@ -1097,7 +1093,6 @@ class CertificadoInspeccionsTable
                                     ->body($result['message'])
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error del Sistema')
@@ -1134,7 +1129,5 @@ class CertificadoInspeccionsTable
                     ->modalSubmitActionLabel('Buscar Certificados')
                     ->modalCancelActionLabel('Cancelar')
             );
-
     }
-
 }

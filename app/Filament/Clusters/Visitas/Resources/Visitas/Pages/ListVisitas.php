@@ -13,10 +13,13 @@ class ListVisitas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+            ->label('Registrar Visita')
         ];
     }
     
 // Añade esto para refrescar cada 30 segundos
 public function getHeaderWidgetsColumns(): int | array { return 1; }
 }
+
+

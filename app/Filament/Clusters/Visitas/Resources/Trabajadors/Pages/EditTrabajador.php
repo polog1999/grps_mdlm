@@ -21,6 +21,7 @@ class EditTrabajador extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
+    
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $trabajador = $this->getRecord();

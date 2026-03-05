@@ -50,4 +50,8 @@ class TipoDocumentoResource extends Resource
             'edit' => EditTipoDocumento::route('/{record}/edit'),
         ];
     }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_tipo_documento');
+    }
 }

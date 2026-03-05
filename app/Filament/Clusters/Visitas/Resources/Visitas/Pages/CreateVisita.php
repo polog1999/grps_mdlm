@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 class CreateVisita extends CreateRecord
 {
     protected static string $resource = VisitaResource::class;
+    protected ?string $heading = 'Registrar Visita';
     // ESTO ES LO IMPORTANTE: Redirige la inserción a la tabla física
     // protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     // {
@@ -34,11 +35,20 @@ class CreateVisita extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
-                ->model(Visita::class)
-                ->using(fn(array $data) => Visita::create($data)),
+            // CreateAction::make()
+            //     // ->model(Visita::class)
+            //     // ->using(fn(array $data) => Visita::create($data))
+            //     ->label('Registrar Visita'),
         ];
     }
+    public function getBreadcrumb(): string
+{
+    return 'Registro';
+}
+public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
+{
+    return 'Registro de Visita';
+}
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $persona = PersonaUno::updateOrCreate(
@@ -69,4 +79,9 @@ class CreateVisita extends CreateRecord
         );
         return $data;
     }
+    protected function getCreateFormAction(): \Filament\Actions\Action
+{
+    return parent::getCreateFormAction()
+        ->label('Registrar Visita'); // Cambia el texto aquí
+}
 }

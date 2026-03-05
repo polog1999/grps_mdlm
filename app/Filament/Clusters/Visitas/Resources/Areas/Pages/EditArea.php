@@ -16,4 +16,13 @@ class EditArea extends EditRecord
             DeleteAction::make(),
         ];
     }
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+      public static function canAccess(array $parameters = []): bool
+    {
+        return auth()->user()->hasPermissionTo('edit::visitas_area');
+    }
+    
 }

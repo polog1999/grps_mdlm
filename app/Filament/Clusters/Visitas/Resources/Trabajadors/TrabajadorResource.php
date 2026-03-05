@@ -58,4 +58,8 @@ class TrabajadorResource extends Resource
             'edit' => EditTrabajador::route('/{record}/edit'),
         ];
     }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_trabajador');
+    }
 }

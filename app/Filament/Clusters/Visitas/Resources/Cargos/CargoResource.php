@@ -50,4 +50,8 @@ class CargoResource extends Resource
             'edit' => EditCargo::route('/{record}/edit'),
         ];
     }
+     public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_cargo');
+    }
 }

@@ -28,6 +28,7 @@ class VisitaForm
                         Select::make('tipo_documento_id')
                             ->label('Tipo de Documento')
                             ->relationship('persona.tipoDocumento', 'nombre')
+                            ->default(1)
                             ->live()
                             ->required(),
                         TextInput::make('numero_documento')

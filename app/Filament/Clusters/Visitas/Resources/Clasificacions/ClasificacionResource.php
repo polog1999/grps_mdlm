@@ -55,4 +55,8 @@ class ClasificacionResource extends Resource
             'edit' => EditClasificacion::route('/{record}/edit'),
         ];
     }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_clasificacion');
+    }
 }

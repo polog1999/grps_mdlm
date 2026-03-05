@@ -15,6 +15,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Enums\RecordActionsPosition;
 
 class VisitasTable
 {
@@ -66,7 +68,7 @@ class VisitasTable
                     }),
             ])
 
-            ->actions([
+            ->recordActions([
                 
                 Action::make('marcar_salida')
                     ->label('Registrar Salida')
@@ -77,6 +79,8 @@ class VisitasTable
                     ->modalDescription('¿Estás seguro de que desea marcar la salida para este visitante? Esta acción registrará la hora actual.')
                     ->modalSubmitActionLabel('Sí, marcar salida')
                     ->visible(fn($record) => $record->hora_salida === null) // Solo si no ha salido
+                    // AQUÍ ES DONDE VA EL MÉTODO, aplicado al $table
+      
                     ->action(function ($record) {
                         $idOriginal = $record->id_original;
                         $visita = Visita::find($idOriginal);
@@ -91,6 +95,6 @@ class VisitasTable
                     }),
                     // ViewAction::make()
                     // , // Abre un modal de solo lectura
-            ]);
+            ], position: RecordActionsPosition::BeforeCells);
     }
 }
