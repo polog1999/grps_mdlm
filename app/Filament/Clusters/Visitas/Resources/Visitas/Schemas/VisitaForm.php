@@ -89,9 +89,9 @@ class VisitaForm
                                                 ->send();
                                         } else {
                                             $datosApiPeru = PideService::apiPeruDni($state);
-                                           
+
                                             if ($datosApiPeru['success']) {
-                                                dd('probando');
+                                                // dd('probando');
                                                 $set('pide_fallo', false); // Activamos edición manual
                                                 $set('nombres', $datosApiPeru['data']['nombres']);
                                                 $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
@@ -101,7 +101,7 @@ class VisitaForm
                                                     ->body('Se consumió el Apis')
                                                     ->success()
                                                     ->send();
-                                            } else if($datosApiPeru['error'] == 'No se pudo consultar el DNI'){
+                                            } else {
                                                 // FALLÓ EL PIDE
                                                 $set('pide_fallo', true); // Activamos edición manual
                                                 $set('nombres', null);

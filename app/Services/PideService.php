@@ -14,30 +14,32 @@ class PideService
 {
     public static function apiPeruDni(string $dni)
     {
-       
-    $token = 'ec74f3f9343e5e66d30dd3eb893919f46b2808fc6761f693872834a01ea1ed4c';
-// $numero = '46027897';
 
-$response = Http::withOptions([
-        'verify' => false, // Equivale a 'verify' => false de Guzzle
-        'connect_timeout' => 5,
-    ])
-    ->withHeaders([
-        'Referer' => 'https://apiperu.dev/api/dni/',
-        'User-Agent' => 'laravel/guzzle',
-        'Accept' => 'application/json',
-    ])
-    ->withToken($token) // Configura automáticamente el Bearer token
-    ->get("https://apiperu.dev/api/dni/{$dni}");
+        $token = 'ec74f3f9343e5e66d30dd3eb893919f46b2808fc6761f693872834a01ea1ed4c';
+        // $numero = '46027897';
 
-if ($response->successful()) {
-    $data = $response->json();
-    // dd($data); // O usa return $data;
-    return $data;
-} else {
-    // Manejo de errores (404, 500, etc.)
-    return response()->json(['error' => 'No se pudo consultar el DNI'], $response->status());
-}
+        $response = Http::withOptions([
+            'verify' => false, // Equivale a 'verify' => false de Guzzle
+            'connect_timeout' => 5,
+        ])
+            ->withHeaders([
+                'Referer' => 'https://apiperu.dev/api/dni/',
+                'User-Agent' => 'laravel/guzzle',
+                'Accept' => 'application/json',
+            ])
+            ->withToken($token) // Configura automáticamente el Bearer token
+            ->get("https://apiperu.dev/api/dni/{$dni}");
+
+        if ($response->successful()) {
+            $data = $response->json();
+            // dd($data); // O usa return $data;
+            return $data;
+        } 
+        return [
+        'success' => false,
+        'data' => null,
+        'error' => 'No se pudo consultar el DNI'
+    ];
     }
 
     // private static function guardarFotoPersona($dni, $base64String)
