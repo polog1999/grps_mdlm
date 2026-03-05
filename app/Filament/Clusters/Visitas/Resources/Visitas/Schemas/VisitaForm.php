@@ -163,7 +163,7 @@ class VisitaForm
                                             Notification::make()
                                                             ->title('Alerta')
                                                             ->body('El DNI debe tener 8 dígitos')
-                                                            ->success()
+                                                            ->warning()
                                                             ->send();
                                         }
                                     })
