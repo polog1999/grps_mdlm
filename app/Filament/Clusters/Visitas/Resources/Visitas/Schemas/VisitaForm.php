@@ -36,17 +36,25 @@ class VisitaForm
                             ->required()
                             ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
                             // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
-                            ->mask('99999999')
+                            ->mask(fn(Get $get) => $get('tipo_documento_id') == 1 ? '99999999' : null)
 
                             // 2. Validación de servidor por si acaso
-                            ->regex('/^[0-9]{8}$/')
+                            ->regex(fn(Get $get) => $get('tipo_documento_id') == 1
+                                ? '/^[0-9]{8}$/'
+                                : '/^[a-zA-Z0-9]{1,20}$/') // Regex flexible para otros documentos)
 
 
                             // 3. Tu validación de números iguales que pediste antes
-                            ->rules([
-                                'regex:/^(?!.*(\d)\1{7}).*$/',
-                                'not_in:00000000',
-                            ])
+                            ->rules(function (Get $get) {
+                                if ($get('tipo_documento_id') == 1) {
+                                    return [
+                                        'regex:/^[0-9]{8}$/',            // Exactamente 8 números
+                                        'regex:/^(?!.*(\d)\1{7}).*$/',   // No repetidos
+                                        'not_in:00000000',               // No ceros
+                                    ];
+                                }
+                                return []; // Sin reglas especiales para otros tipos
+                            })
                             ->validationMessages([
                                 'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
                                 'not_in' => 'El número de documento no puede ser todo ceros.',
@@ -54,7 +62,7 @@ class VisitaForm
                             ])
 
                             // 4. Mantiene el teclado numérico en celulares
-                            ->inputMode('numeric')
+                            ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
                             // ->live(onBlur: true)
                             ->live()
                             ->afterStateUpdated(function ($state, callable $set) {
@@ -159,12 +167,12 @@ class VisitaForm
                                                     }
                                                 }
                                             }
-                                        }else{
+                                        } else {
                                             Notification::make()
-                                                            ->title('Alerta')
-                                                            ->body('El DNI debe tener 8 dígitos')
-                                                            ->warning()
-                                                            ->send();
+                                                ->title('Alerta')
+                                                ->body('El DNI debe tener 8 dígitos')
+                                                ->warning()
+                                                ->send();
                                         }
                                     })
                             ),
