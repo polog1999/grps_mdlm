@@ -699,7 +699,7 @@ class CertificadoInspeccionForm
                     ->placeholder('Nombres y apellidos del titular')
                     ->maxLength(255)
                     ->suffixIcon('heroicon-o-user')
-                    ->disabled(fn(callable $get) => (bool) $get('cin_solicitante_autofilled'))
+                    //->disabled(fn(callable $get) => (bool) $get('cin_solicitante_autofilled'))
                     ->dehydrated()
 
                     ->extraInputAttributes(fn(callable $get) => [
