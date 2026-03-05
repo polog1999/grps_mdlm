@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Schemas;
 
+use App\Models\Anuncios;
 use Dotswan\MapPicker\Fields\Map;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -36,6 +37,7 @@ use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio;
 use App\Models\User;
 
 use Filament\Forms\Components\Repeater;
+use Illuminate\Validation\Rule;
 
 class AnunciosForm
 {
@@ -79,6 +81,7 @@ class AnunciosForm
 
 
                                         $set('n_expediente', $expediente->exp_num);
+                                        $set('fecha_expediente', $expediente->exp_fec);
                                         $set('folios', $expediente->exp_numfol + 1);
 
                                         // Autocompletar Información de Pago desde PostgreSQL/Oracle
@@ -110,6 +113,10 @@ class AnunciosForm
                                 ->label('Teléfono Solicitante'),
                             TextInput::make('folios')
                                 ->label('Folios'),
+                            DatePicker::make('fecha_expediente')
+                                ->label('Fecha de Expediente')
+                                ->native(false)
+                                ->displayFormat('d/m/Y'),
                             Select::make('zonificacion_id')
                                 ->label('Zonificación')
                                 ->options(fn() => Zonificacion::query()
@@ -225,21 +232,6 @@ class AnunciosForm
                                         ->disabled()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
-                                    DatePicker::make('lic_fecha_inicio')
-                                        ->label('Fecha Inicio de Vigencia')
-                                        ->required(fn($get) => str($get('snapshot_lic_tipo'))->contains('TEMPORAL'))
-                                        ->visible(fn($get) => str($get('snapshot_lic_tipo'))->contains('TEMPORAL'))
-                                        ->native(false)
-                                        ->displayFormat('d/m/Y'),
-
-                                    DatePicker::make('lic_fecha_fin')
-                                        ->label('Fecha Fin de Vigencia')
-                                        ->required(fn($get) => str($get('snapshot_lic_tipo'))->contains('TEMPORAL'))
-                                        ->visible(fn($get) => str($get('snapshot_lic_tipo'))->contains('TEMPORAL'))
-                                        ->native(false)
-                                        ->displayFormat('d/m/Y')
-                                        ->afterOrEqual('lic_fecha_inicio'),
-
                                     TextInput::make('form_direccion_predio')
                                         ->label('Dirección del Predio Materia a Evaluar')
                                         ->placeholder('Se completará al seleccionar la licencia')
@@ -324,6 +316,7 @@ class AnunciosForm
                                                 $set('snapshot_solicitante_nombre_completo', str($expediente->nomcom)->upper());
                                                 $set('form_domicilio_fiscal', str($expediente->domfis)->upper());
                                                 $set('snapshot_solicitante_telefono', $expediente->exp_telefono);
+                                                $set('fecha_expediente', $expediente->EXP_FEC);
                                                 $set('folios', $expediente->exp_numfol + 1);
                                             }
                                         }),
@@ -338,6 +331,10 @@ class AnunciosForm
                                     TextInput::make('folios')
                                         ->label('Folios')
                                         ->numeric(),
+                                    DatePicker::make('fecha_expediente')
+                                        ->label('Fecha de Expediente')
+                                        ->native(false)
+                                        ->displayFormat('d/m/Y'),
                                     Select::make('zonificacion_id')
                                         ->label('Zonificación')
                                         ->options(fn() => Zonificacion::query()
@@ -463,8 +460,12 @@ class AnunciosForm
                             Section::make('Información Técnica del Anuncio')
                                 ->schema([
                                     TextInput::make('n_anuncio')
-                                        ->required()
-                                        ->default(fn() => DB::select('SELECT anuncios.fn_obtener_siguiente_n_anuncio() as n')[0]->n ?? null),
+                                        ->label('N° Anuncio')
+                                        ->unique(ignoreRecord: true)
+                                        ->validationMessages([
+                                            'unique' => 'El número de anuncio ":input" ya está registrado en el sistema.',
+                                        ])
+                                        ->default(fn() => Anuncios::getSiguienteNumero()),
                                     DatePicker::make('fecha_recepcion_evaluar'),
                                     Select::make('asunto')
                                         ->options(AsuntoAnuncio::class)

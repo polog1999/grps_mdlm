@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Validation\ValidationException;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\AsuntoAnuncio;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\VigenciaAnuncio;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio;
+use Illuminate\Support\Facades\DB;
 
 
 class Anuncios extends Model
@@ -123,5 +125,12 @@ class Anuncios extends Model
                 return "https://www.google.com/maps/search/?api=1&query=" . $attributes['latitud'] . "," . $attributes['longitud'];
             });
     }
+
+    public static function getSiguienteNumero(): ?string
+    {
+        // DB::scalar ejecuta la consulta y devuelve directamente el primer valor de la primera fila
+        return DB::scalar('SELECT anuncios.fn_obtener_siguiente_n_anuncio()');
+    }
+
 }
 

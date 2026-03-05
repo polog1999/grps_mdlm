@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Tables;
 
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
 use App\Models\Anuncios;
 use App\Services\Sil\Anuncios\InformeAnuncioService;
 use App\Services\Sil\Anuncios\CertificadoAnuncioService;
@@ -27,11 +28,14 @@ class AnunciosTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('expediente.fecha_expediente', 'desc')
             ->recordUrl(null)
             ->columns([
                 TextColumn::make('n_anuncio')
                     ->label('N° Anuncio')
+                    ->badge()
+                    ->default('Sin número')
+                    ->color(fn($state) => $state === 'Sin número' ? 'gray' : 'info')
                     ->searchable(),
 
                 TextColumn::make('documentos')
@@ -45,6 +49,18 @@ class AnunciosTable
                     }),
                 TextColumn::make('expediente.n_expediente')
                     ->label('N° Expediente')
+                    ->searchable(),
+                TextColumn::make('expediente.fecha_expediente')
+                    ->label('Fecha Expediente')
+                    ->date('d/m/Y')
+                    ->sortable(),
+                TextColumn::make('dictamen')
+                    ->badge()
+                    ->color(fn(Dictamen $state): string => match ($state) {
+                        Dictamen::PROCEDENTE => 'success',
+                        Dictamen::IMPROCEDENTE => 'danger',
+                        Dictamen::OBSERVADO => 'warning',
+                    })
                     ->searchable(),
                 TextColumn::make('expediente.snapshot_solicitante_nombre_completo')
                     ->label('Solicitante')
@@ -88,8 +104,7 @@ class AnunciosTable
                 TextColumn::make('n_de_caras')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('dictamen')
-                    ->searchable(),
+
                 TextColumn::make('estado_anuncio')
                     ->searchable(),
                 TextColumn::make('derivadoLegal.name')
@@ -169,7 +184,7 @@ class AnunciosTable
                     ->label('Geolocalizar')
                     ->iconButton()
                     ->tooltip('Ubicación Geográfica')
-                    ->color('success')
+                    ->color(Color::Orange)
                     ->icon('heroicon-o-map-pin')
                     ->fillForm(fn($record): array => [
                         // Si hay data en DB, la usamos. Si no, forzamos TUS coordenadas.

@@ -3,11 +3,13 @@
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Pages;
 
 use App\Filament\Clusters\Sil\Resources\Anuncios\AnunciosResource;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
 use App\Models\ExpedientesAnuncios;
 use App\Models\ReciboPago;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class CreateAnuncios extends CreateRecord
 {
@@ -40,6 +42,7 @@ class CreateAnuncios extends CreateRecord
         'zonificacion_id',
         'n_resolucion_subgerencial',
         'fecha_resolucion_subgerencial',
+        'fecha_expediente',
     ];
 
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -75,6 +78,7 @@ class CreateAnuncios extends CreateRecord
                 'zonificacion_id' => $data['zonificacion_id'] ?? null,
                 'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? null,
                 'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? null,
+                'fecha_expediente' => $data['fecha_expediente'] ?? null,
             ]
         );
 
@@ -86,6 +90,7 @@ class CreateAnuncios extends CreateRecord
                 'zonificacion_id' => $data['zonificacion_id'] ?? $expediente->zonificacion_id,
                 'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? $expediente->n_resolucion_subgerencial,
                 'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? $expediente->fecha_resolucion_subgerencial,
+                'fecha_expediente' => $data['fecha_expediente'] ?? $expediente->fecha_expediente,
             ]);
         }
 

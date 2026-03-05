@@ -35,11 +35,13 @@ class ExpedientesAnuncios extends Model
         'recibo_pago_id',
         'n_resolucion_subgerencial',
         'fecha_resolucion_subgerencial',
+        'fecha_expediente',
     ];
 
 
     protected $casts = [
         'folios' => 'integer',
+        'fecha_expediente' => 'date',
     ];
 
     public function zonificacion(): BelongsTo
