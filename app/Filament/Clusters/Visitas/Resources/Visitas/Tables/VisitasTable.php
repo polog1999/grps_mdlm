@@ -48,8 +48,8 @@ class VisitasTable
                 TextColumn::make('motivo'),
                 TextColumn::make('fecha_visita')->badge()
                     ->label('Estado')
-                    ->state(fn($record) => $record->fecha_salida ? 'Salió' : 'En Sede')
-                    ->color(fn($record) => $record->fecha_salida ? 'gray' : 'success'),
+                    ->state(fn($record) => $record->hora_salida ? 'Salió' : 'En Sede')
+                    ->color(fn($record) => $record->hora_salida ? 'gray' : 'success'),
             ])->recordUrl(null)
             ->defaultSort('fecha', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
 
