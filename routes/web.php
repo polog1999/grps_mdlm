@@ -31,7 +31,7 @@ use App\Services\PideService;
 //         "lo_que_hay_en_public" => $archivosEnPublic
 //     ]);
 // });
-Route::get('prueba/{dni}', [PideService::class,'apiPeruDni']);
+Route::get('prueba/{dni}', [PideService::class,'apisNet']);
 Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
  * Archivo de rutas web para la aplicaci�n Laravel.

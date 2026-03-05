@@ -41,6 +41,36 @@ class PideService
         'error' => 'No se pudo consultar el DNI'
     ];
     }
+    public static function apisNet(string $dni)
+    {
+
+        $token = 'sk_10485.BDeLFALoYtFCqCW7g0XvEnFHDALKKhFP';
+        // $numero = '46027897';
+
+        $response = Http::withOptions([
+            'verify' => false, // Equivale a 'verify' => false de Guzzle
+            'connect_timeout' => 5,
+        ])
+            ->withHeaders([
+                'Referer' => 'https://api.apis.net.pe/v1/',
+                'User-Agent' => 'laravel/guzzle',
+                'Accept' => 'application/json',
+            ])
+            ->withToken($token) // Configura automáticamente el Bearer token
+            ->get("https://api.apis.net.pe/v1/dni?numero={$dni}");
+
+        if ($response->successful()) {
+            $data = $response->json();
+            $data['success'] = true;
+            // dd($data); // O usa return $data;
+            return $data;
+        } 
+        return [
+        'success' => false,
+        'data' => null,
+        'error' => 'No se pudo consultar el DNI'
+    ];
+    }
 
     // private static function guardarFotoPersona($dni, $base64String)
     // {

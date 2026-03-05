@@ -102,17 +102,31 @@ class VisitaForm
                                                     ->success()
                                                     ->send();
                                             } else {
-                                                // FALLÓ EL PIDE
-                                                $set('pide_fallo', true); // Activamos edición manual
-                                                $set('nombres', null);
-                                                $set('apellido_paterno', null);
-                                                $set('apellido_materno', null);
-                                                $set('foto_url', null);
-                                                Notification::make()
-                                                    ->title('PIDE no disponible')
-                                                    ->body('Complete los datos manualmente.')
-                                                    ->warning()
-                                                    ->send();
+                                                $datosApisNet = PideService::apisNet($state);
+
+                                                if ($datosApisNet['success']) {
+                                                    $set('pide_fallo', false); // Activamos edición manual
+                                                    $set('nombres', $datosApisNet['nombres']);
+                                                    $set('apellido_paterno', $datosApisNet['apellidoPaterno']);
+                                                    $set('apellido_materno', $datosApisNet['apellidoMaterno']);
+                                                    Notification::make()
+                                                        ->title('Datos de ApisNet')
+                                                        ->body('Se consumió el ApisNet')
+                                                        ->success()
+                                                        ->send();
+                                                } else {
+                                                    // FALLÓ EL PIDE
+                                                    $set('pide_fallo', true); // Activamos edición manual
+                                                    $set('nombres', null);
+                                                    $set('apellido_paterno', null);
+                                                    $set('apellido_materno', null);
+                                                    $set('foto_url', null);
+                                                    Notification::make()
+                                                        ->title('PIDE no disponible')
+                                                        ->body('Complete los datos manualmente.')
+                                                        ->warning()
+                                                        ->send();
+                                                }
                                             }
                                         }
                                     })
