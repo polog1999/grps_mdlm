@@ -32,7 +32,7 @@ class VisitaForm
                             ->required(),
                         TextInput::make('numero_documento')
                             ->required()
-                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1?8:20)
+                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
                             ->live()
                             ->suffixAction(
                                 Action::make('buscar_visitante')
@@ -86,19 +86,31 @@ class VisitaForm
                                                 ->body('Se consumió el PIDE')
                                                 ->success()
                                                 ->send();
-                                        
                                         } else {
-                                            // FALLÓ EL PIDE
-                                            $set('pide_fallo', true); // Activamos edición manual
-                                            $set('nombres', null);
-                                            $set('apellido_paterno', null);
-                                            $set('apellido_materno', null);
-                                            $set('foto_url', null);
-                                            Notification::make()
-                                                ->title('PIDE no disponible')
-                                                ->body('Complete los datos manualmente.')
-                                                ->warning()
-                                                ->send();
+                                            $datosApiPeru = PideService::apiPeruDni($state);
+                                            if ($datosApiPeru['success']) {
+                                                $set('pide_fallo', false); // Activamos edición manual
+                                                $set('nombres', $datosApiPeru['data']['nombres']);
+                                                $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
+                                                $set('apellido_materno', $datosApiPeru['data']['apellido_materno']);
+                                                Notification::make()
+                                                    ->title('Datos del PIDE')
+                                                    ->body('Se consumió el Apis')
+                                                    ->success()
+                                                    ->send();
+                                            } else {
+                                                // FALLÓ EL PIDE
+                                                $set('pide_fallo', true); // Activamos edición manual
+                                                $set('nombres', null);
+                                                $set('apellido_paterno', null);
+                                                $set('apellido_materno', null);
+                                                $set('foto_url', null);
+                                                Notification::make()
+                                                    ->title('PIDE no disponible')
+                                                    ->body('Complete los datos manualmente.')
+                                                    ->warning()
+                                                    ->send();
+                                            }
                                         }
                                     })
                             ),
@@ -116,12 +128,12 @@ class VisitaForm
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
                         Placeholder::make('.')
-                        ->label(false),
+                            ->label(false),
                         Placeholder::make('foto_visual')
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
                                 $get('foto_url')
-                                    ? '<img src="' . asset('fotos_externas/'.$get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
+                                    ? '<img src="' . asset('fotos_externas/' . $get('foto_url')) . '" class="flex items-center justify-center bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600" style="width:96px">'
                                     : '<p class="text-gray-400 text-xs">Sin foto</p>'
                             )),
                         Hidden::make('foto_url'),
@@ -153,8 +165,8 @@ class VisitaForm
                                         $query->where('area_id', $areaId)
                                             ->where('es_actual', true);
                                     })
-                                    ->whereNot('regimen_id',['5','6','7','14'])
-                                    ->where('estado',true)
+                                    ->whereNot('regimen_id', ['5', '6', '7', '14'])
+                                    ->where('estado', true)
                                     ->with('persona') // Eager loading para evitar consultas lentas
                                     ->get()
                                     ->mapWithKeys(function ($trabajador) {

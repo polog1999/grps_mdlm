@@ -12,36 +12,33 @@ use SoapFault;
 
 class PideService
 {
-    // public static function consultarDni(string $dni)
-    // {
-    //     try {
-    //         // Aquí pones la URL de tu API del PIDE
-    //         $response = Http::timeout(10)->get("https://api.pide.gob.pe/reniec", [
-    //             'dni' => $dni,
-    //             'token' => config('services.pide.token'), // Guardado en config/services.php
-    //         ]);
+    public static function apiPeruDni(string $dni)
+    {
+       
+    $token = 'ec74f3f9343e5e66d30dd3eb893919f46b2808fc6761f693872834a01ea1ed4c';
+// $numero = '46027897';
 
-    //         if ($response->failed()) return null;
+$response = Http::withOptions([
+        'verify' => false, // Equivale a 'verify' => false de Guzzle
+        'connect_timeout' => 5,
+    ])
+    ->withHeaders([
+        'Referer' => 'https://apiperu.dev/api/dni/',
+        'User-Agent' => 'laravel/guzzle',
+        'Accept' => 'application/json',
+    ])
+    ->withToken($token) // Configura automáticamente el Bearer token
+    ->get("https://apiperu.dev/api/dni/{$dni}");
 
-    //         $data = $response->json();
-
-    //         // Lógica para la foto
-    //         $fotoUrl = null;
-    //         if (isset($data['foto_base64'])) {
-    //             $fotoUrl = self::guardarFotoPersona($dni, $data['foto_base64']);
-    //         }
-
-    //         return [
-    //             'nombres'          => $data['nombres'] ?? '',
-    //             'apellido_paterno' => $data['apellidoPaterno'] ?? '',
-    //             'apellido_materno' => $data['apellidoMaterno'] ?? '',
-    //             'foto_url'         => $fotoUrl,
-    //         ];
-    //     } catch (\Exception $e) {
-    //         Log::error("Error PIDE: " . $e->getMessage());
-    //         return null;
-    //     }
-    // }
+if ($response->successful()) {
+    $data = $response->json();
+    // dd($data); // O usa return $data;
+    return $data;
+} else {
+    // Manejo de errores (404, 500, etc.)
+    return response()->json(['error' => 'No se pudo consultar el DNI'], $response->status());
+}
+    }
 
     // private static function guardarFotoPersona($dni, $base64String)
     // {
