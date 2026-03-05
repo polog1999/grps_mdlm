@@ -97,8 +97,8 @@ class VisitaForm
                                                 $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
                                                 $set('apellido_materno', $datosApiPeru['data']['apellido_materno']);
                                                 Notification::make()
-                                                    ->title('Datos del PIDE')
-                                                    ->body('Se consumió el Apis')
+                                                    ->title('Datos del ApisPeru')
+                                                    ->body('Se consumió el ApisPeru')
                                                     ->success()
                                                     ->send();
                                             } else {
