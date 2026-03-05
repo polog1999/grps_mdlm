@@ -32,9 +32,38 @@ class VisitaForm
                             ->live()
                             ->required(),
                         TextInput::make('numero_documento')
+
                             ->required()
                             ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
+                            // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
+                            ->mask('99999999')
+
+                            // 2. Validación de servidor por si acaso
+                            ->regex('/^[0-9]{8}$/')
+
+
+                            // 3. Tu validación de números iguales que pediste antes
+                            ->rules([
+                                'regex:/^(?!.*(\d)\1{7}).*$/',
+                                'not_in:00000000',
+                            ])
+                            ->validationMessages([
+                                'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
+                                'not_in' => 'El número de documento no puede ser todo ceros.',
+                                'numeric' => 'Solo se permiten números.',
+                            ])
+
+                            // 4. Mantiene el teclado numérico en celulares
+                            ->inputMode('numeric')
+                            // ->live(onBlur: true)
                             ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                // Al cambiar el número, reseteamos los campos de identidad
+                                $set('nombres', null);
+                                $set('apellido_paterno', null);
+                                $set('apellido_materno', null);
+                                $set('foto_url', null);
+                            })
                             ->suffixAction(
                                 Action::make('buscar_visitante')
                                     ->icon('heroicon-m-magnifying-glass')
@@ -56,78 +85,86 @@ class VisitaForm
                                         // }
 
                                         // 2. Buscar en tabla PERSONAS (Si ya fue visitante antes)
-                                        $persona = PersonaUno::where('numero_documento', $state)->first();
+                                        if (strlen($state) === 8) {
+                                            $persona = PersonaUno::where('numero_documento', $state)->first();
 
-                                        if ($persona) {
-                                            $set('persona_id', $persona->id);
-                                            $set('nombres', $persona->nombres);
-                                            $set('apellido_paterno', $persona->apellido_paterno);
-                                            $set('apellido_materno', $persona->apellido_materno);
-                                            $set('foto_url', $persona->foto_url); // Traer foto de la BD
-                                            Notification::make()
-                                                ->title('BD local')
-                                                ->body('Datos de la Base de Datos local')
-                                                ->success()
-                                                ->send();
-                                            return;
-                                        }
-
-                                        // 3. Si no existe en BD, Consultar al PIDE
-                                        // Supongamos que tienes un Service: PideService::consultar($dni)
-                                        $datosPide = PideService::ws_reniec($state);
-
-                                        if ($datosPide['codResu'] === '0000') {
-                                            $set('pide_fallo', false); // Activamos edición manual
-                                            $set('nombres', $datosPide['nombre']);
-                                            $set('apellido_paterno', $datosPide['paterno']);
-                                            $set('apellido_materno', $datosPide['materno']);
-                                            $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
-                                            Notification::make()
-                                                ->title('Datos del PIDE')
-                                                ->body('Se consumió el PIDE')
-                                                ->success()
-                                                ->send();
-                                        } else {
-                                            $datosApiPeru = PideService::apiPeruDni($state);
-
-                                            if ($datosApiPeru['success']) {
-                                                // dd('probando');
-                                                $set('pide_fallo', false); // Activamos edición manual
-                                                $set('nombres', $datosApiPeru['data']['nombres']);
-                                                $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
-                                                $set('apellido_materno', $datosApiPeru['data']['apellido_materno']);
+                                            if ($persona) {
+                                                $set('persona_id', $persona->id);
+                                                $set('nombres', $persona->nombres);
+                                                $set('apellido_paterno', $persona->apellido_paterno);
+                                                $set('apellido_materno', $persona->apellido_materno);
+                                                $set('foto_url', $persona->foto_url); // Traer foto de la BD
                                                 Notification::make()
-                                                    ->title('Datos del ApisPeru')
-                                                    ->body('Se consumió el ApisPeru')
+                                                    ->title('BD local')
+                                                    ->body('Datos de la Base de Datos local')
+                                                    ->success()
+                                                    ->send();
+                                                return;
+                                            }
+
+                                            // 3. Si no existe en BD, Consultar al PIDE
+                                            // Supongamos que tienes un Service: PideService::consultar($dni)
+                                            $datosPide = PideService::ws_reniec($state);
+
+                                            if ($datosPide['codResu'] === '0000') {
+                                                $set('pide_fallo', false); // Activamos edición manual
+                                                $set('nombres', $datosPide['nombre']);
+                                                $set('apellido_paterno', $datosPide['paterno']);
+                                                $set('apellido_materno', $datosPide['materno']);
+                                                $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
+                                                Notification::make()
+                                                    ->title('Datos del PIDE')
+                                                    ->body('Se consumió el PIDE')
                                                     ->success()
                                                     ->send();
                                             } else {
-                                                $datosApisNet = PideService::apisNet($state);
+                                                $datosApiPeru = PideService::apiPeruDni($state);
 
-                                                if ($datosApisNet['success']) {
+                                                if ($datosApiPeru['success']) {
+                                                    // dd('probando');
                                                     $set('pide_fallo', false); // Activamos edición manual
-                                                    $set('nombres', $datosApisNet['nombres']);
-                                                    $set('apellido_paterno', $datosApisNet['apellidoPaterno']);
-                                                    $set('apellido_materno', $datosApisNet['apellidoMaterno']);
+                                                    $set('nombres', $datosApiPeru['data']['nombres']);
+                                                    $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
+                                                    $set('apellido_materno', $datosApiPeru['data']['apellido_materno']);
                                                     Notification::make()
-                                                        ->title('Datos de ApisNet')
-                                                        ->body('Se consumió el ApisNet')
+                                                        ->title('Datos del ApisPeru')
+                                                        ->body('Se consumió el ApisPeru')
                                                         ->success()
                                                         ->send();
                                                 } else {
-                                                    // FALLÓ EL PIDE
-                                                    $set('pide_fallo', true); // Activamos edición manual
-                                                    $set('nombres', null);
-                                                    $set('apellido_paterno', null);
-                                                    $set('apellido_materno', null);
-                                                    $set('foto_url', null);
-                                                    Notification::make()
-                                                        ->title('PIDE no disponible')
-                                                        ->body('Complete los datos manualmente.')
-                                                        ->warning()
-                                                        ->send();
+                                                    $datosApisNet = PideService::apisNet($state);
+
+                                                    if ($datosApisNet['success']) {
+                                                        $set('pide_fallo', false); // Activamos edición manual
+                                                        $set('nombres', $datosApisNet['nombres']);
+                                                        $set('apellido_paterno', $datosApisNet['apellidoPaterno']);
+                                                        $set('apellido_materno', $datosApisNet['apellidoMaterno']);
+                                                        Notification::make()
+                                                            ->title('Datos de ApisNet')
+                                                            ->body('Se consumió el ApisNet')
+                                                            ->success()
+                                                            ->send();
+                                                    } else {
+                                                        // FALLÓ EL PIDE
+                                                        $set('pide_fallo', true); // Activamos edición manual
+                                                        $set('nombres', null);
+                                                        $set('apellido_paterno', null);
+                                                        $set('apellido_materno', null);
+                                                        $set('foto_url', null);
+                                                        Notification::make()
+                                                            ->title('PIDE no disponible')
+                                                            ->body('Complete los datos manualmente.')
+                                                            ->warning()
+                                                            ->send();
+                                                    }
                                                 }
                                             }
+                                        }else{
+                                            Notification::make()
+                                                            ->title('Alerta')
+                                                            ->body('El DNI debe tener 8 dígitos')
+                                                            ->success()
+                                                            ->send();
                                         }
                                     })
                             ),
