@@ -84,4 +84,9 @@ public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
     return parent::getCreateFormAction()
         ->label('Registrar Visita'); // Cambia el texto aquí
 }
+protected function getCreateAnotherFormAction(): \Filament\Actions\Action
+{
+    return parent::getCreateAnotherFormAction()
+        ->label('Registrar y registrar otro'); // <--- Pon aquí el nombre que prefieras
+}
 }
