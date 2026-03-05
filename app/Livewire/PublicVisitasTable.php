@@ -27,6 +27,11 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
     {
         return $table
             ->query(VisitaHistorico::query())
+            // 1. Forzar a que la tabla ocupe el 100% del contenedor
+        ->contentGrid([
+            'md' => 1,
+            'xl' => 1,
+        ])
             ->defaultPaginationPageOption(10)
             // Aplicamos un scope global para vaciar la tabla si no hay filtro
             ->modifyQueryUsing(function (Builder $query) {

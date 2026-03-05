@@ -9,7 +9,7 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateTrabajador extends CreateRecord
 {
     protected static string $resource = TrabajadorResource::class;
-       protected function getRedirectUrl(): string
+    protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
     }
@@ -33,10 +33,17 @@ class CreateTrabajador extends CreateRecord
 
         // 2. Limpiar campos que no pertenecen a la tabla 'trabajadores'
         // para evitar el error SQL de "columna no existe"
-        unset($data['tipo_documento_id'], $data['numero_documento'], $data['nombres'], 
-              $data['apellido_paterno'], $data['apellido_materno'], $data['foto_url'], 
-              $data['fecha_nacimiento'],
-              $data['pide_fallo'], $data['cargos_activos']);
+        unset(
+            $data['tipo_documento_id'],
+            $data['numero_documento'],
+            $data['nombres'],
+            $data['apellido_paterno'],
+            $data['apellido_materno'],
+            $data['foto_url'],
+            $data['fecha_nacimiento'],
+            $data['pide_fallo'],
+            $data['cargos_activos']
+        );
 
         return $data;
     }

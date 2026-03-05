@@ -20,9 +20,14 @@ class EditArea extends EditRecord
     {
         return $this->getResource()::getUrl('index');
     }
-      public static function canAccess(array $parameters = []): bool
+    public static function canAccess(array $parameters = []): bool
     {
         return auth()->user()->hasPermissionTo('edit::visitas_area');
     }
-    
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['user_id_modi'] = auth()->id();
+
+        return $data;
+    }
 }
