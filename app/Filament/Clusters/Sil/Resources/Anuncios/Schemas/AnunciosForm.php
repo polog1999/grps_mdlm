@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Colores;
 use App\Models\TipoAnuncio;
-
 use App\Models\CaracteristicasFisicas;
 use App\Models\DocumentosAnuncio;
 use App\Models\Zonificacion;
@@ -229,7 +228,7 @@ class AnunciosForm
                                     TextInput::make('snapshot_lic_tipo')
                                         ->label('Tipo de Licencia (INDETERMINADA - TEMPORAL)')
                                         ->live()
-                                        ->disabled()
+                                        ->readOnly()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
                                     TextInput::make('form_direccion_predio')
@@ -387,7 +386,7 @@ class AnunciosForm
                                     TextInput::make('giro_especifico_snapshot')
                                         ->label('Giro Específico'),
                                     TextInput::make('snapshot_lic_tipo')
-                                        ->disabled()
+                                        ->readOnly()
                                         ->label('Tipo de Licencia'),
                                     TextInput::make('form_direccion_predio')
                                         ->label('Dirección del Predio Materia a Evaluar')
@@ -428,8 +427,12 @@ class AnunciosForm
                             Section::make('Información de Pago')
                                 ->schema([
                                     TextInput::make('n_pago')
+                                        ->label('N° de Pago')
+                                        ->readOnly()
                                         ->required(),
                                     TextInput::make('monto')
+                                        ->label('Monto')
+                                        ->readOnly()
                                         ->required()
                                         ->numeric(),
                                 ])->columns(2),
@@ -462,8 +465,11 @@ class AnunciosForm
                                     TextInput::make('n_anuncio')
                                         ->label('N° Anuncio')
                                         ->unique(ignoreRecord: true)
+                                        ->maxLength(6)
+                                        ->regex('/^[0-9]{6}$/')
                                         ->validationMessages([
                                             'unique' => 'El número de anuncio ":input" ya está registrado en el sistema.',
+                                            'regex' => 'El N° de Anuncio debe contener exactamente 6 números (por ejemplo: 000124).',
                                         ])
                                         ->default(fn() => Anuncios::getSiguienteNumero()),
                                     DatePicker::make('fecha_recepcion_evaluar'),
@@ -517,7 +523,17 @@ class AnunciosForm
                                         ->required()
                                         ->default(1),
                                     Select::make('dictamen')
-                                        ->options(Dictamen::class),
+                                        ->options(Dictamen::class)
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                            $esProcedente = $state === Dictamen::PROCEDENTE->value || $state === Dictamen::PROCEDENTE;
+
+                                            if ($esProcedente && blank($get('n_anuncio'))) {
+                                                $set('n_anuncio', Anuncios::getSiguienteNumero());
+                                            } elseif (!$esProcedente) {
+                                                $set('n_anuncio', null);
+                                            }
+                                        }),
                                     Textarea::make('obs')
                                         ->columnSpanFull(),
                                 ])->columns(2),
@@ -539,8 +555,21 @@ class AnunciosForm
                                         ->options(VigenciaAnuncio::class)
                                         ->required()
                                         ->default(VigenciaAnuncio::INDETERMINADA->value),
-                                    DatePicker::make('fecha_inicio_vigencia'),
-                                    DatePicker::make('fecha_fin_vigencia'),
+                                    DatePicker::make('fecha_inicio_vigencia')
+                                        ->label('Fecha Inicio Vigencia')
+                                        ->native(false)
+                                        ->displayFormat('d/m/Y')
+                                        ->live(onBlur: true),
+
+                                    DatePicker::make('fecha_fin_vigencia')
+                                        ->label('Fecha Fin Vigencia')
+                                        ->native(false)
+                                        ->displayFormat('d/m/Y')
+                                        ->minDate(fn($get) => $get('fecha_inicio_vigencia')) // <-- Sin importar la clase Get
+                                        ->afterOrEqual('fecha_inicio_vigencia')
+                                        ->validationMessages([
+                                            'after_or_equal' => 'La fecha de fin no puede ser menor a la fecha de inicio.',
+                                        ]),
                                 ])->columns(2),
 
                             Section::make('Resolución Subgerencial')

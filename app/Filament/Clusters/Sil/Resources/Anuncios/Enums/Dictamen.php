@@ -7,6 +7,7 @@ use Filament\Support\Contracts\HasLabel;
 enum Dictamen: string implements HasLabel
 {
     case PROCEDENTE = 'PROCEDENTE';
+
     case IMPROCEDENTE = 'IMPROCEDENTE';
     case OBSERVADO = 'OBSERVADO';
 

@@ -3,14 +3,15 @@
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Pages;
 
 use App\Filament\Clusters\Sil\Resources\Anuncios\AnunciosResource;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Traits\ValidatesAnuncioRules;
 use App\Services\Sil\Licencias\LicenciaService;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
+
 
 class EditAnuncios extends EditRecord
 {
+    use ValidatesAnuncioRules;
+
     protected static string $resource = AnunciosResource::class;
 
     protected function getHeaderActions(): array
@@ -85,6 +86,9 @@ class EditAnuncios extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        // Validaciones de reglas de negocio (trait)
+        $this->validarReglasDeNegocio($data);
+
         $expediente = $this->record->expediente;
 
         if ($expediente) {

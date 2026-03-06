@@ -3,16 +3,17 @@
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Pages;
 
 use App\Filament\Clusters\Sil\Resources\Anuncios\AnunciosResource;
-use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Traits\ValidatesAnuncioRules;
 use App\Models\ExpedientesAnuncios;
 use App\Models\ReciboPago;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
-
 class CreateAnuncios extends CreateRecord
 {
+    use ValidatesAnuncioRules;
+
     protected static string $resource = AnunciosResource::class;
 
     /**
@@ -27,7 +28,6 @@ class CreateAnuncios extends CreateRecord
         'n_expediente',
         'folios',
         // Snapshots gestionados en expediente, no en anuncios
-
         'snapshot_solicitante_dni',
         'snapshot_solicitante_nombre_completo',
         'form_domicilio_fiscal',
@@ -45,84 +45,71 @@ class CreateAnuncios extends CreateRecord
         'fecha_expediente',
     ];
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    private array $coloresParaSync = [];
+    private array $documentosParaSync = [];
+
+    protected function handleRecordCreation(array $data): Model
     {
-        // -------------------------------------------------------
-        // 1. Crear Recibo de Pago
-        // -------------------------------------------------------
-        $recibo = ReciboPago::create([
-            'n_recibo_pago' => $data['n_pago'] ?? null,
-            'monto' => $data['monto'] ?? 0,
-        ]);
+        // Validaciones de reglas de negocio (trait)
+        $this->validarReglasDeNegocio($data);
 
-        // -------------------------------------------------------
-        // 2. Crear o buscar Expediente
-        // -------------------------------------------------------
-        $expediente = ExpedientesAnuncios::firstOrCreate(
-            ['n_expediente' => $data['n_expediente']],
-            [
-                'snapshot_solicitante_nombre_completo' => $data['snapshot_solicitante_nombre_completo'] ?? null,
-                'snapshot_solicitante_dni' => $data['snapshot_solicitante_dni'] ?? null,
-                'snapshot_solicitante_telefono' => $data['snapshot_solicitante_telefono'] ?? null,
-                'snapshot_solicitante_direccion' => $data['form_direccion_predio'] ?? null,
-                'snapshot_legal_nombre' => $data['snapshot_persona_legal_nombre_completo'] ?? null,
-                'snapshot_legal_dni_ruc' => $data['snapshot_persona_legal_dni'] ?? null,
-                'snapshot_legal_telefono' => $data['snapshot_persona_legal_telefono'] ?? null,
-                'snapshot_legal_direccion' => $data['form_domicilio_fiscal'] ?? null,
-                'snapshot_legal_distrito' => $data['snapshot_persona_legal_distrito'] ?? null,
-
-
-
-                'folios' => $data['folios'] ?? 0,
-                'recibo_pago_id' => $recibo->id,
-                'zonificacion_id' => $data['zonificacion_id'] ?? null,
-                'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? null,
-                'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? null,
-                'fecha_expediente' => $data['fecha_expediente'] ?? null,
-            ]
-        );
-
-
-        // Actualizar datos si el expediente ya existía
-        if (!$expediente->wasRecentlyCreated) {
-            $expediente->update([
-                'recibo_pago_id' => $recibo->id,
-                'zonificacion_id' => $data['zonificacion_id'] ?? $expediente->zonificacion_id,
-                'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? $expediente->n_resolucion_subgerencial,
-                'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? $expediente->fecha_resolucion_subgerencial,
-                'fecha_expediente' => $data['fecha_expediente'] ?? $expediente->fecha_expediente,
-            ]);
-        }
-
-
-        // -------------------------------------------------------
-        // 3. Inyectar IDs en $data para el registro principal
-        // -------------------------------------------------------
-        $data['expediente_id'] = $expediente->id;
-
-        // -------------------------------------------------------
-        // 4. Guardar colores y documentos para procesarlos en afterCreate
-        // -------------------------------------------------------
         $this->coloresParaSync = $data['colores'] ?? [];
         $this->documentosParaSync = $data['documentos'] ?? [];
+        unset($data['colores'], $data['documentos']);
 
-        // -------------------------------------------------------
-        // 5. Asignar auditoria
-        // -------------------------------------------------------
-        $data['created_by_user_id'] = auth()->id();
+        Log::info('Iniciando transacción de Base de Datos...');
 
-        // -------------------------------------------------------
-        // 6. Limpiar campos auxiliares que no son columnas de anuncios
-        // -------------------------------------------------------
-        foreach ($this->auxiliaryFields as $field) {
-            unset($data[$field]);
-        }
+        $anuncio = DB::transaction(function () use (&$data) {
 
-        // Los colores y documentos se manejan en afterCreate
-        unset($data['colores']);
-        unset($data['documentos']);
+            $recibo = ReciboPago::create([
+                'n_recibo_pago' => $data['n_pago'] ?? null,
+                'monto' => $data['monto'] ?? 0,
+            ]);
 
-        return $data;
+            $expediente = ExpedientesAnuncios::firstOrCreate(
+                ['n_expediente' => $data['n_expediente']],
+                [
+                    'snapshot_solicitante_nombre_completo' => $data['snapshot_solicitante_nombre_completo'] ?? null,
+                    'snapshot_solicitante_dni' => $data['snapshot_solicitante_dni'] ?? null,
+                    'snapshot_solicitante_telefono' => $data['snapshot_solicitante_telefono'] ?? null,
+                    'snapshot_solicitante_direccion' => $data['form_direccion_predio'] ?? null,
+                    'snapshot_legal_nombre' => $data['snapshot_persona_legal_nombre_completo'] ?? null,
+                    'snapshot_legal_dni_ruc' => $data['snapshot_persona_legal_dni'] ?? null,
+                    'snapshot_legal_telefono' => $data['snapshot_persona_legal_telefono'] ?? null,
+                    'snapshot_legal_direccion' => $data['form_domicilio_fiscal'] ?? null,
+                    'snapshot_legal_distrito' => $data['snapshot_persona_legal_distrito'] ?? null,
+                    'folios' => $data['folios'] ?? 0,
+                    'recibo_pago_id' => $recibo->id,
+                    'zonificacion_id' => $data['zonificacion_id'] ?? null,
+                    'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? null,
+                    'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? null,
+                    'fecha_expediente' => $data['fecha_expediente'] ?? null,
+                ]
+            );
+
+            if (!$expediente->wasRecentlyCreated) {
+                $expediente->update([
+                    'recibo_pago_id' => $recibo->id,
+                    'zonificacion_id' => $data['zonificacion_id'] ?? $expediente->zonificacion_id,
+                    'n_resolucion_subgerencial' => $data['n_resolucion_subgerencial'] ?? $expediente->n_resolucion_subgerencial,
+                    'fecha_resolucion_subgerencial' => $data['fecha_resolucion_subgerencial'] ?? $expediente->fecha_resolucion_subgerencial,
+                    'fecha_expediente' => $data['fecha_expediente'] ?? $expediente->fecha_expediente,
+                ]);
+            }
+
+            $data['expediente_id'] = $expediente->id;
+            $data['created_by_user_id'] = auth()->id();
+
+            foreach ($this->auxiliaryFields as $field) {
+                unset($data[$field]);
+            }
+
+            Log::info('Ejecutando INSERT de Anuncios con data final.');
+            return static::getModel()::create($data);
+        });
+
+        Log::info('--- FIN DE CREACIÓN DE ANUNCIO CON ÉXITO ---');
+        return $anuncio;
     }
 
     /**
@@ -150,7 +137,18 @@ class CreateAnuncios extends CreateRecord
         }
     }
 
-    // Propiedades temporales para compartir entre mutate y afterCreate
-    private array $coloresParaSync = [];
-    private array $documentosParaSync = [];
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCreateFormAction(),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
+
 }
