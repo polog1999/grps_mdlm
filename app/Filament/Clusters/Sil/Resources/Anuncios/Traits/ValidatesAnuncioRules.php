@@ -23,9 +23,6 @@ trait ValidatesAnuncioRules
         $this->validarFormatoNumeroAnuncio($data);
         $this->validarFechasVigencia($data);
         $this->validarImprocedenteNoRequiereNumero($data);
-
-        // Agregar más validaciones aquí en el futuro:
-        // $this->validarOtraRegla($data);
     }
 
     /**

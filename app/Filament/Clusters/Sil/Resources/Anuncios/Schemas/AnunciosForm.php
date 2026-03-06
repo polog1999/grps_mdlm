@@ -427,13 +427,13 @@ class AnunciosForm
                             Section::make('Información de Pago')
                                 ->schema([
                                     TextInput::make('n_pago')
-                                        ->label('N° de Pago')
-                                        ->readOnly()
-                                        ->required(),
+                                        ->label('N° de Pago'),
+                                    //->readOnly()
+                                    //->required(),
                                     TextInput::make('monto')
                                         ->label('Monto')
-                                        ->readOnly()
-                                        ->required()
+                                        //->readOnly()
+                                        //->required()
                                         ->numeric(),
                                 ])->columns(2),
 
