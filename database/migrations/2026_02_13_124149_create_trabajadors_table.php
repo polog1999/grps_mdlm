@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('visitas.trabajadores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('persona_id')->constrained('visitas.personas');
+            $table->foreignId('persona_id')->unique()->constrained('visitas.personas');
             $table->integer('cui')->nullable();
-            $table->foreignId('regimen_id')->constrained('visitas.regimenes');
-            $table->foreignId('clasificacion_id')->constrained('visitas.clasificaciones');
+            $table->foreignId('regimen_id')->nullable()->constrained('visitas.regimenes');
+            $table->foreignId('clasificacion_id')->nullable()->constrained('visitas.clasificaciones');
             $table->date('fecha_ingreso')->nullable();
             $table->boolean('estado')->default(true);
             $table->foreignId('user_id_creo')->nullable()->constrained('users');

@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('visitas.historial_cargos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('trabajador_id')->constrained('visitas.trabajadores');
-            $table->foreignId('cargo_id')->constrained('visitas.cargos');
-            $table->foreignId('area_id')->constrained('visitas.areas');
+            $table->foreignId('cargo_id')->nullable()->constrained('visitas.cargos');
+            $table->foreignId('area_id')->nullable()->constrained('visitas.areas');
             $table->string('de_cargo', 300)->nullable();
             // $table->foreignId('sede_id')->constrained('visitas.sedes');
-            $table->date('fecha_inicio');
+            $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin')->nullable();
             $table->boolean('es_actual')->default(true);
             $table->smallInteger('estado')->default(1);

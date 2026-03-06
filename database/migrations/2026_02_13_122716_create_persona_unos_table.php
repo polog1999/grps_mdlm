@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('visitas.personas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tipo_documento_id')->nullable()->constrained('visitas.tipo_documentos');
-            $table->string('numero_documento')->unique();
-            $table->string('nombres');
-            $table->string('apellido_paterno');
-            $table->string('apellido_materno');
+            $table->string('numero_documento')->nullable()->unique();
+            $table->string('nombres')->nullable();
+            $table->string('apellido_paterno')->nullable();
+            $table->string('apellido_materno')->nullable();
             $table->date('fecha_nacimiento')->nullable();
             $table->text('foto')->nullable(); // foto
             $table->text('foto_url')->nullable();
