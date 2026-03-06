@@ -57,6 +57,10 @@ class ViewLicencia extends ViewRecord
                         TextEntry::make('correo')
                             ->label('Correo Electrónico')
                             ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'EMAIL')),
+
+                        TextEntry::make('domfis')
+                            ->label('Domicilio Fiscal')
+                            ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'UBICACION')),
                     ]),
 
                 Section::make('Datos Catastrales y Ubicación')
@@ -168,28 +172,7 @@ class ViewLicencia extends ViewRecord
                     ->schema([
                         TextEntry::make('giros_list')
                             ->label('Giros Registrados')
-                            ->html()
-                            ->getStateUsing(function ($record) {
-                                $giroService = app(\App\Services\Sil\Licencias\GiroLicenciaService::class);
-                                $girosLicencia = $giroService->obtenerGirosPorIdLicencia($record->lic_id);
-
-                                if ($girosLicencia->isEmpty()) {
-                                    return '<span class="text-gray-500 italic">No se registraron giros</span>';
-                                }
-
-                                $html = '<ul class="list-disc ml-5">';
-                                foreach ($girosLicencia as $giro) {
-                                    $html .= "<li><strong>" . ($giro->gir_descripcion ?? 'N/A') . "</strong>";
-                                    if (!empty($giro->lig_giroespecifico)) {
-                                        $html .= " <span class='text-gray-600 dark:text-gray-400'>({$giro->lig_giroespecifico})</span>";
-                                    }
-                                    $html .= "</li>";
-                                }
-                                $html .= '</ul>';
-
-                                return $html;
-                            })
-                            ->columnSpanFull(),
+                            ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'GIRO_ESPECIFICOS') ?: self::getDatoDirecto($record, 'GIRO'))->columnSpanFull(),
                     ]),
 
                 Section::make('Observaciones y Notas')
