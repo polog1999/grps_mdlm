@@ -11,12 +11,12 @@ class EditTrabajador extends EditRecord
 {
     protected static string $resource = TrabajadorResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+    // protected function getHeaderActions(): array
+    // {
+    //     return [
+    //         DeleteAction::make(),
+    //     ];
+    // }
    protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

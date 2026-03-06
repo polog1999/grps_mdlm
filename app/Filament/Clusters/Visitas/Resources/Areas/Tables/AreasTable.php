@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Visitas\Resources\Areas\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -46,6 +47,7 @@ class AreasTable
             ->recordActions([
                 EditAction::make()
                     ->visible(fn() => auth()->user()->hasPermissionTo('edit::visitas_area')),
+                    DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
