@@ -16,9 +16,11 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use App\Models\Anuncios;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Pages\Concerns\ExposesTableToWidgets;
 
 class ListAnuncios extends ListRecords
 {
+    use ExposesTableToWidgets;
     protected static string $resource = AnunciosResource::class;
 
     protected function getHeaderActions(): array

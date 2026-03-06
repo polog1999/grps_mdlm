@@ -16,8 +16,8 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 use Filament\Support\Colors\Color;
 use Filament\Notifications\Notification;
@@ -131,18 +131,31 @@ class AnunciosTable
                     ->openUrlInNewTab(),
             ])
             ->filters([
-                SelectFilter::make('mes')
-                    ->label('Filtrar por Mes')
-                    ->options([
-                        '01' => 'Enero',
-                        '02' => 'Febrero',
-                        '03' => 'Marzo',
-                        // ... completa los meses
+                Filter::make('fecha_expediente')
+                    ->form([
+                        DatePicker::make('desde')
+                            ->label('Desde (Fecha Expediente)')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                        DatePicker::make('hasta')
+                            ->label('Hasta (Fecha Expediente)')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
                     ])
-                    ->query(function (Builder $query, array $data) {
-                        if (!empty($data['value'])) {
-                            $query->whereMonth('anuncios.anuncios.created_at', $data['value']);
-                        }
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['desde'],
+                                fn(Builder $query, $date): Builder => $query->whereHas('expediente', function ($q) use ($date) {
+                                    $q->whereDate('fecha_expediente', '>=', $date);
+                                }),
+                            )
+                            ->when(
+                                $data['hasta'],
+                                fn(Builder $query, $date): Builder => $query->whereHas('expediente', function ($q) use ($date) {
+                                    $q->whereDate('fecha_expediente', '<=', $date);
+                                }),
+                            );
                     }),
             ])
             ->recordActions([
