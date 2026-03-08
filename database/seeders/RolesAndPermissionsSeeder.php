@@ -88,6 +88,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'create::persona', // Crear persona
             'edit::persona', // Editar persona
 
+
+            //Permisos para RR.HH
+            'view::rrhh',
+            'view::asistencias',
+            'view::informe_actividades',
+
         ];
 
         foreach ($permissions as $permission) {
