@@ -77,6 +77,14 @@ return [
             'root' => env('PATH_LICENCIAS'),
             'throw' => false,
         ],
+
+        //
+        'informes_tecnicos_teletrabajo' => [
+            'driver' => 'local',
+            'root' => env('PATH_INFORMES_ASISTENCIA_TELETRABAJO'),
+            'visibility' => 'public',
+            'throw' => false,
+        ]
     ],
 
     /*
