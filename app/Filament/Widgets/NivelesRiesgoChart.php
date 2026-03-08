@@ -9,6 +9,11 @@ use App\Models\CertificadoLicenciaFuncionamiento;
 use App\Services\Sil\Widgets\NivelesRiesgoLicenciasService;
 class NivelesRiesgoChart extends ChartWidget
 {
+    public static function canView(): bool
+    {
+        return auth()->user()->can('view::niveles_riesgo_chart');
+    }
+
     protected ?string $heading = 'Licencia por Nivel de Riesgo';
 
     protected static ?int $sort = 2;
