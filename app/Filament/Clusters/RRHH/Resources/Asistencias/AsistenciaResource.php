@@ -33,6 +33,11 @@ class AsistenciaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Asistencia';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->can('view::asistencias');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return AsistenciaForm::configure($schema);

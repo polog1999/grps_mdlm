@@ -32,6 +32,11 @@ class InformeActividadResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'InformeActividad';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->can('view::informe_actividades');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return InformeActividadForm::configure($schema);
