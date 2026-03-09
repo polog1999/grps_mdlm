@@ -22,12 +22,17 @@ class AnunciosResource extends Resource
 {
     protected static ?string $model = Anuncios::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;
 
     protected static ?string $cluster = SilCluster::class;
 
     protected static string|UnitEnum|null $navigationGroup = 'Anuncios';
     protected static ?string $recordTitleAttribute = 'Anuncios';
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->can('view::anuncios');
+    }
 
     public static function form(Schema $schema): Schema
     {
