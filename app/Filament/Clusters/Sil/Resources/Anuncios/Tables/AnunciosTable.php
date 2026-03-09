@@ -89,7 +89,14 @@ class AnunciosTable
                     ->searchable(),
                 TextColumn::make('licencia.lic_numlic')
                     ->label('N° Licencia')
-                    ->searchable(),
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->whereExists(function ($q) use ($search) {
+                            $q->select(\Illuminate\Support\Facades\DB::raw(1))
+                                ->from('licencia.licencia')
+                                ->whereRaw('anuncios.anuncios.id_licencia = licencia.licencia.lic_id::varchar')
+                                ->whereRaw('lower(lic_numlic::text) like ?', ['%' . strtolower($search) . '%']);
+                        });
+                    }),
                 TextColumn::make('ancho_m')
                     ->numeric()
                     ->sortable(),

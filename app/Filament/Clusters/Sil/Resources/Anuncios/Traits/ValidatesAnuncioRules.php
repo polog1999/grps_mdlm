@@ -19,71 +19,9 @@ trait ValidatesAnuncioRules
 
     protected function validarReglasDeNegocio(array $data): void
     {
-        $this->validarProcedenteRequiereNumero($data);
         $this->validarFormatoNumeroAnuncio($data);
         $this->validarFechasVigencia($data);
-        $this->validarImprocedenteNoRequiereNumero($data);
     }
-
-    /**
-     * Un anuncio con dictamen PROCEDENTE debe tener un N° de Anuncio asignado.
-     */
-    protected function validarProcedenteRequiereNumero(array $data): void
-    {
-        if (!isset($data['dictamen'])) {
-            return;
-        }
-
-        $esProcedente = $data['dictamen'] === Dictamen::PROCEDENTE->value
-            || $data['dictamen'] === Dictamen::PROCEDENTE;
-
-        $noTieneNumero = !isset($data['n_anuncio'])
-            || is_null($data['n_anuncio'])
-            || trim((string) $data['n_anuncio']) === '';
-
-        if ($esProcedente && $noTieneNumero) {
-            Notification::make()
-                ->title('Error de Validación')
-                ->body('No se puede guardar un anuncio PROCEDENTE sin un N° de Anuncio asignado.')
-                ->danger()
-                ->send();
-
-            throw ValidationException::withMessages([
-                'n_anuncio' => 'Error: No se puede guardar un anuncio PROCEDENTE sin un N° de Anuncio asignado.',
-            ]);
-        }
-    }
-
-    protected function validarImprocedenteNoRequiereNumero(array $data): void
-    {
-
-        if (!isset($data['dictamen'])) {
-            return;
-        }
-        //LOS IMPROCEDENTES Y OBSERVADOS NO DEBEN DE TENER NUMERO
-
-        $esImProcedente = $data['dictamen'] === Dictamen::IMPROCEDENTE->value
-            || $data['dictamen'] === Dictamen::IMPROCEDENTE;
-        $esObservado = $data['dictamen'] === Dictamen::OBSERVADO->value
-            || $data['dictamen'] === Dictamen::OBSERVADO;
-
-        $tieneNumero = isset($data['n_anuncio'])
-            || !is_null($data['n_anuncio'])
-            || trim((string) $data['n_anuncio']) !== '';
-
-        if (($esImProcedente || $esObservado) && $tieneNumero) {
-            Notification::make()
-                ->title('Error de Validación')
-                ->body('No se puede guardar un anuncio IMPROCEDENTE u OBSERVADO con un N° de Anuncio asignado.')
-                ->danger()
-                ->send();
-
-            throw ValidationException::withMessages([
-                'n_anuncio' => 'Error: No se puede guardar un anuncio IMPROCEDENTE u OBSERVADO con un N° de Anuncio asignado.',
-            ]);
-        }
-    }
-
 
     /**
      * El N° de Anuncio debe ser exactamente de 6 dígitos numéricos.
