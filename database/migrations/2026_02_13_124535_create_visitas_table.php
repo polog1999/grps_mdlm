@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('sede_id')->constrained('visitas.sedes');
             $table->foreignId('area_id')->nullable()->constrained('visitas.areas');
             $table->foreignId('trabajador_id_autoriza')->nullable()->constrained('visitas.personas');
-            $table->foreignId('user_id_ingreso')->constrained('users');
+            $table->foreignId('user_id_ingreso')->nullable()->constrained('users');
             $table->foreignId('user_id_salida')->nullable()->constrained('users');
             $table->string('motivo')->nullable();
             $table->string('obs')->nullable();

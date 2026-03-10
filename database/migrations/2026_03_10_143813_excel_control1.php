@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::create('visitas.excel_control1', function (Blueprint $table) {
             $table->id();
-            $table->string('tipo_documento', 20);
-            $table->string('numero_documento', 20);
-            $table->string('nombres_completos', 20);
-            $table->string('area', 20);
-            $table->string('persona_autoriza', 20);
-            $table->string('cargo', 20);
-            $table->string('sede', 20);
+            $table->string('tipo_documento', 20)->nullable();
+            $table->string('numero_documento',20)->nullable();
+            $table->string('nombres_completos')->nullable();
+            $table->string('area')->nullable();
+            $table->string('persona_autoriza')->nullable();
+            $table->string('cargo')->nullable();
+            $table->string('sede')->nullable();
             $table->timestamp('hora_salida');
             $table->timestamp('hora_ingreso');
-            $table->string('motivo', 20);
+            $table->string('motivo')->nullable();
             $table->date('fecha');
-            $table->string('usuario', 20);
+            $table->string('usuario')->nullable();
 
         });
     }
