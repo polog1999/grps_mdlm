@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -37,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('images/favicon.png'))
             ->authGuard('web')
             ->authPasswordBroker('users')
-            ->login()
+            ->login(Login::class)
             ->profile()
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
@@ -45,6 +46,7 @@ class AdminPanelProvider extends PanelProvider
             ->globalSearch(false)
             ->sidebarFullyCollapsibleOnDesktop()
             ->maxContentWidth(Width::Full)
+            ->plugin(\MarcoGermani87\FilamentCaptcha\FilamentCaptcha::make())
 
             ->colors([
                 'primary' => Color::Amber,
