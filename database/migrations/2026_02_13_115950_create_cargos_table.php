@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('visitas.cargos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // de_cargo
+            $table->string('nombre')->unique(); // de_cargo
             $table->string('nombre_corto')->nullable(); // dc_cargo
             $table->boolean('estado')->default(true);
             $table->foreignId('user_id_creo')->nullable()->constrained('users');
