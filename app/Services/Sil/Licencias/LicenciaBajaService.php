@@ -67,6 +67,21 @@ class LicenciaBajaService
                 'mensaje' => $resultado->mensaje ?? null
             ]);
 
+            // SINCRONIZACIÓN DE ANUNCIOS:
+            // Si el procedimiento almacenado fue éxitoso (en el log vemos que error = 3197 es "Registro se ha grabado satisfactoriamente"),
+            // procedemos a dar de baja los anuncios.
+            if (isset($resultado->error) && $resultado->error > 0) {
+                // Importamos modelos dinámicamente si no están arriba
+                $updatedCount = \App\Models\Anuncios::where('id_licencia', $data['lic_id'])
+                    ->where('estado_anuncio', '!=', \App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio::BAJA->value)
+                    ->update(['estado_anuncio' => \App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio::BAJA->value]);
+
+                \Log::info("LicenciaBajaService::bajaLicencia - Sincronización Anuncios BAJA", [
+                    'lic_id' => $data['lic_id'],
+                    'anuncios_actualizados' => $updatedCount
+                ]);
+            }
+
             return $resultado;
 
         } catch (\Exception $e) {

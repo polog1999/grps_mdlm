@@ -68,12 +68,19 @@ class LicenseExpirationService
             $license->esl_id = self::EXPIRED_STATUS;
             $license->save();
 
+            // SINCRONIZACIÓN DE ANUNCIOS:
+            // Si la licencia pasó a estado 6 (EXPIRED_STATUS), debemos dar de baja los anuncios relacionados.
+            $anunciosUpdatedCount = \App\Models\Anuncios::where('id_licencia', $licenseId)
+                ->where('estado_anuncio', '!=', \App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio::BAJA->value)
+                ->update(['estado_anuncio' => \App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio::BAJA->value]);
+
             Log::info("Licencia expirada automáticamente", [
                 'lic_id' => $licenseId,
                 'lic_numlic' => $license->lic_numlic,
                 'old_status' => $oldStatus,
                 'new_status' => self::EXPIRED_STATUS,
-                'fecha_vencimiento' => $license->lic_fechavencimiento
+                'fecha_vencimiento' => $license->lic_fechavencimiento,
+                'anuncios_baja_sync' => $anunciosUpdatedCount
             ]);
 
             return true;
