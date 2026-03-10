@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('persona_autoriza', 20);
             $table->string('cargo', 20);
             $table->string('sede', 20);
-            $table->timestap('hora_salida');
-            $table->timestap('hora_ingreso');
+            $table->timestamp('hora_salida');
+            $table->timestamp('hora_ingreso');
             $table->string('motivo', 20);
             $table->date('fecha');
             $table->string('usuario', 20);
