@@ -116,14 +116,6 @@ class AnunciosForm
                                 ->label('Fecha de Expediente')
                                 ->native(false)
                                 ->displayFormat('d/m/Y'),
-                            Select::make('zonificacion_id')
-                                ->label('Zonificación')
-                                ->options(fn() => Zonificacion::query()
-                                    ->get()
-                                    ->mapWithKeys(fn($z) => [$z->id => "{$z->siglas} - {$z->descripcion}"]))
-                                ->searchable()
-                                ->preload()
-                                ->required(),
                         ]),
 
                     Step::make('Datos Licencia de Funcionamiento')
@@ -153,6 +145,8 @@ class AnunciosForm
                                     $set('snapshot_lic_tipo', null);
                                     $set('form_direccion_predio', null);
                                 }),
+
+
 
                             Section::make('Detalles de la Licencia')
                                 ->description('Ingrese la información del documento')
@@ -195,6 +189,26 @@ class AnunciosForm
                                                         : ($datos->GIRO ?? 'GIRO NO DEFINIDO');
                                                     $tipo = str($datos->TIPO_LICENCIA)->upper()->trim()->toString();
                                                     // LOG 2: Éxito
+                                
+                                                    $siglaZonificacion = trim($datos->ZONIFICACION ?? '');
+
+                                                    if (!empty($siglaZonificacion)) {
+                                                        // 2. Buscar en tu tabla local de Zonificacion por la columna 'siglas'
+                                                        // Usamos whereRaw o str_replace para asegurar una comparación limpia
+                                                        $zonificacionLocal = Zonificacion::where('siglas', 'ILIKE', $siglaZonificacion)->first();
+
+                                                        if ($zonificacionLocal) {
+                                                            // 3. Si existe, seteamos el ID en el select
+                                                            $set('zonificacion_id', $zonificacionLocal->id);
+
+                                                            Log::info("Zonificación autocompletada: {$siglaZonificacion} (ID: {$zonificacionLocal->id})");
+                                                        } else {
+                                                            Log::warning("No se encontró la sigla '{$siglaZonificacion}' en la tabla local de Zonificaciones.");
+                                                            $set('zonificacion_id', null);
+                                                        }
+                                                    } else {
+                                                        $set('zonificacion_id', null);
+                                                    }
                                                     Log::info('Datos de licencia encontrados con éxito.', [
                                                         'id' => $state,
                                                         'giro' => $giroFinal,
@@ -238,11 +252,24 @@ class AnunciosForm
                                 ])
                                 ->visible(fn($get) => $get('tiene_licencia') === 'si')
                                 ->columns(2),
+                            Section::make('Zonificación')
+                                ->schema([
+                                    Select::make('zonificacion_id')
+                                        ->label('Zonificación')
+                                        ->options(fn() => Zonificacion::query()
+                                            ->get()
+                                            ->mapWithKeys(fn($z) => [$z->id => "{$z->siglas} - {$z->descripcion}"]))
+                                        ->searchable()
+                                        ->preload()
+                                        ->required(),
+                                ]),
 
                             Placeholder::make('info_no_licencia')
                                 ->label('')
                                 ->content('El anuncio se procesará como "Sin Licencia Previa".')
                                 ->visible(fn($get) => $get('tiene_licencia') === 'no'),
+
+
                         ]),
                     //Step buscar persona legal
                     Step::make('Persona Legal')
