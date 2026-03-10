@@ -10,9 +10,9 @@ return [
     // optional, default is 'abcdefghijklmnpqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     'charset' => 'abcdefghjkmnpqrstuvwxyz23456789',
 
-    'width' => 180,
+    'width' => 500,
 
-    'height' => 50,
+    'height' => 130,
 
     'background_color' => [255, 255, 255],
 
