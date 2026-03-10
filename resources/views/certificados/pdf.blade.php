@@ -298,8 +298,8 @@
 <body>
 
     <!-- Número arriba a la derecha (absoluto para no mover el resto) -->
-    <div style="position: absolute; top: 54px; right: 30px; font-size: 22px; font-weight: bold;">
-        {{$record->cin_numero}}
+    <div style="position: absolute; top: 58px; right: 5px; font-size: 22px; font-weight: bold;">
+        00{{$record->cin_numero}}
     </div>
 
     <!-- Anexo Encabezado arriba -->
