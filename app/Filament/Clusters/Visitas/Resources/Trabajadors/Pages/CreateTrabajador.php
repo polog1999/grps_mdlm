@@ -36,6 +36,8 @@ class CreateTrabajador extends CreateRecord
         );
 
         $data['persona_id'] = $persona->id;
+        $data['user_id_creo'] = auth()->id();
+        $data['user_id_modi'] = auth()->id();
 
         // 2. Limpiar campos que no pertenecen a la tabla 'trabajadores'
         // para evitar el error SQL de "columna no existe"

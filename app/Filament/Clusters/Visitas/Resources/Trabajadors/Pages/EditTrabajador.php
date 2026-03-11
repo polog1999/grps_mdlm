@@ -83,6 +83,7 @@ class EditTrabajador extends EditRecord
                 'user_id_modi' => auth()->id(),
             ]);
         }
+        $data['user_id_modi'] = auth()->id();
 
         // LIMPIEZA: Quitamos TODO lo que no sea de la tabla 'trabajadores'
         return array_diff_key($data, array_flip([

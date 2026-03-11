@@ -42,15 +42,16 @@ class CreateVisita extends CreateRecord
         ];
     }
     public function getBreadcrumb(): string
-{
-    return 'Registro';
-}
-public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
-{
-    return 'Registro de Visita';
-}
+    {
+        return 'Registro';
+    }
+    public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
+    {
+        return 'Registro de Visita';
+    }
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $personaExistente = PersonaUno::where('numero_documento', $data['numero_documento'])->first();
         $persona = PersonaUno::updateOrCreate(
             ['numero_documento' => $data['numero_documento']],
             [
@@ -59,6 +60,9 @@ public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
                 'apellido_paterno' => $data['apellido_paterno'],
                 'apellido_materno' => $data['apellido_materno'],
                 'foto_url' => $data['foto_url'] ?? null,
+                'user_id_creo'      => $personaExistente ? $personaExistente->user_id_creo : auth()->id(),
+                'user_id_modi' => auth()->id(),
+
             ]
         );
 
@@ -80,13 +84,13 @@ public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
         return $data;
     }
     protected function getCreateFormAction(): \Filament\Actions\Action
-{
-    return parent::getCreateFormAction()
-        ->label('Registrar Visita'); // Cambia el texto aquí
-}
-protected function getCreateAnotherFormAction(): \Filament\Actions\Action
-{
-    return parent::getCreateAnotherFormAction()
-        ->label('Registrar y registrar otro'); // <--- Pon aquí el nombre que prefieras
-}
+    {
+        return parent::getCreateFormAction()
+            ->label('Registrar Visita'); // Cambia el texto aquí
+    }
+    protected function getCreateAnotherFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCreateAnotherFormAction()
+            ->label('Registrar y registrar otro'); // <--- Pon aquí el nombre que prefieras
+    }
 }
