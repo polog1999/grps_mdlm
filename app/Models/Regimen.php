@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Regimen extends Model
 {
@@ -19,6 +20,10 @@ class Regimen extends Model
         'created_at',
         'updated_at'
     ];
+    use SoftDeletes; // 2. Usar el Trait
+
+    protected $dates = ['deleted_at'];
+    
      public function parentRegimen(): BelongsTo
     {
         return $this->belongsTo(Regimen::class, 'parent_id', 'id');

@@ -6,9 +6,12 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class SedesTable
@@ -52,11 +55,19 @@ class SedesTable
                     1 => 'Activo',
                     0 => 'Inactivo',
                 ]),
+                TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
         ])
-        ->actions([
-           EditAction::make(),
-           DeleteAction::make(),
-        ])
+       
+            ->recordActions([
+                EditAction::make()
+                ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_sede')),
+                DeleteAction::make()
+                    ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+                RestoreAction::make()
+                    ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+                ForceDeleteAction::make()
+                    ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+            ])
         ->bulkActions([
             BulkActionGroup::make([
                 DeleteBulkAction::make(),
