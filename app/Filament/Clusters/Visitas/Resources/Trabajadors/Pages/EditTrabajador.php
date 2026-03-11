@@ -80,8 +80,10 @@ class EditTrabajador extends EditRecord
                 'apellido_materno'  => $data['apellido_materno'],
                 'fecha_nacimiento'  => $data['fecha_nacimiento'],
                 'foto_url'          => $data['foto_url'] ?? $trabajador->persona->foto_url,
+                'user_id_modi' => auth()->id(),
             ]);
         }
+        $data['user_id_modi'] = auth()->id();
 
         // LIMPIEZA: Quitamos TODO lo que no sea de la tabla 'trabajadores'
         return array_diff_key($data, array_flip([

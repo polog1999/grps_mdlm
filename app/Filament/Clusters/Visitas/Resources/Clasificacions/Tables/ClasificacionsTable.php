@@ -18,16 +18,18 @@ class ClasificacionsTable
             ->columns([
                 TextColumn::make('nombre')
                     ->searchable(),
-                IconColumn::make('in_esta')
-                    ->boolean(),
+                // IconColumn::make('in_esta')
+                //     ->boolean(),
                 IconColumn::make('estado')
                     ->boolean(),
                 TextColumn::make('user_id_creo')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user_id_modi')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
