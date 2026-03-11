@@ -2,10 +2,14 @@
 
 namespace App\Filament\Clusters\Visitas\Resources\Trabajadors\Schemas;
 
+use App\Models\Area;
+use App\Models\Cargo;
+use App\Models\Clasificacion;
 use Filament\Schemas\Schema;
 use App\Models\Persona;
 use App\Models\PersonaUno;
 use App\Models\Regimen;
+use App\Models\TipoDocumento;
 use App\Models\Trabajador;
 use App\Services\PideService;
 use BackedEnum;
@@ -36,7 +40,10 @@ class TrabajadorForm
                 Section::make('Identificación y Datos Personales')
                     ->schema([
                         Select::make('tipo_documento_id')
-                            ->relationship('persona.tipoDocumento', 'nombre')
+                            ->options(fn() =>
+                                TipoDocumento::where('estado', true)
+                                    ->pluck('nombre', 'id') // Trae el nombre para mostrar y el id para guardar
+                            )
                             ->label('Tipo de Documento')
                             ->default(1)
                             ->required()
@@ -215,12 +222,17 @@ class TrabajadorForm
 
 
                         Select::make('clasificacion_id')
-                            ->relationship('clasificacion', 'nombre')
+                            // ->relationship('clasificacion', 'nombre')
+                            ->options(fn() =>
+                                Clasificacion::where('estado', true)
+                                    ->pluck('nombre', 'id') // Trae el nombre para mostrar y el id para guardar
+                            )
                             ->label('Clasificación')
                             ->required(),
                         Select::make('regimen_id')
-                            ->relationship('regimen', 'cregimen')
-                            ->options(Regimen::where('estado', true)->where('parent_id', '>', 0)->orderBy('parent_id', 'asc')->pluck('cregimen', 'id'))
+                            // ->relationship('regimen', 'cregimen')
+                          
+                            ->options(fn() => Regimen::where('estado', true)->where('parent_id', '>', 0)->orderBy('parent_id', 'asc')->pluck('cregimen', 'id'))
                             ->label('Régimen')
                             ->required(),
                         DatePicker::make('fecha_ingreso')
@@ -245,7 +257,7 @@ class TrabajadorForm
                             ->schema([
                                 Select::make('cargo_id')
                                     ->label('Cargo')
-                                    ->options(fn() => \App\Models\Cargo::pluck('nombre', 'id'))
+                                    ->options(fn() => Cargo::where('estado',true)->pluck('nombre', 'id'))
                                     ->createOptionForm([
                                         TextInput::make('nombre')
                                             ->required(),
@@ -265,7 +277,7 @@ class TrabajadorForm
                                 //     ->required(),
                                 Select::make('area_id')
                                     ->label('Área')
-                                    ->options(\App\Models\Area::pluck('nombre', 'id'))
+                                    ->options(fn() => Area::where('estado',true)->pluck('nombre', 'id'))
                                     ->required()
                                     ->searchable(),
                                 // Select::make('sede_id')
