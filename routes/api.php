@@ -18,6 +18,7 @@ use App\Http\Controllers\LicenciaCrudController;
 use App\Http\Controllers\ResolucionController;
 use App\Http\Controllers\ExpedienteGestradController;
 use App\Http\Controllers\DataLevantamientoController;
+use App\Services\PideService;
 
 /*
 |--------------------------------------------------------------------------
@@ -336,3 +337,5 @@ Route::prefix('v1')->group(function () {
         Route::get('/persona/{term?}', [ExpedienteGestradController::class, 'getPersona']);
     });
 });
+
+Route::get('dni/{dni}',[PideService::class, 'ws_reniec']);
