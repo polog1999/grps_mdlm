@@ -164,7 +164,7 @@ class EditTrabajador extends EditRecord
             [
                 // 'de_cargo'     => $item['de_cargo'],
                 'fecha_inicio' => $item['fecha_inicio'],
-                // 'user_id_creo' => auth()->id(),
+                'user_id_creo' => auth()->id(),
                 'user_id_modi' => auth()->id(),
             ]
         );
