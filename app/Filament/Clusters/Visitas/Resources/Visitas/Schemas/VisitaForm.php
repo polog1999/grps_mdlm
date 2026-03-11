@@ -4,6 +4,7 @@ namespace App\Filament\Clusters\Visitas\Resources\Visitas\Schemas;
 
 use App\Models\Area;
 use App\Models\PersonaUno;
+use App\Models\TipoDocumento;
 use App\Models\Trabajador;
 use App\Services\PideService;
 use Filament\Actions\Action;
@@ -27,7 +28,11 @@ class VisitaForm
                     ->schema([
                         Select::make('tipo_documento_id')
                             ->label('Tipo de Documento')
-                            ->relationship('persona.tipoDocumento', 'nombre')
+                            // ->relationship('persona.tipoDocumento', 'nombre')
+                            ->options(fn() =>
+                                TipoDocumento::where('estado', true)
+                                    ->pluck('nombre', 'id') // Trae el nombre para mostrar y el id para guardar
+                            )
                             ->default(1)
                             ->live()
                             ->required(),
@@ -211,7 +216,7 @@ class VisitaForm
                         //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
-                            ->options(Area::orderBy('nombre', 'asc')->pluck('nombre', 'id'))
+                            ->options(fn() => Area::where('estado',true)->orderBy('nombre', 'asc')->pluck('nombre', 'id'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required(),
@@ -222,7 +227,7 @@ class VisitaForm
                                 $areaId = $get('area_id');
                                 if (!$areaId) return [];
 
-                                return \App\Models\Trabajador::query()
+                                return Trabajador::query()
                                     ->whereHas('historiales', function ($query) use ($areaId) {
                                         $query->where('area_id', $areaId)
                                             ->where('es_actual', true);
