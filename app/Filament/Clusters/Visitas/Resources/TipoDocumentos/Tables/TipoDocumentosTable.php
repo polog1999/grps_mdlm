@@ -24,10 +24,12 @@ class TipoDocumentosTable
                     ->boolean(),
                 TextColumn::make('user_id_creo')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user_id_modi')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

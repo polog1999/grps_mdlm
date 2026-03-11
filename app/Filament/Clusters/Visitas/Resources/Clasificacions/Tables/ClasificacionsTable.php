@@ -18,8 +18,8 @@ class ClasificacionsTable
             ->columns([
                 TextColumn::make('nombre')
                     ->searchable(),
-                IconColumn::make('in_esta')
-                    ->boolean(),
+                // IconColumn::make('in_esta')
+                //     ->boolean(),
                 IconColumn::make('estado')
                     ->boolean(),
                 TextColumn::make('user_id_creo')
