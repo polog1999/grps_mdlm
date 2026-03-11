@@ -18,9 +18,9 @@ class ClasificacionForm
                 ->schema([
                 TextInput::make('nombre')
                     ->required(),
-                Toggle::make('in_esta')
-                ->default(true)
-                    ->required(),
+                // Toggle::make('in_esta')
+                // ->default(true)
+                //     ->required(),
                 Toggle::make('estado')
                 ->default(true)
                     ->required()
