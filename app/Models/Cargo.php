@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cargo extends Model
 {
@@ -14,6 +15,10 @@ class Cargo extends Model
         'user_id_modi'
 
     ];
+    use SoftDeletes; // 2. Usar el Trait
+
+    protected $dates = ['deleted_at'];
+    
     protected $table='visitas.cargos';
 
     public function historiales()

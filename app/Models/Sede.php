@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sede extends Model
 {
@@ -15,6 +16,10 @@ class Sede extends Model
      * * @var string
      */
     protected $table = 'visitas.sedes';
+    
+    use SoftDeletes; // 2. Usar el Trait
+
+    protected $dates = ['deleted_at'];
 
     /**
      * La llave primaria asociada a la tabla.
