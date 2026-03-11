@@ -124,6 +124,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'view::visitas_visita',              // Ver listado de visitas
             'edit::visitas_visita',         // Ver detalle o información específica de una visita
             'create::visitas_visita',            // Registrar/Crear una nueva visita
+               //VER, CREAR Y EDITAR DE REGIMEN
+            'view::visitas_regimen',              // Ver listado de visitas
+            'edit::visitas_regimen',         // Ver detalle o información específica de una visita
+            'create::visitas_regimen',            // Registrar/Crear una nueva visita
         ];
 
         foreach ($permissions as $permission) {

@@ -53,4 +53,8 @@ class RegimenResource extends Resource
             'edit' => EditRegimen::route('/{record}/edit'),
         ];
     }
+     public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_regimen');
+    }
 }

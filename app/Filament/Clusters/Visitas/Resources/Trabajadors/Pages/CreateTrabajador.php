@@ -15,6 +15,9 @@ class CreateTrabajador extends CreateRecord
     }
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+
+        // 1. Buscamos si la persona ya existe por su DNI
+        $personaExistente = PersonaUno::where('numero_documento', $data['numero_documento'])->first();
         // 1. Buscamos o creamos la persona antes de crear el trabajador
         // Esto es necesario para obtener el persona_id
         $persona = PersonaUno::updateOrCreate(
@@ -26,6 +29,9 @@ class CreateTrabajador extends CreateRecord
                 'apellido_materno' => $data['apellido_materno'],
                 'fecha_nacimiento' => $data['fecha_nacimiento'],
                 'foto_url' => $data['foto_url'] ?? null,
+                // Si NO existe, asignamos el creador. Si EXISTE, mantenemos el que ya tiene.
+                'user_id_creo'      => $personaExistente ? $personaExistente->user_id_creo : auth()->id(),
+                'user_id_modi' => auth()->id(),
             ]
         );
 

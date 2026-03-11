@@ -80,6 +80,7 @@ class EditTrabajador extends EditRecord
                 'apellido_materno'  => $data['apellido_materno'],
                 'fecha_nacimiento'  => $data['fecha_nacimiento'],
                 'foto_url'          => $data['foto_url'] ?? $trabajador->persona->foto_url,
+                'user_id_modi' => auth()->id(),
             ]);
         }
 
@@ -162,7 +163,7 @@ class EditTrabajador extends EditRecord
             [
                 // 'de_cargo'     => $item['de_cargo'],
                 'fecha_inicio' => $item['fecha_inicio'],
-                'user_id_creo' => auth()->id(),
+                // 'user_id_creo' => auth()->id(),
                 'user_id_modi' => auth()->id(),
             ]
         );

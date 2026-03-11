@@ -227,7 +227,7 @@ class VisitaForm
                                         $query->where('area_id', $areaId)
                                             ->where('es_actual', true);
                                     })
-                                    ->whereNot('regimen_id', ['5', '6', '7', '14'])
+                                    ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
                                     ->where('estado', true)
                                     ->with('persona') // Eager loading para evitar consultas lentas
                                     ->get()
