@@ -16,7 +16,7 @@ return new class extends Migration {
 
                 -- Relación con la tabla de usuarios del sistema
                 usuario_id INTEGER NOT NULL
-                    REFERENCES public.users(id)
+                    REFERENCES itse.users(id)
                     ON DELETE RESTRICT,
 
                 -- TIMESTAMPTZ almacena internamente en UTC y convierte automáticamente
