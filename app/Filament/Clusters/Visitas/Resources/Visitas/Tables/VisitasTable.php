@@ -52,7 +52,7 @@ class VisitasTable
                 TextColumn::make('motivo'),
                 
             ])->recordUrl(null)
-            ->defaultSort('fecha', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
+            ->defaultSort('fecha_ingreso', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
 
             ->filters([
                 Filter::make('hora_ingreso')
