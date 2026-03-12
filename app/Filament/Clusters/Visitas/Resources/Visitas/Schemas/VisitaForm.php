@@ -243,7 +243,7 @@ class VisitaForm
                                     });
                             })
                             ->searchable()
-                            ->required(),
+                            ->required(fn(Get $get) => $get('area_id') == 44 ? false : true),
 
                         TextInput::make('motivo')
                             ->required()
