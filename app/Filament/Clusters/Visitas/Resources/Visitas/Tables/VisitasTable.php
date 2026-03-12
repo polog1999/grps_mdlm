@@ -29,6 +29,7 @@ class VisitasTable
                     ->state(fn($record) => $record->hora_salida ? 'Salió' : 'En Sede')
                     ->color(fn($record) => $record->hora_salida ? 'gray' : 'success'),
                 TextColumn::make('fecha')->label('Fecha')->date('d/m/Y')->searchable(),
+                TextColumn::make('tipo_documento')->label('Tipo Documento')->searchable(),
                 TextColumn::make('numero_documento')->label('N° documento')->searchable(),
                 TextColumn::make('Apellidos y nombres')->label('Visitante')
                     ->searchable(

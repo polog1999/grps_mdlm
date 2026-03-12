@@ -19,7 +19,9 @@ use SoftDeletes; // 2. Usar el Trait
         'parent_id',
         'nombre_corto',
         'orden',
-        'estado'
+        'estado',
+        'user_id_creo',
+        'user_id_modi'
     ];
 
     // Relación: Una Área pertenece a una Sede
