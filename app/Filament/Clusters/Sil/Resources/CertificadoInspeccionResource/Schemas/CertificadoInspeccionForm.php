@@ -586,7 +586,7 @@ class CertificadoInspeccionForm
                             ->suffixIcon('heroicon-o-folder-open')
                             //->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
                             ->dehydrated()
-
+                            ->required()
                             ->extraInputAttributes(fn(callable $get) => [
                                 'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
                                 'style' => self::getAutofilledStyle($get, 'cin_expediente_autofilled'),
