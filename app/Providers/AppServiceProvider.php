@@ -6,6 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Filament\Support\Facades\FilamentColor;
 use Filament\Facades\Filament;
 
+use App\Models\CertificadoLicenciaFuncionamiento;
+use App\Observers\CertificadoLicenciaFuncionamientoObserver;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
