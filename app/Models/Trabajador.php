@@ -37,15 +37,15 @@ class Trabajador extends Model
             ->whereNull('fecha_fin');
     }
     protected static function booted()
-{
-    static::deleting(function ($trabajador) {
-        // Al borrar el trabajador, buscamos su persona y la eliminamos
-        if ($trabajador->persona) {
-            $trabajador->persona->delete();
-        }
-        
-        // También es buen momento para limpiar el historial de cargos
-        $trabajador->historiales()->delete();
-    });
-}
+    {
+        static::deleting(function ($trabajador) {
+            // Al borrar el trabajador, buscamos su persona y la eliminamos
+            if ($trabajador->persona) {
+                $trabajador->persona->delete();
+            }
+
+            // También es buen momento para limpiar el historial de cargos
+            $trabajador->historiales()->delete();
+        });
+    }
 }

@@ -89,7 +89,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
 
             //PERMISOS PARA VISITAS DEL MODULO AREAS
-            
+
             'view::visitas_area',              // Ver listado de visitas
             'edit::visitas_area',         // Ver detalle o información específica de una visita
             'create::visitas_area',            // Registrar/Crear una nueva visita
@@ -101,12 +101,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'create::visitas_cargo',            // Registrar/Crear una nueva visita
             'audit::visitas_cargo',
 
-             //VER, CREAR Y EDITAR DE CLASIFICACION
+            //VER, CREAR Y EDITAR DE CLASIFICACION
             'view::visitas_clasificacion',              // Ver listado de visitas
             'edit::visitas_clasificacion',         // Ver detalle o información específica de una visita
             'create::visitas_clasificacion',            // Registrar/Crear una nueva visita
             'audit::visitas_clasificacion',
-            
+
             //VER, CREAR Y EDITAR DE SEDE
             'view::visitas_sede',              // Ver listado de visitas
             'edit::visitas_sede',         // Ver detalle o información específica de una visita
@@ -120,19 +120,19 @@ class RolesAndPermissionsSeeder extends Seeder
             'audit::visitas_tipo_documento',
 
 
-               //VER, CREAR Y EDITAR DE TRABAJADOR
+            //VER, CREAR Y EDITAR DE TRABAJADOR
             'view::visitas_trabajador',              // Ver listado de visitas
             'edit::visitas_trabajador',         // Ver detalle o información específica de una visita
             'create::visitas_trabajador',            // Registrar/Crear una nueva visita
             'audit::visitas_trabajador',
-            
 
-              //VER, CREAR Y EDITAR DE VISITA
+
+            //VER, CREAR Y EDITAR DE VISITA
             'view::visitas_visita',              // Ver listado de visitas
             'edit::visitas_visita',         // Ver detalle o información específica de una visita
             'create::visitas_visita',            // Registrar/Crear una nueva visita
             'audit::visitas_visita',
-               //VER, CREAR Y EDITAR DE REGIMEN
+            //VER, CREAR Y EDITAR DE REGIMEN
             'view::visitas_regimen',              // Ver listado de visitas
             'edit::visitas_regimen',         // Ver detalle o información específica de una visita
             'create::visitas_regimen',            // Registrar/Crear una nueva visita

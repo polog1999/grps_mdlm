@@ -16,7 +16,7 @@ class Sede extends Model
      * * @var string
      */
     protected $table = 'visitas.sedes';
-    
+
     use SoftDeletes; // 2. Usar el Trait
 
     protected $dates = ['deleted_at'];
@@ -49,7 +49,7 @@ class Sede extends Model
         'aforo' => 'integer',
         'estado' => 'integer',
     ];
-    
+
     public function areas()
     {
         return $this->hasMany(Area::class);
@@ -59,10 +59,12 @@ class Sede extends Model
     {
         return $this->hasMany(HistorialCargo::class);
     }
-    public function userCreo(){
+    public function userCreo()
+    {
         return $this->belongsTo(User::class, 'user_id_creo');
     }
-    public function userModi(){
+    public function userModi()
+    {
         return $this->belongsTo(User::class, 'user_id_modi');
     }
 }
