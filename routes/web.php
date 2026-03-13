@@ -72,16 +72,25 @@ Route::get('/certificado-licencia/{licenciaId}', [App\Http\Controllers\Certifica
     ->name('certificado-licencia.mostrar');
 
 /**
- * Grupo de rutas protegidas por autenticaci�n y verificaci�n.
+ * Grupo de rutas protegidas por autenticación y verificación.
  *
- * Requiere que el usuario est� autenticado y haya verificado su email.
+ * Requiere que el usuario esté autenticado y haya verificado su email.
  */
 Route::middleware(['auth', 'verified'])->group(function () {
+
+
+
+    Route::get('/anuncios/{anuncio}/certificado-pdf', [AnuncioPdfController::class, 'mostrar'])
+        ->name('anuncios.certificado-pdf');
+
+
     /**
      * Ruta para el dashboard del usuario autenticado.
      *
      * Renderiza la vista 'dashboard' usando Inertia.
      */
+
+
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
