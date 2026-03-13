@@ -52,6 +52,6 @@ return [
     ],
 
     'libreoffice' => [
-        'bin' => env('LIBREOFFICE_BIN', 'libreoffice'),
+        'bin' => env('LIBREOFFICE_BIN', '/usr/bin/soffice'),
     ],
 ];
