@@ -29,6 +29,7 @@ class ClasificacionResource extends Resource
 
     protected static ?string $navigationLabel = 'Clasificaciones'; // <-- Cambia el nombre en el menú
     protected static ?string $pluralModelLabel = 'Clasificaciones'; // Corrige el título principal y las migas de pan
+    protected static ?string $slug = 'clasificaciones';
 
     public static function form(Schema $schema): Schema
     {

@@ -27,6 +27,9 @@ class AuditoriaRegimenResource extends Resource
     protected static ?string $cluster = VisitasCluster::class;
 
     protected static ?string $recordTitleAttribute = 'AuditoriaRegimen';
+    protected static ?string $navigationLabel = 'Auditoría Regímenes'; // <-- Cambia el nombre en el menú
+    protected static ?string $pluralModelLabel = 'Auditoría Regímenes'; // Corrige el título principal y las migas de pan
+    protected static ?string $slug = 'auditoria-regimenes';
 
     public static function form(Schema $schema): Schema
     {

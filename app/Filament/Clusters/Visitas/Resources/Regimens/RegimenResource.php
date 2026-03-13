@@ -27,6 +27,7 @@ class RegimenResource extends Resource
     protected static ?string $recordTitleAttribute = 'Regímen';
     protected static ?string $navigationLabel = 'Regímenes'; // <-- Cambia el nombre en el menú
     protected static ?string $pluralModelLabel = 'Regímenes'; // Corrige el título principal y las migas de pan
+    protected static ?string $slug = 'regimenes';
 
     public static function form(Schema $schema): Schema
     {
