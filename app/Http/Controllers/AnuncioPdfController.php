@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Anuncios;
 use App\Services\Sil\Anuncios\CertificadoAnuncioService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log; // <--- AGREGA ESTA LÍNEA
+use Illuminate\Support\Facades\Log;
 
 class AnuncioPdfController extends Controller
 {
