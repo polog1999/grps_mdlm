@@ -23,9 +23,14 @@ class AuditoriaClasificacionResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = 'tabler-eye-cog';
 
     protected static string|UnitEnum|null $navigationGroup = 'Auditorí­a';
+    
     protected static ?string $cluster = VisitasCluster::class;
 
     protected static ?string $recordTitleAttribute = 'AuditoriaClasificacion';
+    
+    protected static ?string $navigationLabel = 'Auditoría Clasificaciones'; // <-- Cambia el nombre en el menú
+    protected static ?string $pluralModelLabel = 'Auditoría Clasificaciones'; // Corrige el título principal y las migas de pan
+    protected static ?string $slug = 'auditoria-clasificaciones';
 
     public static function form(Schema $schema): Schema
     {
