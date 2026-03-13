@@ -56,6 +56,7 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para acciones de CertificadoLicenciaFuncionamiento
             'create::certificado_licencia_funcionamiento', // Registrar Nueva Licencia
             'edit::certificado_licencia_funcionamiento', // Modificar licencia
+            'view_details::certificado_licencia_funcionamiento', // Ver detalles de la licencia
             'view_qr::certificado_licencia_funcionamiento', // Ver QR
             'view_itse::certificado_licencia_funcionamiento', // Ver Certificados ITSE
             'generate_certificate::certificado_licencia_funcionamiento', // Generar certificado
@@ -86,6 +87,53 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para acciones de Personas
             'create::persona', // Crear persona
             'edit::persona', // Editar persona
+
+
+            //Permisos para RR.HH
+            'view::rrhh',
+            'view::asistencias',
+            'view::informe_actividades',
+
+            //PERMISOS PARA VISITAS DEL MODULO AREAS
+
+            'view::visitas_area',              // Ver listado de visitas
+            'edit::visitas_area',         // Ver detalle o información específica de una visita
+            'create::visitas_area',            // Registrar/Crear una nueva visita
+
+            //VER, CREAR Y EDITAR DE CARGO
+            'view::visitas_cargo',              // Ver listado de visitas
+            'edit::visitas_cargo',         // Ver detalle o información específica de una visita
+            'create::visitas_cargo',            // Registrar/Crear una nueva visita
+
+            //VER, CREAR Y EDITAR DE CLASIFICACION
+            'view::visitas_clasificacion',              // Ver listado de visitas
+            'edit::visitas_clasificacion',         // Ver detalle o información específica de una visita
+            'create::visitas_clasificacion',            // Registrar/Crear una nueva visita
+
+            //VER, CREAR Y EDITAR DE SEDE
+            'view::visitas_sede',              // Ver listado de visitas
+            'edit::visitas_sede',         // Ver detalle o información específica de una visita
+            'create::visitas_sede',            // Registrar/Crear una nueva visita
+
+            //VER, CREAR Y EDITAR DE TIPO_DOCUMENTO
+            'view::visitas_tipo_documento',              // Ver listado de visitas
+            'edit::visitas_tipo_documento',         // Ver detalle o información específica de una visita
+            'create::visitas_tipo_documento',            // Registrar/Crear una nueva visita
+
+
+            //VER, CREAR Y EDITAR DE TRABAJADOR
+            'view::visitas_trabajador',              // Ver listado de visitas
+            'edit::visitas_trabajador',         // Ver detalle o información específica de una visita
+            'create::visitas_trabajador',            // Registrar/Crear una nueva visita
+
+            //VER, CREAR Y EDITAR DE VISITA
+            'view::visitas_visita',              // Ver listado de visitas
+            'edit::visitas_visita',         // Ver detalle o información específica de una visita
+            'create::visitas_visita',            // Registrar/Crear una nueva visita
+            //VER, CREAR Y EDITAR DE REGIMEN
+            'view::visitas_regimen',              // Ver listado de visitas
+            'edit::visitas_regimen',         // Ver detalle o información específica de una visita
+            'create::visitas_regimen',            // Registrar/Crear una nueva visita
 
             // Permisos para Anuncios
             'view::anuncios',
