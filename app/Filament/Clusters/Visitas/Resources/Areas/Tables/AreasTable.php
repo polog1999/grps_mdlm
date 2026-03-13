@@ -36,15 +36,6 @@ class AreasTable
                     ->sortable(),
                 IconColumn::make('estado')
                     ->boolean(),
-
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('orden', 'asc')
             ->filters([

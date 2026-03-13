@@ -53,4 +53,8 @@ class AuditoriaCargoResource extends Resource
             // 'edit' => EditAuditoriaCargo::route('/{record}/edit'),
         ];
     }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_cargo');
+    }
 }

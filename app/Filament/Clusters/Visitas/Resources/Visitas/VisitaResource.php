@@ -63,4 +63,15 @@ class VisitaResource extends Resource
     {
         return auth()->user()->hasPermissionTo('view::visitas_visita');
     }
+public static function getEloquentQuery(): Builder
+{
+    $query = parent::getEloquentQuery();
+
+    // Si el usuario NO es admin, filtramos por su ID
+    if (!auth()->user()->hasRole('Administrador OTIE')) { 
+        $query->where('user_id_ingreso', auth()->id());
+    }
+
+    return $query;
+}
 }

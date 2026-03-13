@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Tables;
 
+use App\Models\ExcelControl1;
 use App\Models\Visita;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -43,15 +44,15 @@ class VisitasTable
                     ),
 
                 TextColumn::make('area')->label('Area')
-                ->searchable(),
+                    ->searchable(),
                 TextColumn::make('Autorizado por')->label('Autorizado por')
-                ->searchable(),
+                    ->searchable(),
                 TextColumn::make('hora_ingreso')->dateTime('H:i A')
-                ->searchable(),
+                    ->searchable(),
                 TextColumn::make('hora_salida')->dateTime('H:i A')
-                ->searchable(),
+                    ->searchable(),
                 TextColumn::make('motivo'),
-                
+
             ])->recordUrl(null)
             ->defaultSort('fecha', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
 
@@ -71,7 +72,7 @@ class VisitasTable
             ])
 
             ->recordActions([
-                
+
                 Action::make('marcar_salida')
                     ->label('Registrar Salida')
                     ->icon('heroicon-o-arrow-right-on-rectangle')
@@ -82,21 +83,33 @@ class VisitasTable
                     ->modalSubmitActionLabel('Sí, marcar salida')
                     ->visible(fn($record) => $record->hora_salida === null) // Solo si no ha salido
                     // AQUÍ ES DONDE VA EL MÉTODO, aplicado al $table
-      
+
                     ->action(function ($record) {
                         $idOriginal = $record->id_original;
-                        $visita = Visita::find($idOriginal);
-
-                        if ($visita) {
-                            $visita->update([
-                                'fecha_salida' => now(),
-                                'user_id_salida' => auth()->id(),
-                            ]);
-                            Notification::make()->title('Salida registrada')->success()->send();
+                        
+                        if ($record->origen == "PostgreSQL") {
+                            $visita = Visita::find($idOriginal);
+                            if ($visita) {
+                                $visita->update([
+                                    'fecha_salida' => now(),
+                                    'user_id_salida' => auth()->id(),
+                                ]);
+                                Notification::make()->title('Salida registrada')->success()->send();
+                            }
                         }
+                        // else if ($record->origen == "EXCEL") {
+                        //     $visita = ExcelControl1::find($idOriginal);
+                        //     if ($visita) {
+                        //         $visita->update([
+                        //             'hora_salida' => now(),
+                        //             'usuario' => auth()->id(),
+                        //         ]);
+                        //         Notification::make()->title('Salida registrada')->success()->send();
+                        //     }
+                        // }
                     }),
-                    // ViewAction::make()
-                    // , // Abre un modal de solo lectura
+                // ViewAction::make()
+                // , // Abre un modal de solo lectura
             ], position: RecordActionsPosition::BeforeCells);
     }
 }
