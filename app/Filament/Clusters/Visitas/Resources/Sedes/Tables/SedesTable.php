@@ -43,10 +43,6 @@ class SedesTable
                 ->falseIcon('heroicon-o-x-circle')
                 ->color(fn (int $state): string => $state === 1 ? 'success' : 'danger'),
 
-            TextColumn::make('created_at')
-                ->label('Fecha Registro')
-                ->dateTime('d/m/Y H:i')
-                ->toggleable(isToggledHiddenByDefault: true),
         ])
         ->filters([
             // Puedes añadir filtros aquí, por ejemplo: solo sedes activas

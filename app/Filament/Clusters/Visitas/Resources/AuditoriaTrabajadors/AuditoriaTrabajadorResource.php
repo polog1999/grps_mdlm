@@ -54,4 +54,8 @@ class AuditoriaTrabajadorResource extends Resource
             // 'edit' => EditAuditoriaTrabajador::route('/{record}/edit'),
         ];
     }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_trabajador');
+    }
 }

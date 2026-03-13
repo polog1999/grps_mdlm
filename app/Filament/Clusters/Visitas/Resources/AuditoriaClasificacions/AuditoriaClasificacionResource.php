@@ -48,8 +48,12 @@ class AuditoriaClasificacionResource extends Resource
     {
         return [
             'index' => ListAuditoriaClasificacions::route('/'),
-            'create' => CreateAuditoriaClasificacion::route('/create'),
-            'edit' => EditAuditoriaClasificacion::route('/{record}/edit'),
+            // 'create' => CreateAuditoriaClasificacion::route('/create'),
+            // 'edit' => EditAuditoriaClasificacion::route('/{record}/edit'),
         ];
+    }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_clasificacion');
     }
 }

@@ -49,8 +49,12 @@ class AuditoriaTipoDocumentoResource extends Resource
     {
         return [
             'index' => ListAuditoriaTipoDocumentos::route('/'),
-            'create' => CreateAuditoriaTipoDocumento::route('/create'),
-            'edit' => EditAuditoriaTipoDocumento::route('/{record}/edit'),
+            // 'create' => CreateAuditoriaTipoDocumento::route('/create'),
+            // 'edit' => EditAuditoriaTipoDocumento::route('/{record}/edit'),
         ];
+    }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_tipo_documento');
     }
 }

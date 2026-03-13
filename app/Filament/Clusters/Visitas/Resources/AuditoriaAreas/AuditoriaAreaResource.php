@@ -44,6 +44,11 @@ class AuditoriaAreaResource extends Resource
             //
         ];
     }
+    
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_area');
+    }
 
     public static function getPages(): array
     {

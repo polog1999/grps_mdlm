@@ -49,8 +49,12 @@ class AuditoriaVisitaResource extends Resource
     {
         return [
             'index' => ListAuditoriaVisitas::route('/'),
-            'create' => CreateAuditoriaVisita::route('/create'),
-            'edit' => EditAuditoriaVisita::route('/{record}/edit'),
+            // 'create' => CreateAuditoriaVisita::route('/create'),
+            // 'edit' => EditAuditoriaVisita::route('/{record}/edit'),
         ];
+    }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_visita');
     }
 }
