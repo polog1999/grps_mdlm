@@ -28,10 +28,10 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
         return $table
             ->query(VisitaHistorico::query())
             // 1. Forzar a que la tabla ocupe el 100% del contenedor
-        ->contentGrid([
-            'md' => 1,
-            'xl' => 1,
-        ])
+            ->contentGrid([
+                'md' => 1,
+                'xl' => 1,
+            ])
             ->defaultPaginationPageOption(10)
             // Aplicamos un scope global para vaciar la tabla si no hay filtro
             ->modifyQueryUsing(function (Builder $query) {
@@ -47,6 +47,9 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
                     ->label('#')
                     ->rowIndex() // <--- Esta es la clave en Filament v3
                     ->alignCenter(),
+                TextColumn::make('tipo_documento')
+                    ->label('Tipo Documento')
+                    ->searchable(),
                 TextColumn::make('numero_documento')
                     ->label('Documento')
                     ->searchable(),
@@ -70,6 +73,7 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
                 TextColumn::make('motivo')
                     ->label('Motivo de Visita'),
             ])
+            ->defaultSort('fecha', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
             ->filters([
                 Filter::make('hora_ingreso')
                     ->form([ // Cambiado de schema() a form() que es más estándar en v3

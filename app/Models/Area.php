@@ -19,7 +19,9 @@ use SoftDeletes; // 2. Usar el Trait
         'parent_id',
         'nombre_corto',
         'orden',
-        'estado'
+        'estado',
+        'user_id_creo',
+        'user_id_modi'
     ];
 
     // Relación: Una Área pertenece a una Sede
@@ -32,6 +34,12 @@ use SoftDeletes; // 2. Usar el Trait
     public function parentArea(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'parent_id', 'id');
+    }
+    public function userCreo(){
+        return $this->belongsTo(User::class, 'user_id_creo');
+    }
+    public function userModi(){
+        return $this->belongsTo(User::class, 'user_id_modi');
     }
     
     
