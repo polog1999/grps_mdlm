@@ -28,4 +28,10 @@ class Regimen extends Model
     {
         return $this->belongsTo(Regimen::class, 'parent_id', 'id');
     }
+    public function userCreo(){
+        return $this->belongsTo(User::class, 'user_id_creo');
+    }
+    public function userModi(){
+        return $this->belongsTo(User::class, 'user_id_modi');
+    }
 }
