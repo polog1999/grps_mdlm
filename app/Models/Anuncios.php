@@ -22,7 +22,6 @@ class Anuncios extends Model
 {
     use HasUuids, SoftDeletes;
 
-
     protected $table = 'anuncios.anuncios';
 
     protected $keyType = 'string';

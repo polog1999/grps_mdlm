@@ -49,8 +49,12 @@ class AuditoriaRegimenResource extends Resource
     {
         return [
             'index' => ListAuditoriaRegimens::route('/'),
-            'create' => CreateAuditoriaRegimen::route('/create'),
-            'edit' => EditAuditoriaRegimen::route('/{record}/edit'),
+            // 'create' => CreateAuditoriaRegimen::route('/create'),
+            // 'edit' => EditAuditoriaRegimen::route('/{record}/edit'),
         ];
+    }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_regimen');
     }
 }

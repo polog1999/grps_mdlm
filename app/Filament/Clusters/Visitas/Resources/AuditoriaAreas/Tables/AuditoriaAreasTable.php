@@ -46,14 +46,14 @@ class AuditoriaAreasTable
             ->defaultSort('orden', 'asc')
             ->filters([
                 //
-            ])
-            ->recordActions([
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
+            // ->recordActions([
+            //     EditAction::make(),
+            // ])
+            // ->toolbarActions([
+            //     BulkActionGroup::make([
+            //         DeleteBulkAction::make(),
+            //     ]),
+            // ]);
     }
 }

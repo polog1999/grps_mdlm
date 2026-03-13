@@ -46,8 +46,7 @@ class AreaResource extends Resource
     {
         return auth()->user()->hasPermissionTo('view::visitas_area');
     }
-
-
+    
     public static function getPages(): array
     {
         return [

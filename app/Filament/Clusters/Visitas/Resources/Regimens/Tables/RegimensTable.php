@@ -33,23 +33,6 @@ class RegimensTable
                     ->searchable(),
                 IconColumn::make('estado')
                     ->boolean(),
-                // TextColumn::make('nu_tasa_impuesto')
-                //     ->numeric()
-                //     ->sortable(),
-                // TextColumn::make('user_id_creo')
-                //     ->numeric()
-                //     ->sortable(),
-                // TextColumn::make('user_id_modi')
-                //     ->numeric()
-                //     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('estado')
