@@ -23,4 +23,10 @@ class Clasificacion extends Model
     {
         return $this->hasMany(Trabajador::class);
     }
+    public function userCreo(){
+        return $this->belongsTo(User::class, 'user_id_creo');
+    }
+    public function userModi(){
+        return $this->belongsTo(User::class, 'user_id_modi');
+    }
 }

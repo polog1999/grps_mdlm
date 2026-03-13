@@ -26,6 +26,12 @@ class Visita extends Model
     public function area() {
         return $this->belongsTo(Area::class);
     }
+    public function userCreo(){
+        return $this->belongsTo(User::class, 'user_id_creo');
+    }
+    public function userModi(){
+        return $this->belongsTo(User::class, 'user_id_modi');
+    }
     
 }
 
