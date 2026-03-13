@@ -81,6 +81,7 @@ class User extends Authenticatable
     }
     public function sede()
     {
+
         return $this->belongsTo(Sede::class);
     }
 }
