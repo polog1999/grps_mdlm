@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class CertificadoLicenciaFuncionamiento extends Model
 {
     protected $connection = 'pgsql_licencias';
-    protected $table = 'licencia';
+    protected $table = 'licencia.licencia';
     protected $primaryKey = 'lic_id';
     public $timestamps = false;
     protected $fillable = [
