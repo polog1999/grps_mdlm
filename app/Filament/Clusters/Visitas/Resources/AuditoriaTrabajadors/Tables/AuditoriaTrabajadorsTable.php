@@ -22,6 +22,7 @@ class AuditoriaTrabajadorsTable
                 TextColumn::make('persona.tipoDocumento.nombre_corto')
                     ->sortable(),
                 TextColumn::make('persona.numero_documento')
+                ->label('Número Documento')
                     ->sortable()
                     ->copyable(),
                 // TextColumn::make('cui')
