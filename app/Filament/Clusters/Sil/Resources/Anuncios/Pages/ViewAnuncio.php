@@ -16,6 +16,5 @@ class ViewAnuncio extends ViewRecord
         return [
             EditAction::make(),
         ];
-
     }
 }

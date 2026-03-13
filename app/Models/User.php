@@ -24,8 +24,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'sede_id',
-        'trabajador_id',
     ];
 
     /**
@@ -78,9 +76,5 @@ class User extends Authenticatable
     public function modelHasRole(): HasOne
     {
         return $this->hasOne(ModelHasRole::class, 'model_id', 'id');
-    }
-    public function sede()
-    {
-        return $this->belongsTo(Sede::class);
     }
 }
