@@ -15,6 +15,7 @@ class VerDatoLicenciaAction extends Action
         return 'ver_dato_licencia';
     }
 
+
     protected function setUp(): void
     {
         parent::setUp();

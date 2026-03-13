@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Pages;
 
+use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\VerDatoItseAction;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\VerDatoLicenciaAction;
 use App\Filament\Clusters\Sil\Resources\Anuncios\AnunciosResource;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Widgets\AnunciosStatsOverview;
@@ -30,6 +31,7 @@ class ListAnuncios extends ListRecords
         return [
             CreateAction::make(),
             VerDatoLicenciaAction::make(),
+            VerDatoItseAction::make(),
             Action::make('create_color')
                 ->label('Color')
                 ->icon('heroicon-o-plus')
