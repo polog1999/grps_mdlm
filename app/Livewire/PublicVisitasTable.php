@@ -26,7 +26,7 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(VisitaHistorico::query())
+            ->query(VisitaHistorico::query()->where('sede_id', '1'))
             // 1. Forzar a que la tabla ocupe el 100% del contenedor
             ->contentGrid([
                 'md' => 1,

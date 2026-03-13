@@ -27,6 +27,7 @@ class TrabajadorResource extends Resource
     protected static ?string $recordTitleAttribute = 'Trabajador';
     protected static ?string $navigationLabel = 'Trabajadores'; // <-- Cambia el nombre en el menú
     protected static ?string $pluralModelLabel = 'Trabajadores'; // Corrige el título principal y las migas de pan
+    protected static ?string $slug = 'trabajadores';
 
     public static function form(Schema $schema): Schema
     {

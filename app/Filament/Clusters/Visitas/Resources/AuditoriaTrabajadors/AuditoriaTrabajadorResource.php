@@ -28,6 +28,9 @@ class AuditoriaTrabajadorResource extends Resource
     protected static ?string $cluster = VisitasCluster::class;
 
     protected static ?string $recordTitleAttribute = 'AuditoriaTrabajador';
+    protected static ?string $navigationLabel = 'Auditoría Trabajadores'; // <-- Cambia el nombre en el menú
+    protected static ?string $pluralModelLabel = 'Auditoría Trabajadores'; // Corrige el título principal y las migas de pan
+    protected static ?string $slug = 'auditoria-trabajadores';
 
     public static function form(Schema $schema): Schema
     {

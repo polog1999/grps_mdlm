@@ -22,13 +22,17 @@ class AuditoriaTipoDocumentosTable
                 TextColumn::make('nombre')
                     ->searchable(),
                 TextColumn::make('userCreo.name')
+                ->label('Creado por:')
                     ->sortable(),
                 TextColumn::make('userModi.name')
+                ->label('Editado por:')
                     ->sortable(),
                 TextColumn::make('created_at')
+                ->label('Creado')
                     ->dateTime('d/m/Y h:i:A')
                     ->sortable(),
                 TextColumn::make('updated_at')
+                ->label('Editado')
                     ->dateTime('d/m/Y h:i:A')
                     ->sortable(),
                 IconColumn::make('estado')
