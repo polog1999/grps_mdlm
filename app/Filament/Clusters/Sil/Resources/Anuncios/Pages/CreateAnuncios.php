@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Pages;
-
 use App\Filament\Clusters\Sil\Resources\Anuncios\AnunciosResource;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Traits\ValidatesAnuncioRules;
 use App\Models\ExpedientesAnuncios;
@@ -65,7 +64,6 @@ class CreateAnuncios extends CreateRecord
                 'n_recibo_pago' => $data['n_pago'] ?? null,
                 'monto' => $data['monto'] ?? 0,
             ]);
-
             $expediente = ExpedientesAnuncios::firstOrCreate(
                 ['n_expediente' => $data['n_expediente']],
                 [
@@ -86,7 +84,6 @@ class CreateAnuncios extends CreateRecord
                     'fecha_expediente' => $data['fecha_expediente'] ?? null,
                 ]
             );
-
             if (!$expediente->wasRecentlyCreated) {
                 $expediente->update([
                     'recibo_pago_id' => $recibo->id,
@@ -111,7 +108,6 @@ class CreateAnuncios extends CreateRecord
         Log::info('--- FIN DE CREACIÓN DE ANUNCIO CON ÉXITO ---');
         return $anuncio;
     }
-
     /**
      * Después de crear el Anuncio principal, sincronizar relaciones y actualizar secuencia.
      */
