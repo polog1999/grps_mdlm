@@ -49,8 +49,12 @@ class AuditoriaSedeResource extends Resource
     {
         return [
             'index' => ListAuditoriaSedes::route('/'),
-            'create' => CreateAuditoriaSede::route('/create'),
-            'edit' => EditAuditoriaSede::route('/{record}/edit'),
+            // 'create' => CreateAuditoriaSede::route('/create'),
+            // 'edit' => EditAuditoriaSede::route('/{record}/edit'),
         ];
+    }
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('audit::visitas_sede');
     }
 }
