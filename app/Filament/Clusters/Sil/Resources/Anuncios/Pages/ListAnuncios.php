@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Pages;
 
+use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\VerDatoLicenciaAction;
 use App\Filament\Clusters\Sil\Resources\Anuncios\AnunciosResource;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Widgets\AnunciosStatsOverview;
 use Filament\Actions\CreateAction;
@@ -15,6 +16,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use App\Models\Anuncios;
+use Filament\Support\Colors\Color;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Pages\Concerns\ExposesTableToWidgets;
 
@@ -27,6 +29,7 @@ class ListAnuncios extends ListRecords
     {
         return [
             CreateAction::make(),
+            VerDatoLicenciaAction::make(),
             Action::make('create_color')
                 ->label('Color')
                 ->icon('heroicon-o-plus')
