@@ -546,6 +546,8 @@ class CertificadoInspeccionForm
             ->schema([
                 Grid::make(2)
                     ->schema([
+
+
                         TextInput::make('cin_resolucion')
                             ->label('Número de Resolución')
                             ->placeholder('1942-2025')
@@ -578,6 +580,26 @@ class CertificadoInspeccionForm
                                 'style' => self::getAutofilledStyle($get, 'cin_solicitante_autofilled'),
                             ])
                             ->helperText('Identificador de la municipalidad'),
+                        TextInput::make('cin_expediente')
+                            ->label('Número de Expediente')
+                            ->placeholder('E-13608-2025')
+                            ->suffixIcon('heroicon-o-folder-open')
+                            //->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
+                            ->dehydrated()
+                            ->required()
+                            ->extraInputAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
+                                'style' => self::getAutofilledStyle($get, 'cin_expediente_autofilled'),
+                            ])
+                            ->extraAttributes(fn(callable $get) => [
+                                'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
+                            ])
+                            ->helperText(
+                                fn(callable $get) =>
+                                $get('cin_expediente_autofilled')
+                                ? '✓ Autocompletado'
+                                : 'Ingrese manualmente'
+                            ),
                     ]),
             ])
             ->collapsible()
@@ -597,26 +619,7 @@ class CertificadoInspeccionForm
             ->schema([
                 Grid::make(2)
                     ->schema([
-                        TextInput::make('cin_expediente')
-                            ->label('Número de Expediente')
-                            ->placeholder('E-13608-2025')
-                            ->suffixIcon('heroicon-o-folder-open')
-                            //->disabled(fn(callable $get) => (bool) $get('cin_expediente_autofilled'))
-                            ->dehydrated()
 
-                            ->extraInputAttributes(fn(callable $get) => [
-                                'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
-                                'style' => self::getAutofilledStyle($get, 'cin_expediente_autofilled'),
-                            ])
-                            ->extraAttributes(fn(callable $get) => [
-                                'data-autofilled' => $get('cin_expediente_autofilled') ? '1' : '0',
-                            ])
-                            ->helperText(
-                                fn(callable $get) =>
-                                $get('cin_expediente_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
-                            ),
 
                         TextInput::make('cin_licencia')
                             ->label('Número de Licencia')
@@ -672,7 +675,10 @@ class CertificadoInspeccionForm
                     ->suffixIcon('heroicon-o-briefcase')
                     ->disabled(fn(callable $get) => (bool) $get('cin_giro_autofilled'))
                     ->dehydrated()
-
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'El giro es obligatorio',
+                    ])
                     ->extraInputAttributes(fn(callable $get) => [
                         'data-autofilled' => $get('cin_giro_autofilled') ? '1' : '0',
                         'style' => self::getAutofilledStyle($get, 'cin_giro_autofilled'),
@@ -693,7 +699,7 @@ class CertificadoInspeccionForm
                     ->placeholder('Nombres y apellidos del titular')
                     ->maxLength(255)
                     ->suffixIcon('heroicon-o-user')
-                    ->disabled(fn(callable $get) => (bool) $get('cin_solicitante_autofilled'))
+                    //->disabled(fn(callable $get) => (bool) $get('cin_solicitante_autofilled'))
                     ->dehydrated()
 
                     ->extraInputAttributes(fn(callable $get) => [

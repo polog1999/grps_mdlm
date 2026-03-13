@@ -77,4 +77,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(ModelHasRole::class, 'model_id', 'id');
     }
+    public function sede()
+    {
+
+        return $this->belongsTo(Sede::class);
+    }
 }

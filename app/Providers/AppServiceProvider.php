@@ -24,14 +24,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Parche global para LibreOffice en Windows
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $tempProfileDir = storage_path('app/temp/libreoffice_profile');
-            if (!is_dir($tempProfileDir)) {
-                @mkdir($tempProfileDir, 0755, true);
-            }
-            putenv("HOME={$tempProfileDir}");
-            $_SERVER['HOME'] = $tempProfileDir;
-        }
+
     }
 }

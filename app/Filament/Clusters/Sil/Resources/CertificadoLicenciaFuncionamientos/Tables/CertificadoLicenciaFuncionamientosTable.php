@@ -65,6 +65,7 @@ class CertificadoLicenciaFuncionamientosTable
 
     public static function configure(Table $table): Table
     {
+
         if (!isset(self::$service)) {
             self::$service = new CertificadoLincenciaFuncionamientoService();
         }
@@ -120,6 +121,9 @@ class CertificadoLicenciaFuncionamientosTable
 
             ->defaultSort('lic_filafecha', 'desc')
             ->defaultPaginationPageOption(10)
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession()
             ->recordUrl(null)
             ->columns([
                 //TextColumn::make('lic_id')->label('ID')->sortable()->searchable(),
@@ -187,6 +191,12 @@ class CertificadoLicenciaFuncionamientosTable
                     ->label('Estado')
                     ->sortable()
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'esl_descripcion')),
+                //poner observaciones
+                TextColumn::make('lic_licobs')
+                    ->label('Observación')
+                    ->sortable()
+                    ->searchable()
+                    ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'OBSERVACIONES')),
             ])
 
             ->filters([
@@ -432,6 +442,18 @@ class CertificadoLicenciaFuncionamientosTable
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
+                Action::make('ver_licencia')
+                    ->label('Ver')
+                    ->icon('heroicon-o-eye')
+                    ->iconButton()
+                    ->tooltip('Ver licencia de funcionamiento')
+                    ->color('info')
+                    ->visible(fn() => auth()->user()->can('view_details::certificado_licencia_funcionamiento'))
+                    ->url(function ($record): string {
+                        // Envuélvelo en un array: ['record' => $record]
+                        return CertificadoLicenciaFuncionamientoResource::getUrl('view', ['record' => $record]);
+                    }),
+
                 /*
                 Action::make('notificar_licencia')
                     ->label('Notificar')
@@ -1465,6 +1487,14 @@ class CertificadoLicenciaFuncionamientosTable
                                 $action->halt();
                             }
                         }),
+
+                    Action::make('consulta_licencia')
+                        ->label('Consulta Licencia')
+                        ->icon('heroicon-o-qr-code')
+                        ->tooltip('Consulta Licencia (QR)')
+                        ->color(Color::Blue)
+                        ->url(fn(CertificadoLicenciaFuncionamiento $record) => app(\App\Services\Sil\Licencias\QrCodeService::class)->obtenerUrlConsulta($record->lic_id))
+                        ->openUrlInNewTab(),
                 ])->label('Docum.')
                     ->icon('heroicon-o-document-duplicate')
                     ->color(Color::Teal)

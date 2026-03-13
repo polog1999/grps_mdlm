@@ -51,5 +51,18 @@ class EditCertificadoInspeccion extends EditRecord
                 ->warning()
                 ->send();
         }
+
+        // Cerrar ciclo de permiso: pasar ticket APROBADO a FINALIZADO
+        $user = auth()->user();
+        $moduleId = \App\Models\Module::where('filament_class', CertificadoInspeccionResource::class)->value('id');
+
+        \App\Models\SolicitudPermiso::query()
+            ->where('module_id', $moduleId)
+            ->where('record_id', $this->record->cin_id)
+            ->where('user_id', $user->id)
+            ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+            ->update([
+                'estado' => \App\Enums\SolicitudPermisoEstado::FINALIZADO
+            ]);
     }
 }

@@ -1,6 +1,22 @@
 @import 'tailwindcss';
 
-@import "tw-animate-css";
+@import '../../vendor/filament/filament/resources/css/index.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Este parche asegura que la lupa no crezca aunque falle lo demás */
+svg.fi-ta-search-input-icon {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+.fi-ta-content {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
