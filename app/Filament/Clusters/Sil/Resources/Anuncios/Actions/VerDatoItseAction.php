@@ -29,26 +29,32 @@ class VerDatoItseAction extends Action
             ->modalCancelActionLabel('Cerrar')
             ->form([
                 Select::make('cin_id')
-                    ->label('Certificado ITSE')
+                    ->label('Buscar por Licencia o ITSE')
                     ->options(function () {
                         return \App\Models\CertificadoInspeccion::query()
+                            ->whereNotNull('cin_licencia')
+                            ->where('cin_licencia', '!=', '')
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($itse) {
-                                return [$itse->cin_id => $itse->cin_numero];
+                                return [$itse->cin_id => "Licencia: {$itse->cin_licencia} - ITSE: {$itse->cin_numero}"];
                             });
                     })
-                    ->getSearchResultsUsing(
-                        fn(string $search): array => \App\Models\CertificadoInspeccion::where('cin_numero', 'ilike', "%{$search}%")
+                    ->getSearchResultsUsing(function (string $search): array {
+                        return \App\Models\CertificadoInspeccion::query()
+                            ->where(function ($query) use ($search) {
+                                $query->where('cin_licencia', 'ilike', "%{$search}%")
+                                    ->orWhere('cin_numero', 'ilike', "%{$search}%");
+                            })
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($itse) {
-                                return [$itse->cin_id => $itse->cin_numero];
+                                return [$itse->cin_id => "Licencia: {$itse->cin_licencia} - ITSE: {$itse->cin_numero}"];
                             })
-                            ->toArray()
-                    )
+                            ->toArray();
+                    })
                     ->searchable()
-                    ->placeholder('Busque por N° de certificado ITSE...')
+                    ->placeholder('Busque por N° de licencia o ITSE...')
                     ->live(),
 
                 Group::make()
