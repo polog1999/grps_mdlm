@@ -469,7 +469,7 @@ class CertificadoInspeccionsTable
 
                         // Roles 1 y 6: NO muestran esta acción (ya ven el botón de edición directa)
                         $user_role_id = $user->modelHasRole?->role_id;
-                        if ($user_role_id === 1 || $user_role_id === 6) {
+                        if ($user_role_id === 1 || $user_role_id === 6 || $user_role_id === 12 || $user_role_id === 11) {
                             return false;
                         }
 
