@@ -29,32 +29,37 @@ class VerDatoItseAction extends Action
             ->modalCancelActionLabel('Cerrar')
             ->form([
                 Select::make('cin_id')
-                    ->label('Buscar por Licencia o ITSE')
+                    ->label('Buscar por Licencia, ITSE o Dirección')
                     ->options(function () {
                         return \App\Models\CertificadoInspeccion::query()
+                            ->with('licencia')
                             ->whereNotNull('cin_licencia')
                             ->where('cin_licencia', '!=', '')
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($itse) {
-                                return [$itse->cin_id => "Licencia: {$itse->cin_licencia} - ITSE: {$itse->cin_numero}"];
+                                $direccion = self::getLicenciaDireccion($itse);
+                                return [$itse->cin_id => "Licencia: {$itse->cin_licencia} - {$direccion} - ITSE: {$itse->cin_numero}"];
                             });
                     })
                     ->getSearchResultsUsing(function (string $search): array {
                         return \App\Models\CertificadoInspeccion::query()
+                            ->with('licencia')
                             ->where(function ($query) use ($search) {
                                 $query->where('cin_licencia', 'ilike', "%{$search}%")
-                                    ->orWhere('cin_numero', 'ilike', "%{$search}%");
+                                    ->orWhere('cin_numero', 'ilike', "%{$search}%")
+                                    ->orWhere('cin_ubicacion', 'ilike', "%{$search}%");
                             })
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($itse) {
-                                return [$itse->cin_id => "Licencia: {$itse->cin_licencia} - ITSE: {$itse->cin_numero}"];
+                                $direccion = self::getLicenciaDireccion($itse);
+                                return [$itse->cin_id => "Licencia: {$itse->cin_licencia} - {$direccion} - ITSE: {$itse->cin_numero}"];
                             })
                             ->toArray();
                     })
                     ->searchable()
-                    ->placeholder('Busque por N° de licencia o ITSE...')
+                    ->placeholder('Busque por N° de licencia, ITSE o dirección...')
                     ->live(),
 
                 Group::make()
@@ -179,6 +184,26 @@ class VerDatoItseAction extends Action
     }
 
     private static array $itseCache = [];
+
+    /**
+     * Obtiene la dirección de la licencia asociada.
+     */
+    private static function getLicenciaDireccion($itse): string
+    {
+        if ($itse->licencia) {
+            return $itse->licencia->lic_direccion ?? 'Sin dirección';
+        }
+
+        if (!empty($itse->cin_licencia)) {
+            $licencia = \App\Models\CertificadoLicenciaFuncionamiento::where('lic_numlic', $itse->cin_licencia)->first();
+            if ($licencia) {
+                return $licencia->lic_direccion ?? 'Sin dirección';
+            }
+        }
+
+        return 'Sin dirección';
+    }
+
 
     /**
      * Obtiene el modelo ITSE.
