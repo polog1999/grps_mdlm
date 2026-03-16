@@ -36,11 +36,13 @@ class AnunciosTable
                     ->badge()
                     ->default('Sin número')
                     ->color(fn($state) => $state === 'Sin número' ? 'gray' : 'info')
+                    ->sortable()
                     ->searchable(),
 
                 TextColumn::make('documentos')
                     ->label('N° Informe Técnico')
                     ->getStateUsing(fn(Anuncios $record) => $record->documentos()->where('tipo_documento', 'INFORME TÉCNICO')->first()?->n_documento)
+                    ->sortable()
                     ->searchable(query: function ($query, string $search) {
                         $query->whereHas('documentos', function ($q) use ($search) {
                             $q->where('tipo_documento', 'INFORME TÉCNICO')
@@ -49,6 +51,7 @@ class AnunciosTable
                     }),
                 TextColumn::make('expediente.n_expediente')
                     ->label('N° Expediente')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('expediente.fecha_expediente')
                     ->label('Fecha Expediente')
@@ -56,6 +59,7 @@ class AnunciosTable
                     ->sortable(),
                 TextColumn::make('dictamen')
                     ->badge()
+                    ->sortable()
                     ->color(fn(Dictamen $state): string => match ($state) {
                         Dictamen::PROCEDENTE => 'success',
                         Dictamen::IMPROCEDENTE => 'danger',
@@ -64,18 +68,23 @@ class AnunciosTable
                     ->searchable(),
                 TextColumn::make('expediente.snapshot_solicitante_nombre_completo')
                     ->label('Solicitante')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('expediente.snapshot_solicitante_dni')
                     ->label('DNI/RUC Solicitante')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('expediente.snapshot_legal_nombre')
                     ->label('Representante Legal')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('expediente.snapshot_legal_dni_ruc')
                     ->label('DNI/RUC Representante Legal')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('expediente.snapshot_solicitante_direccion')
                     ->label('Dirección del Predio')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('fecha_recepcion_evaluar')
                     ->label('Fecha Recepción Evaluar')
@@ -83,12 +92,15 @@ class AnunciosTable
                     ->sortable(),
                 TextColumn::make('caracteristicaFisica.descripcion')
                     ->label('Característica Física')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('tipoAnuncio.descripcion')
                     ->label('Tipo de Anuncio')
+                    ->sortable()
                     ->searchable(),
                 TextColumn::make('licencia.lic_numlic')
                     ->label('N° Licencia')
+                    ->sortable()
                     ->searchable(query: function (Builder $query, string $search) {
                         $query->whereExists(function ($q) use ($search) {
                             $q->select(\Illuminate\Support\Facades\DB::raw(1))
@@ -107,13 +119,16 @@ class AnunciosTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('ubicacion_del_anuncio')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('n_de_caras')
                     ->numeric()
                     ->sortable(),
 
                 TextColumn::make('estado_anuncio')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('derivadoLegal.name')
                     ->label('Derivado a Legal')
                     ->sortable(),
@@ -122,7 +137,9 @@ class AnunciosTable
                     ->date('d/m/Y')
                     ->sortable(),
                 TextColumn::make('vigencia')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('fecha_inicio_vigencia')
                     ->date('d/m/Y')
                     ->sortable(),
