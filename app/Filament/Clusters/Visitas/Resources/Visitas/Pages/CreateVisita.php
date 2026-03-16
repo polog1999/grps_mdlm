@@ -57,8 +57,8 @@ class CreateVisita extends CreateRecord
             [
                 'tipo_documento_id' => $data['tipo_documento_id'],
                 'nombres' => $data['nombres'],
-                'apellido_paterno' => $data['apellido_paterno'],
-                'apellido_materno' => $data['apellido_materno'],
+                'apellido_paterno' => $data['apellido_paterno'] ?? '',
+                'apellido_materno' => $data['apellido_materno'] ?? '',
                 'foto_url' => $data['foto_url'] ?? null,
                 'user_id_creo'      => $personaExistente ? $personaExistente->user_id_creo : auth()->id(),
                 'user_id_modi' => auth()->id(),

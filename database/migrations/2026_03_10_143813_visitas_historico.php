@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('visitas.excel_control1', function (Blueprint $table) {
+        Schema::create('visitas.visitas_historico', function (Blueprint $table) {
             $table->id();
             $table->string('tipo_documento', 20)->nullable();
             $table->string('numero_documento',20)->nullable();
@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('persona_autoriza')->nullable();
             $table->string('cargo')->nullable();
             $table->string('sede')->nullable();
-            $table->timestamp('hora_salida');
-            $table->timestamp('hora_ingreso');
+            $table->timestamp('hora_salida')->nullable();
+            $table->timestamp('hora_ingreso')->nullable();
             $table->string('motivo')->nullable();
-            $table->date('fecha');
+            $table->date('fecha')->nullable();
             $table->string('usuario')->nullable();
 
         });

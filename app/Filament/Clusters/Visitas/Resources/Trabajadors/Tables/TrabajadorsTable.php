@@ -17,64 +17,94 @@ class TrabajadorsTable
     public static function configure(Table $table): Table
     {
         return $table
-        ->query(Trabajador::query()->orderByRaw('updated_at DESC NULLS LAST'))
+            // ->query(Trabajador::query()->orderByRaw('updated_at DESC NULLS LAST'))
             ->columns([
-                // 1. Mostrar la foto que guardamos en la carpeta/URL
-                ImageColumn::make('persona.foto_url')
-                    ->label('Foto')
-                    ->disk('public') // Filament buscará dentro de storage/app/public/
-                    ->circular(),
+                // // 1. Mostrar la foto que guardamos en la carpeta/URL
+                // ImageColumn::make('persona.foto_url')
+                //     ->label('Foto')
+                //     ->disk('public') // Filament buscará dentro de storage/app/public/
+                //     ->circular(),
 
                 // 2. Datos de la tabla Personas (Relación)
-                TextColumn::make('persona.numero_documento')
+                TextColumn::make('dni')
                     ->label('DNI')
                     ->searchable()
                     ->sortable(),
-
-                TextColumn::make('persona.full_nombre') // Usando el accesor que creamos en el modelo Persona
-                    ->label('Trabajador')
-                    ->searchable(['nombres', 'apellido_paterno', 'apellido_materno']),
-
-                // 3. Mostrar el Cargo Actual (Buscando en el historial)
-                // Esto asume que el trabajador tiene una relación 'cargoActual' o 'historiales'
-                TextColumn::make('cargo_actual')
-                    ->label('Cargo Actual')
-                    ->getStateUsing(function ($record) {
-                        // Obtenemos el registro del historial que no tiene fecha_fin o es_actual
-                        $actual = $record->historiales->where('es_actual', true)->first();
-                        return $actual ? $actual->cargo?->nombre : 'Sin cargo';
-                    })
-                    ->description(
-                        fn($record) =>
-                        $record->historiales->where('es_actual', true)->first()?->area->nombre ?? ''
-                    ),
-
-                // 4. Datos propios de la tabla Trabajadores
-                TextColumn::make('fecha_ingreso')
-                    ->label('Ingreso')
+                TextColumn::make('nombres')
+                    ->label('Nombres')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('apellidos')
+                    ->label('Apellidos')
+                    ->searchable()
+                    ->sortable(),
+                    TextColumn::make('area.nombre')
+                    ->label('Área')
+                    ->searchable()
+                    ->sortable(),
+                    TextColumn::make('regimen.nombre')
+                    ->label('Régimen')
+                    ->searchable()
+                    ->sortable(),
+                    TextColumn::make('cargo.nombre')
+                    ->label('Cargo')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('fecha_nacimiento')
+                    // ->label('Apellidos')
                     ->date('d/m/Y')
+                    ->searchable()
+                    ->sortable(),
+                    TextColumn::make('fecha_registro')
+                    ->time('d/m/Y H:i:s')
+                    // ->label('Apellidos')
+                    ->searchable()
                     ->sortable(),
 
-                IconColumn::make('estado')
-                    ->label('Estado')
-                    ->boolean(),
-            ])
-            // ->defaultSort('updated_at','desc')
-            ->filters([
-                // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
-            SelectFilter::make('estado')
-                ->options([
-                    1 => 'Activo',
-                    0 => 'Inactivo',
-                ]),
-            ])
-            ->recordActions([
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // TextColumn::make('persona.full_nombre') // Usando el accesor que creamos en el modelo Persona
+                //     ->label('Trabajador')
+                //     ->searchable(['nombres', 'apellido_paterno', 'apellido_materno']),
+
+                // // 3. Mostrar el Cargo Actual (Buscando en el historial)
+                // // Esto asume que el trabajador tiene una relación 'cargoActual' o 'historiales'
+                // TextColumn::make('cargo_actual')
+                //     ->label('Cargo Actual')
+                //     ->getStateUsing(function ($record) {
+                //         // Obtenemos el registro del historial que no tiene fecha_fin o es_actual
+                //         $actual = $record->historiales->where('es_actual', true)->first();
+                //         return $actual ? $actual->cargo?->nombre : 'Sin cargo';
+                //     })
+                //     ->description(
+                //         fn($record) =>
+                //         $record->historiales->where('es_actual', true)->first()?->area->nombre ?? ''
+                //     ),
+
+                // // 4. Datos propios de la tabla Trabajadores
+                // TextColumn::make('fecha_ingreso')
+                //     ->label('Ingreso')
+                //     ->date('d/m/Y')
+                //     ->sortable(),
+
+                // IconColumn::make('estado')
+                //     ->label('Estado')
+                //     ->boolean(),
             ]);
+        // ->defaultSort('updated_at','desc')
+        // ->filters([
+        //     // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
+        // SelectFilter::make('estado')
+        //     ->options([
+        //         1 => 'Activo',
+        //         0 => 'Inactivo',
+        //     ]),
+        // ])
+        // ->recordActions([
+        //     EditAction::make(),
+        // ])
+        // ->toolbarActions([
+        //     BulkActionGroup::make([
+        //         DeleteBulkAction::make(),
+        //     ]),
+        // ]);
     }
 }

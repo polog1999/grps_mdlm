@@ -26,45 +26,45 @@ class AreasTable
                 TextColumn::make('nombre')
                     ->searchable(),
 
-                TextColumn::make('nombre_corto')
+                TextColumn::make('abreviatura')
                     ->searchable(),
-                TextColumn::make('parentArea.nombre')
-                    ->searchable()
-                    ->default('Sin área superior'), // Muestra esto si la relación es nula,
-                TextColumn::make('orden')
-                    ->numeric()
-                    ->sortable(),
-                IconColumn::make('estado')
-                    ->boolean(),
+                // TextColumn::make('parentArea.nombre')
+                //     ->searchable()
+                //     ->default('Sin área superior'), // Muestra esto si la relación es nula,
+                // TextColumn::make('orden')
+                //     ->numeric()
+                //     ->sortable(),
+                // IconColumn::make('estado')
+                //     ->boolean(),
             ])
-            ->defaultSort('orden', 'asc')
-            ->filters([
-                SelectFilter::make('estado')
-                    ->options([
-                        1 => 'Activo',
-                        0 => 'Inactivo',
-                    ]),
-                TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
-            ])
+            ->defaultSort('id_unidad_organica', 'asc')
+            // ->filters([
+            //     SelectFilter::make('estado')
+            //         ->options([
+            //             1 => 'Activo',
+            //             0 => 'Inactivo',
+            //         ]),
+            //     TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
+            // ])
             // ->bulkActions([
             //     DeleteBulkAction::make(),
             //     RestoreBulkAction::make(),
             //     ForceDeleteBulkAction::make(),
             // ])
             ->recordActions([
-                EditAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_area')),
-                DeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-                RestoreAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-                ForceDeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+                // EditAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_area')),
+                // DeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+                // RestoreAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+                // ForceDeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 }

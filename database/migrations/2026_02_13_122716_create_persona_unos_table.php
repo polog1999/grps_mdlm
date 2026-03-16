@@ -21,6 +21,8 @@ return new class extends Migration
             $table->date('fecha_nacimiento')->nullable();
             $table->text('foto')->nullable(); // foto
             $table->text('foto_url')->nullable();
+            $table->foreignId('user_id_creo')->nullable()->constrained('users');
+            $table->foreignId('user_id_modi')->nullable()->constrained('users');
             $table->timestamps();
         });
     }

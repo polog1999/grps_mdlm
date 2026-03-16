@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -157,8 +157,23 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'sslmode' => 'prefer',
+            
 
-        ]
+        ],
+        'mysql' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST_INVENTARIO', '127.0.0.1'),
+            'port' => env('DB_PORT_INVENTARIO', '3306'),
+            'database' => env('DB_DATABASE_INVENTARIO', 'laravel'),
+            'username' => env('DB_USERNAME_INVENTARIO', 'root'),
+            'password' => env('DB_PASSWORD_INVENTARIO', ''),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            // 'search_path' => '',
+            'sslmode' => 'prefer',
+        ],
     ],
 
     /*

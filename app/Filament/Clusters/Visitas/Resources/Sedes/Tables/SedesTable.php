@@ -26,48 +26,52 @@ class SedesTable
             //     ->sortable(),
 
             TextColumn::make('nombre')
-                ->label('Nombre de la Sede')
+                ->label('Nombre')
+                ->searchable() // Permite buscar por nombre
+                ->sortable(),
+                TextColumn::make('direccion')
+                ->label('Dirección')
                 ->searchable() // Permite buscar por nombre
                 ->sortable(),
 
-            TextColumn::make('aforo')
-                ->label('Capacidad')
-                ->numeric()
-                ->sortable(),
+            // TextColumn::make('aforo')
+            //     ->label('Capacidad')
+            //     ->numeric()
+            //     ->sortable(),
 
-            // Mostramos el estado como un icono (Verde si es 1, Rojo si es 0)
-            IconColumn::make('estado')
-                ->label('Estado')
-                ->boolean() // Funciona porque casteamos 'estado' a integer/boolean en el Modelo
-                ->trueIcon('heroicon-o-check-circle')
-                ->falseIcon('heroicon-o-x-circle')
-                ->color(fn (int $state): string => $state === 1 ? 'success' : 'danger'),
+            // // Mostramos el estado como un icono (Verde si es 1, Rojo si es 0)
+            // IconColumn::make('estado')
+            //     ->label('Estado')
+            //     ->boolean() // Funciona porque casteamos 'estado' a integer/boolean en el Modelo
+            //     ->trueIcon('heroicon-o-check-circle')
+            //     ->falseIcon('heroicon-o-x-circle')
+            //     ->color(fn (int $state): string => $state === 1 ? 'success' : 'danger'),
 
-        ])
-        ->filters([
-            // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
-            SelectFilter::make('estado')
-                ->options([
-                    1 => 'Activo',
-                    0 => 'Inactivo',
-                ]),
-                TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
-        ])
-       
-            ->recordActions([
-                EditAction::make()
-                ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_sede')),
-                DeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-                RestoreAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-                ForceDeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
-            ])
-        ->bulkActions([
-            BulkActionGroup::make([
-                DeleteBulkAction::make(),
-            ]),
         ]);
+        // ->filters([
+        //     // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
+        //     SelectFilter::make('estado')
+        //         ->options([
+        //             1 => 'Activo',
+        //             0 => 'Inactivo',
+        //         ]),
+        //         TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
+        // ])
+       
+        //     ->recordActions([
+        //         EditAction::make()
+        //         ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_sede')),
+        //         DeleteAction::make()
+        //             ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+        //         RestoreAction::make()
+        //             ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+        //         ForceDeleteAction::make()
+        //             ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+        //     ])
+        // ->bulkActions([
+        //     BulkActionGroup::make([
+        //         DeleteBulkAction::make(),
+        //     ]),
+        // ]);
     }
 }

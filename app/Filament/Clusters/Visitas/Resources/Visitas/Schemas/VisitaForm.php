@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Schemas;
 
 use App\Models\Area;
+use App\Models\Oficina;
 use App\Models\PersonaUno;
 use App\Models\TipoDocumento;
 use App\Models\Trabajador;
@@ -17,6 +18,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use NunoMaduro\Collision\Adapters\Phpunit\State;
 
 class VisitaForm
 {
@@ -29,7 +31,8 @@ class VisitaForm
                         Select::make('tipo_documento_id')
                             ->label('Tipo de Documento')
                             // ->relationship('persona.tipoDocumento', 'nombre')
-                            ->options(fn() =>
+                            ->options(
+                                fn() =>
                                 TipoDocumento::where('estado', true)
                                     ->pluck('nombre', 'id') // Trae el nombre para mostrar y el id para guardar
                             )
@@ -99,6 +102,23 @@ class VisitaForm
 
                                         // 2. Buscar en tabla PERSONAS (Si ya fue visitante antes)
                                         if (strlen($state) === 8) {
+
+                                            // $trabajador = Trabajador::where('dni', $state)->first();
+
+                                            // if ($trabajador) {
+                                            //     $set('persona_id', $trabajador->id_usuario);
+                                            //     $set('nombres', $trabajador->nombres);
+                                            //     $set('apellido_paterno', $trabajador->apellido_paterno);
+                                            //     $set('apellido_materno', $trabajador->apellido_materno);
+                                            //     $set('foto_url', $trabajador->foto_url); // Traer foto de la BD
+                                            //     Notification::make()
+                                            //         ->title('BD local')
+                                            //         ->body('Datos de la Base de Datos local')
+                                            //         ->success()
+                                            //         ->send();
+                                            //     return;
+                                            // }
+
                                             $persona = PersonaUno::where('numero_documento', $state)->first();
 
                                             if ($persona) {
@@ -181,17 +201,27 @@ class VisitaForm
                                         }
                                     })
                             ),
+
                         Hidden::make('pide_fallo')->default(false)->live(),
                         TextInput::make('nombres')
-                            ->required()
+                            ->label('Razón Social')
+                            ->visible(fn(Get $get) => $get('tipo_documento_id') == 6)
+                            ->required(fn(Get $get) => $get('tipo_documento_id') == 6)
+                            // ->columnSpanFull()
+                            ,
+                        TextInput::make('nombres')
+                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
+                            ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
                         TextInput::make('apellido_paterno')
-                            ->required()
+                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
+                            ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
 
                         TextInput::make('apellido_materno')
-                            ->required()
+                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
+                            ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
                         Placeholder::make('.')
@@ -216,11 +246,49 @@ class VisitaForm
                         //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
-                            ->options(fn() => Area::where('estado',true)->orderBy('nombre', 'asc')->pluck('nombre', 'id'))
+                            ->options(fn() => Area::orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
-                            ->required(),
+                            ->required()
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                if ($state) {
+                                    // Buscamos el nombre del área basada en el ID seleccionado
+                                    $nombreArea = Area::where('id_unidad_organica', $state)->value('nombre');
+                                    // Guardamos ese nombre en el campo 'area_nombre'
+                                    $set('area', $nombreArea);
+                                } else {
+                                    $set('area', null);
+                                }
+                            }),
+                        Hidden::make('area'),
+                        Select::make('oficina_id')
+                            ->label('Oficina')
+                            ->options(function (Get $get) {
+                                $areaId = $get('area_id');
+                                if (!$areaId) return [];
 
+                                return Oficina::query()
+                                    ->where('id_unidad_organica', $areaId)
+                                    ->get()
+                                    ->mapWithKeys(function ($oficina) {
+                                        // Forzamos que el label sea un string y no null
+                                        $nombre = $oficina->nombre ?? "Oficina {$oficina->id_oficina}";
+                                        return [$oficina->id_oficina => $nombre];
+                                    });
+                            })
+                            ->required(fn(Get $get) => Oficina::where('id_unidad_organica', $get('area_id'))->exists())
+                            ->hidden(fn(Get $get) => !(Oficina::where('id_unidad_organica', $get('area_id'))->exists()))
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                if ($state) {
+                                    // Buscamos el nombre del área basada en el ID seleccionado
+                                    $nombreOficina = Oficina::where('id_oficina', $state)->value('nombre');
+                                    // Guardamos ese nombre en el campo 'area_nombre'
+                                    $set('oficina', $nombreOficina);
+                                } else {
+                                    $set('oficina', null);
+                                }
+                            }),
+                        Hidden::make('oficina'),
                         Select::make('trabajador_id_autoriza')
                             ->label('Autorizado por')
                             ->options(function (Get $get) {
@@ -228,23 +296,81 @@ class VisitaForm
                                 if (!$areaId) return [];
 
                                 return Trabajador::query()
-                                    ->whereHas('historiales', function ($query) use ($areaId) {
-                                        $query->where('area_id', $areaId)
-                                            ->where('es_actual', true);
-                                    })
-                                    ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
-                                    ->where('estado', true)
-                                    ->with('persona') // Eager loading para evitar consultas lentas
+                                    ->where('id_unidad_organica', $areaId)
+                                    // ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
+                                    ->where('id_estado', 1)
+                                    // ->whereHas('cargo', function ($q) {
+                                    //     $q->where('nombre', 'like', '%secretaria%')
+                                    //         ->orWhere('nombre', 'like', '%SECRETARIA%')
+                                    //         ->orWhere('nombre', 'like', '%jefe%')
+                                    //         ->orWhere('nombre', 'like', '%JEFE%')
+                                    //         ->orWhere('nombre', 'like', '%GERENTE%')
+                                    //         ->orWhere('nombre', 'like', '%gerente%');
+                                    // })
+                                    // ->with('persona') // Eager loading para evitar consultas lentas
+                                    ->whereNotIn('id_contratacion', [3, 8])
                                     ->get()
                                     ->mapWithKeys(function ($trabajador) {
                                         // Forzamos que el label sea un string y no null
-                                        $nombre = $trabajador->persona->full_nombre ?? "Trabajador {$trabajador->persona->id}";
-                                        return [$trabajador->persona->id => $nombre];
+                                        $nombre = $trabajador->nombres . ' ' . $trabajador->apellidos ?? "Trabajador {$trabajador->id_usuario}";
+                                        return [$trabajador->id_usuario => $nombre];
+                                    });
+                            })
+                            ->required(fn(Get $get) => $get('area_id') == 1 ? false : true)
+                            ->hidden(fn(Get $get) => $get('area_id') == 1)
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                if ($state) {
+                                    // Buscamos el nombre del área basada en el ID seleccionado
+                                    $trabajador = Trabajador::where('id_usuario', $state)->first(['nombres', 'apellidos']);
+                                    $nombreCompleto = "{$trabajador->nombres} {$trabajador->apellidos}";
+                                    // Guardamos ese nombre en el campo 'area_nombre'
+                                    $set('trabajador_autoriza', $nombreCompleto);
+                                } else {
+                                    $set('trabajador_autoriza', null);
+                                }
+                            }),
+                        Hidden::make('trabajador_autoriza'),
+                        Select::make('trabajador_id_cita')
+                            ->label('Cita con')
+                            ->options(function (Get $get) {
+                                $areaId = $get('area_id');
+                                if (!$areaId) return [];
+
+                                return Trabajador::query()
+                                    ->where('id_unidad_organica', $areaId)
+                                    // ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
+                                    ->where('id_estado', 1)
+                                    // ->whereHas('cargo', function ($q) {
+                                    //     $q->where('nombre', 'like', '%secretaria%')
+                                    //         ->orWhere('nombre', 'like', '%SECRETARIA%')
+                                    //         ->orWhere('nombre', 'like', '%jefe%')
+                                    //         ->orWhere('nombre', 'like', '%JEFE%')
+                                    //         ->orWhere('nombre', 'like', '%GERENTE%')
+                                    //         ->orWhere('nombre', 'like', '%gerente%');
+                                    // })
+                                    // ->with('persona') // Eager loading para evitar consultas lentas
+                                    ->get()
+                                    ->mapWithKeys(function ($trabajador) {
+                                        // Forzamos que el label sea un string y no null
+                                        $nombre = $trabajador->nombres . ' ' . $trabajador->apellidos ?? "Trabajador {$trabajador->id_usuario}";
+                                        return [$trabajador->id_usuario => $nombre];
                                     });
                             })
                             ->searchable()
-                            ->required(fn(Get $get) => $get('area_id') == 44 ? false : true)
-                            ->hidden(fn (Get $get) => $get('area_id') == 44), // Ocultar si es el área 44
+                            ->required(fn(Get $get) => $get('area_id') == 1 ? false : true)
+                            ->hidden(fn(Get $get) => $get('area_id') == 1)
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                if ($state) {
+                                    // Buscamos el nombre del área basada en el ID seleccionado
+                                    $trabajador = Trabajador::where('id_usuario', $state)->first(['nombres', 'apellidos']);
+                                    $nombreCompleto = "{$trabajador->nombres} {$trabajador->apellidos}";
+                                    // Guardamos ese nombre en el campo 'area_nombre'
+                                    $set('trabajador_cita', $nombreCompleto);
+                                } else {
+                                    $set('trabajador_cita', null);
+                                }
+                            }),
+                        Hidden::make('trabajador_cita'),
 
                         TextInput::make('motivo')
                             ->required()

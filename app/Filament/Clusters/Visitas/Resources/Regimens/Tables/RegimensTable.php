@@ -21,41 +21,43 @@ class RegimensTable
         return $table
             ->columns([
 
-                TextColumn::make('cregimen')
+                TextColumn::make('nombre')
                     ->searchable(),
-                TextColumn::make('parentRegimen.cregimen')
-                 ->label('Régimen Padre')
-                 ->default('Sin Régimen Parent')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('de_regimen')
-                ->label('Descripción')
+                    TextColumn::make('Descripcion')
                     ->searchable(),
-                IconColumn::make('estado')
-                    ->boolean(),
+                // TextColumn::make('parentRegimen.cregimen')
+                //  ->label('Régimen Padre')
+                //  ->default('Sin Régimen Parent')
+                //     ->numeric()
+                //     ->sortable(),
+                // TextColumn::make('de_regimen')
+                // ->label('Descripción')
+                //     ->searchable(),
+                // IconColumn::make('estado')
+                //     ->boolean(),
             ])
             ->filters([
-                SelectFilter::make('estado')
-                ->options([
-                    1 => 'Activo',
-                    0 => 'Inactivo',
-                ]),
-                TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
+                // SelectFilter::make('estado')
+                // ->options([
+                //     1 => 'Activo',
+                //     0 => 'Inactivo',
+                // ]),
+                // TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
             ])
             ->recordActions([
-                EditAction::make()
-                ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_regimen')),
-                DeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-                RestoreAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-                ForceDeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+                // EditAction::make()
+                // ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_regimen')),
+                // DeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+                // RestoreAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+                // ForceDeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 }

@@ -22,7 +22,7 @@ class AuditoriaAreasTable
                 TextColumn::make('nombre')
                     ->searchable(),
 
-                TextColumn::make('nombre_corto')
+                TextColumn::make('abreviatura')
                     ->searchable(),
                 TextColumn::make('userCreo.name')
                     ->label('Creado por:')

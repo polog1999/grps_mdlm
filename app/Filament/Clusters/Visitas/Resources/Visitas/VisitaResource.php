@@ -56,7 +56,7 @@ class VisitaResource extends Resource
         return [
             'index' => ListVisitas::route('/'),
             'create' => CreateVisita::route('/create'),
-            'edit' => EditVisita::route('/{record}/edit'),
+            // 'edit' => EditVisita::route('/{record}/edit'),
         ];
     }
     public static function canAccess(): bool

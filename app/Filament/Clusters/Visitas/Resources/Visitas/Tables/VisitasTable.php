@@ -87,7 +87,7 @@ class VisitasTable
                     ->action(function ($record) {
                         $idOriginal = $record->id_original;
                         
-                        if ($record->origen == "PostgreSQL") {
+                        if ($record->origen == "SISTEMA") {
                             $visita = Visita::find($idOriginal);
                             if ($visita) {
                                 $visita->update([
