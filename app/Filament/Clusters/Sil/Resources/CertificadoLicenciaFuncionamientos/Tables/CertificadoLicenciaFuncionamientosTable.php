@@ -1802,13 +1802,12 @@ class CertificadoLicenciaFuncionamientosTable
                             if ($tienePermiso) {
                                 return [
                                     TextInput::make('nro_expediente')
-                                        ->label('Nro Expediente')
+                                        ->label('Nro Expediente o Anexo')
                                         ->required()
                                         ->maxLength(50),
-                                    TextInput::make('anexo')
-                                        ->label('Anexo')
-                                        ->required()
-                                        ->maxLength(50),
+                                    //Que ya no aparesca Anexo pero siempre se enviara con un valor 0
+                                    Hidden::make('anexo')
+                                        ->default(0),
                                     TextInput::make('nro_resolucion')
                                         ->label('Nro Resolución')
                                         ->required()
