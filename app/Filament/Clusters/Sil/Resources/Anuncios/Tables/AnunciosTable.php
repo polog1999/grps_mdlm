@@ -42,7 +42,15 @@ class AnunciosTable
                 TextColumn::make('documentos')
                     ->label('N° Informe Técnico')
                     ->getStateUsing(fn(Anuncios $record) => $record->documentos()->where('tipo_documento', 'INFORME TÉCNICO')->first()?->n_documento)
-                    ->sortable()
+                    ->sortable(query: function (Builder $query, string $direction) {
+                        return $query->orderBy(
+                            \App\Models\DocumentosAnuncio::select('n_documento')
+                                ->whereColumn('anuncios.documentos_anuncio.anuncio_id', 'anuncios.anuncios.id')
+                                ->where('tipo_documento', 'INFORME TÉCNICO')
+                                ->limit(1),
+                            $direction
+                        );
+                    })
                     ->searchable(query: function ($query, string $search) {
                         $query->whereHas('documentos', function ($q) use ($search) {
                             $q->where('tipo_documento', 'INFORME TÉCNICO')
@@ -100,7 +108,15 @@ class AnunciosTable
                     ->searchable(),
                 TextColumn::make('licencia.lic_numlic')
                     ->label('N° Licencia')
-                    ->sortable()
+                    ->sortable(query: function (Builder $query, string $direction) {
+                        return $query->orderBy(
+                            \Illuminate\Support\Facades\DB::table('licencia.licencia')
+                                ->select('lic_numlic')
+                                ->whereRaw('licencia.licencia.lic_id::varchar = anuncios.anuncios.id_licencia')
+                                ->limit(1),
+                            $direction
+                        );
+                    })
                     ->searchable(query: function (Builder $query, string $search) {
                         $query->whereExists(function ($q) use ($search) {
                             $q->select(\Illuminate\Support\Facades\DB::raw(1))
