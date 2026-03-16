@@ -228,6 +228,12 @@ class CreateCertificadoLicenciaFuncionamiento extends CreateRecord
     }
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        // Se añade el id del registro creado para disparar el action 'generar-qr'
+        $id = $this->record->getKey();
+
+        return $this->getResource()::getUrl('index', [
+            'tableAction' => 'generar-qr',
+            'tableActionRecord' => $id,
+        ]);
     }
 }
