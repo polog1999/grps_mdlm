@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Visitas\Resources\Trabajadors\Tables;
 
+use App\Models\Trabajador;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -16,6 +17,7 @@ class TrabajadorsTable
     public static function configure(Table $table): Table
     {
         return $table
+        ->query(Trabajador::query()->orderByRaw('updated_at DESC NULLS LAST'))
             ->columns([
                 // 1. Mostrar la foto que guardamos en la carpeta/URL
                 ImageColumn::make('persona.foto_url')
@@ -57,7 +59,7 @@ class TrabajadorsTable
                     ->label('Estado')
                     ->boolean(),
             ])
-            ->defaultSort('updated_at','desc')
+            // ->defaultSort('updated_at','desc')
             ->filters([
                 // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
             SelectFilter::make('estado')
