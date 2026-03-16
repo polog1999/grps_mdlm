@@ -382,9 +382,9 @@ class CertificadoInspeccionsTable
                             return false;
                         }
 
-                        // Roles 1 y 6: pueden editar directamente
+                        // Roles 1, 6, 11 y 12: pueden editar directamente
                         $user_role_id = $user->modelHasRole?->role_id;
-                        if ($user_role_id === 1 || $user_role_id === 6) {
+                        if (in_array($user_role_id, [1, 6, 11, 12])) {
                             return true;
                         }
 
@@ -467,9 +467,9 @@ class CertificadoInspeccionsTable
                             return false;
                         }
 
-                        // Roles 1 y 6: NO muestran esta acción (ya ven el botón de edición directa)
+                        // Roles 1, 6, 11 y 12: NO muestran esta acción (ya ven el botón de edición directa)
                         $user_role_id = $user->modelHasRole?->role_id;
-                        if ($user_role_id === 1 || $user_role_id === 6) {
+                        if (in_array($user_role_id, [1, 6, 11, 12])) {
                             return false;
                         }
 
