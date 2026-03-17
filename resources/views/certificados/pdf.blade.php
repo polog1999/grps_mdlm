@@ -315,7 +315,7 @@
             PARA ESTABLECIMIENTOS OBJETO DE INSPECCIÓN CLASIFICADOS CON NIVEL<br>
             {{$textoTipoEdificacion}} SEGÚN LA MATRIZ DE RIESGOS
         </h1>
-        <div class="numero">N° {{$record->cin_numero}}-{{$record->cin_anio}}</div>
+        <div class="numero">N° 00{{$record->cin_numero}}-{{$record->cin_anio}}</div>
     </div>
 
     <!-- Texto introductorio -->
