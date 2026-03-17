@@ -173,15 +173,15 @@ class ExportLicenciasAction
         }
 
         // Filtro de tiene ITSE (TernaryFilter)
-        if (isset($tableFilters['tiene_itse']['value'])) {
-            if ($tableFilters['tiene_itse']['value'] === true) {
-                // Solo con ITSEZ
+        if (isset($tableFilters['tiene_itse']['value']) && $tableFilters['tiene_itse']['value'] !== '' && $tableFilters['tiene_itse']['value'] !== null) {
+            if ($tableFilters['tiene_itse']['value'] == true) {
+                // Solo con ITSE
                 $query->whereIn('lic_id', function ($subquery) {
                     $subquery->select('lic_id')
                         ->from('licencia.vu_licencia')
                         ->whereNotNull('cin_numero');
                 });
-            } elseif ($tableFilters['tiene_itse']['value'] === false) {
+            } else {
                 // Sin ITSE
                 $query->whereNotIn('lic_id', function ($subquery) {
                     $subquery->select('lic_id')
@@ -189,12 +189,11 @@ class ExportLicenciasAction
                         ->whereNotNull('cin_numero');
                 });
             }
-            // Si es null/blank, no aplicar filtro
         }
 
         // Filtro de tiene anuncios (TernaryFilter)
-        if (isset($tableFilters['tiene_anuncios']['value'])) {
-            if ($tableFilters['tiene_anuncios']['value'] === true) {
+        if (isset($tableFilters['tiene_anuncios']['value']) && $tableFilters['tiene_anuncios']['value'] !== '' && $tableFilters['tiene_anuncios']['value'] !== null) {
+            if ($tableFilters['tiene_anuncios']['value'] == true) {
                 // Solo con Anuncios
                 $query->whereIn('lic_id', function ($subquery) {
                     $subquery->select(\Illuminate\Support\Facades\DB::raw('id_licencia::integer'))
@@ -202,7 +201,7 @@ class ExportLicenciasAction
                         ->whereNotNull('id_licencia')
                         ->whereNull('deleted_at');
                 });
-            } elseif ($tableFilters['tiene_anuncios']['value'] === false) {
+            } else {
                 // Sin Anuncios
                 $query->whereNotIn('lic_id', function ($subquery) {
                     $subquery->select(\Illuminate\Support\Facades\DB::raw('id_licencia::integer'))
