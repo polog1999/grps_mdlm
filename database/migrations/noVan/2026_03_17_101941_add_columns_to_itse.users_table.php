@@ -32,7 +32,7 @@ return new class extends Migration
                     'trabajador_id',
                     'nombres_completos'
                 ]
-            )
+            );
         });
     }
 };

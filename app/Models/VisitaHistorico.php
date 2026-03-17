@@ -8,4 +8,8 @@ class VisitaHistorico extends Model
 {
    protected $table = 'visitas.historico_visitas';
    protected $guarded = [];
+
+   public function sede(){
+      return $this->belongsTo(Sede::class,'sede_id','id_sede');
+   }
 }

@@ -12,6 +12,7 @@ use App\Services\PideService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -208,8 +209,8 @@ class VisitaForm
                             ->label('Razón Social')
                             ->visible(fn(Get $get) => $get('tipo_documento_id') == 6)
                             ->required(fn(Get $get) => $get('tipo_documento_id') == 6)
-                            // ->columnSpanFull()
-                            ,
+                        // ->columnSpanFull()
+                        ,
                         TextInput::make('nombres')
                             ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
                             ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
@@ -247,7 +248,7 @@ class VisitaForm
                         //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
-                            ->options(fn() => Area::where('id_uo_estado',1)->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
+                            ->options(fn() => Area::where('id_uo_estado', 1)->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required()
@@ -374,15 +375,23 @@ class VisitaForm
 
                         Select::make('motivo')
                             ->options(
-                                fn()=> Motivo::query()
-                                ->pluck('motivo', 'motivo') // (Lo que se ve, Lo que se guarda)
+                                fn() => Motivo::query()
+                                    ->pluck('motivo', 'motivo') // (Lo que se ve, Lo que se guarda)
                                 // ->mapWithKeys(function ($motivo) {
-                                     
+
                                 //         return [$motivo => $motivo];
                                 //     })
                             )
                             ->required()
                             ->columnSpanFull(),
+                        Radio::make('sistema')
+                            ->label('Sistema')
+                            ->options([
+                                'VISITAS' => 'Visitas',
+                                'PCM' => 'PCM',
+                            ])
+                            ->default('VISITAS')
+                            ->required(),
                     ])->columns(2)
             ]);
     }

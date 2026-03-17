@@ -65,7 +65,7 @@ class VisitaResource extends Resource
     }
 public static function getEloquentQuery(): Builder
 {
-    $query = parent::getEloquentQuery();
+    $query = parent::getEloquentQuery()->with('sede');
 
     // Si el usuario NO es admin, filtramos por su ID
     if (!auth()->user()->hasRole('Administrador OTIE')) { 

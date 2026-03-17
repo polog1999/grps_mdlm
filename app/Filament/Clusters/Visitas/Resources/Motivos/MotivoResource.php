@@ -50,4 +50,9 @@ class MotivoResource extends Resource
             'edit' => EditMotivo::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasPermissionTo('view::visitas_motivo');
+    }
 }
