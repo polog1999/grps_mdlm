@@ -31,18 +31,34 @@ class VerDatoLicenciaAction extends Action
                     ->label('Licencia')
                     ->options(function () {
                         return \App\Models\CertificadoLicenciaFuncionamiento::query()
+                            ->with(['tipoLicencia', 'tipoEstadoLicencia'])
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($licencia) {
-                                return [$licencia->lic_id => $licencia->lic_numlic];
+                                $tipo_licencia = self::getTipoLicencia($licencia);
+                                $estado_licencia = self::getEstadoLicencia($licencia);
+                                return [$licencia->lic_id => "Licencia: {$licencia->lic_numlic} - Tipo: {$tipo_licencia} - Estado: {$estado_licencia}"];
                             });
                     })
                     ->getSearchResultsUsing(
-                        fn(string $search): array => \App\Models\CertificadoLicenciaFuncionamiento::where('lic_numlic', 'ilike', "%{$search}%")
+                        fn(string $search): array => \App\Models\CertificadoLicenciaFuncionamiento::query()
+                            ->with(['tipoLicencia', 'tipoEstadoLicencia'])
+                            ->where(function ($query) use ($search) {
+                                $query->where('lic_numlic', 'ilike', "%{$search}%")
+                                    ->orWhereHas('tipoLicencia', function ($q) use ($search) {
+                                        $q->where('tli_descripcion', 'ilike', "%{$search}%");
+                                    })
+                                    ->orWhereHas('tipoEstadoLicencia', function ($q) use ($search) {
+                                        $q->where('esl_descripcion', 'ilike', "%{$search}%");
+                                    });
+                            })
+
                             ->limit(50)
                             ->get()
                             ->mapWithKeys(function ($licencia) {
-                                return [$licencia->lic_id => $licencia->lic_numlic];
+                                $tipo_licencia = self::getTipoLicencia($licencia);
+                                $estado_licencia = self::getEstadoLicencia($licencia);
+                                return [$licencia->lic_id => "Licencia: {$licencia->lic_numlic} - Tipo: {$tipo_licencia} - Estado: {$estado_licencia}"];
                             })
                             ->toArray()
                     )
@@ -223,5 +239,43 @@ class VerDatoLicenciaAction extends Action
         }
 
         return self::$datosDirectosCache[$licId]->{$key} ?? null;
+    }
+
+    /**
+     * Obtiene el tipo de la licencia asociada.
+     */
+    private static function getTipoLicencia($licencia): string
+    {
+        if ($licencia->tipoLicencia) {
+            return $licencia->tipoLicencia->tli_descripcion ?? 'Sin tipo';
+        }
+
+        if (!empty($licencia->tli_id)) {
+            $tipo = \App\Models\TipoLicencia::find($licencia->tli_id);
+            if ($tipo) {
+                return $tipo->tli_descripcion ?? 'Sin tipo';
+            }
+        }
+
+        return 'Sin tipo';
+    }
+
+    /**
+     * Obtiene el estado de la licencia asociada.
+     */
+    private static function getEstadoLicencia($licencia): string
+    {
+        if ($licencia->tipoEstadoLicencia) {
+            return $licencia->tipoEstadoLicencia->esl_descripcion ?? 'Sin estado';
+        }
+
+        if (!empty($licencia->esl_id)) {
+            $estado = \App\Models\TipoEstadoLicencia::find($licencia->esl_id);
+            if ($estado) {
+                return $estado->esl_descripcion ?? 'Sin estado';
+            }
+        }
+
+        return 'Sin estado';
     }
 }
