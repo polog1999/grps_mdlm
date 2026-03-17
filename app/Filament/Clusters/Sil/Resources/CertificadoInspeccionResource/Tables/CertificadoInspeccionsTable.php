@@ -377,18 +377,19 @@ class CertificadoInspeccionsTable
                     ->visible(function ($record) {
                         $user = auth()->user();
 
-                        // Primero verificar el permiso del sistema
                         if (!$user->hasPermissionTo('edit::certificado_inspeccion')) {
                             return false;
                         }
 
+<<<<<<< Updated upstream
                         // Roles 1 y 6: pueden editar directamente
+=======
+>>>>>>> Stashed changes
                         $user_role_id = $user->modelHasRole?->role_id;
                         if ($user_role_id === 1 || $user_role_id === 6) {
                             return true;
                         }
 
-                        // Otros roles: solo si tienen SolicitudPermiso APROBADA
                         return \App\Models\SolicitudPermiso::query()
                             ->where('record_id', $record->cin_id)
                             ->where('user_id', $user->id)
