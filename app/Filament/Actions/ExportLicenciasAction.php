@@ -192,6 +192,27 @@ class ExportLicenciasAction
             // Si es null/blank, no aplicar filtro
         }
 
+        // Filtro de tiene anuncios (TernaryFilter)
+        if (isset($tableFilters['tiene_anuncios']['value'])) {
+            if ($tableFilters['tiene_anuncios']['value'] === true) {
+                // Solo con Anuncios
+                $query->whereIn('lic_id', function ($subquery) {
+                    $subquery->select(\Illuminate\Support\Facades\DB::raw('id_licencia::integer'))
+                        ->from('anuncios.anuncios')
+                        ->whereNotNull('id_licencia')
+                        ->whereNull('deleted_at');
+                });
+            } elseif ($tableFilters['tiene_anuncios']['value'] === false) {
+                // Sin Anuncios
+                $query->whereNotIn('lic_id', function ($subquery) {
+                    $subquery->select(\Illuminate\Support\Facades\DB::raw('id_licencia::integer'))
+                        ->from('anuncios.anuncios')
+                        ->whereNotNull('id_licencia')
+                        ->whereNull('deleted_at');
+                });
+            }
+        }
+
         return $query->orderBy('lic_fechaemision', 'desc')
             ->with([
                 'tipoLicencia',
