@@ -12,6 +12,7 @@ use App\Services\Sil\Licencias\CertificadoLicenciaPdfService;
 use App\Services\Sil\Licencias\CompatibilidadCertificadoPdfService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
@@ -29,7 +30,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 use Filament\Support\Colors\Color;
 use Filament\Notifications\Notification;
-use Filament\Infolists\Components\Section as InfolistSection;
+
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
@@ -401,6 +402,28 @@ class CertificadoLicenciaFuncionamientosTable
                         blank: fn(Builder $query) => $query,
                     )
                     ->indicator('ITSE'),
+
+                \Filament\Tables\Filters\TernaryFilter::make('tiene_anuncios')
+                    ->label('Con Anuncios')
+                    ->placeholder('Todos')
+                    ->trueLabel('Solo con Anuncios')
+                    ->falseLabel('Sin Anuncios')
+                    ->queries(
+                        true: fn(Builder $query) => $query->whereIn('lic_id', function ($subquery) {
+                            $subquery->select(DB::raw('id_licencia::integer'))
+                                ->from('anuncios.anuncios')
+                                ->whereNotNull('id_licencia')
+                                ->whereNull('deleted_at');
+                        }),
+                        false: fn(Builder $query) => $query->whereNotIn('lic_id', function ($subquery) {
+                            $subquery->select(DB::raw('id_licencia::integer'))
+                                ->from('anuncios.anuncios')
+                                ->whereNotNull('id_licencia')
+                                ->whereNull('deleted_at');
+                        }),
+                        blank: fn(Builder $query) => $query,
+                    )
+                    ->indicator('Anuncios'),
 
                 Filter::make('lic_filafecha')
                     ->form([
@@ -807,7 +830,6 @@ class CertificadoLicenciaFuncionamientosTable
                     ->modalDescription(fn($record) => "Certificados ITSE relacionados con la Licencia N° {$record->lic_numlic}")
                     ->modalWidth('5xl')
                     ->modalIcon('tabler-clipboard-check')
-                    ->modalIconColor(Color::Stone)
                     ->infolist(function ($record) {
                         $service = app(CertificadoLincenciaFuncionamientoService::class);
                         $certificados = $service->obtenerCertificadosInspeccionPorLicencia($record->lic_id);
@@ -878,6 +900,91 @@ class CertificadoLicenciaFuncionamientosTable
                     })
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Cerrar'),
+
+                Action::make('ver_anuncios_relacionados')
+                    ->label('Ver anuncios relacionados')
+                    ->icon('heroicon-o-megaphone')
+                    ->iconButton()
+                    ->tooltip('Ver anuncios relacionados con esta licencia')
+                    ->color(function ($record) {
+                        $count = \App\Models\Anuncios::where('id_licencia', $record->lic_id)->count();
+                        return $count > 0 ? Color::Purple : Color::Stone;
+                    })
+                    ->disabled(function ($record) {
+                        return !\App\Models\Anuncios::where('id_licencia', $record->lic_id)->exists();
+                    })
+                    ->modalHeading('Anuncios Relacionados')
+                    ->modalDescription('Listado de anuncios vinculados a esta licencia de funcionamiento.')
+                    ->modalWidth('5xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar')
+                    ->form([])
+                    ->infolist(function ($record) {
+                        $anuncios = \App\Models\Anuncios::query()
+                            ->where('id_licencia', $record->lic_id)
+                            ->get();
+
+                        if ($anuncios->isEmpty()) {
+                            return [
+                                Section::make()
+                                    ->schema([
+                                        TextEntry::make('sin_anuncios')
+                                            ->label('')
+                                            ->default('No se encontraron anuncios relacionados con esta licencia.')
+                                            ->color('warning')
+                                            ->icon('heroicon-o-exclamation-triangle')
+                                    ])
+                            ];
+                        }
+
+                        return [
+                            Section::make('Anuncios Encontrados')
+                                ->description("Total: {$anuncios->count()} anuncio(s)")
+                                ->icon('heroicon-o-megaphone')
+                                ->schema([
+                                    RepeatableEntry::make('anuncios')
+                                        ->label('')
+                                        ->state($anuncios)
+                                        ->schema([
+                                            TextEntry::make('n_anuncio')
+                                                ->label('N° Anuncio')
+                                                ->weight('bold')
+                                                ->badge()
+                                                ->color('primary'),
+                                            TextEntry::make('asunto')
+                                                ->label('Asunto')
+                                                ->badge()
+                                                ->color('gray'),
+                                            TextEntry::make('descripcion')
+                                                ->label('Descripción')
+                                                ->limit(100),
+                                            TextEntry::make('estado_anuncio')
+                                                ->label('Estado')
+                                                ->badge()
+                                                ->color(fn($state) => match ($state?->value) {
+                                                    'aprobado', 'procedente' => 'success',
+                                                    'rechazado', 'improcedente' => 'danger',
+                                                    'pendiente' => 'warning',
+                                                    default => 'gray'
+                                                }),
+                                            TextEntry::make('ancho_m')
+                                                ->label('Dimensiones')
+                                                ->formatStateUsing(fn($record) => "{$record->ancho_m}m x {$record->alto_m}m x {$record->espesor_cm}cm")
+                                                ->icon('heroicon-o-arrows-pointing-out'),
+                                            TextEntry::make('fecha_inicio_vigencia')
+                                                ->label('Fecha Vigencia')
+                                                ->date('d/m/Y')
+                                                ->icon('heroicon-o-calendar'),
+                                            TextEntry::make('fecha_fin_vigencia')
+                                                ->label('Vencimiento')
+                                                ->date('d/m/Y')
+                                                ->icon('heroicon-o-calendar'),
+                                        ])
+                                        ->columns(4)
+                                        ->contained(true)
+                                ])
+                        ];
+                    }),
 
                 \Filament\Actions\ActionGroup::make([
                     Action::make('certificado-licencia')
@@ -1805,7 +1912,6 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->label('Nro Expediente o Anexo')
                                         ->required()
                                         ->maxLength(50),
-                                    //Que ya no aparesca Anexo pero siempre se enviara con un valor 0
                                     Hidden::make('anexo')
                                         ->default(0),
                                     TextInput::make('nro_resolucion')
@@ -1864,7 +1970,6 @@ class CertificadoLicenciaFuncionamientosTable
                                             ->success()
                                             ->send();
 
-                                        // Finalizar el permiso si existe y fue usado con exito
                                         \App\Models\SolicitudPermiso::query()
                                             ->where('record_id', $record->lic_id)
                                             ->where('user_id', auth()->id())
