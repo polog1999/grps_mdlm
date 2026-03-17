@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Schemas;
 
 use App\Models\Area;
+use App\Models\Motivo;
 use App\Models\Oficina;
 use App\Models\PersonaUno;
 use App\Models\TipoDocumento;
@@ -246,7 +247,7 @@ class VisitaForm
                         //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
-                            ->options(fn() => Area::orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
+                            ->options(fn() => Area::where('id_uo_estado',1)->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required()
@@ -297,7 +298,6 @@ class VisitaForm
 
                                 return Trabajador::query()
                                     ->where('id_unidad_organica', $areaId)
-                                    // ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
                                     ->where('id_estado', 1)
                                     // ->whereHas('cargo', function ($q) {
                                     //     $q->where('nombre', 'like', '%secretaria%')
@@ -372,7 +372,15 @@ class VisitaForm
                             }),
                         Hidden::make('trabajador_cita'),
 
-                        TextInput::make('motivo')
+                        Select::make('motivo')
+                            ->options(
+                                fn()=> Motivo::query()
+                                ->pluck('motivo', 'motivo') // (Lo que se ve, Lo que se guarda)
+                                // ->mapWithKeys(function ($motivo) {
+                                     
+                                //         return [$motivo => $motivo];
+                                //     })
+                            )
                             ->required()
                             ->columnSpanFull(),
                     ])->columns(2)

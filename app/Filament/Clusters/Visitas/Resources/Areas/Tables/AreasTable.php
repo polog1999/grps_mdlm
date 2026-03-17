@@ -23,11 +23,40 @@ class AreasTable
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('nombre')
-                    ->searchable(),
-
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('abreviatura')
-                    ->searchable(),
+                ->label('Área')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('area.nombre')
+                ->label('Dependencia')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('sede.nombre')
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('id_uo_estado')
+                    ->label('Estado')
+                    ->formatStateUsing(fn(int $state): string => match ($state) {
+                        1 => 'Activo',
+                        2 => 'Inactivo',
+                        default => 'Desconocido',
+                    })
+                    ->badge()
+                    ->color(fn(int $state): string => match ($state) {
+                        1 => 'success', // Verde
+                        2 => 'danger',  // Rojo
+                        default => 'gray',
+                    })
+                    ->sortable()
+
                 // TextColumn::make('parentArea.nombre')
                 //     ->searchable()
                 //     ->default('Sin área superior'), // Muestra esto si la relación es nula,
@@ -38,19 +67,19 @@ class AreasTable
                 //     ->boolean(),
             ])
             ->defaultSort('id_unidad_organica', 'asc')
-            // ->filters([
-            //     SelectFilter::make('estado')
-            //         ->options([
-            //             1 => 'Activo',
-            //             0 => 'Inactivo',
-            //         ]),
+            ->filters([
+                SelectFilter::make('id_uo_estado')
+                    ->options([
+                        1 => 'Activo',
+                        2 => 'Inactivo',
+                    ]),
             //     TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
             // ])
             // ->bulkActions([
             //     DeleteBulkAction::make(),
             //     RestoreBulkAction::make(),
             //     ForceDeleteBulkAction::make(),
-            // ])
+            ])
             ->recordActions([
                 // EditAction::make()
                 //     ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_area')),

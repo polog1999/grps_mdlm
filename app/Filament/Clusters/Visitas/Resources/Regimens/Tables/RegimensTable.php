@@ -20,10 +20,13 @@ class RegimensTable
     {
         return $table
             ->columns([
-
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('nombre')
                     ->searchable(),
-                    TextColumn::make('Descripcion')
+                TextColumn::make('Descripcion')
                     ->searchable(),
                 // TextColumn::make('parentRegimen.cregimen')
                 //  ->label('Régimen Padre')

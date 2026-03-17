@@ -26,6 +26,8 @@ class User extends Authenticatable
         'password',
         'sede_id',
         'trabajador_id',
+        'sede',
+        'nombres_completos',
     ];
 
     /**
@@ -81,7 +83,6 @@ class User extends Authenticatable
     }
     public function sede()
     {
-
-        return $this->belongsTo(Sede::class);
+        return $this->belongsTo(Sede::class, 'sede_id','id_sede');
     }
 }

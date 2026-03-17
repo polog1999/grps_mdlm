@@ -9,7 +9,11 @@ class Cargo extends Model
 {
     protected $connection = 'mysql';
     protected $table = 'usuario_cargo';
-    protected $primaryKey = 'id_cargo';    
+    protected $primaryKey = 'id_cargo';   
+
+    public function area(){
+        return $this->belongsTo(Area::class, 'id_unidad_organica','id_unidad_organica');
+    } 
     // protected $fillable = [
     //     'nombre',
     //     'nombre_corto',

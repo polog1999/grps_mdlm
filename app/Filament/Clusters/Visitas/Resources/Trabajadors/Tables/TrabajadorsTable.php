@@ -26,6 +26,10 @@ class TrabajadorsTable
                 //     ->circular(),
 
                 // 2. Datos de la tabla Personas (Relación)
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('dni')
                     ->label('DNI')
                     ->searchable()
@@ -38,15 +42,15 @@ class TrabajadorsTable
                     ->label('Apellidos')
                     ->searchable()
                     ->sortable(),
-                    TextColumn::make('area.nombre')
+                TextColumn::make('area.nombre')
                     ->label('Área')
                     ->searchable()
                     ->sortable(),
-                    TextColumn::make('regimen.nombre')
+                TextColumn::make('regimen.nombre')
                     ->label('Régimen')
                     ->searchable()
                     ->sortable(),
-                    TextColumn::make('cargo.nombre')
+                TextColumn::make('cargo.nombre')
                     ->label('Cargo')
                     ->searchable()
                     ->sortable(),
@@ -55,11 +59,27 @@ class TrabajadorsTable
                     ->date('d/m/Y')
                     ->searchable()
                     ->sortable(),
-                    TextColumn::make('fecha_registro')
-                    ->time('d/m/Y H:i:s')
+                TextColumn::make('fecha_registro')
+                    ->dateTime('d/m/Y H:i A')
                     // ->label('Apellidos')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('id_estado')
+                    ->label('Estado')
+                    ->formatStateUsing(fn(int $state): string => match ($state) {
+                        1 => 'Activo',
+                        2 => 'Suspendido',
+                        3 => 'Eliminado',
+                        default => 'Desconocido',
+                    })
+                    ->badge()
+                    ->color(fn(int $state): string => match ($state) {
+                        1 => 'success', // Verde
+                        2 => 'gray',     //Gris
+                        3 => 'danger',  // Rojo
+                        default => 'alert',
+                    })
+                    ->sortable()
 
                 // TextColumn::make('persona.full_nombre') // Usando el accesor que creamos en el modelo Persona
                 //     ->label('Trabajador')
@@ -88,16 +108,17 @@ class TrabajadorsTable
                 // IconColumn::make('estado')
                 //     ->label('Estado')
                 //     ->boolean(),
+            ])
+            // ->defaultSort('updated_at','desc')
+            ->filters([
+                // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
+                SelectFilter::make('id_estado')
+                    ->options([
+                        1 => 'Activo',
+                        2 => 'Suspendido',
+                        3 => 'Eliminado',
+                    ]),
             ]);
-        // ->defaultSort('updated_at','desc')
-        // ->filters([
-        //     // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
-        // SelectFilter::make('estado')
-        //     ->options([
-        //         1 => 'Activo',
-        //         0 => 'Inactivo',
-        //     ]),
-        // ])
         // ->recordActions([
         //     EditAction::make(),
         // ])

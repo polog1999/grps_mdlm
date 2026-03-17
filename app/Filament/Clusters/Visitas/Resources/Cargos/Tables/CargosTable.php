@@ -20,9 +20,15 @@ class CargosTable
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('nombre')
+                    ->sortable()
                     ->searchable(),
-                TextColumn::make('id_unidad_organica')
+                TextColumn::make('area.nombre')
+                    ->sortable()
                     ->searchable(),
                 // IconColumn::make('estado')
                 //     ->boolean(),
@@ -36,19 +42,19 @@ class CargosTable
                 // TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
             ])
             ->recordActions([
-            //     EditAction::make()
-            //         ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_cargo')),
-            //     DeleteAction::make()
-            //         ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-            //     RestoreAction::make()
-            //         ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-            //     ForceDeleteAction::make()
-            //         ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
-            // // ])
-            // ->toolbarActions([
-            //     BulkActionGroup::make([
-            //         DeleteBulkAction::make(),
-            //     ]),
+                //     EditAction::make()
+                //         ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_cargo')),
+                //     DeleteAction::make()
+                //         ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+                //     RestoreAction::make()
+                //         ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+                //     ForceDeleteAction::make()
+                //         ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+                // // ])
+                // ->toolbarActions([
+                //     BulkActionGroup::make([
+                //         DeleteBulkAction::make(),
+                //     ]),
             ]);
     }
 }

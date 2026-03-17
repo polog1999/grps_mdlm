@@ -12,6 +12,14 @@ class Area extends Model
     protected $table = 'unidades_organicas';
     protected $primaryKey = 'id_unidad_organica';
 
+    public function sede(){
+        return $this->belongsTo(Sede::class, 'id_sede','id_sede');
+    }
+    public function area(){
+        return $this->belongsTo(Area::class, 'dependencia_id','id_unidad_organica');
+    }
+   
+
     
     // protected $primaryKey = 'id_area';
 // use SoftDeletes; // 2. Usar el Trait

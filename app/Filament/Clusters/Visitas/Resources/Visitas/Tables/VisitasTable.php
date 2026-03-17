@@ -25,6 +25,10 @@ class VisitasTable
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('fecha_visita')->badge()
                     ->label('Estado')
                     ->state(fn($record) => $record->hora_salida ? 'Salió' : 'En Sede')
@@ -35,7 +39,7 @@ class VisitasTable
                 TextColumn::make('Apellidos y nombres')->label('Visitante')
                     ->searchable(
                         //     query: function (Builder $query, string $search): Builder {
-                        //     return $query->whereHas('persona', function ($q) use ($search) {
+                        //     return $query-> whereHas('persona', function ($q) use ($search) {
                         //         $q->where('nombres', 'ilike', "%{$search}%")
                         //             ->orWhere('apellido_paterno', 'ilike', "%{$search}%")
                         //             ->orWhere('apellido_materno', 'ilike', "%{$search}%");

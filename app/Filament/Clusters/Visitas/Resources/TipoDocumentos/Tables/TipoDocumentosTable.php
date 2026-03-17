@@ -20,6 +20,10 @@ class TipoDocumentosTable
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('nombre')
                     ->searchable(),
                 TextColumn::make('nombre_corto')
@@ -29,15 +33,15 @@ class TipoDocumentosTable
             ])
             ->filters([
                 SelectFilter::make('estado')
-                ->options([
-                    1 => 'Activo',
-                    0 => 'Inactivo',
-                ]),
+                    ->options([
+                        1 => 'Activo',
+                        0 => 'Inactivo',
+                    ]),
                 TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
             ])
             ->recordActions([
                 EditAction::make()
-                ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_tipo_documento')),
+                    ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_tipo_documento')),
                 DeleteAction::make()
                     ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
                 RestoreAction::make()
