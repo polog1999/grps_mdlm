@@ -377,7 +377,6 @@ class CertificadoInspeccionsTable
                     ->visible(function ($record) {
                         $user = auth()->user();
 
-                        // Primero verificar el permiso del sistema
                         if (!$user->hasPermissionTo('edit::certificado_inspeccion')) {
                             return false;
                         }
@@ -388,7 +387,6 @@ class CertificadoInspeccionsTable
                             return true;
                         }
 
-                        // Otros roles: solo si tienen SolicitudPermiso APROBADA
                         return \App\Models\SolicitudPermiso::query()
                             ->where('record_id', $record->cin_id)
                             ->where('user_id', $user->id)
