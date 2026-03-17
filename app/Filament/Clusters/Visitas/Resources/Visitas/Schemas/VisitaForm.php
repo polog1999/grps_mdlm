@@ -317,6 +317,7 @@ class VisitaForm
                                         return [$trabajador->id_usuario => $nombre];
                                     });
                             })
+                            ->searchable()
                             ->required(fn(Get $get) => $get('area_id') == 1 ? false : true)
                             ->hidden(fn(Get $get) => $get('area_id') == 1)
                             ->afterStateUpdated(function ($state, Set $set) {
