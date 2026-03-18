@@ -1826,6 +1826,79 @@ class CertificadoLicenciaFuncionamientosTable
                             }
                         }),
 
+                    Action::make('licencia-rectificar')
+                        ->label('Rectificar licencia')
+                        ->icon('heroicon-o-pencil-square')
+                        ->tooltip('Rectificar licencia')
+                        ->color(Color::Orange)
+                        ->visible(fn() => auth()->user()->hasPermissionTo('rectify::certificado_licencia_funcionamiento'))
+                        ->url(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2 || $user_role_id === 11) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::RECTIFICAR_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? CertificadoLicenciaFuncionamientoResource::getUrl('rectificar', ['record' => $record]) : null;
+                        })
+                        ->modalHeading('Solicitar Permiso de Rectificación')
+                        ->modalDescription('No tienes permisos directos para realizar esta acción. Por favor, indica el motivo para solicitar la rectificación.')
+                        ->modalSubmitActionLabel('Enviar Solicitud')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('observacion')
+                                ->label('Motivo de la solicitud')
+                                ->required()
+                                ->rows(3)
+                                ->placeholder('Ingrese el motivo por el cual desea rectificar...'),
+                        ])
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data) {
+                            try {
+                                $user = auth()->user();
+
+                                $existe = \App\Models\SolicitudPermiso::query()
+                                    ->where('record_id', $record->lic_id)
+                                    ->where('user_id', $user->id)
+                                    ->where('estado', 'PENDIENTE')
+                                    ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::RECTIFICAR_LICENCIA)
+                                    ->exists();
+
+                                if ($existe) {
+                                    Notification::make()
+                                        ->title('Solicitud pendiente')
+                                        ->body('Ya existe una solicitud pendiente de rectificación para este registro.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                \App\Models\SolicitudPermiso::create([
+                                    'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                    'record_id' => $record->lic_id,
+                                    'user_id' => $user->id,
+                                    'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::RECTIFICAR_LICENCIA,
+                                    'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                    'observacion' => $data['observacion'],
+                                ]);
+
+                                Notification::make()
+                                    ->title('Solicitud Enviada')
+                                    ->body('Su solicitud de rectificación ha sido registrada y está pendiente de aprobación.')
+                                    ->success()
+                                    ->send();
+
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
+
                     Action::make('dar_de_baja')
                         ->label('Dar de baja')
                         ->icon('heroicon-o-archive-box-arrow-down')

@@ -7,6 +7,7 @@ use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\DuplicateCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CesionarioCertificadoLicenciaFuncionamiento;
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\RectificarCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\ListCertificadoLicenciaFuncionamientos;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\ViewLicencia;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Schemas\CertificadoLicenciaFuncionamientoForm;
@@ -81,6 +82,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
             'duplicate' => DuplicateCertificadoLicenciaFuncionamiento::route('/{record}/duplicate'),
             'transfer' => TransferirCertificadoLicenciaFuncionamiento::route('/{record}/transfer'),
             'cesionario' => CesionarioCertificadoLicenciaFuncionamiento::route('/{record}/cesionario'),
+            'rectificar' => RectificarCertificadoLicenciaFuncionamiento::route('/{record}/rectificar'),
             'view' => ViewLicencia::route('/{record}/view'),
         ];
     }
