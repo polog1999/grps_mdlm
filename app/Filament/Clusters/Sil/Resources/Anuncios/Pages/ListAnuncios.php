@@ -11,6 +11,7 @@ use Filament\Resources\Pages\ListRecords;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\CreateColorAction;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\CreateMaterialAction;
 use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\CreateCaracteristicasFisicasAction;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Actions\ExportAnunciosAction;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Actions\Action;
@@ -30,6 +31,7 @@ class ListAnuncios extends ListRecords
     {
         return [
             CreateAction::make(),
+            ExportAnunciosAction::make(),
             VerDatoLicenciaAction::make(),
             VerDatoItseAction::make(),
             Action::make('create_color')
