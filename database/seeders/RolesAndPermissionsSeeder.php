@@ -64,6 +64,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'upload_compatibility::certificado_licencia_funcionamiento', // Subir compatibilidad
             'duplicate::certificado_licencia_funcionamiento', // Duplicar licencia
             'transfer::certificado_licencia_funcionamiento', // Transferir licencia
+            'rectify::certificado_licencia_funcionamiento', // Rectificar licencia
             'assign::certificado_licencia_funcionamiento', // Cesionar licencia
             'deactivate::certificado_licencia_funcionamiento', // Dar de baja licencia
 

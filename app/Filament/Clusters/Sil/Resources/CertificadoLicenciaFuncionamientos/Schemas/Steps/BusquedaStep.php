@@ -39,7 +39,7 @@ class BusquedaStep
             ->first();
 
         if ($licenciaExistente) {
-             self::notify('warning', 'Atención', 'Ya existe una Licencia de Funcionamiento registrada con este número de expediente (Licencia N° ' . $licenciaExistente->lic_numlic . ').');
+            self::notify('warning', 'Atención', 'Ya existe una Licencia de Funcionamiento registrada con este número de expediente (Licencia N° ' . $licenciaExistente->lic_numlic . ').');
         }
 
         try {
