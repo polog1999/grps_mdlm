@@ -34,6 +34,14 @@ class BusquedaStep
         if (empty($state))
             return;
 
+        $licenciaExistente = \App\Models\CertificadoLicenciaFuncionamiento::where('lic_expnum', $state)
+            ->where('lic_filaeliminada', 0)
+            ->first();
+
+        if ($licenciaExistente) {
+             self::notify('warning', 'Atención', 'Ya existe una Licencia de Funcionamiento registrada con este número de expediente (Licencia N° ' . $licenciaExistente->lic_numlic . ').');
+        }
+
         try {
             Log::info('BusquedaStep: Iniciando búsqueda', ['expediente' => $state]);
             $action = app(ProcesarBusquedaExpedienteAction::class);
