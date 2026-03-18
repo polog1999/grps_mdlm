@@ -42,6 +42,7 @@ class ExpedientesAnuncios extends Model
     protected $casts = [
         'folios' => 'integer',
         'fecha_expediente' => 'date',
+        'fecha_resolucion_subgerencial' => 'date',
     ];
 
     public function zonificacion(): BelongsTo
