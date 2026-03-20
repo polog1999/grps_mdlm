@@ -17,7 +17,7 @@ class TrabajadorsTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(Trabajador::query()->orderByRaw('updated_at DESC NULLS LAST'))
+            ->query(Trabajador::query()->where('id_estado',1))
             ->columns([
                 // // 1. Mostrar la foto que guardamos en la carpeta/URL
                 // ImageColumn::make('persona.foto_url')
@@ -111,13 +111,13 @@ class TrabajadorsTable
             ])
             // ->defaultSort('updated_at','desc')
             ->filters([
-                // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
-                SelectFilter::make('id_estado')
-                    ->options([
-                        1 => 'Activo',
-                        2 => 'Suspendido',
-                        3 => 'Eliminado',
-                    ]),
+                // // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
+                // SelectFilter::make('id_estado')
+                //     ->options([
+                //         1 => 'Activo',
+                //         2 => 'Suspendido',
+                //         3 => 'Eliminado',
+                //     ]),
             ]);
         // ->recordActions([
         //     EditAction::make(),

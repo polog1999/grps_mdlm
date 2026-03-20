@@ -13,6 +13,7 @@ use App\Http\Controllers\CertificadoLicenciaFuncionamientoController;
 use App\Http\Controllers\TipoLicenciaController;
 use App\Http\Controllers\GiroLicenciaController;
 use App\Services\PideService;
+use App\Services\RucService;
 
 // Route::get('/borrar', function () {
 //     // Usamos el helper de Laravel para evitar errores de ruta manual
@@ -31,7 +32,9 @@ use App\Services\PideService;
 //         "lo_que_hay_en_public" => $archivosEnPublic
 //     ]);
 // });
-Route::get('prueba/{dni}', [PideService::class,'apisNet']);
+Route::get('prueba/{ruc}', [RucService::class,'apiRuc']);
+Route::get('dni/{dni}', [PideService::class,'apiPeruDni']);
+Route::get('dni2/{dni}', [PideService::class,'apisNet']);
 Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
  * Archivo de rutas web para la aplicaci�n Laravel.

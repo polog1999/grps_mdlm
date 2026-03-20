@@ -26,7 +26,7 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(VisitaHistorico::query()->where('sede_id','1'))
+            ->query(VisitaHistorico::query())
             // 1. Forzar a que la tabla ocupe el 100% del contenedor
             ->contentGrid([
                 'md' => 1,
@@ -61,8 +61,9 @@ class PublicVisitasTable extends Component implements HasForms, HasTable
                 TextColumn::make('Autorizado por')
                     ->label('Autorizado por')
                     ->searchable(),
-                TextColumn::make('sede')
+                TextColumn::make('sede.nombre')
                     ->label('Sede')
+                    ->formatStateUsing(fn($state) => trim(mb_strtoupper($state)))
                     ->searchable(),
                 TextColumn::make('hora_ingreso')
                     ->label('Ingreso')

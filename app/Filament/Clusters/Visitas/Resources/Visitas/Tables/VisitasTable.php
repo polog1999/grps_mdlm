@@ -3,7 +3,10 @@
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Tables;
 
 use App\Models\ExcelControl1;
+use App\Models\Persona;
+use App\Models\PersonaUno;
 use App\Models\Visita;
+use App\Models\VisitaTrabajadorRuc;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -154,6 +157,29 @@ class VisitasTable
                                         TextEntry::make('Apellidos y nombres')
                                             ->label('Visitante / Razón Social')
                                             ->columnSpanFull(),
+                                       TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
+    ->label('Visitante / Razón Social')
+    ->columnSpanFull()
+    ->html() // Necesario para el <br>
+    ->getStateUsing(function ($record) {
+        // Obtenemos los registros relacionados (Eager Loaded)
+        $relaciones = $record->trabajadores; 
+
+        if ($relaciones->isEmpty()) {
+            return 'Sin asignar';
+        }
+
+        return $relaciones->map(function ($item) {
+            // Accedemos a la relación 'persona' que debe estar en el modelo VisitaTrabajadorRuc
+            $persona = $item->persona;
+            
+            if ($persona) {
+                return "<b>{$persona->numero_documento}</b> - {$item->cargo}";
+            }
+
+            return "Cargo: {$item->cargo} (Sin datos de persona)";
+        })->implode('<br>'); // Aquí generamos el salto de línea
+    }),
                                     ]),
                             ])->collapsible(),
 

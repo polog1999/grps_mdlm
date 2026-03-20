@@ -12,4 +12,19 @@ class VisitaHistorico extends Model
    public function sede(){
       return $this->belongsTo(Sede::class,'sede_id','id_sede');
    }
+// public function trabajadores()
+// {
+//     return $this->hasManyThrough(
+//         visit::class,   // El modelo final que quieres (los trabajadores)
+//         Visita::class,       // El modelo intermedio (la tabla visitas física)
+//         'id',                // Llave foránea en Visita que coincide con tu Vista (visita_id)
+//         'dependencia_id',    // Llave foránea en PersonaUno que apunta al jefe
+//         'id_original',       // Llave local en tu Vista historico_visitas
+//         'persona_id'         // Llave local en Visita que apunta a la Persona Principal
+//     );
+// }
+public function trabajadores()
+{
+    return $this->hasMany(VisitaTrabajadorRuc::class,'visita_id','id_original');
+}
 }

@@ -68,7 +68,7 @@ public static function getEloquentQuery(): Builder
     $query = parent::getEloquentQuery()->with('sede');
 
     // Si el usuario NO es admin, filtramos por su ID
-    if (!auth()->user()->hasRole('Administrador OTIE')) { 
+    if (!auth()->user()->hasRole('Administrador OTIE') && !auth()->user()->hasRole('Control Interno - Supervisor')) { 
         $query->where('user_id_ingreso', auth()->id());
     }
 
