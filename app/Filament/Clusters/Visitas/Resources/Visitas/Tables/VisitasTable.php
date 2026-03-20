@@ -21,6 +21,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -155,7 +156,7 @@ class VisitasTable
                                             ->label('N° de Documento'),
                                         // Usamos nombres de columnas reales de tu BD
                                         TextEntry::make('Apellidos y nombres')
-                                            ->label('Visitante / Razón Social')
+                                            ->label(fn(Get $get) => $get('tipo_documento') == 'RUC' ? 'Razón Social':'Visitante')
                                             ->columnSpanFull(),
                                         TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
                                             ->label('Visitante / Razón Social')
