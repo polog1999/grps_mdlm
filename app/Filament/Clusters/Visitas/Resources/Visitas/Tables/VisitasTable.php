@@ -174,7 +174,7 @@ class VisitasTable
             $persona = $item->persona;
             
             if ($persona) {
-                return "<b>{$persona->tipo_documento_id->nombre_corto}</b> <b>{$persona->numero_documento}</b> <b>{$persona->nombres}</b> <b>{$persona->apellido_paterno}</b> <b>{$persona->materno}</b> - {$item->cargo}";
+                return "<b>{$persona->tipo_documento_id->nombre_corto}</b> <b>{$persona->numero_documento}</b> <b>{$persona->nombres}</b> <b>{$persona->apellido_paterno}</b> <b>{$persona->apellido_materno}</b> - {$item->cargo}";
             }
 
             return "Cargo: {$item->cargo} (Sin datos de persona)";
