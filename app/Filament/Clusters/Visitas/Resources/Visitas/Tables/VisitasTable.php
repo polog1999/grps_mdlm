@@ -157,29 +157,29 @@ class VisitasTable
                                         TextEntry::make('Apellidos y nombres')
                                             ->label('Visitante / Razón Social')
                                             ->columnSpanFull(),
-                                       TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
-    ->label('Visitante / Razón Social')
-    ->columnSpanFull()
-    ->html() // Necesario para el <br>
-    ->getStateUsing(function ($record) {
-        // Obtenemos los registros relacionados (Eager Loaded)
-        $relaciones = $record->trabajadores; 
+                                        TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
+                                            ->label('Visitante / Razón Social')
+                                            ->columnSpanFull()
+                                            ->html() // Necesario para el <br>
+                                            ->getStateUsing(function ($record) {
+                                                // Obtenemos los registros relacionados (Eager Loaded)
+                                                $relaciones = $record->trabajadores;
 
-        if ($relaciones->isEmpty()) {
-            return 'Sin asignar';
-        }
+                                                if ($relaciones->isEmpty()) {
+                                                    return 'Sin asignar';
+                                                }
 
-        return $relaciones->map(function ($item) {
-            // Accedemos a la relación 'persona' que debe estar en el modelo VisitaTrabajadorRuc
-            $persona = $item->persona;
-            
-            if ($persona) {
-                return "<b>{$persona->tipoDocumento->nombre_corto}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
-            }
+                                                return $relaciones->map(function ($item) {
+                                                    // Accedemos a la relación 'persona' que debe estar en el modelo VisitaTrabajadorRuc
+                                                    $persona = $item->persona;
 
-            return "Cargo: {$item->cargo} (Sin datos de persona)";
-        })->implode('<br>'); // Aquí generamos el salto de línea
-    }),
+                                                    if ($persona) {
+                                                        return "<b>{$persona->tipoDocumento->nombre_corto}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
+                                                    }
+
+                                                    return "Cargo: {$item->cargo} (Sin datos de persona)";
+                                                })->implode('<br>'); // Aquí generamos el salto de línea
+                                            })->visible(fn ($record) => $record && $record->trabajadores()->exists()),
                                     ]),
                             ])->collapsible(),
 
@@ -188,7 +188,7 @@ class VisitasTable
                                 Grid::make(2)
                                     ->schema([
                                         TextEntry::make('sede.nombre')
-                                            ->label('Sede Destino'),
+                                            ->label('Sede'),
                                         TextEntry::make('area')
                                             ->label('Área Destino'),
                                         TextEntry::make('hora_ingreso')
