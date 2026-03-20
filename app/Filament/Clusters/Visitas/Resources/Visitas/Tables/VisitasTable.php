@@ -156,10 +156,10 @@ class VisitasTable
                                             ->label('N° de Documento'),
                                         // Usamos nombres de columnas reales de tu BD
                                         TextEntry::make('Apellidos y nombres')
-                                            ->label(fn(Get $get) => $get('tipo_documento') == 'RUC' ? 'Razón Social':'Visitante')
+                                            ->label(fn(Get $get) => $get('tipo_documento') == 'RUC' ? 'Razón Social' : 'Visitante')
                                             ->columnSpanFull(),
                                         TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
-                                            ->label('Visitante / Razón Social')
+                                            ->label('Trabajadores')
                                             ->columnSpanFull()
                                             ->html() // Necesario para el <br>
                                             ->getStateUsing(function ($record) {
@@ -192,6 +192,9 @@ class VisitasTable
                                             ->label('Sede'),
                                         TextEntry::make('area')
                                             ->label('Área Destino'),
+                                        TextEntry::make('oficina')
+                                            ->label('Oficina Destino')
+                                            ->visible(fn($state) => $state != null),
                                         TextEntry::make('hora_ingreso')
                                             ->label('Hora de Ingreso'),
                                         TextEntry::make('hora_salida')
@@ -202,11 +205,16 @@ class VisitasTable
                                         TextEntry::make('trabajador_cita')
                                             ->label('Cita con:'),
                                         TextEntry::make('motivo')
-                                            ->label('Motivo de la visita'),
+                                            ->label('Motivo de la visita')
+                                            ->getStateUsing(
+                                                function ($state, $record) {
+                                                    return "{$state} - {$record->detalle_motivo}";
+                                                }
+                                            ),
                                         TextEntry::make('sistema')
                                             ->label('Sistema'),
                                     ]),
-                            ]),
+                            ])->collapsible(),
                     ]),
             ], position: RecordActionsPosition::BeforeColumns);
     }
