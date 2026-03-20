@@ -180,7 +180,7 @@ class VisitasTable
 
                                                     return "Cargo: {$item->cargo} (Sin datos de persona)";
                                                 })->implode('<br>'); // Aquí generamos el salto de línea
-                                            })->visible(fn ($record) => $record && $record->trabajadores()->exists()),
+                                            })->visible(fn($record) => $record && $record->trabajadores()->exists()),
                                     ]),
                             ])->collapsible(),
 
@@ -206,11 +206,14 @@ class VisitasTable
                                             ->label('Cita con:'),
                                         TextEntry::make('motivo')
                                             ->label('Motivo de la visita')
-                                            ->getStateUsing(
-                                                function ($state, $record) {
-                                                    return "{$state} - {$record->detalle_motivo}";
-                                                }
-                                            ),
+                                            ->getStateUsing(function ($record) {
+                                                $motivo = $record->motivo;
+                                                $detalle = $record->detalle_motivo;
+
+                                                return filled($detalle)
+                                                    ? "{$motivo} - {$detalle}"
+                                                    : $motivo;
+                                            }),
                                         TextEntry::make('sistema')
                                             ->label('Sistema'),
                                     ]),
