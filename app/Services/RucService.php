@@ -41,6 +41,34 @@ class RucService{
         'error' => 'No se pudo consultar el RUC'
     ];
     }
+    public static function apisPeruRuc(string $ruc){
+        $token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InBvbG9nMTk5OUBnbWFpbC5jb20ifQ.6P29nBVsMtqIhnv2T3koQAnnocm2UzJLk4uvfouXHKA';
+        
+
+        $response = Http::withOptions([
+            'verify' => false, // Equivale a 'verify' => false de Guzzle
+            'connect_timeout' => 5,
+        ])
+            ->withHeaders([
+                'Referer' => 'https://dniruc.apisperu.com/api/v1/ruc/',
+                'User-Agent' => 'laravel/guzzle',
+                'Accept' => 'application/json',
+            ])
+            ->withToken($token) // Configura automáticamente el Bearer token
+            ->get("https://dniruc.apisperu.com/api/v1/ruc/{$ruc}");
+
+        if ($response->successful()) {
+            $data = $response->json();
+            // dd($data); // O usa return $data;
+            $data['success'] = true;
+            return $data;
+        } 
+        return [
+        'success' => false,
+        'data' => null,
+        'error' => 'No se pudo consultar el RUC'
+    ];
+    }
     
 
 }

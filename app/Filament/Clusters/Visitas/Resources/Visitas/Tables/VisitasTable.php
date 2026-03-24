@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Tables;
 
+use App\Models\Area;
 use App\Models\ExcelControl1;
 use App\Models\Persona;
 use App\Models\PersonaUno;
@@ -83,6 +84,10 @@ class VisitasTable
             ->defaultSort('fecha', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
 
             ->filters([
+                SelectFilter::make('area')
+                    ->label('Área')
+                    ->searchable()
+                    ->options(fn() => Area::pluck('nombre', 'nombre')),
                 SelectFilter::make('sistema')
                     ->options([
                         'VISITAS' => 'Visitas',
@@ -175,7 +180,7 @@ class VisitasTable
                                                     $persona = $item->persona;
 
                                                     if ($persona) {
-                                                        return "<b>{$persona->tipoDocumento->nombre_corto}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
+                                                        return "<b>{$persona->tipoDocumento->abreviatura}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
                                                     }
 
                                                     return "Cargo: {$item->cargo} (Sin datos de persona)";
@@ -208,7 +213,7 @@ class VisitasTable
                                             ->label('Motivo de la visita')
                                             ->getStateUsing(function ($record) {
                                                 $motivo = $record->motivo;
-                                                $detalle = $record->detalle_motivo;
+                                                $detalle = $record->detalle_motivo  ;
 
                                                 return filled($detalle)
                                                     ? "{$motivo} - {$detalle}"

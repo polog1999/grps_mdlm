@@ -37,8 +37,7 @@ class VisitaForm
                             // ->relationship('persona.tipoDocumento', 'nombre')
                             ->options(
                                 fn() =>
-                                TipoDocumento::where('estado', true)
-                                    ->pluck('nombre', 'id') // Trae el nombre para mostrar y el id para guardar
+                                TipoDocumento::pluck('abreviatura', 'id_tipo_documento') // Trae el nombre para mostrar y el id para guardar
                             )
                             ->afterStateUpdated(function ($state, callable $set) {
                                 // Al cambiar el número, reseteamos los campos de identidad
@@ -51,6 +50,7 @@ class VisitaForm
                             ->default(1)
                             ->live()
                             ->required(),
+                        Hidden::make('tipo_documento'),
                         TextInput::make('numero_documento')
 
                             ->required()
@@ -274,34 +274,31 @@ class VisitaForm
                                                     $set('nombres', $datosApiRuc['razon_social']);
 
                                                     Notification::make()
-                                                        ->title('Datos del ApisPeru')
+                                                        ->title('Datos del ApiRuc')
                                                         ->body('Se consumió el ApisPeru')
                                                         ->success()
                                                         ->send();
                                                 } else {
-                                                    $datosApisNet = PideService::apisNet($state);
+                                                    $datosApisPeruRuc = RucService::apisPeruRuc($state);
 
-                                                    if ($datosApisNet['success']) {
+                                                    if ($datosApisPeruRuc['success']) {
+
                                                         $set('pide_fallo', false); // Activamos edición manual
-                                                        $set('nombres', $datosApisNet['nombres']);
-                                                        $set('apellido_paterno', $datosApisNet['apellidoPaterno']);
-                                                        $set('apellido_materno', $datosApisNet['apellidoMaterno']);
+                                                        $set('nombres', $datosApisPeruRuc['razon_social']);
+
                                                         Notification::make()
-                                                            ->title('Datos de ApisNet')
-                                                            ->body('Se consumió el ApisNet')
+                                                            ->title('Datos del ApiRuc')
+                                                            ->body('Se consumió el ApisPeru')
                                                             ->success()
                                                             ->send();
                                                     } else {
                                                         // FALLÓ EL PIDE
                                                         $set('pide_fallo', true); // Activamos edición manual
-                                                        $set('nombres', null);
-                                                        $set('apellido_paterno', null);
-                                                        $set('apellido_materno', null);
-                                                        $set('foto_url', null);
+                                                        $set('nombres', $datosApisPeruRuc['razon_social']);
                                                         Notification::make()
-                                                            ->title('PIDE no disponible')
-                                                            ->body('Complete los datos manualmente.')
-                                                            ->warning()
+                                                            ->title('Datos del ApisPeruRuc')
+                                                            ->body('Se consumió el ApisPeruRuc')
+                                                            ->success()
                                                             ->send();
                                                     }
                                                 }
@@ -353,180 +350,190 @@ class VisitaForm
                         Hidden::make('foto_url'),
                         Placeholder::make('.')
                             ->label(false),
-                   
-                                Repeater::make('lista_trabajadores')
-                                    ->label('Trabajadores')
-                                    // Importante: SIN ->relationship()
-                                    ->schema([
-                                        Select::make('tipo_documento_id')
-                                            ->label('Tipo de Documento')
-                                            // ->relationship('persona.tipoDocumento', 'nombre')
-                                            ->options(
-                                                fn() =>
-                                                TipoDocumento::where('estado', true)->whereNot('id', '6')
-                                                    ->pluck('nombre', 'id') // Trae el nombre para mostrar y el id para guardar
-                                            )
-                                            ->default(1)
-                                            ->live()
-                                            ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6), // Solo requerido si no es 6,
-                                        TextInput::make('numero_documento')
 
-                                            ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
-                                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
-                                            // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
-                                            ->mask(fn(Get $get) => $get('tipo_documento_id') == 1 ? '99999999' : null)
+                        Repeater::make('lista_trabajadores')
+                            ->label('Trabajadores')
+                            // Importante: SIN ->relationship()
+                            ->schema([
+                                Select::make('tipo_documento_id')
+                                    ->label('Tipo de Documento')
+                                    // ->relationship('persona.tipoDocumento', 'nombre')
+                                    ->options(
+                                        fn() =>
+                                        TipoDocumento::pluck('nombre', 'tipo_documento_id') // Trae el nombre para mostrar y el id para guardar
+                                    )
+                                    ->default(1)
+                                    ->live()
+                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6,
+                                    ->afterStateUpdated(function ($state, Set $set) {
+                                        if ($state) {
+                                            // Buscamos el nombre del área basada en el ID seleccionado
+                                            $tipoDocumento = TipoDocumento::where('id_tipo_documento', $state)->value('abreviatura');
+                                            // Guardamos ese nombre en el campo 'area_nombre'
+                                            $set('tipo_documento', $tipoDocumento);
+                                        } else {
+                                            $set('tipo_documento', null);
+                                        }
+                                    }),
+                                Hidden::make('tipo_documento'),
+                                TextInput::make('numero_documento')
 
-                                            // 2. Validación de servidor por si acaso
-                                            ->regex(fn(Get $get) => $get('tipo_documento_id') == 1
-                                                ? '/^[0-9]{8}$/'
-                                                : '/^[a-zA-Z0-9]{1,20}$/') // Regex flexible para otros documentos)
+                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
+                                    // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
+                                    ->mask(fn(Get $get) => $get('tipo_documento_id') == 1 ? '99999999' : null)
+
+                                    // 2. Validación de servidor por si acaso
+                                    ->regex(fn(Get $get) => $get('tipo_documento_id') == 1
+                                        ? '/^[0-9]{8}$/'
+                                        : '/^[a-zA-Z0-9]{1,20}$/') // Regex flexible para otros documentos)
 
 
-                                            // 3. Tu validación de números iguales que pediste antes
-                                            ->rules(function (Get $get) {
-                                                if ($get('tipo_documento_id') == 1) {
-                                                    return [
-                                                        'regex:/^[0-9]{8}$/',            // Exactamente 8 números
-                                                        'regex:/^(?!.*(\d)\1{7}).*$/',   // No repetidos
-                                                        'not_in:00000000',               // No ceros
-                                                    ];
-                                                }
-                                                return []; // Sin reglas especiales para otros tipos
-                                            })
-                                            ->validationMessages([
-                                                'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
-                                                'not_in' => 'El número de documento no puede ser todo ceros.',
-                                                'numeric' => 'Solo se permiten números.',
-                                            ])
+                                    // 3. Tu validación de números iguales que pediste antes
+                                    ->rules(function (Get $get) {
+                                        if ($get('tipo_documento_id') == 1) {
+                                            return [
+                                                'regex:/^[0-9]{8}$/',            // Exactamente 8 números
+                                                'regex:/^(?!.*(\d)\1{7}).*$/',   // No repetidos
+                                                'not_in:00000000',               // No ceros
+                                            ];
+                                        }
+                                        return []; // Sin reglas especiales para otros tipos
+                                    })
+                                    ->validationMessages([
+                                        'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
+                                        'not_in' => 'El número de documento no puede ser todo ceros.',
+                                        'numeric' => 'Solo se permiten números.',
+                                    ])
 
-                                            // 4. Mantiene el teclado numérico en celulares
-                                            ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
-                                            // ->live(onBlur: true)
-                                            ->live()
-                                            ->afterStateUpdated(function ($state, callable $set) {
-                                                // Al cambiar el número, reseteamos los campos de identidad
-                                                $set('nombres', null);
-                                                $set('apellido_paterno', null);
-                                                $set('apellido_materno', null);
-                                                $set('foto_url', null);
-                                            })
-                                            ->suffixAction(
-                                                Action::make('buscar_visitante')
-                                                    ->icon('heroicon-m-magnifying-glass')
-                                                    ->visible(fn(Get $get) => $get('tipo_documento_id') == 1)
-                                                    ->action(function ($state, Set $set, Get $get) {
-                                                        if (!$state) return;
+                                    // 4. Mantiene el teclado numérico en celulares
+                                    ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
+                                    // ->live(onBlur: true)
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, callable $set) {
+                                        // Al cambiar el número, reseteamos los campos de identidad
+                                        $set('nombres', null);
+                                        $set('apellido_paterno', null);
+                                        $set('apellido_materno', null);
+                                        $set('foto_url', null);
+                                    })
+                                    ->suffixAction(
+                                        Action::make('buscar_visitante')
+                                            ->icon('heroicon-m-magnifying-glass')
+                                            ->visible(fn(Get $get) => $get('tipo_documento_id') == 1)
+                                            ->action(function ($state, Set $set, Get $get) {
+                                                if (!$state) return;
 
-                                                        if (strlen($state) === 8) {
+                                                if (strlen($state) === 8) {
 
-                                                            $persona = PersonaUno::where('numero_documento', $state)->first();
+                                                    $persona = PersonaUno::where('numero_documento', $state)->first();
 
-                                                            if ($persona) {
-                                                                $set('persona_id', $persona->id);
-                                                                $set('nombres', $persona->nombres);
-                                                                $set('apellido_paterno', $persona->apellido_paterno);
-                                                                $set('apellido_materno', $persona->apellido_materno);
-                                                                $set('foto_url', $persona->foto_url); // Traer foto de la BD
-                                                                Notification::make()
-                                                                    ->title('BD local')
-                                                                    ->body('Datos de la Base de Datos local')
-                                                                    ->success()
-                                                                    ->send();
-                                                                return;
-                                                            }
+                                                    if ($persona) {
+                                                        $set('persona_id', $persona->id);
+                                                        $set('nombres', $persona->nombres);
+                                                        $set('apellido_paterno', $persona->apellido_paterno);
+                                                        $set('apellido_materno', $persona->apellido_materno);
+                                                        $set('foto_url', $persona->foto_url); // Traer foto de la BD
+                                                        Notification::make()
+                                                            ->title('BD local')
+                                                            ->body('Datos de la Base de Datos local')
+                                                            ->success()
+                                                            ->send();
+                                                        return;
+                                                    }
 
-                                                            $datosPide = PideService::ws_reniec($state);
+                                                    $datosPide = PideService::ws_reniec($state);
 
-                                                            if ($datosPide['codResu'] === '0000') {
+                                                    if ($datosPide['codResu'] === '0000') {
+                                                        $set('pide_fallo', false); // Activamos edición manual
+                                                        $set('nombres', $datosPide['nombre']);
+                                                        $set('apellido_paterno', $datosPide['paterno']);
+                                                        $set('apellido_materno', $datosPide['materno']);
+                                                        $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
+                                                        Notification::make()
+                                                            ->title('Datos del PIDE')
+                                                            ->body('Se consumió el PIDE')
+                                                            ->success()
+                                                            ->send();
+                                                    } else {
+                                                        $datosApiPeru = PideService::apiPeruDni($state);
+
+                                                        if ($datosApiPeru['success']) {
+
+                                                            $set('pide_fallo', false); // Activamos edición manual
+                                                            $set('nombres', $datosApiPeru['data']['nombres']);
+                                                            $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
+                                                            $set('apellido_materno', $datosApiPeru['data']['apellido_materno']);
+                                                            Notification::make()
+                                                                ->title('Datos del ApisPeru')
+                                                                ->body('Se consumió el ApisPeru')
+                                                                ->success()
+                                                                ->send();
+                                                        } else {
+                                                            $datosApisNet = PideService::apisNet($state);
+
+                                                            if ($datosApisNet['success']) {
                                                                 $set('pide_fallo', false); // Activamos edición manual
-                                                                $set('nombres', $datosPide['nombre']);
-                                                                $set('apellido_paterno', $datosPide['paterno']);
-                                                                $set('apellido_materno', $datosPide['materno']);
-                                                                $set('foto_url', '/uploads/foto_dni/' . $state . '.png');
+                                                                $set('nombres', $datosApisNet['nombres']);
+                                                                $set('apellido_paterno', $datosApisNet['apellidoPaterno']);
+                                                                $set('apellido_materno', $datosApisNet['apellidoMaterno']);
                                                                 Notification::make()
-                                                                    ->title('Datos del PIDE')
-                                                                    ->body('Se consumió el PIDE')
+                                                                    ->title('Datos de ApisNet')
+                                                                    ->body('Se consumió el ApisNet')
                                                                     ->success()
                                                                     ->send();
                                                             } else {
-                                                                $datosApiPeru = PideService::apiPeruDni($state);
-
-                                                                if ($datosApiPeru['success']) {
-
-                                                                    $set('pide_fallo', false); // Activamos edición manual
-                                                                    $set('nombres', $datosApiPeru['data']['nombres']);
-                                                                    $set('apellido_paterno', $datosApiPeru['data']['apellido_paterno']);
-                                                                    $set('apellido_materno', $datosApiPeru['data']['apellido_materno']);
-                                                                    Notification::make()
-                                                                        ->title('Datos del ApisPeru')
-                                                                        ->body('Se consumió el ApisPeru')
-                                                                        ->success()
-                                                                        ->send();
-                                                                } else {
-                                                                    $datosApisNet = PideService::apisNet($state);
-
-                                                                    if ($datosApisNet['success']) {
-                                                                        $set('pide_fallo', false); // Activamos edición manual
-                                                                        $set('nombres', $datosApisNet['nombres']);
-                                                                        $set('apellido_paterno', $datosApisNet['apellidoPaterno']);
-                                                                        $set('apellido_materno', $datosApisNet['apellidoMaterno']);
-                                                                        Notification::make()
-                                                                            ->title('Datos de ApisNet')
-                                                                            ->body('Se consumió el ApisNet')
-                                                                            ->success()
-                                                                            ->send();
-                                                                    } else {
-                                                                        // FALLÓ EL PIDE
-                                                                        $set('pide_fallo', true); // Activamos edición manual
-                                                                        $set('nombres', null);
-                                                                        $set('apellido_paterno', null);
-                                                                        $set('apellido_materno', null);
-                                                                        $set('foto_url', null);
-                                                                        Notification::make()
-                                                                            ->title('PIDE no disponible')
-                                                                            ->body('Complete los datos manualmente.')
-                                                                            ->warning()
-                                                                            ->send();
-                                                                    }
-                                                                }
+                                                                // FALLÓ EL PIDE
+                                                                $set('pide_fallo', true); // Activamos edición manual
+                                                                $set('nombres', null);
+                                                                $set('apellido_paterno', null);
+                                                                $set('apellido_materno', null);
+                                                                $set('foto_url', null);
+                                                                Notification::make()
+                                                                    ->title('PIDE no disponible')
+                                                                    ->body('Complete los datos manualmente.')
+                                                                    ->warning()
+                                                                    ->send();
                                                             }
-                                                        } else {
-                                                            Notification::make()
-                                                                ->title('Alerta')
-                                                                ->body('El DNI debe tener 8 dígitos')
-                                                                ->warning()
-                                                                ->send();
                                                         }
-                                                    })
-                                            ),
-                                        TextInput::make('nombres')
-                                            ->visible()
-                                            ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
-                                            ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
-                                        TextInput::make('apellido_paterno')
-                                            ->visible()
-                                            ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
-                                            ->readOnly(fn(Get $get) =>
-                                            $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
+                                                    }
+                                                } else {
+                                                    Notification::make()
+                                                        ->title('Alerta')
+                                                        ->body('El DNI debe tener 8 dígitos')
+                                                        ->warning()
+                                                        ->send();
+                                                }
+                                            })
+                                    ),
+                                TextInput::make('nombres')
+                                    ->visible()
+                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
+                                TextInput::make('apellido_paterno')
+                                    ->visible()
+                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->readOnly(fn(Get $get) =>
+                                    $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
 
-                                        TextInput::make('apellido_materno')
-                                            ->visible()
-                                            ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
-                                            ->readOnly(fn(Get $get) =>
-                                            $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
-                                        TextInput::make('cargo')
-                                            ->label('Cargo')
-                                            ->visible()
-                                            ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6), // Solo requerido si no es 6
+                                TextInput::make('apellido_materno')
+                                    ->visible()
+                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->readOnly(fn(Get $get) =>
+                                    $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
+                                TextInput::make('cargo')
+                                    ->label('Cargo')
+                                    ->visible()
+                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6), // Solo requerido si no es 6
 
-                                    ])->columnSpanFull()->columns(2)
-                                    ->visible(fn($livewire) => $livewire->data['tipo_documento_id'] == 6)
+                            ])->columnSpanFull()->columns(2)
+                            ->visible(fn($livewire) => $livewire->data['tipo_documento_id'] == 6)
 
                             ->dehydrated(false), // <--- ESTO EVITA EL ERROR SQL AL GUARDAR,
 
 
-                            
-                            
+
+
 
                     ])
                     ->columns(2),
@@ -570,6 +577,7 @@ class VisitaForm
                                         return [$oficina->id_oficina => $nombre];
                                     });
                             })
+                            ->searchable()
                             ->required(fn(Get $get) => Oficina::where('id_unidad_organica', $get('area_id'))->exists())
                             ->hidden(fn(Get $get) => !(Oficina::where('id_unidad_organica', $get('area_id'))->exists()))
                             ->afterStateUpdated(function ($state, Set $set) {
@@ -669,7 +677,7 @@ class VisitaForm
                         Section::make('Motivo')
                             ->schema([
                                 Select::make('motivo')
-                                ->label('Sugerencia')
+                                    ->label('Sugerencia')
                                     ->options(
                                         fn() => Motivo::query()
                                             ->pluck('motivo', 'motivo') // (Lo que se ve, Lo que se guarda)
@@ -678,10 +686,10 @@ class VisitaForm
                                     ->required(),
 
                                 TextInput::make('detalle_motivo')
-                                ->label('Detalle')
+                                    ->label('Detalle')
                                     ->visible(fn(Get $get) => $get('motivo') != "")
                                     ->required(fn(Get $get) => $get('motivo') != "")
-                                   
+
                             ])->columnSpanFull()->columns(2),
                         Radio::make('sistema')
                             ->label('Sistema')

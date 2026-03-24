@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Clusters\Visitas\Resources\AuditoriaTipoDocumentos\Schemas;
+namespace App\Filament\Clusters\Visitas\Resources\AuditoriaMotivos\Schemas;
 
 use Filament\Schemas\Schema;
 
-class AuditoriaTipoDocumentoForm
+class AuditoriaMotivosForm
 {
     public static function configure(Schema $schema): Schema
     {

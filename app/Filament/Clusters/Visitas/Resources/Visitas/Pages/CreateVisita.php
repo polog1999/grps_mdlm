@@ -59,7 +59,8 @@ class CreateVisita extends CreateRecord
             'numero_documento' => $data['numero_documento'],
             'tipo_documento_id' => $data['tipo_documento_id']
         ],
-        [
+        [   
+            'tipo_documento' => $data['tipo_documento'],
             'nombres' => $data['nombres'],
             'apellido_paterno' => $data['apellido_paterno'] ?? '',
             'apellido_materno' => $data['apellido_materno'] ?? '',
@@ -82,6 +83,7 @@ class CreateVisita extends CreateRecord
     // IMPORTANTE: NO borres 'lista_trabajadores' aquí, 
     // la necesitamos en el método afterCreate()
       unset(
+        $data['tipo_documento'],
         $data['tipo_documento_id'],
         $data['numero_documento'],
         $data['pide_fallo'],
@@ -98,6 +100,15 @@ class CreateVisita extends CreateRecord
 
 protected function afterCreate(): void
 {
+
+// 1. Obtenemos los datos que se enviaron en el formulario
+    $dataForm = $this->data;
+    
+    // 2. Verificamos si la persona principal es RUC (ID 6)
+    // Si NO es RUC, no hacemos nada y salimos de la función
+    if (($dataForm['tipo_documento_id'] ?? null) != 6) {
+        return;
+    }
     $data = $this->record->toArray();
     // Recuperamos la lista del estado del formulario, ya que mutate pudo haberla filtrado
     $listaTrabajadores = $this->data['lista_trabajadores'] ?? [];
@@ -106,6 +117,7 @@ protected function afterCreate(): void
     foreach ($listaTrabajadores as $item) {
         $persona = PersonaUno::updateOrCreate(
             [
+                'tipo_documento' => $item['tipo_documento'],
                 'numero_documento' => $item['numero_documento'],
                 'tipo_documento_id' => $item['tipo_documento_id']
             ],

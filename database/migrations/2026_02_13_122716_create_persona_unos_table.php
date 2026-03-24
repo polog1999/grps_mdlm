@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('visitas.personas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tipo_documento_id')->nullable()->constrained('visitas.tipo_documentos');
+            $table->foreignId('tipo_documento_id')->nullable();
             $table->string('numero_documento')->nullable()->unique();
             $table->string('nombres')->nullable();
             $table->string('apellido_paterno')->nullable();

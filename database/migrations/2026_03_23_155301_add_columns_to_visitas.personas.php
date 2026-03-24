@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('visitas.personas', function (Blueprint $table) {
-            // $table->foreignId('dependencia_id')->nullable()->constrained('visitas.personas');
-            // $table->string('cargo')->nullable();
+            $table->string('tipo_documento')->nullable();
         });
     }
 
@@ -23,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('visitas.personas', function (Blueprint $table) {
-            // $table->dropColumn('dependencia_id');
-            // $table->dropColumn('cargo');
+            $table->dropColumn('tipo_documento');
         });
     }
 };

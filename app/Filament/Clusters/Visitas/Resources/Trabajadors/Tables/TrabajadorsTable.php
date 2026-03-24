@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Visitas\Resources\Trabajadors\Tables;
 
+use App\Models\Area;
 use App\Models\Trabajador;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -17,7 +18,7 @@ class TrabajadorsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(Trabajador::query()->where('id_estado',1))
+            ->query(Trabajador::query()->where('id_estado', 1))
             ->columns([
                 // // 1. Mostrar la foto que guardamos en la carpeta/URL
                 // ImageColumn::make('persona.foto_url')
@@ -112,12 +113,10 @@ class TrabajadorsTable
             // ->defaultSort('updated_at','desc')
             ->filters([
                 // // Puedes añadir filtros aquí, por ejemplo: solo sedes activas
-                // SelectFilter::make('id_estado')
-                //     ->options([
-                //         1 => 'Activo',
-                //         2 => 'Suspendido',
-                //         3 => 'Eliminado',
-                //     ]),
+                SelectFilter::make('id_unidad_organica')
+                    ->label('Área')
+                    ->searchable()
+                    ->options(fn() => Area::pluck('nombre', 'id_unidad_organica')),
             ]);
         // ->recordActions([
         //     EditAction::make(),
