@@ -77,7 +77,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+           ->databaseNotifications() // <--- ESTO ES VITAL
+        ->databaseNotificationsPolling('2s'); // Actualiza cada 3 segundos para ver el % real
 
     }
 }

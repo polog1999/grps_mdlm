@@ -31,7 +31,7 @@
         "laravel/wayfinder": "^0.1.9",
         "maatwebsite/excel": "^3.1",
         "owenvoke/blade-fontawesome": "^2.9",
-        "pxlrbt/filament-excel": "3.0",
+        "pxlrbt/filament-excel": "^3.6",
         "secondnetwork/blade-tabler-icons": "^3.36",
         "spatie/laravel-permission": "^6.24",
         "stevebauman/location": "^7.6",

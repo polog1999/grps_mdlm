@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "94dc1901a9d841dee342e451a748b105",
+    "content-hash": "da7af37813e868453add5ffdfcd715b0",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -7725,21 +7725,21 @@
         },
         {
             "name": "pxlrbt/filament-excel",
-            "version": "v3.0.0",
+            "version": "v3.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pxlrbt/filament-excel.git",
-                "reference": "317e7e480c233509d52cc7f5b646cc5e2848f3af"
+                "reference": "9b6c922e4f60f0cff558fd3ddd823c9954b423db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pxlrbt/filament-excel/zipball/317e7e480c233509d52cc7f5b646cc5e2848f3af",
-                "reference": "317e7e480c233509d52cc7f5b646cc5e2848f3af",
+                "url": "https://api.github.com/repos/pxlrbt/filament-excel/zipball/9b6c922e4f60f0cff558fd3ddd823c9954b423db",
+                "reference": "9b6c922e4f60f0cff558fd3ddd823c9954b423db",
                 "shasum": ""
             },
             "require": {
                 "anourvalar/eloquent-serialize": "^1.2",
-                "filament/filament": "^4.0",
+                "filament/filament": "^4.0|^5.0",
                 "maatwebsite/excel": "^3.1",
                 "php": "^8.1"
             },
@@ -7780,7 +7780,7 @@
             ],
             "support": {
                 "issues": "https://github.com/pxlrbt/filament-excel/issues",
-                "source": "https://github.com/pxlrbt/filament-excel/tree/v3.0.0"
+                "source": "https://github.com/pxlrbt/filament-excel/tree/v3.6.1"
             },
             "funding": [
                 {
@@ -7788,7 +7788,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-06-17T07:34:28+00:00"
+            "time": "2026-02-20T12:35:33+00:00"
         },
         {
             "name": "ralouphie/getallheaders",

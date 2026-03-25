@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Visitas\Resources\Visitas\Tables;
 
+use App\Filament\Exports\VisitaExporter;
 use App\Models\Area;
 use App\Models\ExcelControl1;
 use App\Models\Persona;
@@ -13,6 +14,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -24,6 +26,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\BadgeColumn;
+// use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
@@ -31,12 +34,32 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
+// use pxlrbt\FilamentExcel\Actions\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class VisitasTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->headerActions([ // <-- Añadimos esto
+                ExportAction::make()->exporter(VisitaExporter::class)
+                    ->label('Exportar Reporte Real')
+                    ->chunkSize(500) // Procesará de 500 en 500 y actualizará la barra
+            ])
+            // ->label('Exportar Excel')
+            // ->icon('heroicon-o-document-arrow-down')
+            // ->color('info')
+            // ->openUrlInNewTab()
+            // ->before(function ($livewire) {
+            //     // CLAVE 2: Notificar a la barra de tu partial
+            //     $livewire->dispatch('descarga-iniciada');
+
+            //     ini_set('memory_limit', '1024M');
+            //     set_time_limit(0);
+            // })
+
             ->columns([
                 TextColumn::make('index')
                     ->label('#')
@@ -213,7 +236,7 @@ class VisitasTable
                                             ->label('Motivo de la visita')
                                             ->getStateUsing(function ($record) {
                                                 $motivo = $record->motivo;
-                                                $detalle = $record->detalle_motivo  ;
+                                                $detalle = $record->detalle_motivo;
 
                                                 return filled($detalle)
                                                     ? "{$motivo} - {$detalle}"

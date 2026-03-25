@@ -682,7 +682,8 @@ class VisitaForm
                                         fn() => Motivo::query()
                                             ->pluck('motivo', 'motivo') // (Lo que se ve, Lo que se guarda)
 
-                                    )->live()
+                                    )->searchable()
+                                    ->live()
                                     ->required(),
 
                                 TextInput::make('detalle_motivo')
