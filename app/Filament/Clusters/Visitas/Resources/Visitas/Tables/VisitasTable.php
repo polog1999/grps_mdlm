@@ -45,21 +45,10 @@ class VisitasTable
         return $table
             ->headerActions([ // <-- Añadimos esto
                 ExportAction::make()->exporter(VisitaExporter::class)
-                    ->label('Exportar Reporte Real')
-                    ->chunkSize(500) // Procesará de 500 en 500 y actualizará la barra
+                    ->label('Exportar Visitas')
+                    ->chunkSize(100) // Procesar de 100 en 100 para que la barra suba fluido
+                    ->color('info')
             ])
-            // ->label('Exportar Excel')
-            // ->icon('heroicon-o-document-arrow-down')
-            // ->color('info')
-            // ->openUrlInNewTab()
-            // ->before(function ($livewire) {
-            //     // CLAVE 2: Notificar a la barra de tu partial
-            //     $livewire->dispatch('descarga-iniciada');
-
-            //     ini_set('memory_limit', '1024M');
-            //     set_time_limit(0);
-            // })
-
             ->columns([
                 TextColumn::make('index')
                     ->label('#')

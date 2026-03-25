@@ -52,19 +52,20 @@ class VisitaExporter extends Exporter
 
         return $body;
     }
-    public static function getJobProgressNotificationTitle(): ?string
+    // Esto hace que la notificación de progreso sea persistente y visible
+public static function getJobProgressNotificationTitle(): ?string
 {
-    return 'Procesando exportación de Visitas...';
+    return 'Generando reporte de Visitas...';
 }
 
-// ESTA ES LA CLAVE:
-// Forzamos a que la notificación de progreso se envíe como un mensaje "broadcast"
-public function getJobProgressNotification(): ?\Filament\Notifications\Notification
+// Opcional: Si quieres que la barra se vea en grande
+public static function getJobStartedNotificationTitle(): ?string
 {
-    return \Filament\Notifications\Notification::make()
-        ->title(static::getJobProgressNotificationTitle())
-        ->info() // Color azul de información
-        ->persistent() // Para que no se cierre sola
-        ->body('Por favor, no cierre la ventana hasta completar los 30,000 registros.');
+    return 'La exportación ha comenzado';
+}
+// Opcional: Personalizar el título de la notificación final
+public static function getCompletedNotificationTitle(Export $export): string
+{
+    return '¡Reporte Listo!';
 }
 }
