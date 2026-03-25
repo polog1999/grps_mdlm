@@ -68,4 +68,8 @@ public static function getCompletedNotificationTitle(Export $export): string
 {
     return '¡Reporte Listo!';
 }
+public function getFileDisk(): string
+    {
+        return 'public'; // <--- Forzamos el uso del disco público aquí
+    }
 }
