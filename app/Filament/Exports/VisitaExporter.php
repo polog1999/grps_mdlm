@@ -90,12 +90,17 @@ public function getXlsxWriter(): string
 }
 public function download(Export $export, string $format): Response
 {
-    // Esto asegura que no haya nada en el "túnel" de salida antes del archivo
-    if (ob_get_length()) {
-        ob_end_clean();
-    }
+    $storage = storage_path("app/{$export->file_disk}/{$export->file_name}");
 
-    return parent::download($export, $format);
+    // Limpiamos cualquier error de PHP que se quiera colar en el Excel
+    if (ob_get_length()) ob_end_clean();
+
+    // Forzamos a Laravel a leer el archivo y enviarlo directamente
+    return response()->download($storage, "reporte_visitas.{$format}", [
+        'Content-Type' => ($format === 'xlsx') 
+            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+            : 'text/csv',
+    ]);
 }
 public static function getUrl(Export $export, string $format): string
 {
