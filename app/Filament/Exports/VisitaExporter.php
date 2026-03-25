@@ -4,6 +4,7 @@ namespace App\Filament\Exports;
 
 use App\Models\Visita;
 use App\Models\VisitaHistorico;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -72,4 +73,27 @@ public function getFileDisk(): string
     {
         return 'public'; // <--- Forzamos el uso del disco público aquí
     }
+
+    public function getFormats(): array
+{
+    return [
+        ExportFormat::Xlsx,
+        ExportFormat::Csv,
+    ];
+}
+
+// Esto optimiza el uso de memoria para archivos grandes
+public function getXlsxWriter(): string
+{
+    return \OpenSpout\Writer\XLSX\Writer::class;
+}
+public function download(Export $export, string $format): \Symfony\Component\HttpFoundation\Response
+{
+    // Limpia cualquier residuo de texto o espacios en blanco en el servidor
+    if (ob_get_length()) {
+        ob_end_clean();
+    }
+
+    return parent::download($export, $format);
+}
 }
