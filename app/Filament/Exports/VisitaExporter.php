@@ -9,6 +9,7 @@ use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Support\Number;
+use Symfony\Component\HttpFoundation\Response;
 
 class VisitaExporter extends Exporter
 {
@@ -87,13 +88,21 @@ public function getXlsxWriter(): string
 {
     return \OpenSpout\Writer\XLSX\Writer::class;
 }
-public function download(Export $export, string $format): \Symfony\Component\HttpFoundation\Response
+public function download(Export $export, string $format): Response
 {
-    // Limpia cualquier residuo de texto o espacios en blanco en el servidor
+    // Esto asegura que no haya nada en el "túnel" de salida antes del archivo
     if (ob_get_length()) {
         ob_end_clean();
     }
 
     return parent::download($export, $format);
+}
+public static function getUrl(Export $export, string $format): string
+{
+    // Esto genera la URL pero sin forzar un guardián específico que pueda dar 401
+    return route('filament.exports.download', [
+        'export' => $export,
+        'format' => $format,
+    ]);
 }
 }
