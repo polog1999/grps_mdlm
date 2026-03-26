@@ -30,8 +30,8 @@ class VisitaExporter extends Exporter
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
             ExportColumn::make('Apellidos y nombres')
                 ->label('Visitante'),
-            ExportColumn::make('sede.nombre')
-                ->sede('Sede'),
+            // ExportColumn::make('sede.nombre')
+            //     ->sede('Sede'),
             ExportColumn::make('area')
                 ->label('Área'),
 
