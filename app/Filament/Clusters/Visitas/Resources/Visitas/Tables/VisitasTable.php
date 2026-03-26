@@ -118,31 +118,31 @@ class VisitasTable
                 //             );
                 //     }),
                 Filter::make('fecha_rango')
-    ->form([
-        DatePicker::make('desde'),
-        DatePicker::make('hasta'),
-    ])
-    ->query(function ($query, array $data) {
-        return $query
-            ->when(
-                $data['desde'],
-                fn($query, $date) => $query->whereDate('fecha', '>=', $date),
-            )
-            ->when(
-                $data['hasta'],
-                fn($query, $date) => $query->whereDate('fecha', '<=', $date),
-            );
-    })
-    ->indicateUsing(function (array $data): array {
-        $indicators = [];
-        if ($data['desde'] ?? null) {
-            $indicators[] = 'Desde: ' . \Carbon\Carbon::parse($data['desde'])->format('d/m/Y');
-        }
-        if ($data['hasta'] ?? null) {
-            $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse($data['hasta'])->format('d/m/Y');
-        }
-        return $indicators;
-    })
+                    ->form([
+                        DatePicker::make('desde'),
+                        DatePicker::make('hasta'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['desde'],
+                                fn($query, $date) => $query->whereDate('fecha', '>=', $date),
+                            )
+                            ->when(
+                                $data['hasta'],
+                                fn($query, $date) => $query->whereDate('fecha', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['desde'] ?? null) {
+                            $indicators[] = 'Desde: ' . \Carbon\Carbon::parse($data['desde'])->format('d/m/Y');
+                        }
+                        if ($data['hasta'] ?? null) {
+                            $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse($data['hasta'])->format('d/m/Y');
+                        }
+                        return $indicators;
+                    })
             ])
             ->recordActions([
                 Action::make('marcar_salida')
