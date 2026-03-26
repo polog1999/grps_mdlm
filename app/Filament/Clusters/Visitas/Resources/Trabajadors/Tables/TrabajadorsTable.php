@@ -31,7 +31,7 @@ class TrabajadorsTable
                     ->label('#')
                     ->rowIndex() // <--- Esta es la clave en Filament v3
                     ->alignCenter(),
-                TextColumn::make('dni')
+                TextColumn::make('nro_documento')
                     ->label('DNI')
                     ->searchable()
                     ->sortable(),
