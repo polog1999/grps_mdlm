@@ -21,7 +21,7 @@ class VisitaExporter extends Exporter
             // ExportColumn::make('id')
             //     ->label('ID'),
             ExportColumn::make('fecha')
-                ->label('Fecha')
+                // ->label('Fecha')
                 ->date('d/m/Y'),
             ExportColumn::make('tipo_documento'),
             ExportColumn::make('numero_documento')
