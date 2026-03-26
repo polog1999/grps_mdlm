@@ -2,8 +2,10 @@
 
 namespace App\Filament\Exports;
 
+use App\Models\Sede;
 use App\Models\Visita;
 use App\Models\VisitaHistorico;
+use Carbon\Carbon;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
@@ -21,7 +23,8 @@ class VisitaExporter extends Exporter
             // ExportColumn::make('id')
             //     ->label('ID'),
             ExportColumn::make('fecha')
-                ->label('Fecha'),
+                ->label('Fecha')
+                ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d-m-Y') : ''),
                 // ->date('d/m/Y'),
             ExportColumn::make('tipo_documento'),
             ExportColumn::make('numero_documento')
@@ -30,8 +33,8 @@ class VisitaExporter extends Exporter
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
             ExportColumn::make('Apellidos y nombres')
                 ->label('Visitante'),
-            ExportColumn::make('sede.nombre')
-                ->sede('Sede'),
+            ExportColumn::make('sede_id')
+                ->formatStateUsing(fn ($record) => $record->sede?->nombre ?? 'N/A'),
             ExportColumn::make('area')
                 ->label('Área'),
 
