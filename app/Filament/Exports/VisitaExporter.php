@@ -28,7 +28,7 @@ class VisitaExporter extends Exporter
                 // ->date('d/m/Y'),
             ExportColumn::make('tipo_documento'),
             ExportColumn::make('numero_documento')
-                ->label('Documento'),
+                ->label('Documento/RUC'),
 
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
             ExportColumn::make('Apellidos y nombres')
