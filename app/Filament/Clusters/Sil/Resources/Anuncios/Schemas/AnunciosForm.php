@@ -245,10 +245,6 @@ class AnunciosForm
                                         ->readOnly()
                                         ->placeholder('Se completará al seleccionar la licencia'),
 
-                                    TextInput::make('form_direccion_predio')
-                                        ->label('Dirección del Predio Materia a Evaluar')
-                                        ->placeholder('Se completará al seleccionar la licencia')
-                                        ->columnSpanFull(),
                                 ])
                                 ->visible(fn($get) => $get('tiene_licencia') === 'si')
                                 ->columns(2),
@@ -262,6 +258,15 @@ class AnunciosForm
                                         ->searchable()
                                         ->preload()
                                         ->required(),
+                                ]),
+
+                            Section::make('Dirección del Predio')
+                                ->schema([
+                                    TextInput::make('form_direccion_predio')
+                                        ->label('Dirección del Predio Materia a Evaluar')
+                                        ->placeholder(fn($get) => $get('tiene_licencia') === 'si' ? 'Se completará al seleccionar la licencia' : 'Ingrese la dirección del predio materia a evaluar')
+                                        ->required(fn($get) => $get('tiene_licencia') === 'no')
+                                        ->columnSpanFull(),
                                 ]),
 
                             Placeholder::make('info_no_licencia')
@@ -415,10 +420,15 @@ class AnunciosForm
                                     TextInput::make('snapshot_lic_tipo')
                                         ->readOnly()
                                         ->label('Tipo de Licencia'),
+                                ])->columns(2),
+
+                            Section::make('Dirección del Predio')
+                                ->schema([
                                     TextInput::make('form_direccion_predio')
                                         ->label('Dirección del Predio Materia a Evaluar')
+                                        ->required(fn($get) => $get('tiene_licencia') === 'no')
                                         ->columnSpanFull(),
-                                ])->columns(2),
+                                ]),
 
                             Section::make('Resumen de Persona Legal')
                                 ->collapsed()
