@@ -10,6 +10,6 @@ class Proveedor extends Model
     protected $table = 'modulo_proveedores';
     protected $primaryKey = 'id_proveedor';
     protected $fillable = [
-        'ruc','nombres'
+        'ruc','nombres','direccion'
     ];
 }
