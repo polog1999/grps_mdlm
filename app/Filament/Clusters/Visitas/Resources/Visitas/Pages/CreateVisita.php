@@ -104,6 +104,7 @@ class CreateVisita extends CreateRecord
         // IMPORTANTE: NO borres 'lista_trabajadores' aquí, 
         // la necesitamos en el método afterCreate()
         unset(
+            $data['direccion'],
             $data['tipo_documento'],
             $data['tipo_documento_id'],
             $data['numero_documento'],
