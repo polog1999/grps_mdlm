@@ -296,7 +296,7 @@ class VisitaForm
 
                                                     Notification::make()
                                                         ->title('Datos del ApiRuc')
-                                                        ->body('Se consumió el ApisPeru')
+                                                        ->body('Se consumió el ApisRuc')
                                                         ->success()
                                                         ->send();
                                                 } else {
