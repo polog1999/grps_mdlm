@@ -232,7 +232,7 @@ class VisitaForm
                                             }
                                         }),
                                     Action::make('buscar_ruc')
-                                    ->color('info')
+                                        ->color('info')
                                         ->icon('heroicon-m-magnifying-glass')
                                         ->visible(fn(Get $get) =>  $get('es_empresa') == 1)
                                         ->action(function ($state, Set $set, Get $get) {
@@ -317,12 +317,12 @@ class VisitaForm
                                                         // FALLÓ EL PIDE
                                                         $set('pide_fallo', true); // Activamos edición manual
                                                         $set('nombres', null);
-                                                        $set('direccion');
+                                                        $set('direccion', null);
                                                         Notification::make()
-                                                                ->title('API no disponible')
-                                                                ->body('Complete los datos manualmente.')
-                                                                ->warning()
-                                                                ->send();
+                                                            ->title('API no disponible')
+                                                            ->body('Complete los datos manualmente.')
+                                                            ->warning()
+                                                            ->send();
                                                     }
                                                 }
                                             } else {
@@ -340,6 +340,12 @@ class VisitaForm
                         Hidden::make('pide_fallo')->default(false)->live(),
                         TextInput::make('nombres')
                             ->label('Razón Social')
+                            ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                            ->extraAttributes([
+                                'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                            ])
+                            ->trim()
+                            ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                             ->visible(fn(Get $get) => $get('es_empresa') == 1)
                             ->required(fn(Get $get) => $get('es_empresa') == 1)
                             ->readOnly(fn(Get $get) => $get('es_empresa') == 1 && !$get('pide_fallo')),
@@ -347,16 +353,38 @@ class VisitaForm
                         // ->columnSpanFull()
 
                         TextInput::make('nombres')
+                            ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                            // 2. Reactividad: Transforma el valor real en el cliente (Alpine.js)
+                            ->extraAttributes([
+                                'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                            ])
+                            // 3. Limpieza: Elimina espacios al perder el foco (opcional pero recomendado)
+                            ->trim()
+
+                            // 4. Seguridad: Asegura que llegue en mayúsculas al servidor
+                            ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                             ->visible(fn(Get $get) => $get('es_empresa') != 1) // Se oculta si es 6
                             ->required(fn(Get $get) => $get('es_empresa') != 1) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo') && $get('es_empresa') != 1),
                         TextInput::make('apellido_paterno')
+                            ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                            ->extraAttributes([
+                                'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                            ])
+                            ->trim()
+                            ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                             ->visible(fn(Get $get) => $get('es_empresa') != 1) // Se oculta si es 6
                             ->required(fn(Get $get) => $get('es_empresa') != 1) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) =>
                             $get('tipo_documento_id') == 1 && $get('pide_fallo') == false && $get('es_empresa') != 1),
 
                         TextInput::make('apellido_materno')
+                            ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                            ->extraAttributes([
+                                'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                            ])
+                            ->trim()
+                            ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                             ->visible(fn(Get $get) => $get('es_empresa') != 1) // Se oculta si es 6
                             ->required(fn(Get $get) => $get('es_empresa') != 1) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) =>
@@ -401,7 +429,12 @@ class VisitaForm
                                     }),
                                 Hidden::make('tipo_documento'),
                                 TextInput::make('numero_documento')
-
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->extraAttributes([
+                                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                                    ])
+                                    ->trim()
+                                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                                     ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
                                     // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
@@ -531,21 +564,45 @@ class VisitaForm
                                             })
                                     ),
                                 TextInput::make('nombres')
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->extraAttributes([
+                                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                                    ])
+                                    ->trim()
+                                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                                     ->visible()
                                     ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
                                 TextInput::make('apellido_paterno')
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->extraAttributes([
+                                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                                    ])
+                                    ->trim()
+                                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                                     ->visible()
                                     ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->readOnly(fn(Get $get) =>
                                     $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
 
                                 TextInput::make('apellido_materno')
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->extraAttributes([
+                                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                                    ])
+                                    ->trim()
+                                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                                     ->visible()
                                     ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->readOnly(fn(Get $get) =>
                                     $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
                                 TextInput::make('cargo')
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->extraAttributes([
+                                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                                    ])
+                                    ->trim()
+                                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                                     ->label('Cargo')
                                     ->visible()
                                     ->required(fn($livewire) => $livewire->data['es_empresa'] == 1), // Solo requerido si no es 6
@@ -712,6 +769,12 @@ class VisitaForm
 
                                 TextInput::make('detalle_motivo')
                                     ->label('Detalle')
+                                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                                    ->extraAttributes([
+                                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                                    ])
+                                    ->trim()
+                                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
                                     ->visible(fn(Get $get) => $get('motivo') != "")
                                     ->required(fn(Get $get) => $get('motivo') != "")
 

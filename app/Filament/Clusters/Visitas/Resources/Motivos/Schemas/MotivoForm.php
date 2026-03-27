@@ -12,7 +12,13 @@ class MotivoForm
         return $schema
             ->components([
                 TextInput::make('motivo')
-                ->required()
+                    ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                    ->extraAttributes([
+                        'x-on:input' => '$el.querySelector("input").value = $el.querySelector("input").value.toUpperCase()',
+                    ])
+                    ->trim()
+                    ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
+                    ->required()
             ]);
     }
 }
