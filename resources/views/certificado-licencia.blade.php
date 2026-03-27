@@ -506,7 +506,7 @@
                     {{ $licencia->TIPO_LICENCIA }}
                 @elseif($tipoLicencia === 'TEMPORAL')
                     {{ $licencia->TIPO_LICENCIA }} hasta el
-                    {{ \Carbon\Carbon::parse($licencia->lic_fecha_fin ?? $licencia->LIC_FECHA_FIN ?? now())->format('d/m/Y') }}
+                    {{ \Carbon\Carbon::parse($licencia->lic_fecha_fin ?? $licencia->FECHA_VENCIMIENTO ?? now())->format('d/m/Y') }}
                 @elseif($tipoLicencia === 'ESPECIAL')
                     Sujeto a la Ordenanza N° 062/MDLM
                 @else
