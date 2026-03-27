@@ -11,7 +11,7 @@ class PersonaUno extends Model
 
     public function tipoDocumento()
     {
-        return $this->belongsTo(TipoDocumento::class);
+        return $this->belongsTo(TipoDocumento::class, 'tipo_documento_id','id_tipo_documento');
     }
 
     public function trabajador()

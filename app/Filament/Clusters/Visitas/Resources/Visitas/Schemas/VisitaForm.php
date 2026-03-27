@@ -6,6 +6,7 @@ use App\Models\Area;
 use App\Models\Motivo;
 use App\Models\Oficina;
 use App\Models\PersonaUno;
+use App\Models\Proveedor;
 use App\Models\TipoDocumento;
 use App\Models\Trabajador;
 use App\Services\PideService;
@@ -17,6 +18,7 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -32,6 +34,20 @@ class VisitaForm
             ->components([
                 Section::make('Datos del Visitante')
                     ->schema([
+                        ToggleButtons::make('es_empresa')
+                            ->label('Tipo')
+                            ->options([
+                                0 => 'Persona',
+                                1 => 'Empresa',
+                            ])
+                            ->colors([
+                                0 => 'success',
+                                1 => 'info'
+                            ])
+                            ->live()
+                            ->columnSpanFull()
+                            ->default(0)
+                            ->grouped(),
                         Select::make('tipo_documento_id')
                             ->label('Tipo de Documento')
                             // ->relationship('persona.tipoDocumento', 'nombre')
@@ -47,26 +63,27 @@ class VisitaForm
                                 $set('apellido_materno', null);
                                 $set('foto_url', null);
                             })
+                            ->visible(fn(Get $get) => $get('es_empresa') == 0)
                             ->default(1)
                             ->live()
-                            ->required(),
+                            ->required(fn(Get $get) => $get('es_empresa') == 0),
                         Hidden::make('tipo_documento'),
                         TextInput::make('numero_documento')
-
+                            ->label(fn(Get $get) => $get('es_empresa') == 0 ? 'Número Documento' : 'RUC')
                             ->required()
-                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : ($get('tipo_documento_id') == 6 ? 11 : 20))
+                            ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 && $get('es_empresa') == 0 ? 8 : ($get('es_empresa') == 1 ? 11 : 20))
                             // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
-                            ->mask(fn(Get $get) => $get('tipo_documento_id') == 1 ? '99999999' : null)
+                            ->mask(fn(Get $get) => $get('tipo_documento_id') == 1  && $get('es_empresa') == 0 ? '99999999' : null)
 
                             // 2. Validación de servidor por si acaso
-                            ->regex(fn(Get $get) => $get('tipo_documento_id') == 1
+                            ->regex(fn(Get $get) => $get('tipo_documento_id') == 1 && $get('es_empresa') == 0
                                 ? '/^[0-9]{8}$/'
                                 : '/^[a-zA-Z0-9]{1,20}$/') // Regex flexible para otros documentos)
 
 
                             // 3. Tu validación de números iguales que pediste antes
                             ->rules(function (Get $get) {
-                                if ($get('tipo_documento_id') == 1) {
+                                if ($get('tipo_documento_id') == 1 && $get('es_empresa') == 0) {
                                     return [
                                         'regex:/^[0-9]{8}$/',            // Exactamente 8 números
                                         'regex:/^(?!.*(\d)\1{7}).*$/',   // No repetidos
@@ -95,8 +112,9 @@ class VisitaForm
                             ->suffixActions(
                                 [
                                     Action::make('buscar_visitante')
+                                        ->color('success')
                                         ->icon('heroicon-m-magnifying-glass')
-                                        ->visible(fn(Get $get) => $get('tipo_documento_id') == 1)
+                                        ->visible(fn(Get $get) => $get('tipo_documento_id') == 1 && $get('es_empresa') == 0)
                                         ->action(function ($state, Set $set, Get $get) {
                                             if (!$state) return;
 
@@ -214,8 +232,9 @@ class VisitaForm
                                             }
                                         }),
                                     Action::make('buscar_ruc')
+                                    ->color('info')
                                         ->icon('heroicon-m-magnifying-glass')
-                                        ->visible(fn(Get $get) => $get('tipo_documento_id') == 6)
+                                        ->visible(fn(Get $get) =>  $get('es_empresa') == 1)
                                         ->action(function ($state, Set $set, Get $get) {
                                             if (!$state) return;
 
@@ -251,15 +270,16 @@ class VisitaForm
                                                 //     return;
                                                 // }
 
-                                                $persona = PersonaUno::where('numero_documento', $state)->where('tipo_documento_id', $get('tipo_documento_id'))->first();
+                                                $proveedor = Proveedor::where('ruc', $state)->first();
 
-                                                if ($persona) {
-                                                    $set('persona_id', $persona->id);
-                                                    $set('nombres', $persona->nombres);
+                                                if ($proveedor) {
+                                                    $set('proveedor_id', $proveedor->id_proveedor);
+                                                    $set('nombres', $proveedor->nombre);
+                                                    $set('direccion', $proveedor->direccion);
 
                                                     Notification::make()
-                                                        ->title('BD local')
-                                                        ->body('Datos de la Base de Datos local')
+                                                        ->title('BD inventario')
+                                                        ->body('Datos de la Base de Datos inventario')
                                                         ->success()
                                                         ->send();
                                                     return;
@@ -272,6 +292,7 @@ class VisitaForm
 
                                                     $set('pide_fallo', false); // Activamos edición manual
                                                     $set('nombres', $datosApiRuc['razon_social']);
+                                                    $set('direccion', $datosApiRuc['direccion']);
 
                                                     Notification::make()
                                                         ->title('Datos del ApiRuc')
@@ -284,7 +305,8 @@ class VisitaForm
                                                     if ($datosApisPeruRuc['success']) {
 
                                                         $set('pide_fallo', false); // Activamos edición manual
-                                                        $set('nombres', $datosApisPeruRuc['razon_social']);
+                                                        $set('nombres', $datosApisPeruRuc['razonSocial']);
+                                                        $set('direccion', $datosApiRuc['direccion']);
 
                                                         Notification::make()
                                                             ->title('Datos del ApiRuc')
@@ -294,18 +316,19 @@ class VisitaForm
                                                     } else {
                                                         // FALLÓ EL PIDE
                                                         $set('pide_fallo', true); // Activamos edición manual
-                                                        $set('nombres', $datosApisPeruRuc['razon_social']);
+                                                        $set('nombres', null);
+                                                        $set('direccion');
                                                         Notification::make()
-                                                            ->title('Datos del ApisPeruRuc')
-                                                            ->body('Se consumió el ApisPeruRuc')
-                                                            ->success()
-                                                            ->send();
+                                                                ->title('API no disponible')
+                                                                ->body('Complete los datos manualmente.')
+                                                                ->warning()
+                                                                ->send();
                                                     }
                                                 }
                                             } else {
                                                 Notification::make()
                                                     ->title('Alerta')
-                                                    ->body('El DNI debe tener 8 dígitos')
+                                                    ->body('El DNI debe tener 11 dígitos')
                                                     ->warning()
                                                     ->send();
                                             }
@@ -317,30 +340,31 @@ class VisitaForm
                         Hidden::make('pide_fallo')->default(false)->live(),
                         TextInput::make('nombres')
                             ->label('Razón Social')
-                            ->visible(fn(Get $get) => $get('tipo_documento_id') == 6)
-                            ->required(fn(Get $get) => $get('tipo_documento_id') == 6)
-                            ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 6 && !$get('pide_fallo')),
+                            ->visible(fn(Get $get) => $get('es_empresa') == 1)
+                            ->required(fn(Get $get) => $get('es_empresa') == 1)
+                            ->readOnly(fn(Get $get) => $get('es_empresa') == 1 && !$get('pide_fallo')),
+                        Hidden::make('direccion'),
                         // ->columnSpanFull()
 
                         TextInput::make('nombres')
-                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
-                            ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
-                            ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
+                            ->visible(fn(Get $get) => $get('es_empresa') != 1) // Se oculta si es 6
+                            ->required(fn(Get $get) => $get('es_empresa') != 1) // Solo requerido si no es 6
+                            ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo') && $get('es_empresa') != 1),
                         TextInput::make('apellido_paterno')
-                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
-                            ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
+                            ->visible(fn(Get $get) => $get('es_empresa') != 1) // Se oculta si es 6
+                            ->required(fn(Get $get) => $get('es_empresa') != 1) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) =>
-                            $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
+                            $get('tipo_documento_id') == 1 && $get('pide_fallo') == false && $get('es_empresa') != 1),
 
                         TextInput::make('apellido_materno')
-                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
-                            ->required(fn(Get $get) => $get('tipo_documento_id') != 6) // Solo requerido si no es 6
+                            ->visible(fn(Get $get) => $get('es_empresa') != 1) // Se oculta si es 6
+                            ->required(fn(Get $get) => $get('es_empresa') != 1) // Solo requerido si no es 6
                             ->readOnly(fn(Get $get) =>
-                            $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
+                            $get('tipo_documento_id') == 1 && $get('pide_fallo') == false && $get('es_empresa') != 1),
                         Placeholder::make('.')
                             ->label(false),
                         Placeholder::make('foto_visual')
-                            ->visible(fn(Get $get) => $get('tipo_documento_id') != 6) // Se oculta si es 6
+                            ->visible(fn(Get $get) => $get('es_empresa') != 1 && $get('tipo_documento_id') == 1) // Se oculta si es 6
                             ->label('Foto RENIEC')
                             ->content(fn(Get $get) => new \Illuminate\Support\HtmlString(
                                 $get('foto_url')
@@ -360,11 +384,11 @@ class VisitaForm
                                     // ->relationship('persona.tipoDocumento', 'nombre')
                                     ->options(
                                         fn() =>
-                                        TipoDocumento::pluck('nombre', 'tipo_documento_id') // Trae el nombre para mostrar y el id para guardar
+                                        TipoDocumento::pluck('abreviatura', 'id_tipo_documento') // Trae el nombre para mostrar y el id para guardar
                                     )
                                     ->default(1)
                                     ->live()
-                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6,
+                                    ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6,
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
                                             // Buscamos el nombre del área basada en el ID seleccionado
@@ -378,7 +402,7 @@ class VisitaForm
                                 Hidden::make('tipo_documento'),
                                 TextInput::make('numero_documento')
 
-                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 ? 8 : 20)
                                     // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
                                     ->mask(fn(Get $get) => $get('tipo_documento_id') == 1 ? '99999999' : null)
@@ -508,26 +532,26 @@ class VisitaForm
                                     ),
                                 TextInput::make('nombres')
                                     ->visible()
-                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->readOnly(fn(Get $get) => $get('tipo_documento_id') == 1 && !$get('pide_fallo')),
                                 TextInput::make('apellido_paterno')
                                     ->visible()
-                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->readOnly(fn(Get $get) =>
                                     $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
 
                                 TextInput::make('apellido_materno')
                                     ->visible()
-                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6) // Solo requerido si no es 6
+                                    ->required(fn($livewire) => $livewire->data['es_empresa'] == 1) // Solo requerido si no es 6
                                     ->readOnly(fn(Get $get) =>
                                     $get('tipo_documento_id') == 1 && $get('pide_fallo') == false),
                                 TextInput::make('cargo')
                                     ->label('Cargo')
                                     ->visible()
-                                    ->required(fn($livewire) => $livewire->data['tipo_documento_id'] == 6), // Solo requerido si no es 6
+                                    ->required(fn($livewire) => $livewire->data['es_empresa'] == 1), // Solo requerido si no es 6
 
                             ])->columnSpanFull()->columns(2)
-                            ->visible(fn($livewire) => $livewire->data['tipo_documento_id'] == 6)
+                            ->visible(fn($livewire) => $livewire->data['es_empresa'] == 1)
 
                             ->dehydrated(false), // <--- ESTO EVITA EL ERROR SQL AL GUARDAR,
 
