@@ -44,6 +44,15 @@ class VisitaForm
                                 0 => 'success',
                                 1 => 'info'
                             ])
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                // Al cambiar el número, reseteamos los campos de identidad
+                                $set('numero_documento', null);
+                                $set('nombres', null);
+                                $set('apellido_paterno', null);
+                                $set('apellido_materno', null);
+                                $set('direccion',null);
+                                $set('foto_url', null);
+                            })
                             ->live()
                             ->columnSpanFull()
                             ->default(0)
@@ -58,6 +67,7 @@ class VisitaForm
                             ->afterStateUpdated(function ($state, callable $set) {
                                 // Al cambiar el número, reseteamos los campos de identidad
                                 $set('numero_documento', null);
+                                $set('direccion',null);
                                 $set('nombres', null);
                                 $set('apellido_paterno', null);
                                 $set('apellido_materno', null);
@@ -101,7 +111,7 @@ class VisitaForm
                             // 4. Mantiene el teclado numérico en celulares
                             ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
                             // ->live(onBlur: true)
-                            ->live()
+                            ->live(debounce: 500)
                             ->afterStateUpdated(function ($state, callable $set) {
                                 // Al cambiar el número, reseteamos los campos de identidad
                                 $set('nombres', null);
@@ -466,7 +476,7 @@ class VisitaForm
                                     // 4. Mantiene el teclado numérico en celulares
                                     ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
                                     // ->live(onBlur: true)
-                                    ->live()
+                                    ->live(debounce: 500)
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         // Al cambiar el número, reseteamos los campos de identidad
                                         $set('nombres', null);
