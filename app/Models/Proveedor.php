@@ -12,4 +12,5 @@ class Proveedor extends Model
     protected $fillable = [
         'ruc','nombre','direccion'
     ];
+    public $timestamps = false;
 }
