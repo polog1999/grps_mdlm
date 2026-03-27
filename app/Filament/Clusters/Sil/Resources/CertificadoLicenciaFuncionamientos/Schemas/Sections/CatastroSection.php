@@ -14,6 +14,7 @@ use App\Services\Sil\Licencias\TipoEstablecimientoService;
 use App\Services\Sil\Infocat\FichaUbicacionService as FichaUbicacionInfocatService;
 use App\Services\Sil\Licencias\LicenciaCatastroService;
 use Illuminate\Support\Facades\Log;
+use Filament\Notifications\Notification;
 
 class CatastroSection
 {
@@ -38,6 +39,50 @@ class CatastroSection
                             ->modalWidth('7xl')
                             ->modalSubmitActionLabel('Seleccionar')
                             ->modalCancelActionLabel('Cancelar')
+                            ->extraModalFooterActions([
+                                Action::make('agregar_nuevo_catastro')
+                                    ->label('Agregar Código catastral')
+                                    ->color('success')
+                                    ->icon('heroicon-o-plus')
+                                    ->modalHeading('Agregar Nuevo Código Catastral')
+                                    ->modalWidth('md')
+                                    ->form([
+                                        TextInput::make('nuevo_coduca')
+                                            ->label('Nuevo Código Catastral')
+                                            ->required()
+                                            ->placeholder('Ej: 1501141441070103810030')
+                                    ])
+                                    ->action(function (array $data, callable $set, callable $get) {
+                                        $service = app(FichaUbicacionService::class);
+                                        $nuevaFicha = $service->guardarFichaUbicacion($data['nuevo_coduca']);
+
+                                        if ($nuevaFicha) {
+                                            $set('ficha_seleccionada', $nuevaFicha->fiu_id);
+
+                                            self::rellenarCamposDesdeFicha($nuevaFicha, $set, $get);
+
+                                            if ($nuevaFicha->wasRecentlyCreated) {
+                                                Notification::make()
+                                                    ->title('Código Catastral agregado')
+                                                    ->body("El código {$data['nuevo_coduca']} ha sido guardado y seleccionado con éxito.")
+                                                    ->success()
+                                                    ->send();
+                                            } else {
+                                                Notification::make()
+                                                    ->title('Código ya registrado')
+                                                    ->body("El código {$data['nuevo_coduca']} ya existe en la base de datos local. Se ha cargado la información existente.")
+                                                    ->warning()
+                                                    ->send();
+                                            }
+                                        } else {
+                                            Notification::make()
+                                                ->title('Error')
+                                                ->body('No se pudo encontrar o guardar el código catastral desde Oracle.')
+                                                ->danger()
+                                                ->send();
+                                        }
+                                    })
+                            ])
                             ->form([
                                 Select::make('ficha_seleccionada')
                                     ->label('Buscar Código Catastral')
@@ -116,51 +161,7 @@ class CatastroSection
                                 $ficha = $fichaService->obtenerPorId($data['ficha_seleccionada']);
 
                                 if ($ficha) {
-                                    // Construir via_completa usando método escalable
-                                    $viaCompleta = self::buildViaCompleta($ficha);
-
-                                    // Setear todos los campos del formulario con los datos de la ficha
-                                    $set('via_completa', $viaCompleta);
-                                    $set('coduca', $ficha->fiu_coduca);
-                                    $set('fiu_id', $ficha->fiu_id);
-                                    $set('mz', $ficha->fiu_manzana);
-                                    $set('lote', $ficha->fiu_lote);
-                                    $set('zonificacion', $ficha->fiu_zonificacion);
-                                    $set('area_economica', $ficha->fiu_areaeconomica);
-                                    $set('numvia', $ficha->fiu_numvia);
-                                    $set('intdpto', $ficha->fiu_intdpto);
-                                    $set('blockedif', $ficha->fiu_blockedif);
-                                    $set('codpredio', $ficha->fiu_codpre);
-
-                                    // Setear urbanización si existe
-                                    if ($ficha->urbanizacion && $ficha->urbanizacion->urb_descurb) {
-                                        $set('descurb', $ficha->urbanizacion->urb_descurb);
-                                    }
-
-                                    // Actualizar dirección completa
-                                    $set('direccion', self::buildDireccionCompleta($get));
-
-                                    // Autocompletar Tipo Establecimiento desde CODUCA
-                                    Log::info('CatastroSection: Iniciando autocompletado de Tipo Establecimiento', [
-                                        'fiu_coduca' => $ficha->fiu_coduca,
-                                        'fiu_id' => $ficha->fiu_id
-                                    ]);
-
-                                    $tipoEstService = app(TipoEstablecimientoService::class);
-                                    $tesId = $tipoEstService->obtenerTipoEstablecimientoPorCoduca($ficha->fiu_coduca);
-
-                                    if ($tesId) {
-                                        $set('tipo_establecimientos', $tesId);
-                                        Log::info('CatastroSection: Tipo Establecimiento autocompletado exitosamente', [
-                                            'fiu_coduca' => $ficha->fiu_coduca,
-                                            'tes_id' => $tesId
-                                        ]);
-                                    } else {
-                                        Log::warning('CatastroSection: No se pudo autocompletar Tipo Establecimiento', [
-                                            'fiu_coduca' => $ficha->fiu_coduca,
-                                            'razon' => 'No se encontró correspondencia CODUCA -> CODUSO -> TipoEstablecimiento'
-                                        ]);
-                                    }
+                                    self::rellenarCamposDesdeFicha($ficha, $set, $get);
                                 }
                             })
                     )
@@ -383,6 +384,66 @@ class CatastroSection
         }
 
         return trim(implode(' ', $partes));
+    }
+
+    /**
+     * Rellena todos los campos del formulario con la información de una ficha de ubicación.
+     * 
+     * @param mixed $ficha (FichaUbicacion o FichaUbicacionSyscat)
+     * @param callable $set
+     * @param callable $get
+     * @return void
+     */
+    private static function rellenarCamposDesdeFicha($ficha, callable $set, callable $get): void
+    {
+        // Construir via_completa usando método escalable
+        $viaCompleta = self::buildViaCompleta($ficha);
+
+        // Setear todos los campos del formulario con los datos de la ficha
+        $set('via_completa', $viaCompleta);
+        $set('coduca', $ficha->fiu_coduca);
+        $set('fiu_id', $ficha->fiu_id);
+        $set('mz', $ficha->fiu_manzana);
+        $set('lote', $ficha->fiu_lote);
+        $set('zonificacion', $ficha->fiu_zonificacion);
+        $set('area_economica', $ficha->fiu_areaeconomica);
+        $set('numvia', $ficha->fiu_numvia);
+        $set('intdpto', $ficha->fiu_intdpto);
+        $set('blockedif', $ficha->fiu_blockedif);
+        $set('codpredio', $ficha->fiu_codpre);
+
+        // Setear urbanización si existe
+        if ($ficha->urbanizacion && $ficha->urbanizacion->urb_descurb) {
+            $set('descurb', $ficha->urbanizacion->urb_descurb);
+        } else {
+            $set('descurb', null);
+        }
+
+        // Actualizar dirección completa
+        $set('direccion', self::buildDireccionCompleta($get));
+
+        // Autocompletar Tipo Establecimiento desde CODUCA
+        Log::info('CatastroSection: Iniciando autocompletado de Tipo Establecimiento', [
+            'fiu_coduca' => $ficha->fiu_coduca,
+            'fiu_id' => $ficha->fiu_id
+        ]);
+
+        $tipoEstService = app(TipoEstablecimientoService::class);
+        $tesId = $tipoEstService->obtenerTipoEstablecimientoPorCoduca($ficha->fiu_coduca);
+
+        if ($tesId) {
+            $set('tipo_establecimientos', $tesId);
+            Log::info('CatastroSection: Tipo Establecimiento autocompletado exitosamente', [
+                'fiu_coduca' => $ficha->fiu_coduca,
+                'tes_id' => $tesId
+            ]);
+        } else {
+            $set('tipo_establecimientos', null);
+            Log::warning('CatastroSection: No se pudo autocompletar Tipo Establecimiento', [
+                'fiu_coduca' => $ficha->fiu_coduca,
+                'razon' => 'No se encontró correspondencia CODUCA -> CODUSO -> TipoEstablecimiento'
+            ]);
+        }
     }
 
 }
