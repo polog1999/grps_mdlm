@@ -82,7 +82,7 @@ class CreateVisita extends CreateRecord
             $proveedor = Proveedor::firstOrCreate(
                 ['ruc' => $data['numero_documento']],
                 [
-                    'nombres' => $data['nombres'],
+                    'nombre' => $data['nombres'],
                     'direccion' => $data['direccion']
                 ]
             );
