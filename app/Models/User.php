@@ -24,13 +24,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-<<<<<<< HEAD
-=======
         'sede_id',
         'trabajador_id',
         'sede',
         'nombres_completos',
->>>>>>> feature/visitas2
     ];
 
     /**
