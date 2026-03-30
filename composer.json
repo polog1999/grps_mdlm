@@ -38,6 +38,10 @@
         "ncjoes/office-converter": "^1.0",
         "owenvoke/blade-fontawesome": "^2.9",
         "phpoffice/phpword": "^1.4",
+<<<<<<< HEAD
+=======
+        "pxlrbt/filament-excel": "3.0",
+>>>>>>> feature/correcciones
         "pxlrbt/filament-excel": "^3.6",
         "secondnetwork/blade-tabler-icons": "^3.36",
         "spatie/laravel-permission": "^6.24",
