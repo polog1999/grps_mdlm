@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
-    "content-hash": "c755ebf48e529bee5c2fdc72f02f6e1d",
-=======
     "content-hash": "da7af37813e868453add5ffdfcd715b0",
->>>>>>> feature/visitas2
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",

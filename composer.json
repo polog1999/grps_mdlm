@@ -34,12 +34,9 @@
         "marcogermani87/filament-captcha": "^2.2",
         "ncjoes/office-converter": "^1.0",
         "owenvoke/blade-fontawesome": "^2.9",
-<<<<<<< HEAD
         "phpoffice/phpword": "^1.4",
         "pxlrbt/filament-excel": "3.0",
-=======
         "pxlrbt/filament-excel": "^3.6",
->>>>>>> feature/visitas2
         "secondnetwork/blade-tabler-icons": "^3.36",
         "spatie/laravel-permission": "^6.24",
         "stevebauman/location": "^7.6",
