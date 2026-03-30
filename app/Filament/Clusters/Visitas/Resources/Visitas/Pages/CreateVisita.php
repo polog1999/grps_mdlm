@@ -56,6 +56,9 @@ class CreateVisita extends CreateRecord
     {
         // 1. Manejo de la Persona Principal (Empresa o Visitante)
         if ($data['es_empresa'] == 0) {
+            if (empty($data['tipo_documento']) && !empty($data['tipo_documento_id'])) {
+        $data['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $data['tipo_documento_id'])->value('abreviatura');
+    }
             $persona = PersonaUno::updateOrCreate(
                 [
                     'numero_documento' => $data['numero_documento'],

@@ -45,12 +45,13 @@ class VisitaForm
                                 1 => 'info'
                             ])
                             ->afterStateUpdated(function ($state, callable $set) {
+
                                 // Al cambiar el número, reseteamos los campos de identidad
                                 $set('numero_documento', null);
                                 $set('nombres', null);
                                 $set('apellido_paterno', null);
                                 $set('apellido_materno', null);
-                                $set('direccion',null);
+                                $set('direccion', null);
                                 $set('foto_url', null);
                             })
                             ->live()
@@ -64,10 +65,24 @@ class VisitaForm
                                 fn() =>
                                 TipoDocumento::pluck('abreviatura', 'id_tipo_documento') // Trae el nombre para mostrar y el id para guardar
                             )
+                            ->afterStateHydrated(function ($state, $set, $get) {
+                                if ($state && !$get('tipo_documento')) {
+                                    $nombre = TipoDocumento::where('id_tipo_documento', $state)->value('abreviatura');
+                                    $set('tipo_documento', $nombre);
+                                }
+                            })
                             ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state) {
+                                    // Buscamos el nombre del área basada en el ID seleccionado
+                                    $nombreTipo = TipoDocumento::where('id_tipo_documento', $state)->value('abreviatura');
+                                    // Guardamos ese nombre en el campo 'area_nombre'
+                                    $set('tipo_documento', $nombreTipo);
+                                } else {
+                                    $set('tipo_documento', null);
+                                }
                                 // Al cambiar el número, reseteamos los campos de identidad
                                 $set('numero_documento', null);
-                                $set('direccion',null);
+                                $set('direccion', null);
                                 $set('nombres', null);
                                 $set('apellido_paterno', null);
                                 $set('apellido_materno', null);
