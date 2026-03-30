@@ -46,8 +46,8 @@ class SedeResource extends Resource
     {
         return [
             'index' => ListSedes::route('/'),
-            'create' => CreateSede::route('/create'),
-            'edit' => EditSede::route('/{record}/edit'),
+            // 'create' => CreateSede::route('/create'),
+            // 'edit' => EditSede::route('/{record}/edit'),
         ];
     }
     public static function canAccess(): bool

@@ -56,7 +56,7 @@ class VisitaResource extends Resource
         return [
             'index' => ListVisitas::route('/'),
             'create' => CreateVisita::route('/create'),
-            'edit' => EditVisita::route('/{record}/edit'),
+            // 'edit' => EditVisita::route('/{record}/edit'),
         ];
     }
     public static function canAccess(): bool
@@ -65,10 +65,10 @@ class VisitaResource extends Resource
     }
 public static function getEloquentQuery(): Builder
 {
-    $query = parent::getEloquentQuery();
+    $query = parent::getEloquentQuery()->with('sede');
 
     // Si el usuario NO es admin, filtramos por su ID
-    if (!auth()->user()->hasRole('Administrador OTIE')) { 
+    if (!auth()->user()->hasRole('Administrador OTIE') && !auth()->user()->hasRole('Control Interno - Supervisor')) { 
         $query->where('user_id_ingreso', auth()->id());
     }
 

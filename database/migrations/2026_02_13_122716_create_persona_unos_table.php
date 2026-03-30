@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('visitas.personas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tipo_documento_id')->nullable()->constrained('visitas.tipo_documentos');
+            $table->foreignId('tipo_documento_id')->nullable();
             $table->string('numero_documento')->nullable()->unique();
             $table->string('nombres')->nullable();
             $table->string('apellido_paterno')->nullable();
@@ -21,6 +21,9 @@ return new class extends Migration
             $table->date('fecha_nacimiento')->nullable();
             $table->text('foto')->nullable(); // foto
             $table->text('foto_url')->nullable();
+            $table->foreignId('user_id_creo')->nullable()->constrained('users');    
+            $table->foreignId('user_id_modi')->nullable()->constrained('users');
+            $table->unique(['tipo_documento_id', 'numero_documento']);
             $table->timestamps();
         });
     }

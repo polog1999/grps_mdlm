@@ -48,6 +48,7 @@ class EditTrabajador extends EditRecord
                 // 'de_cargo'      => $h->de_cargo,
                 // 'sede_id'      => $h->sede_id,
                 'fecha_inicio' => $h->fecha_inicio,
+                
             ])
             ->toArray();
 
@@ -60,6 +61,7 @@ class EditTrabajador extends EditRecord
                 'cargo_nombre' => $h->cargo?->nombre,
                 'area_nombre'  => $h->area?->nombre,
                 'fecha_inicio' => $h->fecha_inicio,
+                'fecha_fin' => $h->fecha_fin,
             ])
             ->toArray();
 

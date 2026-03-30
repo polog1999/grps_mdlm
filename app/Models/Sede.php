@@ -8,18 +8,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sede extends Model
 {
-    use HasFactory;
+    // use HasFactory;
 
     /**
      * El nombre de la tabla asociada al modelo.
      * Incluimos el esquema (ejemplo: 'dbo') seguido del nombre de la tabla.
      * * @var string
      */
-    protected $table = 'visitas.sedes';
+    protected $connection = 'mysql';
+    protected $table = 'ubicacion_sedes';
+    protected $primaryKey = 'id_sede';
 
-    use SoftDeletes; // 2. Usar el Trait
+    // use SoftDeletes; // 2. Usar el Trait
 
-    protected $dates = ['deleted_at'];
+    // protected $dates = ['deleted_at'];
 
     /**
      * La llave primaria asociada a la tabla.
@@ -32,39 +34,39 @@ class Sede extends Model
      * Los atributos que se pueden asignar de manera masiva.
      * * @var array<int, string>
      */
-    protected $fillable = [
-        'nombre',
-        'aforo',
-        'estado',
-        'user_id_creo',
-        'user_id_modi'
-    ];
+    // protected $fillable = [
+    //     'nombre',
+    //     'aforo',
+    //     'estado',
+    //     'user_id_creo',
+    //     'user_id_modi'
+    // ];
 
     /**
      * Los atributos que deben ser casteados a tipos específicos.
      * Esto ayuda a que Laravel trate 'aforo' como entero y 'estado' según necesites.
      * * @var array<string, string>
      */
-    protected $casts = [
-        'aforo' => 'integer',
-        'estado' => 'integer',
-    ];
+//     protected $casts = [
+//         'aforo' => 'integer',
+//         'estado' => 'integer',
+//     ];
 
-    public function areas()
-    {
-        return $this->hasMany(Area::class);
-    }
+//     public function areas()
+//     {
+//         return $this->hasMany(Area::class);
+//     }
 
-    public function historiales()
-    {
-        return $this->hasMany(HistorialCargo::class);
-    }
-    public function userCreo()
-    {
-        return $this->belongsTo(User::class, 'user_id_creo');
-    }
-    public function userModi()
-    {
-        return $this->belongsTo(User::class, 'user_id_modi');
-    }
+//     public function historiales()
+//     {
+//         return $this->hasMany(HistorialCargo::class);
+//     }
+//     public function userCreo()
+//     {
+//         return $this->belongsTo(User::class, 'user_id_creo');
+//     }
+//     public function userModi()
+//     {
+//         return $this->belongsTo(User::class, 'user_id_modi');
+//     }
 }

@@ -46,8 +46,8 @@ class TipoDocumentoResource extends Resource
     {
         return [
             'index' => ListTipoDocumentos::route('/'),
-            'create' => CreateTipoDocumento::route('/create'),
-            'edit' => EditTipoDocumento::route('/{record}/edit'),
+            // 'create' => CreateTipoDocumento::route('/create'),
+            // 'edit' => EditTipoDocumento::route('/{record}/edit'),
         ];
     }
     public static function canAccess(): bool

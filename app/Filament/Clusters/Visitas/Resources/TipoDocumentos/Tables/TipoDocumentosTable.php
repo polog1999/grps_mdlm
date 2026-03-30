@@ -20,35 +20,39 @@ class TipoDocumentosTable
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('nombre')
                     ->searchable(),
-                TextColumn::make('nombre_corto')
+                TextColumn::make('abreviatura')
                     ->searchable(),
-                IconColumn::make('estado')
-                    ->boolean(),
+                // IconColumn::make('estado')
+                //     ->boolean(),
             ])
             ->filters([
-                SelectFilter::make('estado')
-                ->options([
-                    1 => 'Activo',
-                    0 => 'Inactivo',
-                ]),
-                TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
+                // SelectFilter::make('estado')
+                //     ->options([
+                //         1 => 'Activo',
+                //         0 => 'Inactivo',
+                //     ]),
+                // TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
             ])
             ->recordActions([
-                EditAction::make()
-                ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_tipo_documento')),
-                DeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-                RestoreAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-                ForceDeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // EditAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_tipo_documento')),
+                // DeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+                // RestoreAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+                // ForceDeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
             ]);
+            // ->toolbarActions([
+            //     BulkActionGroup::make([
+            //         DeleteBulkAction::make(),
+            //     ]),
+            // ]);
     }
 }
