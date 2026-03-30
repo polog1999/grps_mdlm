@@ -45,18 +45,18 @@ class TrabajadorResource extends Resource
             //
         ];
     }
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->with(['historiales.cargo', 'historiales.area']);
-    }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()
+    //         ->with(['historiales.cargo', 'historiales.area']);
+    // }
 
     public static function getPages(): array
     {
         return [
             'index' => ListTrabajadors::route('/'),
-            'create' => CreateTrabajador::route('/create'),
-            'edit' => EditTrabajador::route('/{record}/edit'),
+            // 'create' => CreateTrabajador::route('/create'),
+            // 'edit' => EditTrabajador::route('/{record}/edit'),
         ];
     }
     public static function canAccess(): bool

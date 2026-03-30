@@ -24,6 +24,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+<<<<<<< HEAD
+=======
+        'sede_id',
+        'trabajador_id',
+        'sede',
+        'nombres_completos',
+>>>>>>> feature/visitas2
     ];
 
     /**
@@ -43,12 +50,14 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'data' => 'array',
         ];
     }
 
@@ -79,7 +88,6 @@ class User extends Authenticatable
     }
     public function sede()
     {
-
-        return $this->belongsTo(Sede::class);
+        return $this->belongsTo(Sede::class, 'sede_id','id_sede');
     }
 }

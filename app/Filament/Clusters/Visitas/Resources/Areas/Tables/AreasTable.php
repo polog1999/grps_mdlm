@@ -23,48 +23,77 @@ class AreasTable
     {
         return $table
             ->columns([
+                TextColumn::make('index')
+                    ->label('#')
+                    ->rowIndex() // <--- Esta es la clave en Filament v3
+                    ->alignCenter(),
                 TextColumn::make('nombre')
-                    ->searchable(),
-
-                TextColumn::make('nombre_corto')
-                    ->searchable(),
-                TextColumn::make('parentArea.nombre')
                     ->searchable()
-                    ->default('Sin área superior'), // Muestra esto si la relación es nula,
-                TextColumn::make('orden')
-                    ->numeric()
                     ->sortable(),
-                IconColumn::make('estado')
-                    ->boolean(),
+                TextColumn::make('abreviatura')
+                ->label('Área')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('area.nombre')
+                ->label('Dependencia')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('sede.nombre')
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('id_uo_estado')
+                    ->label('Estado')
+                    ->formatStateUsing(fn(int $state): string => match ($state) {
+                        1 => 'Activo',
+                        2 => 'Inactivo',
+                        default => 'Desconocido',
+                    })
+                    ->badge()
+                    ->color(fn(int $state): string => match ($state) {
+                        1 => 'success', // Verde
+                        2 => 'danger',  // Rojo
+                        default => 'gray',
+                    })
+                    ->sortable()
+
+                // TextColumn::make('parentArea.nombre')
+                //     ->searchable()
+                //     ->default('Sin área superior'), // Muestra esto si la relación es nula,
+                // TextColumn::make('orden')
+                //     ->numeric()
+                //     ->sortable(),
+                // IconColumn::make('estado')
+                //     ->boolean(),
             ])
-            ->defaultSort('orden', 'asc')
+            ->defaultSort('id_unidad_organica', 'asc')
             ->filters([
-                SelectFilter::make('estado')
+                SelectFilter::make('id_uo_estado')
                     ->options([
                         1 => 'Activo',
-                        0 => 'Inactivo',
+                        2 => 'Inactivo',
                     ]),
-                TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
-            ])
+            //     TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
+            // ])
             // ->bulkActions([
             //     DeleteBulkAction::make(),
             //     RestoreBulkAction::make(),
             //     ForceDeleteBulkAction::make(),
-            // ])
+            ])
             ->recordActions([
-                EditAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_area')),
-                DeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-                RestoreAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-                ForceDeleteAction::make()
-                    ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+                // EditAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_area')),
+                // DeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
+                // RestoreAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
+                // ForceDeleteAction::make()
+                //     ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 }

@@ -143,9 +143,20 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit::visitas_regimen',         // Ver detalle o información específica de una visita
             'create::visitas_regimen',            // Registrar/Crear una nueva visita
             'audit::visitas_regimen',
+<<<<<<< HEAD
             //PERMISOS PARA LOTE 1 (ZONIFICACION DE SECTORES)
             'view::lote1',
             'edit::lote1',
+=======
+
+            //VER, CREAR Y EDITAR DE Motivo
+            'view::visitas_motivo',              // Ver listado de visitas
+            'edit::visitas_motivo',         // Ver detalle o información específica de una visita
+            'create::visitas_motivo',            // Registrar/Crear una nueva visita
+            'audit::visitas_motivo',
+
+            
+>>>>>>> feature/visitas2
         ];
 
         foreach ($permissions as $permission) {

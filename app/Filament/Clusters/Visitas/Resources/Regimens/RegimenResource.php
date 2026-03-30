@@ -50,8 +50,8 @@ class RegimenResource extends Resource
     {
         return [
             'index' => ListRegimens::route('/'),
-            'create' => CreateRegimen::route('/create'),
-            'edit' => EditRegimen::route('/{record}/edit'),
+            // 'create' => CreateRegimen::route('/create'),
+            // 'edit' => EditRegimen::route('/{record}/edit'),
         ];
     }
      public static function canAccess(): bool
