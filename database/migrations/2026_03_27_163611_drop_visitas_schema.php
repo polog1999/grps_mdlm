@@ -16,9 +16,15 @@ return new class extends Migration
         }
 
         DB::transaction(function () use ($schemaName) {
+            DB::statement("DROP TABLE IF EXISTS itse.notifications CASCADE");
+            DB::statement("DROP TABLE IF EXISTS itse.imports CASCADE");
+            DB::statement("DROP TABLE IF EXISTS itse.exports CASCADE"); // Agregada por si acaso, según tu lista de abajo
+            DB::statement("DROP TABLE IF EXISTS itse.failed_import_rows CASCADE");
+            DB::statement("DROP VIEW IF EXISTS visitas.historico_visitas");
             // 1. Borrar el esquema y TODO su contenido (tablas, secuencias, etc.)
             // CASCADE es vital para que PostgreSQL no se detenga por llaves foráneas
             DB::statement("DROP SCHEMA IF EXISTS {$schemaName} CASCADE");
+            
 
             // 2. Limpiar la tabla migrations de Laravel
             // Buscamos las migraciones que mencionen el esquema o sus tablas principales
@@ -71,6 +77,7 @@ return new class extends Migration
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_regimenes_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_sedes_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_areas_table%") // Ajusta según tus nombres
+                ->orWhere('migration', 'like', "%create_historico_visitas_view%") // Ajusta según tus nombres
                 ->delete();
         });
 
