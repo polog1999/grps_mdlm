@@ -62,16 +62,20 @@ class VisitasTable
                 TextColumn::make('fecha')->label('Fecha')->date('d/m/Y')->searchable(),
                 TextColumn::make('tipo_documento')->label('Tipo Documento')->searchable(),
                 TextColumn::make('numero_documento')->label('N° documento')->searchable(),
-                TextColumn::make('Apellidos y nombres')->label('Visitante')
-                    ->searchable(
-                        //     query: function (Builder $query, string $search): Builder {
-                        //     return $query-> whereHas('persona', function ($q) use ($search) {
-                        //         $q->where('nombres', 'ilike', "%{$search}%")
-                        //             ->orWhere('apellido_paterno', 'ilike', "%{$search}%")
-                        //             ->orWhere('apellido_materno', 'ilike', "%{$search}%");
-                        //     });
-                        // }
-                    ),
+                TextColumn::make('nombres_full')->label('Visitante')
+                    ->getStateUsing(function ($record) {
+                        // Asumiendo que tienes relaciones 'persona' y 'proveedor'
+                        $nombreVisitante = $record->nombres_completos;
+                        $proveedor = $record->proveedor ? "[{$record->proveedor}]" : '';
+
+                        return "{$nombreVisitante} {$proveedor}";
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        // IMPORTANTE: Cuando usas getStateUsing, debes definir el searchable manualmente
+                        return $query->whereHas('persona', function ($q) use ($search) {
+                            $q->where('nombres_completos', 'ilike', "%{$search}%");
+                        })->where('proveedor', 'ilike', "%{$search}%");
+                    }),
                 // TextColumn::make('sede.nombre')->label('Sede')
                 //     ->sortable()
                 //     ->searchable(),
@@ -198,32 +202,41 @@ class VisitasTable
                                         TextEntry::make('numero_documento')
                                             ->label('N° de Documento'),
                                         // Usamos nombres de columnas reales de tu BD
-                                        TextEntry::make('Apellidos y nombres')
-                                            ->label(fn(Get $get) => $get('tipo_documento') == 'RUC' ? 'Razón Social' : 'Visitante')
+                                        TextEntry::make('nombres_completos')
+                                            ->label('Visitante')
                                             ->columnSpanFull(),
-                                        TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
-                                            ->label('Trabajadores')
-                                            ->columnSpanFull()
-                                            ->html() // Necesario para el <br>
+                                        TextEntry::make('RUC')
+                                            ->label('Empresa')
                                             ->getStateUsing(function ($record) {
-                                                // Obtenemos los registros relacionados (Eager Loaded)
-                                                $relaciones = $record->trabajadores;
+                                                // Asumiendo que tienes relaciones 'persona' y 'proveedor'
+                                                $ruc = $record->ruc;
+                                                $proveedor = $record->proveedor ? "{$record->proveedor}" : '';
 
-                                                if ($relaciones->isEmpty()) {
-                                                    return 'Sin asignar';
-                                                }
+                                                return "{$ruc} - {$proveedor}";
+                                            })
+                                        // TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
+                                        //     ->label('Trabajadores')
+                                        //     ->columnSpanFull()
+                                        //     ->html() // Necesario para el <br>
+                                        //     ->getStateUsing(function ($record) {
+                                        //         // Obtenemos los registros relacionados (Eager Loaded)
+                                        //         $relaciones = $record->trabajadores;
 
-                                                return $relaciones->map(function ($item) {
-                                                    // Accedemos a la relación 'persona' que debe estar en el modelo VisitaTrabajadorRuc
-                                                    $persona = $item->persona;
+                                        //         if ($relaciones->isEmpty()) {
+                                        //             return 'Sin asignar';
+                                        //         }
 
-                                                    if ($persona) {
-                                                        return "<b>{$persona->tipoDocumento?->abreviatura}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
-                                                    }
+                                        //         return $relaciones->map(function ($item) {
+                                        //             // Accedemos a la relación 'persona' que debe estar en el modelo VisitaTrabajadorRuc
+                                        //             $persona = $item->persona;
 
-                                                    return "Cargo: {$item->cargo} (Sin datos de persona)";
-                                                })->implode('<br>'); // Aquí generamos el salto de línea
-                                            })->visible(fn($record) => $record && $record->trabajadores()->exists()),
+                                        //             if ($persona) {
+                                        //                 return "<b>{$persona->tipoDocumento?->abreviatura}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
+                                        //             }
+
+                                        //             return "Cargo: {$item->cargo} (Sin datos de persona)";
+                                        //         })->implode('<br>'); // Aquí generamos el salto de línea
+                                        //     })->visible(fn($record) => $record && $record->trabajadores()->exists()),
                                     ]),
                             ])->collapsible(),
 

@@ -26,6 +26,11 @@ class VisitaExporter extends Exporter
                 ->label('Fecha')
                 ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d-m-Y') : ''),
                 // ->date('d/m/Y'),
+                ExportColumn::make('hora_ingreso')
+                ->label('Ingreso'),
+
+            ExportColumn::make('hora_salida')
+                ->label('Salida'),
             ExportColumn::make('tipo_documento'),
             ExportColumn::make('numero_documento')
                 ->label('Documento/RUC'),
@@ -34,31 +39,29 @@ class VisitaExporter extends Exporter
             ExportColumn::make('Apellidos y nombres')
                 ->label('Visitante'),
             ExportColumn::make('sede_id')
+            ->label('Sede')
                 ->formatStateUsing(fn ($record) => $record->sede?->nombre ?? 'N/A'),
             ExportColumn::make('area')
                 ->label('Área'),
 
             ExportColumn::make('oficina')
-                ->label('Oficina'),
+                ->label('Oficina')
+                 ->enabledByDefault(false),
 
             ExportColumn::make('trabajador_cita')
                 ->label('Cita con'),
 
             ExportColumn::make('Autorizado por')
-                ->label('Autorizado por'),
-
-            ExportColumn::make('hora_ingreso')
-                ->label('Ingreso'),
-
-            ExportColumn::make('hora_salida')
-                ->label('Salida'),
+                ->label('Autorizado por')
+                 ->enabledByDefault(false),
 
             ExportColumn::make('motivo')
                 ->label('Motivo'),
             ExportColumn::make('detalle_motivo')
                 ->label('Detalle Motivo'),
             ExportColumn::make('sistema')
-                ->label('Sistema'),
+                ->label('Sistema')
+                 ->enabledByDefault(false),
         ];
     }
 
