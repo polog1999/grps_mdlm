@@ -199,7 +199,7 @@ class VisitaForm
                                 Placeholder::make('.')
                                     ->label(false),
                             ])
-                            // ->visible(fn($livewire) => $livewire->data['es_empresa'] != 1)
+                            ->visible(fn($livewire) => $livewire->data['es_empresa'] != 1)
                             ->columnSpanFull()->columns(2),
 
 
@@ -237,7 +237,7 @@ class VisitaForm
                             ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
                             // ->live(onBlur: true)
                             ->live(debounce: 500)
-                            // ->visible(fn($livewire) => $livewire->data['es_empresa'] == 1)
+                            ->visible(fn($livewire) => $livewire->data['es_empresa'] == 1)
                             ->afterStateUpdated(function ($state, callable $set) {
                                 // Al cambiar el número, reseteamos los campos de identidad
                                 $set('nombres', null);
@@ -262,7 +262,7 @@ class VisitaForm
                             ])
                             ->trim()
                             ->dehydrateStateUsing(fn($state) => mb_strtoupper(trim($state)))
-                            // ->visible(fn(Get $get) => $get('es_empresa') == 1)
+                            ->visible(fn(Get $get) => $get('es_empresa') == 1)
                             ->required(fn(Get $get) => $get('es_empresa') == 1)
                             ->readOnly(fn(Get $get) => $get('es_empresa') == 1 && !$get('pide_fallo')),
                         Hidden::make('direccion'),

@@ -25,35 +25,38 @@ class VisitaExporter extends Exporter
             ExportColumn::make('fecha')
                 ->label('Fecha')
                 ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d-m-Y') : ''),
-                // ->date('d/m/Y'),
-                ExportColumn::make('hora_ingreso')
+            // ->date('d/m/Y'),
+            ExportColumn::make('hora_ingreso')
                 ->label('Ingreso'),
 
             ExportColumn::make('hora_salida')
                 ->label('Salida'),
             ExportColumn::make('tipo_documento'),
             ExportColumn::make('numero_documento')
-                ->label('Documento/RUC'),
+                ->label('Documento'),
 
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
-            ExportColumn::make('Apellidos y nombres')
+            ExportColumn::make('nombres_completos')
                 ->label('Visitante'),
+            ExportColumn::make('ruc')
+                ->label('Ruc Empresa')
+                ->default('-'),
             ExportColumn::make('sede_id')
-            ->label('Sede')
-                ->formatStateUsing(fn ($record) => $record->sede?->nombre ?? 'N/A'),
+                ->label('Sede')
+                ->formatStateUsing(fn($record) => $record->sede?->nombre ?? 'N/A'),
             ExportColumn::make('area')
                 ->label('Área'),
 
             ExportColumn::make('oficina')
                 ->label('Oficina')
-                 ->enabledByDefault(false),
+                ->enabledByDefault(false),
 
             ExportColumn::make('trabajador_cita')
                 ->label('Cita con'),
 
             ExportColumn::make('Autorizado por')
                 ->label('Autorizado por')
-                 ->enabledByDefault(false),
+                ->enabledByDefault(false),
 
             ExportColumn::make('motivo')
                 ->label('Motivo'),
@@ -61,7 +64,7 @@ class VisitaExporter extends Exporter
                 ->label('Detalle Motivo'),
             ExportColumn::make('sistema')
                 ->label('Sistema')
-                 ->enabledByDefault(false),
+                ->enabledByDefault(false),
         ];
     }
 
