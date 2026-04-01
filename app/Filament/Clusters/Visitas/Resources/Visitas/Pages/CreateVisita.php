@@ -87,7 +87,11 @@ class CreateVisita extends CreateRecord
                 // CASO EMPRESA: Usamos rawState para obtener 'lista_trabajadores'
                 $trabajadores = $rawState['lista_trabajadores'] ?? [];
                 foreach ($trabajadores as $t) {
+                    if (empty($t['tipo_documento']) && !empty($t['tipo_documento_id'])) {
+                        $t['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $t['tipo_documento_id'])->value('abreviatura');
+                    }
                     $persona = PersonaUno::updateOrCreate(
+                        
                         [
                             'numero_documento' => $t['numero_documento'],
                             'tipo_documento_id' => $t['tipo_documento_id']
