@@ -18,6 +18,7 @@ use Filament\Actions\ExportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -72,9 +73,8 @@ class VisitasTable
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         // IMPORTANTE: Cuando usas getStateUsing, debes definir el searchable manualmente
-                        return $query->whereHas('persona', function ($q) use ($search) {
-                            $q->where('nombres_completos', 'ilike', "%{$search}%");
-                        })->where('proveedor', 'ilike', "%{$search}%");
+                        return $query->where('nombres_completos', 'ilike', "%{$search}%")
+                        ->orWhere('proveedor', 'ilike', "%{$search}%");
                     }),
                 // TextColumn::make('sede.nombre')->label('Sede')
                 //     ->sortable()
@@ -100,6 +100,12 @@ class VisitasTable
             ->defaultSort('fecha', 'desc') // <-- CAMBIA 'id' POR UNA COLUMNA QUE SÍ EXISTA
 
             ->filters([
+                SelectFilter::make('es_empresa')
+                ->label('Tipo')
+                ->options([
+                        1 => 'Empresa',
+                        0 => 'Persona',
+                    ]),
                 SelectFilter::make('area')
                     ->label('Área')
                     ->searchable()
