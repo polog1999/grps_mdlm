@@ -196,15 +196,15 @@ class VisitasTable
                                     ->schema([
                                         TextEntry::make('fecha')
                                             ->label('Fecha de Visita')
-                                            ->date('d/m/Y'),
+                                            ->date('d/m/Y')
+                                            ->columnSpanFull(),
                                         TextEntry::make('tipo_documento')
                                             ->label('Tipo de Documento'),
                                         TextEntry::make('numero_documento')
                                             ->label('N° de Documento'),
                                         // Usamos nombres de columnas reales de tu BD
                                         TextEntry::make('nombres_completos')
-                                            ->label('Visitante')
-                                            ->columnSpanFull(),
+                                            ->label('Visitante'),
                                         TextEntry::make('ruc_empresa')
                                             ->label('Empresa')
                                             ->getStateUsing(function ($record) {
@@ -212,7 +212,7 @@ class VisitasTable
                                                 $ruc = $record->ruc;
                                                 $proveedor = $record->proveedor ? "{$record->proveedor}" : '';
 
-                                                return "{$ruc} - {$proveedor}";
+                                                return "RUC {$ruc} - {$proveedor}";
                                             })->visible(fn($record) => $record->ruc != null)
                                         // TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
                                         //     ->label('Trabajadores')
