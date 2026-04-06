@@ -39,8 +39,8 @@ class VisitaExporter extends Exporter
             ExportColumn::make('nombres_completos')
                 ->label('Visitante')
                 ->formatStateUsing(function ($state) { // $state es el nombre, $record es el modelo
-                    $proveedor = $state ? " [aaa]" : '';
-                    return "{$state}{$proveedor}";
+                    // $proveedor = $state ? " [aaa]" : '';
+                    return "{$state} awdawdwad";
                 }),
             ExportColumn::make('ruc')
                 ->label('Ruc Empresa')
