@@ -38,13 +38,10 @@ class VisitaExporter extends Exporter
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
             ExportColumn::make('nombres_completos')
                 ->label('Visitante')
-                 ->formatStateUsing(function ($record) {
-                    
-                        $nombreVisitante = $record->nombres_completos;
-                        $proveedor = $record->proveedor ? "[{$record->proveedor}]" : '';
-
-                        return "{$nombreVisitante} {$proveedor}";
-                    }),
+                ->formatStateUsing(function ($state, $record) { // $state es el nombre, $record es el modelo
+                    $proveedor = $record->proveedor ? " [{$record->proveedor}]" : '';
+                    return "{$state}{$proveedor}";
+                }),
             ExportColumn::make('ruc')
                 ->label('Ruc Empresa')
                 ->default('-'),
