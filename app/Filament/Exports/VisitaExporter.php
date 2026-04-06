@@ -40,10 +40,16 @@ class VisitaExporter extends Exporter
                 ->label('Visitante')
                  ->getStateUsing(function ($record) {
                     
-                        $nombreVisitante = $record->nombres_completos;
-                        $proveedor = $record->proveedor ? "[{$record->proveedor}]" : '';
+                        $nombre = $record->nombres_completos;
+        
+        // Intentamos obtenerlo del modelo, si no, probamos el atributo crudo
+        $proveedor = $record->proveedor ?? $record->getRawAttribute('proveedor');
 
-                        return "{$nombreVisitante} {$proveedor}";
+        if (!empty($proveedor)) {
+            return "{$nombre} [{$proveedor}]";
+        }
+
+        return $nombre;
                     }),
             ExportColumn::make('ruc')
                 ->label('Ruc Empresa')
