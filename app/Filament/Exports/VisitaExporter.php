@@ -38,10 +38,13 @@ class VisitaExporter extends Exporter
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
             ExportColumn::make('nombres_completos')
                 ->label('Visitante')
-                ->formatStateUsing(function ($state) { // $state es el nombre, $record es el modelo
-                    // $proveedor = $state ? " [aaa]" : '';
-                    return "{$state} awdawdwad";
-                }),
+                 ->formatStateUsing(function ($record) {
+                    
+                        $nombreVisitante = $record->nombres_completos;
+                        $proveedor = $record->proveedor ? "[{$record->proveedor}]" : '';
+
+                        return "{$nombreVisitante} {$proveedor}";
+                    }),
             ExportColumn::make('ruc')
                 ->label('Ruc Empresa')
                 ->default('-'),
@@ -71,7 +74,13 @@ class VisitaExporter extends Exporter
                 ->enabledByDefault(false),
         ];
     }
-
+public function getFileName(Export $export): string
+    {
+        // Esto generará algo como: reporte-visitas-2026-04-06.csv (o .xlsx)
+        $fecha = now()->format('Y-m-d');
+        
+        return "reporte-visitas-{$fecha}";
+    }
     public static function getCompletedNotificationBody(Export $export): string
     {
         $body = 'Your visita export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
