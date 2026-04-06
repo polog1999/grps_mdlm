@@ -36,7 +36,7 @@ class VisitaExporter extends Exporter
                 ->label('Documento'),
 
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
-            ExportColumn::make('nombres_completos')
+            ExportColumn::make('visitante_proveedor')
                 ->label('Visitante')
                  ->getStateUsing(function ($record) {
                     
