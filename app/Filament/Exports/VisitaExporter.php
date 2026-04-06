@@ -36,21 +36,21 @@ class VisitaExporter extends Exporter
                 ->label('Documento'),
 
             // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
-            ExportColumn::make('visitante_proveedor')
+            ExportColumn::make('nombres_completos')
                 ->label('Visitante')
-                 ->getStateUsing(function ($record) {
-                    
-                        $nombre = $record->nombres_completos;
-        
-        // Intentamos obtenerlo del modelo, si no, probamos el atributo crudo
-        $proveedor = $record->proveedor ?? $record->getRawAttribute('proveedor');
+                ->getStateUsing(function ($record) {
 
-        if (!empty($proveedor)) {
-            return "{$nombre} [{$proveedor}]";
-        }
+                    $nombre = $record->nombres_completos;
 
-        return $nombre;
-                    }),
+                    // Intentamos obtenerlo del modelo, si no, probamos el atributo crudo
+                    $proveedor = $record->proveedor ?? $record->getRawAttribute('proveedor');
+
+                    if (!empty($proveedor)) {
+                        return "{$nombre} [{$proveedor}]";
+                    }
+
+                    return $nombre;
+                }),
             ExportColumn::make('ruc')
                 ->label('Ruc Empresa')
                 ->default('-'),
