@@ -46,8 +46,6 @@ class LogRedactor implements ProcessorInterface
                 $parts = explode('@', $context[$key]);
                 $username = $parts[0];
                 $domain = $parts[1];
-
-                // Resultado: d***@gmail.com
                 $context[$key] = substr($username, 0, 1) . '***@' . $domain;
             }
         }
