@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LicenciaRelacion extends Model
 {
@@ -72,5 +73,23 @@ class LicenciaRelacion extends Model
     public function licenciaEstado()
     {
         return $this->belongsTo(TipoEstadoLicencia::class, 'esl_id', 'esl_id');
+    }
+
+    public function transferir(int $nuevoLicId, string $motivo): void
+    {
+        $licIdAnterior = $this->lic_id;
+        $this->update([
+            'lic_id' => $nuevoLicId,
+        ]);
+        Log::info("Transferencia de licencia en SIL", [
+            'event' => 'license.transferred',
+            'relation_id' => $this->lil_id,
+            'old_license_id' => $this->old_lic_id,
+            'new_license_id' => $licIdAnterior,
+            'dependency_id' => $this->lic_id_dependencia,
+            'user_email' => auth()->user()->email,
+            'audit_motive' => $motivo,
+            'source' => 'filament_table_action'
+        ]);
     }
 }

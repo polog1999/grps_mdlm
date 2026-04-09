@@ -126,7 +126,7 @@ return [
         'fluentbit' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'info'),
-            'handler' => \Monolog\Handler\CubeHandler::class,
+            'handler' => \App\Logging\Handlers\FluentBitHttpHandler::class,
             'handler_with' => [
                 'url' => env('FLUENT_BIT_URL'),
             ],

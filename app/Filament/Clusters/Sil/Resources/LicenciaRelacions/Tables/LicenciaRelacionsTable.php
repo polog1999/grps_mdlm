@@ -2,9 +2,14 @@
 
 namespace App\Filament\Clusters\Sil\Resources\LicenciaRelacions\Tables;
 
+use App\Models\LicenciaRelacion;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -187,6 +192,34 @@ class LicenciaRelacionsTable
                     ->color('info')
             )
             ->recordActions([
+                Action::make('transferir')
+                    ->label('Transferir')
+                    ->icon('heroicon-o-arrow-path-rounded-square')
+                    ->color('primary')
+                    ->form([
+                        Select::make('nuevo_lic_id')
+                            ->label('Nueva Licencia Destino')
+                            ->relationship('licencia', 'lic_numlic')
+                            ->searchable()
+                            ->required(),
+                        Textarea::make('motivo')
+                            ->label('Motivo de la Transferencia')
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                    ->requiresConfirmation()
+                    ->modalHeading('Transferir Licencia')
+                    ->modalDescription('¿Está seguro de que desea transferir esta licencia?')
+                    ->modalSubmitActionLabel('Transferir')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->action(function (LicenciaRelacion $record, array $data) {
+                        $record->transferir($data['nuevo_lic_id'], $data['motivo']);
+                        Notification::make()
+                            ->title('Transferencia exitosa')
+                            ->success()
+                            ->send();
+                    }),
+
             ])
             ->toolbarActions([
             ]);
