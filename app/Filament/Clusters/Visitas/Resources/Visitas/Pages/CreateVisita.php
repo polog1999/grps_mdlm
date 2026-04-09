@@ -55,14 +55,14 @@ class CreateVisita extends CreateRecord
             }
 
             // 4. Crear la visita
-            $visita = Visita::create($visitaData);
+            // $visita = Visita::create($visitaData);
 
             // 5. PROCESAR ASISTENTES A LA TABLA PIVOTE
             if ($data['es_empresa'] == 0) {
                 // CASO PERSONAS: Viene de 'lista_visitantes'
                 $visitantes = $data['lista_visitantes'] ?? [];
                 foreach ($visitantes as $v) {
-
+                $visita = Visita::create($visitaData);
                     if (empty($v['tipo_documento']) && !empty($v['tipo_documento_id'])) {
                         $v['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $v['tipo_documento_id'])->value('abreviatura');
                     }
@@ -87,6 +87,7 @@ class CreateVisita extends CreateRecord
                 // CASO EMPRESA: Usamos rawState para obtener 'lista_trabajadores'
                 $trabajadores = $rawState['lista_trabajadores'] ?? [];
                 foreach ($trabajadores as $t) {
+                    $visita = Visita::create($visitaData);
                     if (empty($t['tipo_documento']) && !empty($t['tipo_documento_id'])) {
                         $t['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $t['tipo_documento_id'])->value('abreviatura');
                     }
