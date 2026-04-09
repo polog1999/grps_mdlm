@@ -46,13 +46,11 @@ return new class extends Migration
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_tipo_documentos_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%create_motivos_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_motivos_table%") // Ajusta según tus nombres
-                ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_historico_table%") // Ajusta según tus nombres
 
 
                 ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%create_visitas_trabajadores_ruc_table%") // Ajusta según tus nombres
-                ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_historico_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_columns_to_visitas.personas%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%create_notifications_table%") // Ajusta según tus nombres
 
