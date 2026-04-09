@@ -39,7 +39,6 @@ Route::get('prueba/{ruc}', [RucService::class,'apiRuc']);
 Route::get('ruc/{ruc}', [RucService::class,'apisPeruRuc']);
 Route::get('dni/{dni}', [PideService::class,'apiPeruDni']);
 Route::get('dni2/{dni}', [PideService::class,'apisNet']);
-
 Route::view('/asistencia/Transparencia/visitantes', 'visitas-publicas')->name('public.visitas');
 /**
  * Archivo de rutas web para la aplicaci�n Laravel.

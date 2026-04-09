@@ -153,7 +153,7 @@ class VisitasTable
                     ->modalHeading('¿Marcar salida?')
                     ->modalDescription('¿Estás seguro de que desea marcar la salida para este visitante? Esta acción registrará la hora actual.')
                     ->modalSubmitActionLabel('Sí, marcar salida')
-                    ->visible(fn($record) => $record->hora_salida === null) // Solo si no ha salido
+                    ->visible(fn($record) => $record->hora_salida === null && $record->origen !== 'MIGRACION' && Carbon::parse($record->fecha)->isToday()) // Solo si no ha salido
                     // AQUÍ ES DONDE VA EL MÉTODO, aplicado al $table
 
                     ->action(function ($record) {

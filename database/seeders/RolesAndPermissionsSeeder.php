@@ -152,7 +152,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'create::visitas_motivo',            // Registrar/Crear una nueva visita
             'audit::visitas_motivo',
 
-
         ];
 
         foreach ($permissions as $permission) {
