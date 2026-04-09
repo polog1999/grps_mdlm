@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class LicenciaRelacion extends Model
 {
     protected $connection = 'pgsql_licencias';
     protected $table = 'licencia.licencialicencia';
     protected $primaryKey = 'lil_id';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'lic_id',
@@ -19,6 +20,11 @@ class LicenciaRelacion extends Model
         'lil_fecha',
         'lil_filaoriginal',
         'lil_filaeliminada',
+        'old_lic_id',
+        'created_by',
+        'updated_by',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
@@ -30,7 +36,28 @@ class LicenciaRelacion extends Model
         'lil_fecha' => 'datetime',
         'lil_filaoriginal' => 'boolean',
         'lil_filaeliminada' => 'boolean',
+        'old_lic_id' => 'integer',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            $model->created_by = Auth::id() ?? $model->created_by;
+        });
+
+        static::updating(function ($model) {
+            $model->updated_by = Auth::id() ?? $model->updated_by;
+
+            // Si el lic_id ha cambiado, guardar el valor anterior en old_lic_id
+            if ($model->isDirty('lic_id')) {
+                $model->old_lic_id = $model->getOriginal('lic_id');
+            }
+        });
+    }
 
     public function licencia()
     {
