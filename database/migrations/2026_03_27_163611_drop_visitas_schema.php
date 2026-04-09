@@ -69,7 +69,8 @@ return new class extends Migration
                 ->orWhere('migration', 'like', "%insert_cargos_to_cargos_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%insert_areas_to_areas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_sede_id_to_users_table%") // Ajusta según tus nombres
-
+                ->orWhere('migration', 'like', "%add_columns_to_itse.users_table%") // Ajusta según tus nombres
+                 
                 ->orWhere('migration', 'like', "%excel_control1%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_areas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_cargos_table%") // Ajusta según tus nombres
