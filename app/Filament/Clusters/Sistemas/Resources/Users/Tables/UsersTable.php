@@ -31,7 +31,7 @@ class UsersTable
                     ->badge()
                     ->separator(',')
                     ->searchable(),
-                TextColumn::make('sede.nombre')
+                TextColumn::make('sede')
                     ->label('Sede')
                     ->badge()
                     ->separator(',')

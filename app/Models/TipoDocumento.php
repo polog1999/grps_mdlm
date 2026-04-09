@@ -7,22 +7,24 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TipoDocumento extends Model
 {
-    protected $table = 'visitas.tipo_documentos';
-    protected $fillable = [
-        'nombre',
-        'nombre_corto',
-        'estado',
-        'user_id_creo',
-        'user_id_modi'
-    ];
-    use SoftDeletes; // 2. Usar el Trait
+    protected $connection = 'mysql';
+    protected $table = 'usuario_tipo_documento';
+    protected $primaryKey = 'id_tipo_documento';
+    // protected $fillable = [
+    //     'nombre',
+    //     'nombre_corto',
+    //     'estado',
+    //     'user_id_creo',
+    //     'user_id_modi'
+    // ];
+    // use SoftDeletes; // 2. Usar el Trait
 
-    protected $dates = ['deleted_at'];
+    // protected $dates = ['deleted_at'];
     
-    public function userCreo(){
-        return $this->belongsTo(User::class, 'user_id_creo');
-    }
-    public function userModi(){
-        return $this->belongsTo(User::class, 'user_id_modi');
-    }
+    // public function userCreo(){
+    //     return $this->belongsTo(User::class, 'user_id_creo');
+    // }
+    // public function userModi(){
+    //     return $this->belongsTo(User::class, 'user_id_modi');
+    // }
 }
