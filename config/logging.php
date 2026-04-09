@@ -54,7 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'channels' => ['daily', 'fluentbit'],
             'ignore_exceptions' => false,
         ],
 
@@ -121,6 +121,17 @@ return [
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
+        ],
+
+        'fluentbit' => [
+            'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'info'),
+            'handler' => \Monolog\Handler\CubeHandler::class,
+            'handler_with' => [
+                'url' => env('FLUENT_BIT_URL'),
+            ],
+            'formatter' => \Monolog\Formatter\JsonFormatter::class,
+            'tap' => [App\Logging\CustomizeLog::class],
         ],
 
         'emergency' => [
