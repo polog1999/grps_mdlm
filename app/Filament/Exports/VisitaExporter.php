@@ -25,43 +25,62 @@ class VisitaExporter extends Exporter
             ExportColumn::make('fecha')
                 ->label('Fecha')
                 ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d-m-Y') : ''),
-                // ->date('d/m/Y'),
-            ExportColumn::make('tipo_documento'),
-            ExportColumn::make('numero_documento')
-                ->label('Documento/RUC'),
-
-            // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
-            ExportColumn::make('Apellidos y nombres')
-                ->label('Visitante'),
-            ExportColumn::make('sede_id')
-                ->formatStateUsing(fn ($record) => $record->sede?->nombre ?? 'N/A'),
-            ExportColumn::make('area')
-                ->label('Área'),
-
-            ExportColumn::make('oficina')
-                ->label('Oficina'),
-
-            ExportColumn::make('trabajador_cita')
-                ->label('Cita con'),
-
-            ExportColumn::make('Autorizado por')
-                ->label('Autorizado por'),
-
+            // ->date('d/m/Y'),
             ExportColumn::make('hora_ingreso')
                 ->label('Ingreso'),
 
             ExportColumn::make('hora_salida')
                 ->label('Salida'),
+            ExportColumn::make('tipo_documento'),
+            ExportColumn::make('numero_documento')
+                ->label('Documento'),
+
+            // Como en tu tabla usas 'Apellidos y nombres', aquí lo mapeamos:
+            ExportColumn::make('nombres_completos')
+                ->label('Visitante')
+                 ->formatStateUsing(function ($record) {
+                    
+                        $nombreVisitante = $record->nombres_completos;
+                        $proveedor = $record->proveedor ? "[{$record->proveedor}]" : '';
+
+                        return "{$nombreVisitante} {$proveedor}";
+                    }),
+            ExportColumn::make('ruc')
+                ->label('Ruc Empresa')
+                ->default('-'),
+            ExportColumn::make('sede_id')
+                ->label('Sede')
+                ->formatStateUsing(fn($record) => $record->sede?->nombre ?? 'N/A'),
+            ExportColumn::make('area')
+                ->label('Área'),
+
+            ExportColumn::make('oficina')
+                ->label('Oficina')
+                ->enabledByDefault(false),
+
+            ExportColumn::make('trabajador_cita')
+                ->label('Cita con'),
+
+            ExportColumn::make('Autorizado por')
+                ->label('Autorizado por')
+                ->enabledByDefault(false),
 
             ExportColumn::make('motivo')
                 ->label('Motivo'),
             ExportColumn::make('detalle_motivo')
                 ->label('Detalle Motivo'),
             ExportColumn::make('sistema')
-                ->label('Sistema'),
+                ->label('Sistema')
+                ->enabledByDefault(false),
         ];
     }
-
+public function getFileName(Export $export): string
+    {
+        // Esto generará algo como: reporte-visitas-2026-04-06.csv (o .xlsx)
+        $fecha = now()->format('Y-m-d');
+        
+        return "reporte-visitas-{$fecha}";
+    }
     public static function getCompletedNotificationBody(Export $export): string
     {
         $body = 'Your visita export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';

@@ -14,7 +14,13 @@ class Visita extends Model
     // protected $primaryKey = 'fecha';
     protected $guarded = [];
 
-
+public function personas()
+{
+    // Define la relación muchos a muchos indicando la tabla pivote
+    return $this->belongsToMany(PersonaUno::class, 'visitas.visita_persona', 'visita_id', 'persona_id')
+                ->withPivot('cargo')
+                ->withTimestamps();
+}
     public function persona()
     {
         return $this->belongsTo(PersonaUno::class);

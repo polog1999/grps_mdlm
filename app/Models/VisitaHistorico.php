@@ -12,6 +12,9 @@ class VisitaHistorico extends Model
    public function sede(){
       return $this->belongsTo(Sede::class,'sede_id','id_sede');
    }
+   public function area1(){
+      return $this->belongsTo(Area::class,'area_id','id_unidad_organica');
+   }
 // public function trabajadores()
 // {
 //     return $this->hasManyThrough(
@@ -23,8 +26,11 @@ class VisitaHistorico extends Model
 //         'persona_id'         // Llave local en Visita que apunta a la Persona Principal
 //     );
 // }
-public function trabajadores()
-{
-    return $this->hasMany(VisitaTrabajadorRuc::class,'visita_id','id_original');
-}
+// public function trabajadores()
+// {
+//     return $this->hasMany(VisitaTrabajadorRuc::class,'visita_id','id_original');
+// }
+// public function persona(){
+//    ruturn $this-
+// }
 }

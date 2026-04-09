@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $schemaName = 'visitas_municipalidad';
+        $schemaName = 'visitas';
 
         // Ten cuidado: DROP SCHEMA CASCADE borrará TODO lo que esté adentro
         // Si quieres que sea reversible, descomenta la línea de abajo:
