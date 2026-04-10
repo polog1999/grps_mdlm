@@ -30,7 +30,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 use Filament\Support\Colors\Color;
 use Filament\Notifications\Notification;
-
+use Illuminate\Support\Facades\Cache;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
@@ -39,7 +39,25 @@ class CertificadoLicenciaFuncionamientosTable
 {
 
     protected static $service;
+    private static function checkCertificadoCompleto($licId): bool
+    {
+        return Cache::store('array')->remember("certificado_completo_{$licId}", 1, function () use ($licId) {
+            $service = app(CertificadoLincenciaFuncionamientoService::class);
+            return $service->tieneCertificadoCompleto($licId);
+        });
+    }
 
+    private static function checkPermisoEspecial($recordId, $userId, $tipoAccion): bool
+    {
+        return Cache::store('array')->remember("permiso_{$recordId}_{$userId}_{$tipoAccion}", 1, function () use ($recordId, $userId, $tipoAccion) {
+            return \App\Models\SolicitudPermiso::query()
+                ->where('record_id', $recordId)
+                ->where('user_id', $userId)
+                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                ->where('tipo_accion', $tipoAccion)
+                ->exists();
+        });
+    }
     private static function getDatoDirecto($record, $key)
     {
         if (!$record || !$record->lic_id)
@@ -818,14 +836,8 @@ class CertificadoLicenciaFuncionamientosTable
                     ->iconButton()
                     ->tooltip('Ver Certificado(s) de ITSE')
                     ->visible(fn() => auth()->user()->hasPermissionTo('view_itse::certificado_licencia_funcionamiento'))
-                    ->color(function ($record) {
-                        $service = app(CertificadoLincenciaFuncionamientoService::class);
-                        return $service->tieneCertificadoCompleto($record->lic_id) ? Color::Yellow : Color::Stone;
-                    })
-                    ->disabled(function ($record) {
-                        $service = app(CertificadoLincenciaFuncionamientoService::class);
-                        return !$service->tieneCertificadoCompleto($record->lic_id);
-                    })
+                    ->color(fn($record) => self::checkCertificadoCompleto($record->lic_id) ? Color::Yellow : Color::Stone)
+                    ->disabled(fn($record) => !self::checkCertificadoCompleto($record->lic_id))
                     ->modalHeading('Certificados de Inspección Técnica (ITSE)')
                     ->modalDescription(fn($record) => "Certificados ITSE relacionados con la Licencia N° {$record->lic_numlic}")
                     ->modalWidth('5xl')
