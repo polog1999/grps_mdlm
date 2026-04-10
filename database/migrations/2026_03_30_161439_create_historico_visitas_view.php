@@ -23,18 +23,18 @@ return new class extends Migration
                 SELECT
                     v.id AS id_original,   
                     v.fecha_ingreso AS fecha,
+                    p.tipo_documento AS tipo_documento,
+                    p.numero_documento  AS numero_documento,
                     CASE 
-                        WHEN v.es_empresa THEN 'RUC'
-                        ELSE p.tipo_documento
-                    END AS tipo_documento,
+                        WHEN v.es_empresa THEN (p.apellido_paterno || ' ' || p.apellido_materno || ' ' || p.nombres)
+                        ELSE (p.apellido_paterno || ' ' || p.apellido_materno || ' ' || p.nombres)
+                    END AS \"nombres_completos\",
                     CASE 
                         WHEN v.es_empresa THEN v.ruc
-                        ELSE p.numero_documento 
-                    END AS numero_documento,
-                    CASE 
-                        WHEN v.es_empresa THEN v.proveedor
-                        ELSE (COALESCE(p.apellido_paterno, '') || ' ' || COALESCE(p.apellido_materno, '') || ' ' || COALESCE(p.nombres, ''))
-                    END AS \"Apellidos y nombres\",
+                        ELSE NULL
+                    END 
+                    ruc,
+                    v.proveedor,
                     v.area AS area,
                     v.oficina,
                     v.trabajador_autoriza AS \"Autorizado por\",
@@ -47,9 +47,11 @@ return new class extends Migration
                     ui.id AS user_id_ingreso,
                     us.id AS user_id_salida,
                     'SISTEMA' AS origen,
+                    v.es_empresa,
                     v.sistema
                 FROM visitas.visitas v
-                LEFT JOIN visitas.personas p ON p.id = v.persona_id
+                INNER JOIN visitas.visita_persona vp ON v.id = vp.visita_id
+                INNER JOIN visitas.personas p ON vp.persona_id = p.id
                 LEFT JOIN itse.users ui ON ui.id = v.user_id_ingreso
                 LEFT JOIN itse.users us ON us.id = v.user_id_salida
 
@@ -61,6 +63,8 @@ return new class extends Migration
                     tipo_documento,
                     numero_documento,
                     nombres_completos,
+                    NULL,
+                    NULL,
                     area, 
                     NULL AS oficina,
                     persona_autoriza,
@@ -73,6 +77,7 @@ return new class extends Migration
                     usuario::integer,
                     usuario::integer,
                     'MIGRACION' AS origen,
+                    NULL,
                     sistema
                 FROM visitas.visitas_historico
             ) t

@@ -6,8 +6,6 @@ use App\Filament\Clusters\Visitas\Resources\Visitas\VisitaResource;
 use App\Models\PersonaUno;
 use App\Models\Proveedor;
 use App\Models\Visita;
-use App\Models\VisitaTrabajadorRuc;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -16,164 +14,114 @@ class CreateVisita extends CreateRecord
 {
     protected static string $resource = VisitaResource::class;
     protected ?string $heading = 'Registrar Visita';
-    // ESTO ES LO IMPORTANTE: Redirige la inserción a la tabla física
-    // protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
-    // {
-    //     return Visita::create($data); 
-    // }
-    // protected function handleRecordCreation(array $data): Model
-    // {
-    //     // Forzamos la creación en la TABLA REAL
-    //     return static::Visita::create($data);
-    // }
+
     protected function handleRecordCreation(array $data): Model
     {
-        // Forzamos que el INSERT vaya a la tabla física
-        return Visita::create($data);
+        return DB::transaction(function () use ($data) {
+
+            // 1. IMPORTANTE: Obtenemos TODOS los datos del formulario, 
+            // incluso los que tienen dehydrated(false) como 'lista_trabajadores'
+            $rawState = $this->form->getRawState();
+
+            // 2. Preparar datos maestros de la Visita
+            $visitaData = [
+                'sede_id'                => auth()->user()->sede_id ?? 1,
+                'area_id'                => $data['area_id'],
+                'area'                   => $data['area'],
+                'oficina_id'             => $data['oficina_id'] ?? null,
+                'oficina'                => $data['oficina'] ?? null,
+                'trabajador_id_autoriza' => $data['trabajador_id_autoriza'],
+                'trabajador_autoriza'    => $data['trabajador_autoriza'],
+                'trabajador_id_cita'     => $data['trabajador_id_cita'],
+                'trabajador_cita'        => $data['trabajador_cita'],
+                'motivo'                 => $data['motivo'],
+                'detalle_motivo'         => mb_strtoupper($data['detalle_motivo']),
+                'sistema'                => $data['sistema'],
+                'fecha_ingreso'          => now(),
+                'user_id_ingreso'        => auth()->id(),
+                'es_manual'              => false,
+                'es_empresa'             => $data['es_empresa'], // Guardamos el flag
+            ];
+
+            // 3. Lógica si es EMPRESA
+            if ($data['es_empresa'] == 1) {
+                $proveedor = Proveedor::updateOrCreate(
+                    ['ruc' => $data['ruc']],
+                    ['nombre' => mb_strtoupper($data['nombres']), 'direccion' => $data['direccion'] ?? null]
+                );
+                $visitaData['proveedor_id'] = $proveedor->id_proveedor;
+                $visitaData['proveedor'] = $proveedor->nombre;
+                $visitaData['ruc'] = $proveedor->ruc;
+            }
+
+            // 4. Crear la visita
+            // $visita = Visita::create($visitaData);
+
+            // 5. PROCESAR ASISTENTES A LA TABLA PIVOTE
+            if ($data['es_empresa'] == 0) {
+                // CASO PERSONAS: Viene de 'lista_visitantes'
+                $visitantes = $data['lista_visitantes'] ?? [];
+                foreach ($visitantes as $v) {
+                $visita = Visita::create($visitaData);
+                    if (empty($v['tipo_documento']) && !empty($v['tipo_documento_id'])) {
+                        $v['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $v['tipo_documento_id'])->value('abreviatura');
+                    }
+                    $persona = PersonaUno::updateOrCreate(
+                        [
+                            'numero_documento' => $v['numero_documento'],
+                            'tipo_documento_id' => $v['tipo_documento_id']
+                        ],
+                        [
+                            'tipo_documento' => $v['tipo_documento'],
+                            'nombres'           => mb_strtoupper($v['nombres']),
+                            'apellido_paterno'  => mb_strtoupper($v['apellido_paterno']),
+                            'apellido_materno'  => mb_strtoupper($v['apellido_materno']),
+                            'foto_url'          => $v['foto_url'] ?? null,
+                            'user_id_modi'      => auth()->id(),
+                            'user_id_creo'      => PersonaUno::where('numero_documento', $v['numero_documento'])->value('user_id_creo') ?? auth()->id(),
+                        ]
+                    );
+                    $visita->personas()->attach($persona->id);
+                }
+            } else {
+                // CASO EMPRESA: Usamos rawState para obtener 'lista_trabajadores'
+                $trabajadores = $rawState['lista_trabajadores'] ?? [];
+                foreach ($trabajadores as $t) {
+                    $visita = Visita::create($visitaData);
+                    if (empty($t['tipo_documento']) && !empty($t['tipo_documento_id'])) {
+                        $t['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $t['tipo_documento_id'])->value('abreviatura');
+                    }
+                    $persona = PersonaUno::updateOrCreate(
+                        
+                        [
+                            'numero_documento' => $t['numero_documento'],
+                            'tipo_documento_id' => $t['tipo_documento_id']
+                        ],
+                        [
+                            'tipo_documento' => $t['tipo_documento'],
+                            'nombres'           => mb_strtoupper($t['nombres']),
+                            'apellido_paterno'  => mb_strtoupper($t['apellido_paterno']),
+                            'apellido_materno'  => mb_strtoupper($t['apellido_materno']),
+                            'user_id_modi'      => auth()->id(),
+                            'user_id_creo'      => PersonaUno::where('numero_documento', $t['numero_documento'])->value('user_id_creo') ?? auth()->id(),
+                        ]
+                    );
+                    // Guardamos en la tabla pivote con su cargo
+                    $visita->personas()->attach($persona->id, ['cargo' => mb_strtoupper($t['cargo'] ?? null)]);
+                }
+            }
+
+            return $visita;
+        });
     }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
     }
-    protected function getHeaderActions(): array
-    {
-        return [
-            // CreateAction::make()
-            //     // ->model(Visita::class)
-            //     // ->using(fn(array $data) => Visita::create($data))
-            //     ->label('Registrar Visita'),
-        ];
-    }
-    public function getBreadcrumb(): string
-    {
-        return 'Registro';
-    }
+
     public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
     {
         return 'Registro de Visita';
-    }
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        // 1. Manejo de la Persona Principal (Empresa o Visitante)
-        if ($data['es_empresa'] == 0) {
-            if (empty($data['tipo_documento']) && !empty($data['tipo_documento_id'])) {
-        $data['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $data['tipo_documento_id'])->value('abreviatura');
-    }
-            $persona = PersonaUno::updateOrCreate(
-                [
-                    'numero_documento' => $data['numero_documento'],
-                    'tipo_documento_id' => $data['tipo_documento_id']
-                ],
-                [
-                    'tipo_documento' => $data['tipo_documento'],
-                    'nombres' => $data['nombres'],
-                    'apellido_paterno' => $data['apellido_paterno'] ?? '',
-                    'apellido_materno' => $data['apellido_materno'] ?? '',
-                    'foto_url' => $data['foto_url'] ?? null,
-                    'user_id_modi' => auth()->id(),
-                    // Mantenemos el creador original si existe
-                    'user_id_creo' => PersonaUno::where('numero_documento', $data['numero_documento'])
-                        ->where('tipo_documento_id', $data['tipo_documento_id'])
-                        ->value('user_id_creo') ?? auth()->id(),
-                ]
-            );
-            $data['persona_id'] = $persona->id;
-            $data['proveedor_id'] = null;
-            $data['proveedor'] = null;
-            $data['ruc'] = null;
-        } else {
-            $proveedor = Proveedor::firstOrCreate(
-                ['ruc' => $data['numero_documento']],
-                [
-                    'nombre' => $data['nombres'],
-                    'direccion' => $data['direccion']
-                ]
-            );
-            $data['persona_id'] = null;
-            $data['proveedor_id'] = $proveedor->id_proveedor;
-            $data['proveedor'] = $proveedor->nombre;
-            $data['ruc'] = $proveedor->ruc;
-        }
-
-        $data['fecha_ingreso'] = now();
-        $data['user_id_ingreso'] = auth()->id();
-        $data['sede_id'] = auth()->user()->sede_id;
-
-
-        // 2. Inyectamos los IDs necesarios para la tabla 'visitas'
-
-
-
-        // IMPORTANTE: NO borres 'lista_trabajadores' aquí, 
-        // la necesitamos en el método afterCreate()
-        unset(
-            $data['direccion'],
-            $data['tipo_documento'],
-            $data['tipo_documento_id'],
-            $data['numero_documento'],
-            $data['pide_fallo'],
-            $data['nombres'],
-            $data['apellido_paterno'],
-            $data['apellido_materno'],
-            $data['foto_url'],
-            $data['cargo'],
-            $data['lista_trabajadores'] // <--- Esto es vital para que no intente insertar un array
-        );
-
-        return $data;
-    }
-
-    protected function afterCreate(): void
-    {
-
-        // 1. Obtenemos los datos que se enviaron en el formulario
-        $dataForm = $this->data;
-
-        // 2. Verificamos si la persona principal es RUC (ID 6)
-        // Si NO es RUC, no hacemos nada y salimos de la función
-        if (($dataForm['es_empresa'] ?? null) != 1) {
-            return;
-        }
-        $data = $this->record->toArray();
-        // Recuperamos la lista del estado del formulario, ya que mutate pudo haberla filtrado
-        $listaTrabajadores = $this->data['lista_trabajadores'] ?? [];
-        $personaId = $this->record->persona_id; // El ID de la empresa/persona principal
-
-        foreach ($listaTrabajadores as $item) {
-            $persona = PersonaUno::updateOrCreate(
-                [
-                    'tipo_documento' => $item['tipo_documento'],
-                    'numero_documento' => $item['numero_documento'],
-                    'tipo_documento_id' => $item['tipo_documento_id']
-                ],
-                [
-                    'nombres' => $item['nombres'],
-                    'apellido_paterno' => $item['apellido_paterno'] ?? '',
-                    'apellido_materno' => $item['apellido_materno'] ?? '',
-                    // 'cargo' => $item['cargo'] ?? '',
-                    // 'dependencia_id' => $personaId,
-                    'user_id_modi' => auth()->id(),
-                    'user_id_creo' => PersonaUno::where('numero_documento', $item['numero_documento'])
-                        ->where('tipo_documento_id', $item['tipo_documento_id'])
-                        ->value('user_id_creo') ?? auth()->id(),
-                ]
-            );
-            VisitaTrabajadorRuc::create([
-                'visita_id' => $this->record->id,
-                'persona_id' => $persona->id,
-                'cargo' => $item['cargo']
-            ]);
-        }
-    }
-
-    protected function getCreateFormAction(): \Filament\Actions\Action
-    {
-        return parent::getCreateFormAction()
-            ->label('Registrar Visita'); // Cambia el texto aquí
-    }
-    protected function getCreateAnotherFormAction(): \Filament\Actions\Action
-    {
-        return parent::getCreateAnotherFormAction()
-            ->label('Registrar y registrar otro'); // <--- Pon aquí el nombre que prefieras
     }
 }
