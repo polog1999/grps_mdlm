@@ -89,7 +89,7 @@ class FichaUbicacionService
     public function buscarPorCoduca(string $coduca, bool $exacto = false): Collection
     {
         try {
-            $query = FichaUbicacion::with(['via', 'urbanizacion'])->noEliminados();
+            $query = FichaUbicacion::with(['via.viatipo', 'urbanizacion'])->noEliminados();
 
             if ($exacto) {
                 $query->where('fiu_coduca', $coduca);
