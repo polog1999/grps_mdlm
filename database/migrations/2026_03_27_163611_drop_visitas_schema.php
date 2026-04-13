@@ -24,7 +24,7 @@ return new class extends Migration
             // 1. Borrar el esquema y TODO su contenido (tablas, secuencias, etc.)
             // CASCADE es vital para que PostgreSQL no se detenga por llaves foráneas
             DB::statement("DROP SCHEMA IF EXISTS {$schemaName} CASCADE");
-            
+
 
             // 2. Limpiar la tabla migrations de Laravel
             // Buscamos las migraciones que mencionen el esquema o sus tablas principales
@@ -46,13 +46,11 @@ return new class extends Migration
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_tipo_documentos_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%create_motivos_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_motivos_table%") // Ajusta según tus nombres
-                ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_historico_table%") // Ajusta según tus nombres
 
 
                 ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%create_visitas_trabajadores_ruc_table%") // Ajusta según tus nombres
-                ->orWhere('migration', 'like', "%add_columns_to_visitas.visitas_historico_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_columns_to_visitas.personas%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%create_notifications_table%") // Ajusta según tus nombres
 
@@ -69,6 +67,9 @@ return new class extends Migration
                 ->orWhere('migration', 'like', "%insert_cargos_to_cargos_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%insert_areas_to_areas_table%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_sede_id_to_users_table%") // Ajusta según tus nombres
+                ->orWhere('migration', 'like', "%add_columns_to_itse.users_table%") // Ajusta según tus nombres
+                ->orWhere('migration', 'like', "%create_visita_persona_table%") // Ajusta según tus nombres
+
 
                 ->orWhere('migration', 'like', "%excel_control1%") // Ajusta según tus nombres
                 ->orWhere('migration', 'like', "%add_soft_deletes_to_areas_table%") // Ajusta según tus nombres
