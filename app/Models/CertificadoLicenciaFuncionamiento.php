@@ -178,4 +178,9 @@ class CertificadoLicenciaFuncionamiento extends Model
         $this->lic_actualizado_por = Auth::id();
         $this->lic_actualizado_en = now();
     }
+
+    public function licenciaBaja()
+    {
+        return $this->hasOne(LicenciaBaja::class, 'lic_id', 'lic_id');
+    }
 }

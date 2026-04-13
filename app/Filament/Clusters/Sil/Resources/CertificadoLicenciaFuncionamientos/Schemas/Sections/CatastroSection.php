@@ -96,13 +96,16 @@ class CatastroSection
                                         $service = app(FichaUbicacionService::class);
                                         $fichas = $service->buscarPorCoduca($search, false)->take(10);
                                         return $fichas->mapWithKeys(function ($ficha) {
-                                            // Obtener nombre completo de la vía usando ViaService
                                             $viaCompleta = 'N/A';
+                                            if ($ficha->via) {
+                                                $viaCompleta = $ficha->via->via_completa ?? $ficha->via->via_codvia;
+                                            }
+                                            /*
                                             if ($ficha->via && $ficha->via->via_codvia) {
                                                 $viaService = app(ViaService::class);
                                                 $viaData = $viaService->obtenerViaCompletaPorCodigo($ficha->via->via_codvia);
                                                 $viaCompleta = $viaData->via_completa ?? $ficha->via->via_codvia;
-                                            }
+                                            }*/
 
                                             $label = sprintf(
                                                 'CODUCA: %s | Predial: %s | Mz: %s Lt: %s | Vía: %s | Dpto: %s | Bloque: %s | Zonif: %s | Área: %s m²',
@@ -129,13 +132,16 @@ class CatastroSection
                                             return 'Ficha no encontrada';
                                         }
 
-                                        // Obtener nombre completo de la vía usando ViaService
                                         $viaCompleta = 'N/A';
+                                        if ($ficha->via) {
+                                            $viaCompleta = $ficha->via->via_completa ?? $ficha->via->via_codvia;
+                                        }
+                                        /*
                                         if ($ficha->via && $ficha->via->via_codvia) {
                                             $viaService = app(ViaService::class);
                                             $viaData = $viaService->obtenerViaCompletaPorCodigo($ficha->via->via_codvia);
                                             $viaCompleta = $viaData->via_completa ?? $ficha->via->via_codvia;
-                                        }
+                                        }*/
 
                                         return sprintf(
                                             'CODUCA: %s | Predial: %s | Mz: %s Lt: %s | Vía: %s | Dpto: %s | Bloque: %s | Zonif: %s | Área: %s m²',

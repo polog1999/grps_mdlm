@@ -144,6 +144,8 @@ class ViewLicencia extends ViewRecord
                             ->formatStateUsing(fn($state) => strtolower((string) ($state ?? 'false')) === 'true' || $state == 1 || $state == '1' ? 'Sí' : 'No')
                             ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'MYPE') ?? $record->lic_mype),
 
+
+
                         TextEntry::make('local')
                             ->label('Nombre de Local / Galerías')
                             ->columnSpanFull()
@@ -163,6 +165,27 @@ class ViewLicencia extends ViewRecord
                             ->label('Fecha Compatibilidad')
                             ->date('d/m/Y')
                             ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'lic_compatibilidadfecha') ?? $record->lic_compatibilidadfecha),
+
+                        Section::make('Información de la Baja')
+                            ->schema([
+                                TextEntry::make('licenciaBaja.lib_expnum')
+                                    ->label('N° Expediente de Baja')
+                                    ->badge()
+                                    ->color('danger'),
+
+                                TextEntry::make('licenciaBaja.lib_resnum')
+                                    ->label('N° Resolución de Baja')
+                                    ->badge()
+                                    ->color('danger'),
+
+                                TextEntry::make('licenciaBaja.lib_fecharesolucion')
+                                    ->label('Fecha Resolución de Baja')
+                                    ->date('d/m/Y'),
+                            ])
+                            ->columns(3)
+                            ->visible(fn($record) => $record->licenciaBaja()->exists())
+                            ->columnSpanFull()
+                            ->compact(),
 
                     ]),
 
