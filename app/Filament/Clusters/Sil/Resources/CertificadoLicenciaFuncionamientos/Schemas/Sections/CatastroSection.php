@@ -94,8 +94,7 @@ class CatastroSection
                                         }
 
                                         $service = app(FichaUbicacionService::class);
-                                        $fichas = $service->buscarPorCoduca($search, false);
-
+                                        $fichas = $service->buscarPorCoduca($search, false)->take(10);
                                         return $fichas->mapWithKeys(function ($ficha) {
                                             // Obtener nombre completo de la vía usando ViaService
                                             $viaCompleta = 'N/A';
