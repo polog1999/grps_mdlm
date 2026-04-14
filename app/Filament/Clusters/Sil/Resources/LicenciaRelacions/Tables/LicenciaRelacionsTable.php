@@ -196,6 +196,7 @@ class LicenciaRelacionsTable
                     ->label('Transferir')
                     ->icon('heroicon-o-arrow-path-rounded-square')
                     ->color('primary')
+                    ->visible(fn() => auth()->user()->can('transfer::licencia_relacion'))
                     ->form([
                         Select::make('nuevo_lic_id')
                             ->label('Nueva Licencia Destino')

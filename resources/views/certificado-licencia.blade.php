@@ -418,7 +418,11 @@
 
             <div class="title-text-common title-type">{{ $licencia->TIPO_LICENCIA ?? 'NO ENCONTRADO' }}</div>
 
-            @if(isset($antecedente) && !empty($antecedente))
+            @if(isset($isTransferido) && $isTransferido)
+                <div class="title-text-common" style="margin-top: 5px; font-size: 10pt; font-weight: bold;">
+                    ( TRANSFERIDO DE LA LICENCIA N° {{ $numeroLicenciaTransferida }} )
+                </div>
+            @elseif(isset($antecedente) && !empty($antecedente))
                 <div class="title-text-common" style="margin-top: 5px; font-size: 10pt; font-weight: bold;">
                     (
                     @if(strtoupper($antecedente) === 'ACTIVO')

@@ -21,6 +21,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'view::certificado_licencia_funcionamiento',
             // Permisos para LicenciaRelacionResource
             'view::licencia_relacion',
+            'transfer::licencia_relacion',
             //Permisos para Persona
             'view::persona',
             //Permisos para Roles

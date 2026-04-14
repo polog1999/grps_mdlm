@@ -109,6 +109,27 @@ class CertificadoLicenciaPdfController extends Controller
             ]);
         }
 
+        $isTransferido = false;
+        $numeroLicenciaTransferida = null;
+        try {
+            $relacionTransferida = \App\Models\LicenciaRelacion::where('lic_id_dependencia', $licenciaId)
+                ->whereNotNull('old_lic_id')
+                ->first();
+
+            if ($relacionTransferida) {
+                $isTransferido = true;
+                $licenciaAntigua = \App\Models\CertificadoLicenciaFuncionamiento::find($relacionTransferida->old_lic_id);
+                if ($licenciaAntigua) {
+                    $numeroLicenciaTransferida = $licenciaAntigua->lic_numlic;
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al verificar transferencia', [
+                'id' => $licenciaId,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         // Renderizar la vista Blade a HTML
         $html = view('certificado-licencia', [
             'licencia' => $datosLicencia,
@@ -116,6 +137,8 @@ class CertificadoLicenciaPdfController extends Controller
             'giros' => $giros,
             'antecedente' => $antecedente,
             'numeroLicenciaPadre' => $numeroLicenciaPadre,
+            'isTransferido' => $isTransferido,
+            'numeroLicenciaTransferida' => $numeroLicenciaTransferida,
         ])->render();
 
         // Configurar opciones de Dompdf
