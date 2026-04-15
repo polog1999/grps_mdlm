@@ -54,7 +54,7 @@ class VisitasTable
                     ->after(function () {
                         $user = auth()->user();
 
-                        Log::channel('exports')->info('Exportación de Visitas iniciada', [
+                        Log::channel('exports_visitas')->info('Exportación de Visitas iniciada', [
                             'usuario_id' => $user->id,
                             'usuario_nombre' => $user->name,
                             'email' => $user->email,
