@@ -49,6 +49,7 @@ class VisitasTable
                     ->label('Exportar Visitas')
                     ->chunkSize(100) // Procesar de 100 en 100 para que la barra suba fluido
                     ->color('info')
+                    ->visible(fn () => auth()->user()->can('export:visitas_visitas'))
             ])
             ->columns([
                 TextColumn::make('index')
