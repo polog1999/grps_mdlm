@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Tables;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -101,7 +102,30 @@ class CertificadoInspeccionsTable
                     ->label('Expediente')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('ruc')
+                    ->label('RUC')
+                    ->getStateUsing(function ($record) {
+                        if (!$record->cin_expediente)
+                            return null;
+                        try {
+                            $service = app(\App\Services\Sil\CertificadoInspeccion\DatosPersonaService::class);
+                            $resultado = $service->obtenerRucPersonaPorExpediente(trim((string) $record->cin_expediente));
+                            return $resultado->ruc ?? null;
+                        } catch (\Exception $e) {
+                            return 'Error';
+                        }
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $service = app(\App\Services\Sil\CertificadoInspeccion\DatosPersonaService::class);
+                        $expedientesEncontrados = $service->buscarExpedientesPorCriterio($search);
 
+                        if (empty($expedientesEncontrados)) {
+                            return $query->whereRaw('1=0');
+                        }
+
+                        return $query->orWhereIn('cin_expediente', $expedientesEncontrados);
+                    })
+                    ->placeholder('No encontrado'),
                 TextColumn::make('cin_resolucion')->label('Resolución')->hidden()->searchable(),
                 TextColumn::make('cin_resolucion_sigla')->label('Resolución Sigla')->hidden()->searchable(),
 
@@ -255,6 +279,19 @@ class CertificadoInspeccionsTable
                     ->indicator('N° Certificado')
                     ->placeholder('Buscar número...')
                     ->native(false),
+                SelectFilter::make('cin_expediente')
+                    ->label('N° Expediente')
+                    ->options(fn() => CertificadoInspeccion::query()
+                        ->distinct()
+                        ->whereNotNull('cin_expediente')
+                        ->where('cin_expediente', '!=', '')
+                        ->orderBy('cin_expediente', 'desc')
+                        ->pluck('cin_expediente', 'cin_expediente')
+                        ->toArray())
+                    ->searchable()
+                    ->indicator('N° Expediente')
+                    ->placeholder('Buscar expediente...')
+                    ->native(false),
 
                 SelectFilter::make('cin_solicitante')
                     ->label('Solicitante')
@@ -296,9 +333,39 @@ class CertificadoInspeccionsTable
                     ->indicator('Giro')
                     ->placeholder('Buscar giro...')
                     ->native(false),
+                Filter::make('ruc')
+                    ->label('RUC')
+                    ->form([
+                        TextInput::make('ruc')
+                            ->label('RUC')
+                            ->placeholder('Buscar por RUC...')
+                            ->maxLength(20),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['ruc'])) {
+                            return $query;
+                        }
 
+                        $service = app(\App\Services\Sil\CertificadoInspeccion\DatosPersonaService::class);
+                        $expedientes = $service->buscarExpedientesPorCriterio(trim($data['ruc']));
+
+                        if (empty($expedientes)) {
+                            return $query->whereRaw('1=0');
+                        }
+
+                        return $query->whereIn('cin_expediente', $expedientes);
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if (!empty($data['ruc'])) {
+                            $indicators[] = Indicator::make('RUC: ' . $data['ruc'])
+                                ->removeField('ruc');
+                        }
+                        return $indicators;
+                    }),
                 Filter::make('cin_fecha')
                     ->label('Fecha del Certificado')
+                    ->columnSpan(2)
                     ->form([
                         DatePicker::make('from')
                             ->label('Desde')
@@ -342,26 +409,13 @@ class CertificadoInspeccionsTable
                         return $indicators;
                     }),
 
-                SelectFilter::make('cin_expediente')
-                    ->label('N° Expediente')
-                    ->options(fn() => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->whereNotNull('cin_expediente')
-                        ->where('cin_expediente', '!=', '')
-                        ->orderBy('cin_expediente', 'desc')
-                        ->pluck('cin_expediente', 'cin_expediente')
-                        ->toArray())
-                    ->searchable()
-                    ->indicator('N° Expediente')
-                    ->placeholder('Buscar expediente...')
-                    ->native(false),
+
+
 
             ], layout: FiltersLayout::Modal)
             ->filtersFormColumns(4)
             ->filtersFormMaxHeight('400px')
             ->recordActions([
-
-
                 ViewAction::make()
                     ->icon('heroicon-o-eye')
                     ->iconButton()
