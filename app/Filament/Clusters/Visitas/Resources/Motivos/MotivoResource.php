@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class MotivoResource extends Resource
 {
+    protected static ?int $navigationSort = 2;
     protected static ?string $model = Motivo::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

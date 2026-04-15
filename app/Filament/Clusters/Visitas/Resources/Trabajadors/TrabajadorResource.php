@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TrabajadorResource extends Resource
 {
+    protected static ?int $navigationSort = 2;
     protected static ?string $model = Trabajador::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

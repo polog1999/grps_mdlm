@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\ExcelControl1;
 use App\Models\Persona;
 use App\Models\PersonaUno;
+use App\Models\Sede;
 use App\Models\Visita;
 use App\Models\VisitaTrabajadorRuc;
 use Carbon\Carbon;
@@ -119,6 +120,10 @@ class VisitasTable
                         1 => 'Empresa',
                         0 => 'Persona',
                     ]),
+                    SelectFilter::make('sede_id')
+                    ->label('Sede')
+                    ->searchable()
+                    ->options(fn() => Sede::pluck('nombre', 'id_sede')),
                 SelectFilter::make('area')
                     ->label('Área')
                     ->searchable()

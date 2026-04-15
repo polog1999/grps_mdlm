@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class TipoDocumentoResource extends Resource
 {
+    protected static ?int $navigationSort = 2;
     protected static ?string $model = TipoDocumento::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
