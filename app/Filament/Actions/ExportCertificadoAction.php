@@ -97,39 +97,11 @@ class ExportCertificadoAction
      */
     protected static function getFilteredRecords($livewire)
     {
-        $tableFilters = $livewire->tableFilters ?? [];
-        $query = CertificadoInspeccion::query()->where('cin_filaeliminada', false);
 
-        // Filtros simples (comparación exacta)
-        $simpleFilters = [
-            'tie_id',
-            'cin_anio',
-            'cin_numero',
-            'cin_solicitante',
-            'cin_ubicacion',
-            'cin_giro',
-            'cin_expediente'
-        ];
-
-        foreach ($simpleFilters as $filter) {
-            if (isset($tableFilters[$filter]['value']) && !empty($tableFilters[$filter]['value'])) {
-                $query->where($filter, $tableFilters[$filter]['value']);
-            }
-        }
-
-        // Filtro de fecha (rango)
-        if (isset($tableFilters['cin_fecha']['from']) && !empty($tableFilters['cin_fecha']['from'])) {
-            $query->whereDate('cin_fecha', '>=', $tableFilters['cin_fecha']['from']);
-        }
-        if (isset($tableFilters['cin_fecha']['to']) && !empty($tableFilters['cin_fecha']['to'])) {
-            $query->whereDate('cin_fecha', '<=', $tableFilters['cin_fecha']['to']);
-        }
-
-        return $query->orderBy('cin_fecha', 'desc')
+        return $livewire->getFilteredTableQuery()
             ->with('tipoEdificacion')
             ->get();
     }
-
     /**
      * Carga la plantilla de Excel desde el directorio de plantillas.
      *
