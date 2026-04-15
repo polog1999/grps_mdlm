@@ -139,6 +139,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit::visitas_visita',         // Ver detalle o información específica de una visita
             'create::visitas_visita',            // Registrar/Crear una nueva visita
             'audit::visitas_visita',
+            'export:visitas_visitas',
             //VER, CREAR Y EDITAR DE REGIMEN
             'view::visitas_regimen',              // Ver listado de visitas
             'edit::visitas_regimen',         // Ver detalle o información específica de una visita
