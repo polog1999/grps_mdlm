@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 
 class RegimenResource extends Resource
 {
+    protected static ?int $navigationSort = 2;
     protected static ?string $model = Regimen::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
