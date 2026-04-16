@@ -409,8 +409,8 @@ class VisitaForm
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(fn() => Area::where('id_uo_estado', 1)
-                            ->where('id_sede',auth()->user()->sede_id)
-                            ->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
+                                ->where('id_sede', auth()->user()->sede_id)
+                                ->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required()
@@ -421,19 +421,29 @@ class VisitaForm
                                     // Guardamos ese nombre en el campo 'area_nombre'
                                     $set('area', $nombreArea);
 
-                                    // $defaultTrabajador = Trabajador::where('id_unidad_organica', $state)
-                                    //     ->where('id_estado', 1)
-                                    //     ->whereHas('cargo', function ($q) {
-                                    //         $q->where('orden', 1);
-                                    //     })->value('id_usuario');
-                                     $defaultTrabajador = Trabajador::where('id_estado', 1)
-                                        ->whereHas('cargo', function ($q)use($state) {
-                                            $q->where('id_unidad_organica', $state)
-                                            ->where('orden', 1);
-                                        })
-                                        ->orWhereHas('cargo2', function ($q)use($state) {
-                                            $q->where('id_unidad_organica', $state)
-                                            ->where('orden', 1);
+                                    // $defaultTrabajador = Trabajador::where('id_estado', 1) // El filtro principal afuera
+                                    //     ->where(function ($query) use ($state) {
+                                    //         $query->where(function ($q) use ($state) {
+                                    //             $q->where('id_unidad_organica', $state)
+                                    //                 ->whereHas('cargo', fn($c) => $c->where('orden', 1));
+                                    //         })
+                                    //             ->orWhere(function ($q) use ($state) {
+                                    //                 $q->where('id_unidad_organica_dt', $state)
+                                    //                     ->whereHas('cargo2', fn($c) => $c->where('orden', 1));
+                                    //             });
+                                    //     })
+                                    //     ->value('id_usuario');
+
+                                    $defaultTrabajador = Trabajador::where('id_estado', 1) // Siempre activo
+                                        ->where(function ($query) use ($state) {
+                                            $query->whereHas('cargo', function ($q) use ($state) {
+                                                $q->where('id_unidad_organica', $state)
+                                                    ->where('orden', 1);
+                                            })
+                                                ->orWhereHas('cargo2', function ($q) use ($state) {
+                                                    $q->where('id_unidad_organica', $state)
+                                                        ->where('orden', 1);
+                                                });
                                         })
                                         ->value('id_usuario');
 
