@@ -7,6 +7,7 @@ use App\Models\Area;
 use App\Models\ExcelControl1;
 use App\Models\Persona;
 use App\Models\PersonaUno;
+use App\Models\Sede;
 use App\Models\Visita;
 use App\Models\VisitaTrabajadorRuc;
 use Carbon\Carbon;
@@ -35,6 +36,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Support\Facades\Log;
 // use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -49,6 +51,18 @@ class VisitasTable
                     ->label('Exportar Visitas')
                     ->chunkSize(100) // Procesar de 100 en 100 para que la barra suba fluido
                     ->color('info')
+                    ->visible(fn() => auth()->user()->can('export:visitas_visitas'))
+                    ->after(function () {
+                        $user = auth()->user();
+
+                        Log::channel('exports_visitas')->info('Exportación de Visitas iniciada', [
+                            'usuario_id' => $user->id,
+                            'usuario_nombre' => $user->name,
+                            'email' => $user->email,
+                            'fecha_hora' => now()->format('d-m-Y H:i:s'),
+                            'ip' => request()->ip(),
+                        ]);
+                    })
             ])
             ->columns([
                 TextColumn::make('index')
@@ -74,7 +88,7 @@ class VisitasTable
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         // IMPORTANTE: Cuando usas getStateUsing, debes definir el searchable manualmente
                         return $query->where('nombres_completos', 'ilike', "%{$search}%")
-                        ->orWhere('proveedor', 'ilike', "%{$search}%");
+                            ->orWhere('proveedor', 'ilike', "%{$search}%");
                     }),
                 // TextColumn::make('sede.nombre')->label('Sede')
                 //     ->sortable()
@@ -101,11 +115,15 @@ class VisitasTable
 
             ->filters([
                 SelectFilter::make('es_empresa')
-                ->label('Tipo')
-                ->options([
+                    ->label('Tipo')
+                    ->options([
                         1 => 'Empresa',
                         0 => 'Persona',
                     ]),
+                    SelectFilter::make('sede_id')
+                    ->label('Sede')
+                    ->searchable()
+                    ->options(fn() => Sede::pluck('nombre', 'id_sede')),
                 SelectFilter::make('area')
                     ->label('Área')
                     ->searchable()
