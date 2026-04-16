@@ -81,7 +81,8 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
            ->databaseNotifications() // <--- ESTO ES VITAL
-        ->databaseNotificationsPolling('2s'); // Actualiza cada 3 segundos para ver el % real
+        ->databaseNotificationsPolling('2s')
+        ; // Actualiza cada 3 segundos para ver el % real
 
     }
 }
