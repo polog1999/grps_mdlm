@@ -61,7 +61,7 @@ class VisitaExporter extends Exporter
             ExportColumn::make('trabajador_cita')
                 ->label('Cita con'),
 
-            ExportColumn::make('Autorizado por')
+            ExportColumn::make('autorizado_por')
                 ->label('Autorizado por')
                 ->enabledByDefault(false),
 
