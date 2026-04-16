@@ -123,7 +123,11 @@ class CertificadoInspeccionsTable
                             return $query->whereRaw('1=0');
                         }
 
-                        return $query->orWhereIn('cin_expediente', $expedientesEncontrados);
+                        return $query->where(function ($q) use ($expedientesEncontrados) {
+                            foreach (array_chunk($expedientesEncontrados, 1000) as $chunk) {
+                                $q->orWhereIn('cin_expediente', $chunk);
+                            }
+                        });
                     })
                     ->placeholder('No encontrado'),
                 TextColumn::make('cin_resolucion')->label('Resolución')->hidden()->searchable(),
@@ -267,27 +271,26 @@ class CertificadoInspeccionsTable
 
                 SelectFilter::make('cin_numero')
                     ->label('N° Certificado')
-                    ->options(fn() => CertificadoInspeccion::query()
-                        ->select('cin_numero')
-                        ->distinct()
-                        ->whereNotNull('cin_numero')
-                        ->orderByDesc('cin_numero')
-                        ->pluck('cin_numero')
-                        ->mapWithKeys(fn($v) => [(string) $v => (string) $v])
-                        ->toArray())
                     ->searchable()
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => CertificadoInspeccion::query()
+                            ->where('cin_numero', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('cin_numero', 'cin_numero')
+                            ->toArray()
+                    )
                     ->indicator('N° Certificado')
                     ->placeholder('Buscar número...')
                     ->native(false),
                 SelectFilter::make('cin_expediente')
                     ->label('N° Expediente')
-                    ->options(fn() => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->whereNotNull('cin_expediente')
-                        ->where('cin_expediente', '!=', '')
-                        ->orderBy('cin_expediente', 'desc')
-                        ->pluck('cin_expediente', 'cin_expediente')
-                        ->toArray())
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => CertificadoInspeccion::query()
+                            ->where('cin_expediente', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('cin_expediente', 'cin_expediente')
+                            ->toArray()
+                    )
                     ->searchable()
                     ->indicator('N° Expediente')
                     ->placeholder('Buscar expediente...')
@@ -295,14 +298,14 @@ class CertificadoInspeccionsTable
 
                 SelectFilter::make('cin_solicitante')
                     ->label('Solicitante')
-                    ->options(fn() => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->whereNotNull('cin_solicitante')
-                        ->where('cin_solicitante', '!=', '')
-                        ->orderBy('cin_solicitante', 'asc')
-                        ->pluck('cin_solicitante', 'cin_solicitante')
-                        ->toArray())
                     ->searchable()
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => CertificadoInspeccion::query()
+                            ->where('cin_solicitante', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('cin_solicitante', 'cin_solicitante')
+                            ->toArray()
+                    )
                     ->indicator('Solicitante')
                     ->placeholder('Buscar solicitante...')
                     ->native(false),
@@ -322,13 +325,13 @@ class CertificadoInspeccionsTable
 
                 SelectFilter::make('cin_giro')
                     ->label('Giro del Negocio')
-                    ->options(fn() => CertificadoInspeccion::query()
-                        ->distinct()
-                        ->whereNotNull('cin_giro')
-                        ->where('cin_giro', '!=', '')
-                        ->orderBy('cin_giro', 'asc')
-                        ->pluck('cin_giro', 'cin_giro')
-                        ->toArray())
+                    ->getSearchResultsUsing(
+                        fn(string $search): array => CertificadoInspeccion::query()
+                            ->where('cin_giro', 'ilike', "%{$search}%")
+                            ->limit(50)
+                            ->pluck('cin_giro', 'cin_giro')
+                            ->toArray()
+                    )
                     ->searchable()
                     ->indicator('Giro')
                     ->placeholder('Buscar giro...')
@@ -353,7 +356,11 @@ class CertificadoInspeccionsTable
                             return $query->whereRaw('1=0');
                         }
 
-                        return $query->whereIn('cin_expediente', $expedientes);
+                        return $query->where(function ($q) use ($expedientes) {
+                            foreach (array_chunk($expedientes, 1000) as $chunk) {
+                                $q->orWhereIn('cin_expediente', $chunk);
+                            }
+                        });
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
