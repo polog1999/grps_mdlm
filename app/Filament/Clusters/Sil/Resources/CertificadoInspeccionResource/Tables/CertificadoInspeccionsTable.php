@@ -116,6 +116,11 @@ class CertificadoInspeccionsTable
                         }
                     })
                     ->searchable(query: function (Builder $query, string $search): Builder {
+
+                        if (strlen(trim($search)) < 3) {
+                            return $query;
+                        }
+
                         $service = app(\App\Services\Sil\CertificadoInspeccion\DatosPersonaService::class);
                         $expedientesEncontrados = $service->buscarExpedientesPorCriterio($search);
 
@@ -345,7 +350,7 @@ class CertificadoInspeccionsTable
                             ->maxLength(20),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        if (empty($data['ruc'])) {
+                        if (empty($data['ruc']) || strlen(trim($data['ruc'])) < 3) {
                             return $query;
                         }
 
