@@ -201,6 +201,17 @@ class CertificadoLicenciaFuncionamientosTable
                     ->searchable()
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'LIC_DIRECCION') ?? $record->lic_direccion),
 
+                TextColumn::make('giros.giro.gir_descripcion')
+                    ->label('Giros')
+                    ->searchable(),
+
+                TextColumn::make('giros.lig_giroespecifico')
+                    ->label('Giros Específicos')
+                    ->searchable()
+                    ->default('')
+                    ->placeholder('')
+                    ->listWithLineBreaks(),
+
                 TextColumn::make('tipoLicencia.tli_descripcion')
                     ->label('Tipo Licencia')
                     ->sortable()
@@ -210,7 +221,7 @@ class CertificadoLicenciaFuncionamientosTable
                     ->label('Estado')
                     ->sortable()
                     ->getStateUsing(fn($record) => self::getDatoDirecto($record, 'esl_descripcion')),
-                //poner observaciones
+
                 TextColumn::make('lic_licobs')
                     ->label('Observación')
                     ->sortable()
@@ -278,6 +289,33 @@ class CertificadoLicenciaFuncionamientosTable
                     ->indicator('Estado de Licencia')
                     ->placeholder('Todos los estados'),
 
+                SelectFilter::make('giro')
+                    ->label('Giro / Actividad')
+                    ->relationship('giros.giro', 'gir_descripcion') // Filament entra automáticamente: Licencia -> LicenciaGiro -> Giro
+                    ->searchable()
+                    ->preload()
+                    ->indicator('Giro'),
+                Filter::make('giro_especifico_search')
+                    ->form([
+                        TextInput::make('nombre_especifico')
+                            ->label('Giro Específico')
+                            ->placeholder('Ej: Venta de repuestos...')
+                            ->helperText('Busca por el texto manual ingresado en el giro.'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['nombre_especifico'],
+                            fn(Builder $query, $search): Builder => $query->whereHas('giros', function (Builder $subQuery) use ($search) {
+                                $subQuery->where('lig_giroespecifico', 'ILIKE', "%{$search}%");
+                            })
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!$data['nombre_especifico']) {
+                            return null;
+                        }
+                        return 'Giro Esp.: ' . $data['nombre_especifico'];
+                    }),
                 Filter::make('codigocatastral')
                     ->form([
                         TextInput::make('codigocatastral')

@@ -212,6 +212,21 @@ class ExportLicenciasAction
             }
         }
 
+        if (isset($tableFilters['giro']['value']) && !empty($tableFilters['giro']['value'])) {
+            $giroId = $tableFilters['giro']['value'];
+            $query->whereHas('giros', function ($subquery) use ($giroId) {
+                $subquery->where('gir_id', $giroId);
+            });
+        }
+
+        if (isset($tableFilters['giro_especifico_search']['nombre_especifico']) && !empty($tableFilters['giro_especifico_search']['nombre_especifico'])) {
+            $search = $tableFilters['giro_especifico_search']['nombre_especifico'];
+            $query->whereHas('giros', function ($subquery) use ($search) {
+                $subquery->where('lig_giroespecifico', 'ILIKE', "%{$search}%");
+            });
+        }
+
+
         return $query->orderBy('lic_fechaemision', 'desc')
             ->with([
                 'tipoLicencia',
@@ -219,7 +234,8 @@ class ExportLicenciasAction
                 'nivelRiesgo',
                 'licenciaCatastro.fichaUbicacionSyscat',
                 'licenciaCatastro.fichaUbicacionInfocat',
-                'personaRazonSocial'
+                'personaRazonSocial',
+                'giros.giro'
             ])
             ->get();
     }
