@@ -69,6 +69,11 @@ class VisitasTable
                     ->label('#')
                     ->rowIndex() // <--- Esta es la clave en Filament v3
                     ->alignCenter(),
+                // TextColumn::make('grupo_uid')
+                //     ->label('Grupo')
+                //     ->formatStateUsing(fn($state) => $state ? '👥' : '👤')
+                //     ->tooltip(fn($record) => $record->grupo_uid ? "ID Grupo: {$record->grupo_uid}" : 'Individual')
+                //     ->alignCenter(),
                 TextColumn::make('fecha_visita')->badge()
                     ->sortable()
                     ->label('Estado')
@@ -88,7 +93,8 @@ class VisitasTable
                     ->searchable(query: function (Builder $query, string $search): Builder {
                         // IMPORTANTE: Cuando usas getStateUsing, debes definir el searchable manualmente
                         return $query->where('nombres_completos', 'ilike', "%{$search}%")
-                            ->orWhere('proveedor', 'ilike', "%{$search}%");
+                            ->orWhere('proveedor', 'ilike', "%{$search}%")
+                            ->orWhere('ruc', 'ilike', "%{$search}%");
                     }),
                 // TextColumn::make('sede.nombre')->label('Sede')
                 //     ->sortable()
@@ -96,7 +102,7 @@ class VisitasTable
                 TextColumn::make('area')->label('Area')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('Autorizado por')->label('Autorizado por')
+                TextColumn::make('autorizado_por')->label('Autorizado por')
                     ->sortable()
                     ->searchable(),
                 TextColumn::make('hora_ingreso')->dateTime('H:i A')
@@ -120,7 +126,7 @@ class VisitasTable
                         1 => 'Empresa',
                         0 => 'Persona',
                     ]),
-                    SelectFilter::make('sede_id')
+                SelectFilter::make('sede_id')
                     ->label('Sede')
                     ->searchable()
                     ->options(fn() => Sede::pluck('nombre', 'id_sede')),
@@ -147,8 +153,8 @@ class VisitasTable
                 //     }),
                 Filter::make('fecha_rango')
                     ->form([
-                        DatePicker::make('desde'),
-                        DatePicker::make('hasta'),
+                        DatePicker::make('desde')->default(now()),
+                        DatePicker::make('hasta')->default(now()),
                     ])
                     ->query(function ($query, array $data) {
                         return $query
@@ -171,6 +177,7 @@ class VisitasTable
                         }
                         return $indicators;
                     })
+                    
             ])
             ->recordActions([
                 Action::make('marcar_salida')
@@ -207,6 +214,22 @@ class VisitasTable
                         //         Notification::make()->title('Salida registrada')->success()->send();
                         //     }
                         // }
+                    }),
+                Action::make('marcar_salida_grupal')
+                    ->label('Salida Grupal')
+                    ->icon('heroicon-o-users')
+                    ->color('warning')
+                    ->visible(fn($record) => $record->grupo_uid && !$record->hora_salida)
+                    ->requiresConfirmation()
+                    ->modalDescription('¿Desea registrar la salida de todas las personas que ingresaron con este grupo?')
+                    ->action(function ($record) {
+                        Visita::where('grupo_uid', $record->grupo_uid)
+                            ->whereNull('fecha_salida')
+                            ->update([
+                                'fecha_salida' => now(),
+                                'user_id_salida' => auth()->id(),
+                            ]);
+                        Notification::make()->title('Salida del grupo registrada')->success()->send();
                     }),
                 // ViewAction::make()
                 // , // Abre un modal de solo lectura
@@ -280,7 +303,7 @@ class VisitasTable
                                         TextEntry::make('hora_salida')
                                             ->label('Hora de Salida')
                                             ->placeholder('Aún en sede'),
-                                        TextEntry::make('Autorizado por')
+                                        TextEntry::make('autorizado_por')
                                             ->label('Autorizado por:'),
                                         TextEntry::make('trabajador_cita')
                                             ->label('Cita con:'),
@@ -299,6 +322,9 @@ class VisitasTable
                                     ]),
                             ])->collapsible(),
                     ]),
-            ], position: RecordActionsPosition::BeforeColumns);
+            ], position: RecordActionsPosition::BeforeColumns)
+            ->poll('5s')
+            ->deferLoading() // Esto ayuda a que la carga inicial no bloquee el poll
+        ; // Se actualiza automáticamente cada 10 segundos;
     }
 }

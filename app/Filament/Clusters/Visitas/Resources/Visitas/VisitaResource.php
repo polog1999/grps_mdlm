@@ -5,6 +5,7 @@ namespace App\Filament\Clusters\Visitas\Resources\Visitas;
 use App\Filament\Clusters\Visitas\Resources\Visitas\Pages\CreateVisita;
 use App\Filament\Clusters\Visitas\Resources\Visitas\Pages\EditVisita;
 use App\Filament\Clusters\Visitas\Resources\Visitas\Pages\ListVisitas;
+use App\Filament\Clusters\Visitas\Resources\Visitas\Pages\VisitaResumen;
 use App\Filament\Clusters\Visitas\Resources\Visitas\Schemas\VisitaForm;
 use App\Filament\Clusters\Visitas\Resources\Visitas\Tables\VisitasTable;
 use App\Filament\Clusters\Visitas\VisitasCluster;
@@ -58,6 +59,7 @@ class VisitaResource extends Resource
             'index' => ListVisitas::route('/'),
             'create' => CreateVisita::route('/create'),
             // 'edit' => EditVisita::route('/{record}/edit'),
+            'resumen' => VisitaResumen::route('/{uuid}/resumen'), // <--- Nueva ruta
         ];
     }
     public static function canAccess(): bool

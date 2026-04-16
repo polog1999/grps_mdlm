@@ -9,6 +9,7 @@ use App\Models\Visita;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CreateVisita extends CreateRecord
 {
@@ -23,8 +24,12 @@ class CreateVisita extends CreateRecord
             // incluso los que tienen dehydrated(false) como 'lista_trabajadores'
             $rawState = $this->form->getRawState();
 
+
+            // GENERAR EL ID DE GRUPO AQUÍ
+            $grupoUid = Str::uuid();
             // 2. Preparar datos maestros de la Visita
             $visitaData = [
+                'grupo_uid' => $grupoUid, // <--- ASIGNAR EL MISMO ID A TODOS
                 'sede_id'                => auth()->user()->sede_id ?? 1,
                 'area_id'                => $data['area_id'],
                 'area'                   => $data['area'],
@@ -62,7 +67,7 @@ class CreateVisita extends CreateRecord
                 // CASO PERSONAS: Viene de 'lista_visitantes'
                 $visitantes = $data['lista_visitantes'] ?? [];
                 foreach ($visitantes as $v) {
-                $visita = Visita::create($visitaData);
+                    $visita = Visita::create($visitaData);
                     if (empty($v['tipo_documento']) && !empty($v['tipo_documento_id'])) {
                         $v['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $v['tipo_documento_id'])->value('abreviatura');
                     }
@@ -92,7 +97,7 @@ class CreateVisita extends CreateRecord
                         $t['tipo_documento'] = \App\Models\TipoDocumento::where('id_tipo_documento', $t['tipo_documento_id'])->value('abreviatura');
                     }
                     $persona = PersonaUno::updateOrCreate(
-                        
+
                         [
                             'numero_documento' => $t['numero_documento'],
                             'tipo_documento_id' => $t['tipo_documento_id']
@@ -117,7 +122,8 @@ class CreateVisita extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->getResource()::getUrl('index');
+        // Redirigimos a la página de resumen pasando el ID del registro recién creado
+        return $this->getResource()::getUrl('resumen', ['uuid' => $this->record->grupo_uid]);
     }
 
     public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
