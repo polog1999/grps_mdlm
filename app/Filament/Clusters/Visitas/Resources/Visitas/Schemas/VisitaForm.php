@@ -409,7 +409,7 @@ class VisitaForm
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(fn() => Area::where('id_uo_estado', 1)
-                            // ->where('id_sede',auth()->user()->sede_id)
+                            ->where('id_sede',auth()->user()->sede_id)
                             ->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
@@ -421,11 +421,21 @@ class VisitaForm
                                     // Guardamos ese nombre en el campo 'area_nombre'
                                     $set('area', $nombreArea);
 
-                                    $defaultTrabajador = Trabajador::where('id_unidad_organica', $state)
-                                        ->where('id_estado', 1)
-                                        ->whereHas('cargo', function ($q) {
-                                            $q->where('orden', 1);
-                                        })->value('id_usuario');
+                                    // $defaultTrabajador = Trabajador::where('id_unidad_organica', $state)
+                                    //     ->where('id_estado', 1)
+                                    //     ->whereHas('cargo', function ($q) {
+                                    //         $q->where('orden', 1);
+                                    //     })->value('id_usuario');
+                                     $defaultTrabajador = Trabajador::where('id_estado', 1)
+                                        ->whereHas('cargo', function ($q)use($state) {
+                                            $q->where('id_unidad_organica', $state)
+                                            ->where('orden', 1);
+                                        })
+                                        ->orWhereHas('cargo2', function ($q)use($state) {
+                                            $q->where('id_unidad_organica', $state)
+                                            ->where('orden', 1);
+                                        })
+                                        ->value('id_usuario');
 
                                     // Seteamos el valor automáticamente al cambiar el área
                                     $set('trabajador_id_cita', $defaultTrabajador);
@@ -486,6 +496,7 @@ class VisitaForm
 
                                 return Trabajador::query()
                                     ->where('id_unidad_organica', $areaId)
+                                    ->orWhere('id_unidad_organica_dt', $areaId)
                                     ->where('id_estado', 1)
                                     // ->whereHas('cargo', function ($q) {
                                     //     $q->where('nombre', 'like', '%secretaria%')
@@ -527,6 +538,7 @@ class VisitaForm
 
                                 return Trabajador::query()
                                     ->where('id_unidad_organica', $areaId)
+                                    ->orWhere('id_unidad_organica_dt', $areaId)
                                     // ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
                                     ->where('id_estado', 1)
                                     // ->whereHas('cargo', function ($q) {
