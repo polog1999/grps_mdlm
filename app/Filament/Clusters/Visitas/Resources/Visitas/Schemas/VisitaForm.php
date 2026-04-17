@@ -416,6 +416,8 @@ class VisitaForm
                             ->required()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
+                                        $set('oficina_id', null);
+                                    $set('oficina', null);
                                     // Buscamos el nombre del área basada en el ID seleccionado
                                     $nombreArea = Area::where('id_unidad_organica', $state)->value('nombre');
                                     // Guardamos ese nombre en el campo 'area_nombre'
@@ -461,6 +463,7 @@ class VisitaForm
                                     }
                                 } else {
                                     $set('area', null);
+                                
                                     $set('trabajador_id_cita', null);
                                     $set('trabajador_cita', null);
                                     $set('trabajador_id_autoriza', null);
