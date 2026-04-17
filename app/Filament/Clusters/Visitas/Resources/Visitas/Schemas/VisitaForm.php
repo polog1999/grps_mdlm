@@ -321,7 +321,7 @@ class VisitaForm
                                         } else {
                                             $set('tipo_documento', null);
                                         }
-                                           // Al cambiar el número, reseteamos los campos de identidad
+                                        // Al cambiar el número, reseteamos los campos de identidad
                                         $set('numero_documento', null);
                                         $set('direccion', null);
                                         $set('nombres', null);
@@ -476,7 +476,9 @@ class VisitaForm
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(fn() => Area::where('id_uo_estado', 1)
-                                ->where('id_sede', auth()->user()->sede_id)
+                                ->when(!auth()->user()->hasRole('Administrador OTIE'), function ($query) {
+                                    $query->where('id_sede', auth()->user()->sede_id);
+                                })
                                 ->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
