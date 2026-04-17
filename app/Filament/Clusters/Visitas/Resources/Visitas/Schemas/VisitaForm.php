@@ -100,6 +100,7 @@ class VisitaForm
                                 TextInput::make('numero_documento')
                                     ->label(fn(Get $get) => $get('es_empresa') == 0 ? 'Número Documento' : 'RUC')
                                     ->required(fn($livewire) => $livewire->data['es_empresa'] == 0)
+
                                     ->maxLength(fn(Get $get) => $get('tipo_documento_id') == 1 && $get('es_empresa') == 0 ? 8 : ($get('es_empresa') == 1 ? 11 : 20))
                                     // 1. Solo permite números pero mantiene el input como tipo 'text' (sin flechas)
                                     ->mask(fn(Get $get) => $get('tipo_documento_id') == 1  && $get('es_empresa') == 0 ? '99999999' : null)
@@ -109,29 +110,34 @@ class VisitaForm
                                         ? '/^[0-9]{8}$/'
                                         : '/^[a-zA-Z0-9]{1,20}$/') // Regex flexible para otros documentos)
 
-
-                                    // 3. Tu validación de números iguales que pediste antes
-                                    ->rules(function (Get $get) {
-                                        if ($get('tipo_documento_id') == 1 && $get('es_empresa') == 0) {
-                                            return [
-                                                'regex:/^[0-9]{8}$/',            // Exactamente 8 números
-                                                'regex:/^(?!.*(\d)\1{7}).*$/',   // No repetidos
-                                                'not_in:00000000',               // No ceros
-                                            ];
-                                        }
-                                        return []; // Sin reglas especiales para otros tipos
-                                    })
-                                    ->validationMessages([
-                                        'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
-                                        'not_in' => 'El número de documento no puede ser todo ceros.',
-                                        'numeric' => 'Solo se permiten números.',
-                                    ])
-
                                     // 4. Mantiene el teclado numérico en celulares
                                     ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
                                     // ->live(onBlur: true)
-                                    ->live(debounce: 500)
-                                    ->afterStateUpdated(function ($state, callable $set) {
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, Get $get, callable $set) {
+                                        if (!$state) return;
+
+                                        // 1. Buscamos en todas las filas del repeater
+                                        // Usamos '../../' para subir desde el input -> fila -> repeater
+                                        $visitantes = $get('../../lista_visitantes') ?? [];
+
+                                        // 2. Contamos cuántas veces aparece este número
+                                        $duplicados = collect($visitantes)
+                                            ->where('numero_documento', $state)
+                                            ->count();
+
+                                        // 3. Si hay más de uno, lanzamos alerta y limpiamos el campo
+                                        if ($duplicados > 1) {
+                                            // Esto envía una notificación tipo "Modal" (más persistente)
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('¡ATENCIÓN: NÚMERO DE DOCUMENTO REPETIDO!')
+                                                ->body("El DNI/RUC $state ya existe en otra fila. No se puede registrar dos veces a la misma persona en la misma visita.")
+                                                ->persistent() // No se borra hasta que el usuario le de a la X
+                                                ->danger()
+                                                ->icon('heroicon-o-exclamation-triangle')
+                                                ->send();
+                                            $set('numero_documento', null); // Limpiamos para obligar a corregir
+                                        }
                                         // Al cambiar el número, reseteamos los campos de identidad
                                         $set('nombres', null);
                                         $set('apellido_paterno', null);
@@ -143,7 +149,29 @@ class VisitaForm
                                             self::botonBuscarPersona(),
                                             self::botonBuscarEmpresa()
                                         ]
-                                    ),
+                                    )
+                                    // 3. Tu validación de números iguales que pediste antes
+                                    ->rules(function (Get $get) {
+                                        return [
+
+                                            function (string $attribute, $value, $fail) use ($get) {
+                                                $items = $get('../../lista_visitantes') ?? [];
+                                                $documentos = collect($items)->pluck('numero_documento')->filter()->toArray();
+                                                if (count(array_keys($documentos, $value)) > 1) {
+                                                    $fail('Este número está duplicado.');
+                                                }
+                                            },
+                                            // Aquí agregamos las reglas de DNI solo si aplica
+                                            $get('tipo_documento_id') == 1 && $get('es_empresa') == 0 ? 'regex:/^[0-9]{8}$/' : null,
+                                            $get('tipo_documento_id') == 1 && $get('es_empresa') == 0 ? 'regex:/^(?!.*(\d)\1{7}).*$/' : null,
+                                            $get('tipo_documento_id') == 1 && $get('es_empresa') == 0 ? 'not_in:00000000' : null,
+                                        ];
+                                    })
+                                    ->validationMessages([
+                                        'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
+                                        'not_in' => 'El número de documento no puede ser todo ceros.',
+                                        'numeric' => 'Solo se permiten números.',
+                                    ]),
 
 
                                 Hidden::make('pide_fallo')->default(false)->live(),
@@ -200,6 +228,7 @@ class VisitaForm
                                     ->label(false),
                             ])
                             ->visible(fn($livewire) => $livewire->data['es_empresa'] != 1)
+                            ->collapsible()
                             ->columnSpanFull()->columns(2),
 
 
@@ -292,6 +321,13 @@ class VisitaForm
                                         } else {
                                             $set('tipo_documento', null);
                                         }
+                                           // Al cambiar el número, reseteamos los campos de identidad
+                                        $set('numero_documento', null);
+                                        $set('direccion', null);
+                                        $set('nombres', null);
+                                        $set('apellido_paterno', null);
+                                        $set('apellido_materno', null);
+                                        $set('foto_url', null);
                                     }),
                                 Hidden::make('tipo_documento'),
                                 TextInput::make('numero_documento')
@@ -313,16 +349,7 @@ class VisitaForm
 
 
                                     // 3. Tu validación de números iguales que pediste antes
-                                    ->rules(function (Get $get) {
-                                        if ($get('tipo_documento_id') == 1) {
-                                            return [
-                                                'regex:/^[0-9]{8}$/',            // Exactamente 8 números
-                                                'regex:/^(?!.*(\d)\1{7}).*$/',   // No repetidos
-                                                'not_in:00000000',               // No ceros
-                                            ];
-                                        }
-                                        return []; // Sin reglas especiales para otros tipos
-                                    })
+
                                     ->validationMessages([
                                         'regex' => 'El número de documento no puede consistir en dígitos todos iguales.',
                                         'not_in' => 'El número de documento no puede ser todo ceros.',
@@ -332,13 +359,53 @@ class VisitaForm
                                     // 4. Mantiene el teclado numérico en celulares
                                     ->inputMode(fn(Get $get) => $get('tipo_documento_id') == 1 ? 'numeric' : 'text')
                                     // ->live(onBlur: true)
-                                    ->live(debounce: 500)
-                                    ->afterStateUpdated(function ($state, callable $set) {
-                                        // Al cambiar el número, reseteamos los campos de identidad
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, Get $get, callable $set) {
+                                        if (!$state) return;
+
+                                        // 1. Buscamos en todas las filas del repeater
+                                        // Usamos '../../' para subir desde el input -> fila -> repeater
+                                        $visitantes = $get('../../lista_trabajadores') ?? [];
+
+                                        // 2. Contamos cuántas veces aparece este número
+                                        $duplicados = collect($visitantes)
+                                            ->where('numero_documento', $state)
+                                            ->count();
+
+                                        // 3. Si hay más de uno, lanzamos alerta y limpiamos el campo
+                                        if ($duplicados > 1) {
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('¡ATENCIÓN: NÚMERO DE DOCUMENTO REPETIDO!')
+                                                ->body("El DNI/RUC $state ya existe en otra fila. No se puede registrar dos veces a la misma persona en la misma visita.")
+                                                ->persistent() // No se borra hasta que el usuario le de a la X
+                                                ->danger()
+                                                ->icon('heroicon-o-exclamation-triangle')
+                                                ->send();
+
+                                            $set('numero_documento', null); // Limpiamos para obligar a corregir
+                                        }
                                         $set('nombres', null);
                                         $set('apellido_paterno', null);
                                         $set('apellido_materno', null);
                                         $set('foto_url', null);
+                                    })
+                                    ->rules(function (Get $get) {
+                                        return [
+                                            function (string $attribute, $value, $fail) use ($get) {
+                                                $items = $get('../../lista_visitantes') ?? [];
+                                                $documentos = collect($items)->pluck('numero_documento')->filter()->toArray();
+                                                if (count(array_keys($documentos, $value)) > 1) {
+                                                    $fail('Este número está duplicado.');
+                                                }
+                                            },
+
+                                            // Aquí agregamos las reglas de DNI solo si aplica
+                                            $get('tipo_documento_id') == 1 ? 'regex:/^[0-9]{8}$/' : null,
+                                            $get('tipo_documento_id') == 1 ? 'regex:/^(?!.*(\d)\1{7}).*$/' : null,
+                                            $get('tipo_documento_id') == 1 ? 'not_in:00000000' : null,
+
+
+                                        ];
                                     })
                                     ->suffixAction(
                                         self::botonBuscarPersona()
@@ -416,7 +483,7 @@ class VisitaForm
                             ->required()
                             ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
-                                        $set('oficina_id', null);
+                                    $set('oficina_id', null);
                                     $set('oficina', null);
                                     // Buscamos el nombre del área basada en el ID seleccionado
                                     $nombreArea = Area::where('id_unidad_organica', $state)->value('nombre');
@@ -463,7 +530,7 @@ class VisitaForm
                                     }
                                 } else {
                                     $set('area', null);
-                                
+
                                     $set('trabajador_id_cita', null);
                                     $set('trabajador_cita', null);
                                     $set('trabajador_id_autoriza', null);
@@ -488,7 +555,7 @@ class VisitaForm
                                     });
                             })
                             ->searchable()
-                            ->required(fn(Get $get) => Oficina::where('id_unidad_organica', $get('area_id'))->exists())
+                            // ->required(fn(Get $get) => Oficina::where('id_unidad_organica', $get('area_id'))->exists())
                             ->hidden(fn(Get $get) => !(Oficina::where('id_unidad_organica', $get('area_id'))->exists()))
                             ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
