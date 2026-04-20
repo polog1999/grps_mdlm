@@ -475,11 +475,24 @@ class VisitaForm
                         //     ->dehydrated(),
                         Select::make('area_id')
                             ->label('Área de Destino')
-                            ->options(fn() => Area::where('id_uo_estado', 1)
-                                ->when(!auth()->user()->hasRole('Administrador OTIE'), function ($query) {
-                                    $query->where('id_sede', auth()->user()->sede_id);
-                                })
-                                ->orderBy('nombre', 'asc')->pluck('nombre', 'id_unidad_organica'))
+                            ->options(
+                                fn() => Area::where('id_uo_estado', 1)
+                                    ->when(!auth()->user()->hasRole('Administrador OTIE'), function ($query) {
+                                        $query->where('id_sede', auth()->user()->sede_id)
+                                            ->orWhere('id_unidad_organica', '1');
+                                    })
+                                    ->orderBy('nombre', 'asc')
+                                    ->get() // Traemos los modelos para poder manipular el nombre
+                                    ->mapWithKeys(function ($area) {
+                                        // Si tienes una columna 'abreviatura' o similar, la concatenamos
+                                        // Ejemplo: "GERENCIA DE SEGURIDAD CIUDADANA (GSC)"
+                                        $abreviatura = !empty($area->abreviatura) ? " ({$area->abreviatura})" : "";
+                                        $label = "{$area->nombre}{$abreviatura}";
+
+                                        return [$area->id_unidad_organica => $label];
+                                    })
+                            )
+
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required()
@@ -581,22 +594,12 @@ class VisitaForm
                                 if (!$areaId) return [];
 
                                 return Trabajador::query()
-                                ->where(function($q)use($areaId){
-                                    $q->where('id_unidad_organica', $areaId)
-                                    ->orWhere('id_unidad_organica_dt', $areaId)
-                                    ->orWhere('id_unidad_organica_dt2', $areaId);
-                                })->where('id_estado', 1)
-                                   
-                                    
-                                    // ->whereHas('cargo', function ($q) {
-                                    //     $q->where('nombre', 'like', '%secretaria%')
-                                    //         ->orWhere('nombre', 'like', '%SECRETARIA%')
-                                    //         ->orWhere('nombre', 'like', '%jefe%')
-                                    //         ->orWhere('nombre', 'like', '%JEFE%')
-                                    //         ->orWhere('nombre', 'like', '%GERENTE%')
-                                    //         ->orWhere('nombre', 'like', '%gerente%');
-                                    // })
-                                    // ->with('persona') // Eager loading para evitar consultas lentas
+                                    ->where(function ($q) use ($areaId) {
+                                        $q->where('id_unidad_organica', $areaId)
+                                            ->orWhere('id_unidad_organica_dt', $areaId)
+                                            ->orWhere('id_unidad_organica_dt2', $areaId);
+                                    })->where('id_estado', 1)
+
                                     ->whereNotIn('id_contratacion', [3, 8])
                                     ->get()
                                     ->mapWithKeys(function ($trabajador) {
@@ -627,11 +630,11 @@ class VisitaForm
                                 if (!$areaId) return [];
 
                                 return Trabajador::query()
-                                    ->where(function($q)use($areaId){
-                                    $q->where('id_unidad_organica', $areaId)
-                                    ->orWhere('id_unidad_organica_dt', $areaId)
-                                    ->orWhere('id_unidad_organica_dt2', $areaId);
-                                })->where('id_estado', 1)
+                                    ->where(function ($q) use ($areaId) {
+                                        $q->where('id_unidad_organica', $areaId)
+                                            ->orWhere('id_unidad_organica_dt', $areaId)
+                                            ->orWhere('id_unidad_organica_dt2', $areaId);
+                                    })->where('id_estado', 1)
                                     // ->whereHas('cargo', function ($q) {
                                     //     $q->where('nombre', 'like', '%secretaria%')
                                     //         ->orWhere('nombre', 'like', '%SECRETARIA%')
