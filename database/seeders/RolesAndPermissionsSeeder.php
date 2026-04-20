@@ -153,6 +153,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit::visitas_motivo',         // Ver detalle o información específica de una visita
             'create::visitas_motivo',            // Registrar/Crear una nueva visita
             'audit::visitas_motivo',
+            
+            'view::visitas_oficina',              // Ver listado de visitas
+        
 
         ];
 
