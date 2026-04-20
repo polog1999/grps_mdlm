@@ -20,6 +20,9 @@ class Trabajador extends Model
     public function cargo2(){
         return $this->belongsTo(Cargo::class,'id_cargo_dt','id_cargo');
     }
+    public function cargo3(){
+        return $this->belongsTo(Cargo::class,'id_cargo_dt2','id_cargo');
+    }
     public function regimen(){
         return $this->belongsTo(Regimen::class,'id_contratacion','id_contratacion');
     }
