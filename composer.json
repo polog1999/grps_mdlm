@@ -33,6 +33,7 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
+        "league/flysystem-sftp-v3": "3.0",
         "maatwebsite/excel": "^3.1",
         "marcogermani87/filament-captcha": "^2.2",
         "ncjoes/office-converter": "^1.0",

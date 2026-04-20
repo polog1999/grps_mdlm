@@ -84,7 +84,18 @@ return [
             'root' => env('PATH_INFORMES_ASISTENCIA_TELETRABAJO'),
             'visibility' => 'public',
             'throw' => false,
-        ]
+        ],
+
+        'sftp_gestrad_qr' => [
+            'driver' => 'sftp',
+            'host' => env('QR_SERVER_GESTRAD_TEMP'),
+            'username' => env('QR_SERVER_GESTRAD_USER'),
+            'password' => env('QR_SERVER_GESTRAD_PASS'),
+            'port' => (int) env('QR_SERVER_GESTRAD_PORT', 22),
+            'root' => env('QR_SERVER_GESTRAD_ROOT', '/'),
+            'timeout' => 30,
+            'verify' => false,
+        ],
     ],
 
     /*
