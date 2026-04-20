@@ -289,12 +289,27 @@ class CertificadoLicenciaFuncionamientosTable
                     ->indicator('Estado de Licencia')
                     ->placeholder('Todos los estados'),
 
-                SelectFilter::make('giro')
-                    ->label('Giro / Actividad')
-                    ->relationship('giros.giro', 'gir_descripcion') // Filament entra automáticamente: Licencia -> LicenciaGiro -> Giro
-                    ->searchable()
-                    ->preload()
-                    ->indicator('Giro'),
+                Filter::make('giro_search')
+                    ->form([
+                        TextInput::make('giro_busqueda')
+                            ->label('Giro / Actividad')
+                            ->placeholder('Ej: Restaurante...'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['giro_busqueda'],
+                            fn(Builder $query, $search): Builder => $query->whereHas('giros.giro', function (Builder $subQuery) use ($search) {
+                                $subQuery->where('gir_descripcion', 'ILIKE', "%{$search}%");
+                            })
+                        );
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (!$data['giro_busqueda']) {
+                            return null;
+                        }
+
+                        return 'Giro: ' . $data['giro_busqueda'];
+                    }),
                 Filter::make('giro_especifico_search')
                     ->form([
                         TextInput::make('nombre_especifico')
