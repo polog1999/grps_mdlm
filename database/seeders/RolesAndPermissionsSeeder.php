@@ -155,7 +155,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'audit::visitas_motivo',
             
             'view::visitas_oficina',              // Ver listado de visitas
-        
 
         ];
 
