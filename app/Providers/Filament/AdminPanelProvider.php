@@ -7,7 +7,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
+// use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -24,6 +24,9 @@ use Filament\Enums\ThemeMode;
 use App\Filament\Pages\Register;
 use Filament\Support\Enums\Width;
 use App\Filament\Pages\Auth\RequestPasswordReset;
+use App\Filament\Pages\Dashboard;
+use Illuminate\Support\Facades\Auth;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -58,7 +61,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Dashboard::class,
+                Dashboard::class, // Al poner esto aquí, Filament usa tu lógica de canAccess
             ])
             ->discoverClusters(in: app_path('Filament/Clusters'), for: 'App\\Filament\\Clusters')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
@@ -82,6 +85,7 @@ class AdminPanelProvider extends PanelProvider
             ])
            ->databaseNotifications() // <--- ESTO ES VITAL
         ->databaseNotificationsPolling('2s')
+
         ; // Actualiza cada 3 segundos para ver el % real
 
     }
