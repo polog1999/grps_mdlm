@@ -514,6 +514,10 @@ class VisitaForm
                                                 ->orWhereHas('cargo2', function ($q) use ($state) {
                                                     $q->where('id_unidad_organica', $state)
                                                         ->where('orden', 1);
+                                                })
+                                                ->orWhereHas('cargo3', function ($q) use ($state) {
+                                                    $q->where('id_unidad_organica', $state)
+                                                        ->where('orden', 1);
                                                 });
                                         })
                                         ->value('id_usuario');
@@ -577,9 +581,13 @@ class VisitaForm
                                 if (!$areaId) return [];
 
                                 return Trabajador::query()
-                                    ->where('id_unidad_organica', $areaId)
+                                ->where(function($q)use($areaId){
+                                    $q->where('id_unidad_organica', $areaId)
                                     ->orWhere('id_unidad_organica_dt', $areaId)
-                                    ->where('id_estado', 1)
+                                    ->orWhere('id_unidad_organica_dt2', $areaId);
+                                })->where('id_estado', 1)
+                                   
+                                    
                                     // ->whereHas('cargo', function ($q) {
                                     //     $q->where('nombre', 'like', '%secretaria%')
                                     //         ->orWhere('nombre', 'like', '%SECRETARIA%')
@@ -619,10 +627,11 @@ class VisitaForm
                                 if (!$areaId) return [];
 
                                 return Trabajador::query()
-                                    ->where('id_unidad_organica', $areaId)
+                                    ->where(function($q)use($areaId){
+                                    $q->where('id_unidad_organica', $areaId)
                                     ->orWhere('id_unidad_organica_dt', $areaId)
-                                    // ->whereNotIn('regimen_id', ['5', '6', '7', '14'])
-                                    ->where('id_estado', 1)
+                                    ->orWhere('id_unidad_organica_dt2', $areaId);
+                                })->where('id_estado', 1)
                                     // ->whereHas('cargo', function ($q) {
                                     //     $q->where('nombre', 'like', '%secretaria%')
                                     //         ->orWhere('nombre', 'like', '%SECRETARIA%')
