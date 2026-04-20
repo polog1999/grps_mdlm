@@ -31,10 +31,9 @@ public function personas()
         return $this->belongsTo(Trabajador::class, 'trabajador_id_autoriza');
     }
 
-    public function area()
-    {
-        return $this->belongsTo(Area::class);
-    }
+  public function area(){
+      return $this->belongsTo(Area::class,'area_id','id_unidad_organica');
+   }
     public function userCreo()
     {
         return $this->belongsTo(User::class, 'user_id_creo');
