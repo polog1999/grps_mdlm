@@ -77,4 +77,5 @@ public static function getEloquentQuery(): Builder
 
     return $query;
 }
+
 }
