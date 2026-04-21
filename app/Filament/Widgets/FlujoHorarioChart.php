@@ -10,14 +10,14 @@ use Livewire\Attributes\On;
 class FlujoHorarioChart extends ChartWidget
 {
     // 1. Debe ser static para que funcione el autorefresco
-    protected  ?string $pollingInterval = '5s'; 
+    protected  ?string $pollingInterval = '5s';
     protected ?string $heading = 'Flujo de Visitas por Hora (Ingresos vs Salidas)';
-    
+
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
 
-    #[On('updateDashboardCharts')] 
+    #[On('updateDashboardCharts')]
     public function updateFilters(array $data): void
     {
         $this->desde = $data['desde'] ?? null;
@@ -25,7 +25,7 @@ class FlujoHorarioChart extends ChartWidget
         $this->area_id = $data['area'] ?? null;
 
         // 2. IMPORTANTE: Sin esto el gráfico no se redibuja al filtrar
-        $this->dispatch('$refresh'); 
+        $this->dispatch('$refresh');
     }
 
     protected function getData(): array
@@ -91,5 +91,9 @@ class FlujoHorarioChart extends ChartWidget
     protected function getType(): string
     {
         return 'line';
+    }
+    public static function canView(): bool
+    {
+        return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
     }
 }

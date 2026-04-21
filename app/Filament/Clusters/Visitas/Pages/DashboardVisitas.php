@@ -17,18 +17,19 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 
 use BackedEnum; // IMPORTANTE: Falta esta importación para el tipado
+use UnitEnum;
+
 class DashboardVisitas extends Page
 {
 
     protected static ?string $cluster = VisitasCluster::class;
 
-    // SOLUCIÓN AL ERROR: Usamos la unión de tipos exacta que pide la clase Page
 
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-presentation-chart-bar';
 
     protected static ?string $navigationLabel = 'Tablero de Control';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     // Añade esto debajo del $navigationSort
     protected static bool $shouldRegisterNavigation = true;
@@ -43,6 +44,32 @@ class DashboardVisitas extends Page
     public ?string $area_id = null;
 
 
+public static function canAccess(array $parameters = []): bool
+{
+    return auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor']);
+}
+
+/**
+ * NAVEGACIÓN: Muestra el botón en el Cluster pero lo oculta en el escritorio.
+ */
+public static function shouldRegisterNavigation(): bool
+{
+    // 1. Si no tiene el rol, no se muestra nunca
+    if (!auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor'])) {
+        return false;
+    }
+
+    // 2. Tu lógica de URL que ya te funcionó:
+    $url = request()->url();
+    
+    // Si la URL es la raíz del admin, lo ocultamos para que no ensucie el escritorio
+    if (preg_match('/\/admin\/?$/', $url)) {
+        return false;
+    }
+
+    // En cualquier otro caso (cuando ya estás en /visitas), se muestra el botón
+    return true;
+}
     protected function getHeaderActions(): array
     {
         return [
@@ -109,4 +136,5 @@ class DashboardVisitas extends Page
     {
         return 2; // Los 2 gráficos abajo, uno al lado del otro
     }
+
 }

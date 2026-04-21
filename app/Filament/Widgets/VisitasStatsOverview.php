@@ -2,7 +2,7 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Visita;
+
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
@@ -67,5 +67,9 @@ class VisitasStatsOverview extends BaseWidget
                 ->color('primary'),
 
         ];
+    }
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole('Administrador OTIE');
     }
 }

@@ -11,11 +11,11 @@ use Livewire\Attributes\On;
 class UltimasVisitasTable extends BaseWidget
 {
     // Cambiado a protected static para asegurar que Filament lo tome
-    protected static ?string $pollingInterval = '5s'; 
+    protected static ?string $pollingInterval = '5s';
     // Esto asegura que cada vez que Livewire haga polling, se limpie el estado de la tabla
-// protected $listeners = [
-//     '$refresh' => '$refresh',
-// ];
+    // protected $listeners = [
+    //     '$refresh' => '$refresh',
+    // ];
     protected static ?int $sort = 3;
     protected int | array | string $columnSpan = 'full';
 
@@ -31,7 +31,7 @@ class UltimasVisitasTable extends BaseWidget
         $this->area_id = $data['area'] ?? null;
 
         // IMPORTANTE: Resetear la tabla para que ejecute el query de nuevo
-        $this->resetTable(); 
+        $this->resetTable();
     }
 
     public function table(Table $table): Table
@@ -49,19 +49,23 @@ class UltimasVisitasTable extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('nombres_completos')
                     ->label('Visitante'),
-                
+
                 Tables\Columns\TextColumn::make('area')
                     ->label('Área destino'),
-                
+
                 Tables\Columns\TextColumn::make('hora_ingreso')
                     ->label('Ingreso')
                     ->time('H:i A'),
-                
+
                 Tables\Columns\IconColumn::make('hora_salida')
                     ->label('¿Salió?')
                     ->boolean()
-                    ->getStateUsing(fn ($record) => $record->hora_salida !== null),
+                    ->getStateUsing(fn($record) => $record->hora_salida !== null),
             ])
             ->paginated(false);;
+    }
+    public static function canView(): bool
+    {
+        return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
     }
 }

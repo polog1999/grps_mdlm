@@ -68,4 +68,8 @@ class VisitantesTipoChart extends ChartWidget
 }
 
     protected function getType(): string { return 'doughnut'; }
+         public static function canView(): bool
+{
+   return auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor']);
+}
 }

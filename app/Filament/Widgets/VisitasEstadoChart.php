@@ -54,4 +54,8 @@ class VisitasEstadoChart extends ChartWidget
     {
         return 'bar';
     }
+    public static function canView(): bool
+    {
+        return auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor']);
+    }
 }

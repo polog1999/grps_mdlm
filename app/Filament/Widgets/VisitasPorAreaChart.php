@@ -22,7 +22,7 @@ class VisitasPorAreaChart extends ChartWidget
      * Escuchamos el evento. 
      * En Livewire 3 se usa el atributo #[On]
      */
-    #[On('updateDashboardCharts')] 
+    #[On('updateDashboardCharts')]
     public function updateFilters(array $data): void
     {
         $this->desde = $data['desde'] ?? null;
@@ -45,7 +45,7 @@ class VisitasPorAreaChart extends ChartWidget
             ->groupBy('area_id')
             ->orderByDesc('total')
             ->limit(10)
-            ->with('area') 
+            ->with('area')
             ->get();
 
         return [
@@ -79,5 +79,9 @@ class VisitasPorAreaChart extends ChartWidget
                 ],
             ],
         ];
+    }
+    public static function canView(): bool
+    {
+        return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
     }
 }
