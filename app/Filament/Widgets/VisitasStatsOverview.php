@@ -15,6 +15,8 @@ class VisitasStatsOverview extends BaseWidget
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+      public ?string $sede_id = null;
+
 
     // 2. Este es el "oído" que escucha a la página
     #[On('updateDashboardCharts')]
@@ -23,6 +25,7 @@ class VisitasStatsOverview extends BaseWidget
         $this->desde = $data['desde'];
         $this->hasta = $data['hasta'];
         $this->area_id = $data['area'] ?? null;
+        $this->sede_id = $data['sede'] ?? null;
 
         // Esto fuerza al widget a volver a ejecutar la consulta SQL
     }
@@ -39,6 +42,9 @@ class VisitasStatsOverview extends BaseWidget
         }
         if ($this->area_id) {
             $query->where('area_id', $this->area_id);
+        }
+        if ($this->sede_id) {
+            $query->where('sede_id', $this->sede_id);
         }
         // Calcula el promedio de minutos entre ingreso y salida
         // En PostgreSQL restamos las fechas y extraemos el total de segundos para convertir a minutos
@@ -70,6 +76,6 @@ class VisitasStatsOverview extends BaseWidget
     }
     public static function canView(): bool
     {
-        return auth()->user()->hasRole('Administrador OTIE');
+       return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
     }
 }

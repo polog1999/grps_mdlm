@@ -16,6 +16,7 @@ class FlujoHorarioChart extends ChartWidget
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+    public ?string $sede_id = null;
 
     #[On('updateDashboardCharts')]
     public function updateFilters(array $data): void
@@ -23,6 +24,7 @@ class FlujoHorarioChart extends ChartWidget
         $this->desde = $data['desde'] ?? null;
         $this->hasta = $data['hasta'] ?? null;
         $this->area_id = $data['area'] ?? null;
+        $this->sede_id = $data['sede'] ?? null;
 
         // 2. IMPORTANTE: Sin esto el gráfico no se redibuja al filtrar
         $this->dispatch('$refresh');
@@ -36,6 +38,7 @@ class FlujoHorarioChart extends ChartWidget
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+            ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
             ->groupBy('hora')
             ->get()
             ->pluck('total', 'hora')
@@ -47,6 +50,7 @@ class FlujoHorarioChart extends ChartWidget
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+            ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
             ->whereNotNull('hora_salida')
             ->groupBy('hora')
             ->get()

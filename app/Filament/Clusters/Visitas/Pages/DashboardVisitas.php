@@ -42,34 +42,43 @@ class DashboardVisitas extends Page
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+    public ?string $sede_id = null;
 
+    public function mount(): void
+    {
+        $user = auth()->user();
 
-public static function canAccess(array $parameters = []): bool
-{
-    return auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor']);
-}
-
-/**
- * NAVEGACIÓN: Muestra el botón en el Cluster pero lo oculta en el escritorio.
- */
-public static function shouldRegisterNavigation(): bool
-{
-    // 1. Si no tiene el rol, no se muestra nunca
-    if (!auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor'])) {
-        return false;
+        // Si el usuario es Supervisor y tiene una sede asignada (ajusta el nombre del campo sede_id si es diferente)
+        if ($user->hasRole('Control Interno - Supervisor') && $user->sede_id) {
+            $this->sede_id = (string) $user->sede_id;
+        }
+    }
+    public static function canAccess(array $parameters = []): bool
+    {
+        return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
     }
 
-    // 2. Tu lógica de URL que ya te funcionó:
-    $url = request()->url();
-    
-    // Si la URL es la raíz del admin, lo ocultamos para que no ensucie el escritorio
-    if (preg_match('/\/admin\/?$/', $url)) {
-        return false;
-    }
+    /**
+     * NAVEGACIÓN: Muestra el botón en el Cluster pero lo oculta en el escritorio.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        // 1. Si no tiene el rol, no se muestra nunca
+        if (!auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor'])) {
+            return false;
+        }
 
-    // En cualquier otro caso (cuando ya estás en /visitas), se muestra el botón
-    return true;
-}
+        // 2. Tu lógica de URL que ya te funcionó:
+        $url = request()->url();
+
+        // Si la URL es la raíz del admin, lo ocultamos para que no ensucie el escritorio
+        if (preg_match('/\/admin\/?$/', $url)) {
+            return false;
+        }
+
+        // En cualquier otro caso (cuando ya estás en /visitas), se muestra el botón
+        return true;
+    }
     protected function getHeaderActions(): array
     {
         return [
@@ -80,32 +89,47 @@ public static function shouldRegisterNavigation(): bool
                     'desde' => $this->desde,
                     'hasta' => $this->hasta,
                     'area_id' => $this->area_id,
-              
+                    'sede_id' => $this->sede_id,
+
                 ])
                 ->form([
                     DatePicker::make('desde'),
                     DatePicker::make('hasta'),
                     Select::make('area_id')
                         ->label('Filtrar por Área')
-                        ->options(\App\Models\Area::all()->pluck('nombre', 'id_unidad_organica'))
+                        ->options(\App\Models\Area::query()->when($this->sede_id, fn($q) => $q->where('id_sede', $this->sede_id)->orWhere('id_unidad_organica', '1'))->pluck('nombre', 'id_unidad_organica'))
                         ->searchable()
                         ->live() // Añade esto para que Livewire rastree mejor el cambio
                         ->placeholder('Seleccione un área'),
-   
+                    Select::make('sede_id')
+                        ->label('Filtrar por Sede')
+                        ->options(\App\Models\Sede::all()->pluck('nombre', 'id_sede'))
+                        ->searchable()
+                        ->live() // Añade esto para que Livewire rastree mejor el cambio
+                        // --- BLOQUEO PARA SUPERVISOR ---
+                        // ->visible(fn () => !auth()->user()->hasRole('Control Interno - Supervisor'))
+                        ->disabled(fn() => auth()->user()->hasRole('Control Interno - Supervisor'))
+                        ->dehydrated() // Asegura que el valor se envíe aunque esté deshabilitado
+                        // -------------------------------
+                        ->placeholder('Seleccione una sede'),
+
+
                 ])
                 ->action(function (array $data) {
                     $this->desde = $data['desde'];
                     $this->hasta = $data['hasta'];
                     $this->area_id = $data['area_id'];
+                    $this->sede_id = $data['sede_id'];
 
                     // Esto refresca los widgets automáticamente
                     // Dentro del action() en DashboardVisitas.php
-                  $this->dispatch('updateDashboardCharts', [
-    'desde' => $this->desde,
-    'hasta' => $this->hasta,
-    'area' => $this->area_id, // Cambiado a 'area' para que coincida con el widget
-   
-]);
+                    $this->dispatch('updateDashboardCharts', [
+                        'desde' => $this->desde,
+                        'hasta' => $this->hasta,
+                        'area' => $this->area_id, // Cambiado a 'area' para que coincida con el widget
+                        'sede' => $this->sede_id,
+
+                    ]);
                 })
         ];
     }
@@ -113,18 +137,31 @@ public static function shouldRegisterNavigation(): bool
     protected function getHeaderWidgets(): array
     {
         return [
-            VisitasStatsOverview::class,
+            // Pasamos el estado actual de los filtros al widget
+            VisitasStatsOverview::make([
+                'desde' => $this->desde,
+                'hasta' => $this->hasta,
+                'area_id' => $this->area_id,
+                'sede_id' => $this->sede_id,
+            ]),
         ];
     }
 
     protected function getFooterWidgets(): array
     {
+        // Hacemos lo mismo para todos los widgets del footer
+        $filtros = [
+            'desde' => $this->desde,
+            'hasta' => $this->hasta,
+            'area_id' => $this->area_id,
+            'sede_id' => $this->sede_id,
+        ];
         return [
-            WidgetsVisitasPorAreaChart::class,
-            FlujoHorarioChart::class,
-            VisitasEstadoChart::class,
-            VisitantesTipoChart::class,
-            UltimasVisitasTable::class
+            WidgetsVisitasPorAreaChart::make($filtros),
+            FlujoHorarioChart::make($filtros),
+            VisitasEstadoChart::make($filtros),
+            VisitantesTipoChart::make($filtros),
+            UltimasVisitasTable::make($filtros),
         ];
     }
     public function getHeaderWidgetsColumns(): int | array
@@ -136,5 +173,4 @@ public static function shouldRegisterNavigation(): bool
     {
         return 2; // Los 2 gráficos abajo, uno al lado del otro
     }
-
 }

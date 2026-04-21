@@ -15,6 +15,7 @@ class VisitantesTipoChart extends ChartWidget
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+    public ?string $sede_id = null;
 
     #[On('updateDashboardCharts')]
     public function updateFilters(array $data): void
@@ -22,6 +23,7 @@ class VisitantesTipoChart extends ChartWidget
         $this->desde = $data['desde'] ?? null;
         $this->hasta = $data['hasta'] ?? null;
         $this->area_id = $data['area'] ?? null;
+         $this->sede_id = $data['sede'] ?? null;
 
         $this->dispatch('$refresh');
     }
@@ -33,6 +35,7 @@ class VisitantesTipoChart extends ChartWidget
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+            ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
             ->select('numero_documento')
             ->distinct()
             ->pluck('numero_documento')
@@ -49,6 +52,7 @@ class VisitantesTipoChart extends ChartWidget
         $recurrentes = VisitaHistorico::query()
             ->whereIn('numero_documento', $visitantesDelPeriodo)
            ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+           ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
             ->select('numero_documento')
             ->groupBy('numero_documento')
             ->having(DB::raw('count(*)'), '>', 1)
