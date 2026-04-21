@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Visita;
+use App\Models\VisitaHistorico;
 use Filament\Widgets\ChartWidget;
 use Livewire\Attributes\On;
 
@@ -13,6 +14,8 @@ class VisitasEstadoChart extends ChartWidget
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+    public ?string $sede_id = null;
+
 
     #[On('updateDashboardCharts')]
     public function updateFilters(array $data): void
@@ -20,18 +23,20 @@ class VisitasEstadoChart extends ChartWidget
         $this->desde = $data['desde'] ?? null;
         $this->hasta = $data['hasta'] ?? null;
         $this->area_id = $data['area'] ?? null;
+        $this->sede_id = $data['sede'] ?? null;
         $this->dispatch('$refresh');
     }
 
     protected function getData(): array
     {
-        $query = Visita::query()
-            ->when($this->desde, fn($q) => $q->whereDate('created_at', '>=', $this->desde))
-            ->when($this->hasta, fn($q) => $q->whereDate('created_at', '<=', $this->hasta))
-            ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id));
+        $query = VisitaHistorico::query()
+            ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
+            ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
+            ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+            ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id));
 
         $ingresos = (clone $query)->count();
-        $salidas = (clone $query)->whereNotNull('fecha_salida')->count();
+        $salidas = (clone $query)->whereNotNull('hora_salida')->count();
 
         return [
             'datasets' => [
@@ -56,6 +61,6 @@ class VisitasEstadoChart extends ChartWidget
     }
     public static function canView(): bool
     {
-        return auth()->user()->hasAnyRole(['Administrador OTIE','Control Interno - Supervisor']);
+        return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
     }
 }

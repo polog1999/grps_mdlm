@@ -22,6 +22,7 @@ class UltimasVisitasTable extends BaseWidget
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+    public ?string $sede_id = null;
 
     #[On('updateDashboardCharts')]
     public function updateFilters(array $data): void
@@ -29,6 +30,7 @@ class UltimasVisitasTable extends BaseWidget
         $this->desde = $data['desde'] ?? null;
         $this->hasta = $data['hasta'] ?? null;
         $this->area_id = $data['area'] ?? null;
+        $this->sede_id = $data['sede'] ?? null;
 
         // IMPORTANTE: Resetear la tabla para que ejecute el query de nuevo
         $this->resetTable();
@@ -42,6 +44,7 @@ class UltimasVisitasTable extends BaseWidget
                     ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
                     ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
                     ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+                    ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
                     ->orderBy('fecha', 'desc')
                     ->orderBy('hora_ingreso', 'desc')
                     ->limit(5)
@@ -50,6 +53,8 @@ class UltimasVisitasTable extends BaseWidget
                 Tables\Columns\TextColumn::make('nombres_completos')
                     ->label('Visitante'),
 
+                Tables\Columns\TextColumn::make('sede.nombre')
+                    ->label('Área destino'),
                 Tables\Columns\TextColumn::make('area')
                     ->label('Área destino'),
 

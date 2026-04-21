@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Visita;
+use App\Models\VisitaHistorico;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On; // IMPORTANTE: Para que funcione el atributo #[On]
@@ -17,6 +18,8 @@ class VisitasPorAreaChart extends ChartWidget
     public ?string $desde = null;
     public ?string $hasta = null;
     public ?string $area_id = null;
+    public ?string $sede_id = null;
+
 
     /**
      * Escuchamos el evento. 
@@ -28,6 +31,7 @@ class VisitasPorAreaChart extends ChartWidget
         $this->desde = $data['desde'] ?? null;
         $this->hasta = $data['hasta'] ?? null;
         $this->area_id = $data['area'] ?? null;
+        $this->sede_id = $data['sede'] ?? null;
 
         // ESTO ES VITAL: Avisa al componente de Chart.js que debe redibujarse
         // $this->dispatch('$refresh'); 
@@ -36,16 +40,17 @@ class VisitasPorAreaChart extends ChartWidget
     protected function getData(): array
     {
         // Consulta para obtener el Top 10 de áreas con más visitas
-        $data = Visita::query()
+        $data = VisitaHistorico::query()
             ->select('area_id', DB::raw('count(*) as total')) // Usa id_unidad_organica
-            ->when($this->desde, fn($q) => $q->whereDate('created_at', '>=', $this->desde))
-            ->when($this->hasta, fn($q) => $q->whereDate('created_at', '<=', $this->hasta))
+            ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
+            ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             // Si el usuario filtra por un área específica, el gráfico solo mostrará esa (o el ranking general si es null)
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+              ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
             ->groupBy('area_id')
             ->orderByDesc('total')
             ->limit(10)
-            ->with('area')
+            // ->with('area1')
             ->get();
 
         return [
@@ -57,7 +62,7 @@ class VisitasPorAreaChart extends ChartWidget
                     'borderRadius' => 4,
                 ],
             ],
-            'labels' => $data->map(fn($item) => $item->area->nombre ?? 'Sin Área')->toArray(),
+            'labels' => $data->map(fn($item) => $item->area1->nombre ?? 'Sin Área')->toArray(),
         ];
     }
 
