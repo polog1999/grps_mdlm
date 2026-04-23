@@ -10,6 +10,7 @@ use App\Filament\Widgets\UltimasVisitasTable;
 use App\Filament\Widgets\VisitantesTipoChart;
 use App\Filament\Widgets\VisitasEstadoChart;
 use App\Filament\Widgets\VisitasPorAreaChart as WidgetsVisitasPorAreaChart;
+use App\Filament\Widgets\VisitasPorFechaChart;
 use App\Filament\Widgets\VisitasStatsOverview;
 
 use Filament\Pages\Page;
@@ -183,10 +184,12 @@ class DashboardVisitas extends Page
         ];
         return [
             WidgetsVisitasPorAreaChart::make($filtros),
-            FlujoHorarioChart::make($filtros),
+            VisitasPorFechaChart::make($filtros),
+            // FlujoHorarioChart::make($filtros),
             VisitasEstadoChart::make($filtros),
             VisitantesTipoChart::make($filtros),
             UltimasVisitasTable::make($filtros),
+            
         ];
     }
     public function getHeaderWidgetsColumns(): int | array
