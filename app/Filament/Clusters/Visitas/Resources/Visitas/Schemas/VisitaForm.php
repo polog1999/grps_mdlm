@@ -476,11 +476,18 @@ class VisitaForm
                         Select::make('area_id')
                             ->label('Área de Destino')
                             ->options(
-                                fn() => Area::where('id_uo_estado', 1)
-                                    ->when(!auth()->user()->hasRole('Administrador OTIE'), function ($query) {
-                                        $query->where('id_sede', auth()->user()->sede_id)
-                                            ->orWhere('id_unidad_organica', '1');
-                                    })
+                                fn() => Area::query()
+                                    ->where('id_uo_estado', 1)
+                                    // Agrupamos el filtro de sede para no romper el id_uo_estado
+                                    ->when(
+                                        !auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']),
+                                        function ($query) {
+                                            $query->where(function ($q) {
+                                                $q->where('id_sede', auth()->user()->sede_id)
+                                                    ->orWhere('id_unidad_organica', '1');
+                                            });
+                                        }
+                                    )
                                     ->orderBy('nombre', 'asc')
                                     ->get() // Traemos los modelos para poder manipular el nombre
                                     ->mapWithKeys(function ($area) {

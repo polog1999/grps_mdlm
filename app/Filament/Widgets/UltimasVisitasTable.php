@@ -54,9 +54,13 @@ class UltimasVisitasTable extends BaseWidget
                     ->label('Visitante'),
 
                 Tables\Columns\TextColumn::make('sede.nombre')
-                    ->label('Área destino'),
+                    ->label('Sede'),
                 Tables\Columns\TextColumn::make('area')
-                    ->label('Área destino'),
+                    ->label('Área destino')
+                    ->wrap() // Esto es vital para que no se estire a lo ancho
+    ->extraAttributes([
+        'style' => 'font-size: 0.85rem;', // Un poco más pequeño para que entre todo
+    ]),
 
                 Tables\Columns\TextColumn::make('hora_ingreso')
                     ->label('Ingreso')
