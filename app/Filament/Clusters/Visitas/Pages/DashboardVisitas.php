@@ -4,6 +4,7 @@ namespace App\Filament\Clusters\Visitas\Pages; // 1. CORREGIDO: El namespace deb
 
 
 use App\Filament\Clusters\Visitas\VisitasCluster;
+use App\Filament\Exports\VisitaDashboardExporter;
 use App\Filament\Widgets\FlujoHorarioChart;
 use App\Filament\Widgets\UltimasVisitasTable;
 use App\Filament\Widgets\VisitantesTipoChart;
@@ -17,6 +18,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 
 use BackedEnum; // IMPORTANTE: Falta esta importación para el tipado
+use Filament\Actions\ExportAction;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class DashboardVisitas extends Page
@@ -44,15 +47,15 @@ class DashboardVisitas extends Page
     public ?string $area_id = null;
     public ?string $sede_id = null;
 
-    public function mount(): void
-    {
-        $user = auth()->user();
+    // public function mount(): void
+    // {
+    //     $user = auth()->user();
 
-        // Si el usuario es Supervisor y tiene una sede asignada (ajusta el nombre del campo sede_id si es diferente)
-        if ($user->hasRole('Control Interno - Supervisor') && $user->sede_id) {
-            $this->sede_id = (string) $user->sede_id;
-        }
-    }
+    //     // Si el usuario es Supervisor y tiene una sede asignada (ajusta el nombre del campo sede_id si es diferente)
+    //     if ($user->hasRole('Control Interno - Supervisor') && $user->sede_id) {
+    //         $this->sede_id = (string) $user->sede_id;
+    //     }
+    // }
     public static function canAccess(array $parameters = []): bool
     {
         return auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']);
@@ -107,11 +110,11 @@ class DashboardVisitas extends Page
                         ->searchable()
                         ->live() // Añade esto para que Livewire rastree mejor el cambio
                         // --- BLOQUEO PARA SUPERVISOR ---
-                        // ->visible(fn () => !auth()->user()->hasRole('Control Interno - Supervisor'))
-                        ->disabled(fn() => auth()->user()->hasRole('Control Interno - Supervisor'))
-                        ->dehydrated() // Asegura que el valor se envíe aunque esté deshabilitado
+                        // ->disabled(fn() => auth()->user()->hasRole('Control Interno - Supervisor'))
+                        // ->dehydrated() // Asegura que el valor se envíe aunque esté deshabilitado
                         // -------------------------------
                         ->placeholder('Seleccione una sede'),
+                    // NUEVA ACCIÓN DE EXPORTAR
 
 
                 ])
@@ -130,7 +133,29 @@ class DashboardVisitas extends Page
                         'sede' => $this->sede_id,
 
                     ]);
-                })
+                }),
+            // ExportAction::make('exportarData')
+            //     ->label('Exportar Excel')
+            //     ->exporter(VisitaDashboardExporter::class)
+            //     ->icon('heroicon-m-arrow-down-tray')
+            //     ->color('success')
+            //     // Aplicamos los mismos filtros que tienen los widgets
+            //     ->modifyQueryUsing(
+            //         fn(Builder $query) => $query
+            //             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
+            //             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
+            //             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+            //             ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
+            //     )
+            //     ->columnMapping(true), // Para que no pida mapear columnas al usuario
+            Action::make('imprimir')
+                ->label('Imprimir Reporte')
+                ->icon('heroicon-m-printer')
+                ->color('gray')
+                ->extraAttributes([
+                    'onclick' => 'window.print(); return false;',
+                ]),
+
         ];
     }
 
