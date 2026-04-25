@@ -163,7 +163,7 @@ class QrCodeService
                 ]
             );
 
-            $cqrId = $result[0]->cqr_id ?? null;
+            $cqrId = $result[0]->elid ?? null;
             if (!$cqrId) {
                 throw new \RuntimeException("Error al insertar registro QR");
             }
