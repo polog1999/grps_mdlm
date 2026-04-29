@@ -170,17 +170,12 @@ class CertificadoInspeccionForm
                                 'Número de Certificado'
                             )
                             ->numeric()
-                            ->required()
+                            ->placeholder('Asignado automáticamente al guardar') // Cambiar esto
                             ->disabled()
-                            ->minValue(1)
-                            ->default($siguiente)
-                            ->extraInputAttributes(fn(callable $get) => [
-                                'data-autofilled' => $get('cin_numero') ? '1' : '0',
-                                'style' => self::getAutofilledStyle($get, 'cin_numero'),
-                            ])
                             ->prefix('#')
-                            ->helperText('Número correlativo del certificado')
-                            ->dehydrated(),
+                            ->dehydrated(false)
+                            ->helperText('El número correlativo se calculará al momento de crear el registro.'),
+                  
                         TextInput::make('cin_anio')
                             ->label('Año')
                             ->numeric()
