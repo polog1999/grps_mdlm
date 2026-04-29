@@ -170,12 +170,10 @@ class CertificadoInspeccionForm
                                 'Número de Certificado'
                             )
                             ->numeric()
-                            ->placeholder('Asignado automáticamente al guardar') // Cambiar esto
+                            ->placeholder('Asignado automáticamente al guardar')
                             ->disabled()
-                            ->prefix('#')
                             ->dehydrated(false)
                             ->helperText('El número correlativo se calculará al momento de crear el registro.'),
-                  
                         TextInput::make('cin_anio')
                             ->label('Año')
                             ->numeric()
