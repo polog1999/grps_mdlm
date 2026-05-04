@@ -87,4 +87,7 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Sede::class, 'sede_id','id_sede');
     }
+    public function trabajador(){
+        return $this->belongsTo(Trabajador::class, 'trabajador_id','id_usuario');
+    }
 }
