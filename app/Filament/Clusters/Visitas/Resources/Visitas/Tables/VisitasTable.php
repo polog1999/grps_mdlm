@@ -74,14 +74,19 @@ class VisitasTable
                 //     ->formatStateUsing(fn($state) => $state ? '👥' : '👤')
                 //     ->tooltip(fn($record) => $record->grupo_uid ? "ID Grupo: {$record->grupo_uid}" : 'Individual')
                 //     ->alignCenter(),
-                TextColumn::make('fecha_visita')->badge()
-                    ->sortable()
-                    ->label('Estado')
-                    ->state(fn($record) => $record->hora_salida ? 'Salió' : 'En Sede')
-                    ->color(fn($record) => $record->hora_salida ? 'gray' : 'success'),
+                // TextColumn::make('fecha_visita')->badge()
+                //     ->sortable()
+                //     ->label('Estado')
+                //     ->state(fn($record) => $record->hora_salida ? 'Salió' : 'En Sede')
+                //     ->color(fn($record) => $record->hora_salida ? 'gray' : 'success'),
                 TextColumn::make('fecha')->label('Fecha')->date('d/m/Y')->searchable(),
-                TextColumn::make('tipo_documento')->label('Tipo Documento')->searchable(),
-                TextColumn::make('numero_documento')->label('N° documento')->searchable(),
+                // TextColumn::make('tipo_documento')->label('Tipo Documento')->searchable(),
+                TextColumn::make('numero_documento')->label('Documento')->searchable()
+                    ->getStateUsing(function ($record) {
+                        // Asumiendo que tienes relaciones 'persona' y 'proveedor'
+
+                        return "{$record->tipo_documento} {$record->numero_documento}";
+                    }),
                 TextColumn::make('nombres_full')->label('Visitante')
                     ->getStateUsing(function ($record) {
                         // Asumiendo que tienes relaciones 'persona' y 'proveedor'
@@ -102,9 +107,9 @@ class VisitasTable
                 TextColumn::make('area')->label('Area')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('autorizado_por')->label('Autorizado por')
-                    ->sortable()
-                    ->searchable(),
+                // TextColumn::make('autorizado_por')->label('Autorizado por')
+                //     ->sortable()
+                //     ->searchable(),
                 TextColumn::make('hora_ingreso')->dateTime('H:i A')
                     ->sortable()
                     ->searchable(),
@@ -177,13 +182,14 @@ class VisitasTable
                         }
                         return $indicators;
                     })
-                    
+
             ])
             ->recordActions([
                 Action::make('marcar_salida')
-                    ->label('Registrar Salida')
-                    ->icon('heroicon-o-arrow-right-on-rectangle')
+                    ->label('')
+                    ->icon('heroicon-m-arrow-right-on-rectangle')
                     ->color('danger')
+                    ->button()
                     ->requiresConfirmation()
                     ->modalHeading('¿Marcar salida?')
                     ->modalDescription('¿Estás seguro de que desea marcar la salida para este visitante? Esta acción registrará la hora actual.')
@@ -214,14 +220,18 @@ class VisitasTable
                         //         Notification::make()->title('Salida registrada')->success()->send();
                         //     }
                         // }
-                    }),
+                    })->tooltip('Marcar Salida Individual'),
                 Action::make('marcar_salida_grupal')
-                    ->label('Salida Grupal')
-                    ->icon('heroicon-o-users')
+                    ->label('')
+                    ->icon('heroicon-m-users')
                     ->color('warning')
+                      ->button() // Estilo de botó
                     ->visible(fn($record) => $record->grupo_uid && !$record->hora_salida)
                     ->requiresConfirmation()
+                    ->modalHeading('¿Marcar Salida Grupal?')
                     ->modalDescription('¿Desea registrar la salida de todas las personas que ingresaron con este grupo?')
+                    ->visible(fn($record) => $record->hora_salida === null && $record->origen !== 'MIGRACION' && Carbon::parse($record->fecha)->isToday() && Visita::where('grupo_uid',$record->grupo_uid)->count() > 1) // Solo si no ha salido
+
                     ->action(function ($record) {
                         Visita::where('grupo_uid', $record->grupo_uid)
                             ->whereNull('fecha_salida')
@@ -230,10 +240,11 @@ class VisitasTable
                                 'user_id_salida' => auth()->id(),
                             ]);
                         Notification::make()->title('Salida del grupo registrada')->success()->send();
-                    }),
+                    })->tooltip('Marcar Salida Grupal'),
                 // ViewAction::make()
                 // , // Abre un modal de solo lectura
                 ViewAction::make()
+                
                     ->modalHeading('Detalle Completo de la Visita')
                     ->modalWidth('4xl') // Un ancho mayor para que las 2 columnas respiren
                     ->form([
@@ -321,7 +332,8 @@ class VisitasTable
                                             ->label('Sistema'),
                                     ]),
                             ])->collapsible(),
-                    ]),
+                    ])->iconButton()
+                    ->tooltip('Ver Detalle Completo'),
             ], position: RecordActionsPosition::BeforeColumns)
             ->poll('5s')
             ->deferLoading() // Esto ayuda a que la carga inicial no bloquee el poll

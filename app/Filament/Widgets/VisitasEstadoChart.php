@@ -5,7 +5,13 @@ namespace App\Filament\Widgets;
 use App\Models\Visita;
 use App\Models\VisitaHistorico;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;
 use Livewire\Attributes\On;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Facades\Excel;
 
 class VisitasEstadoChart extends ChartWidget
 {
@@ -25,6 +31,79 @@ class VisitasEstadoChart extends ChartWidget
         $this->area_id = $data['area'] ?? null;
         $this->sede_id = $data['sede'] ?? null;
         $this->dispatch('$refresh');
+    }
+   public function getHeading(): string | Htmlable | null
+    {
+        return new HtmlString('
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
+                <span style="font-size: 0.95rem; font-weight: 600; color: #374151;">
+                    Estado de Visitas (Ingresos vs Salidas)
+                </span>
+
+                <button 
+                    wire:click="exportar" 
+                    wire:loading.attr="disabled"
+                    type="button" 
+                    style="
+                        display: inline-flex; 
+                        align-items: center; 
+                        gap: 6px; 
+                        background-color: #10b981; 
+                        color: white; 
+                        padding: 5px 12px; 
+                        border-radius: 6px; 
+                        font-size: 12px; 
+                        font-weight: 600; 
+                        border: none; 
+                        cursor: pointer; 
+                        transition: background 0.2s;
+                        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                    "
+                    onmouseover="this.style.backgroundColor=\'#059669\'"
+                    onmouseout="this.style.backgroundColor=\'#10b981\'"
+                >
+                    <svg wire:loading.remove style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+
+                    <svg wire:loading class="animate-spin" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle style="opacity: 0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path style="opacity: 0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+
+                    <span wire:loading.remove>Excel</span>
+                    <span wire:loading>...</span>
+                </button>
+            </div>
+        ');
+    }
+     public function exportar()
+    {
+        // 1. Replicamos la consulta de conteo
+        $query = VisitaHistorico::query()
+            ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
+            ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
+            ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
+            ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id));
+
+        $ingresos = (clone $query)->count();
+        $salidas = (clone $query)->whereNotNull('hora_salida')->count();
+
+        // 2. Preparamos la data para el Excel
+        $coleccion = collect([
+            ['Concepto' => 'Total de Ingresos', 'Cantidad' => $ingresos],
+            ['Concepto' => 'Salidas Registradas', 'Cantidad' => $salidas],
+            ['Concepto' => 'Pendientes de Salida', 'Cantidad' => ($ingresos - $salidas)],
+        ]);
+
+        return Excel::download(new class($coleccion) implements FromCollection, WithHeadings, ShouldAutoSize {
+            private $data;
+            public function __construct($data) { $this->data = $data; }
+            public function collection() { return $this->data; }
+            public function headings(): array {
+                return ['Resumen de Flujo', 'Cantidad'];
+            }
+        }, 'resumen_ingresos_salidas_' . now()->format('Ymd_His') . '.xlsx');
     }
 
     protected function getData(): array
