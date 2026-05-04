@@ -100,7 +100,7 @@ class VisitasTable
                         return $query->where('nombres_completos', 'ilike', "%{$search}%")
                             ->orWhere('proveedor', 'ilike', "%{$search}%")
                             ->orWhere('ruc', 'ilike', "%{$search}%");
-                    }),
+                    })->limit(30),
                 // TextColumn::make('sede.nombre')->label('Sede')
                 //     ->sortable()
                 //     ->searchable(),
