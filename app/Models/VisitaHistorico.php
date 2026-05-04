@@ -15,6 +15,12 @@ class VisitaHistorico extends Model
    public function area1(){
       return $this->belongsTo(Area::class,'area_id','id_unidad_organica');
    }
+   public function userIngreso(){
+      return $this->belongsTo(User::class,'user_id_ingreso');
+   }
+   public function userSalida(){
+      return $this->belongsTo(User::class,'user_id_salida');
+   }
 // public function trabajadores()
 // {
 //     return $this->hasManyThrough(
