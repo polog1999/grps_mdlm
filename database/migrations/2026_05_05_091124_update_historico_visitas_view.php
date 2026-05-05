@@ -38,6 +38,7 @@ return new class extends Migration
                     END 
                     ruc,
                     v.proveedor,
+                    vp.cargo,
                     v.area AS area,
                     v.area_id AS area_id,
                     v.oficina,
@@ -68,6 +69,7 @@ return new class extends Migration
                     tipo_documento,
                     numero_documento,
                     nombres_completos,
+                    NULL,
                     NULL,
                     NULL,
                     area, 
