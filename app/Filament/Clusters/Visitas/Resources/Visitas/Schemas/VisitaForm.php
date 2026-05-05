@@ -503,7 +503,7 @@ class VisitaForm
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required()
-                            ->afterStateUpdated(function ($state, Set $set) {
+                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 if ($state) {
                                     $set('oficina_id', null);
                                     $set('oficina', null);
@@ -525,27 +525,28 @@ class VisitaForm
                                     //     })
                                     //     ->value('id_usuario');
 
-                                    $defaultTrabajador = Trabajador::where('id_estado', 1) // Siempre activo
-                                        ->where(function ($query) use ($state) {
-                                            $query->whereHas('cargo', function ($q) use ($state) {
-                                                $q->where('id_unidad_organica', $state)
-                                                    ->where('orden', 1);
-                                            })
-                                                ->orWhereHas('cargo2', function ($q) use ($state) {
-                                                    $q->where('id_unidad_organica', $state)
-                                                        ->where('orden', 1);
-                                                })
-                                                ->orWhereHas('cargo3', function ($q) use ($state) {
-                                                    $q->where('id_unidad_organica', $state)
-                                                        ->where('orden', 1);
-                                                });
-                                        })
-                                        ->value('id_usuario');
+                                    $defaultTrabajador = self::getJefe($state);
+                                    // Trabajador::where('id_estado', 1) // Siempre activo
+                                    //     ->where(function ($query) use ($state) {
+                                    //         $query->whereHas('cargo', function ($q) use ($state) {
+                                    //             $q->where('id_unidad_organica', $state)
+                                    //                 ->where('orden', 1);
+                                    //         })
+                                    //             ->orWhereHas('cargo2', function ($q) use ($state) {
+                                    //                 $q->where('id_unidad_organica', $state)
+                                    //                     ->where('orden', 1);
+                                    //             })
+                                    //             ->orWhereHas('cargo3', function ($q) use ($state) {
+                                    //                 $q->where('id_unidad_organica', $state)
+                                    //                     ->where('orden', 1);
+                                    //             });
+                                    //     })
+                                    //     ->value('id_usuario');
 
                                     // Seteamos el valor automáticamente al cambiar el área
                                     $set('trabajador_id_cita', $defaultTrabajador);
 
-                                    $set('trabajador_id_autoriza', $defaultTrabajador);;
+                                    $set('trabajador_id_autoriza', $defaultTrabajador);
 
                                     // Si necesitas también setear el nombre en el campo oculto
                                     if ($defaultTrabajador) {
@@ -553,6 +554,12 @@ class VisitaForm
                                         $nombresCompletos = "{$t->nombres} {$t->apellidos}";
                                         $set('trabajador_cita', $nombresCompletos);
                                         $set('trabajador_autoriza', $nombresCompletos);
+                                    }
+
+                                    if ($get('trabajador_id_cita') === $get('trabajador_id_autoriza')) {
+                                        $set('sistema', 'PCM');
+                                    } else {
+                                        $set('sistema', 'VISITAS');
                                     }
                                 } else {
                                     $set('area', null);
@@ -618,13 +625,20 @@ class VisitaForm
                             ->searchable()
                             ->required(fn(Get $get) => $get('area_id') == 1 ? false : true)
                             ->hidden(fn(Get $get) => $get('area_id') == 1)
-                            ->afterStateUpdated(function ($state, Set $set) {
+                            ->live()
+                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 if ($state) {
                                     // Buscamos el nombre del área basada en el ID seleccionado
                                     $trabajador = Trabajador::where('id_usuario', $state)->first(['nombres', 'apellidos']);
                                     $nombreCompleto = "{$trabajador->nombres} {$trabajador->apellidos}";
                                     // Guardamos ese nombre en el campo 'area_nombre'
                                     $set('trabajador_autoriza', $nombreCompleto);
+                                    $jefe = self::getJefe($get('area_id'));
+                                    if ($get('trabajador_id_cita') === $state && $state == $jefe) {
+                                        $set('sistema', 'PCM');
+                                    } else {
+                                        $set('sistema', 'VISITAS');
+                                    }
                                 } else {
                                     $set('trabajador_autoriza', null);
                                 }
@@ -665,13 +679,20 @@ class VisitaForm
                             ->searchable()
                             ->required(fn(Get $get) => $get('area_id') == 1 ? false : true)
                             ->hidden(fn(Get $get) => $get('area_id') == 1)
-                            ->afterStateUpdated(function ($state, Set $set) {
+                            ->live()
+                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 if ($state) {
                                     // Buscamos el nombre del área basada en el ID seleccionado
                                     $trabajador = Trabajador::where('id_usuario', $state)->first(['nombres', 'apellidos']);
                                     $nombreCompleto = "{$trabajador->nombres} {$trabajador->apellidos}";
                                     // Guardamos ese nombre en el campo 'area_nombre'
                                     $set('trabajador_cita', $nombreCompleto);
+                                    $jefe = self::getJefe($get('area_id'));
+                                    if ($get('trabajador_id_autoriza') === $state && $state == $jefe) {
+                                        $set('sistema', 'PCM');
+                                    } else {
+                                        $set('sistema', 'VISITAS');
+                                    }
                                 } else {
                                     $set('trabajador_cita', null);
                                 }
@@ -708,7 +729,8 @@ class VisitaForm
                                 'VISITAS' => 'Visitas',
                                 'PCM' => 'PCM',
                             ])
-                            ->default('VISITAS')
+                            // ->default('VISITAS')
+                            ->live()
                             ->required()
                             ->columnSpanFull(),
                     ])->columns(2),
@@ -936,10 +958,29 @@ class VisitaForm
                 } else {
                     Notification::make()
                         ->title('Alerta')
-                        ->body('El DNI debe tener 11 dígitos')
+                        ->body('El RUC debe tener 11 dígitos')
                         ->warning()
                         ->send();
                 }
             });
+    }
+    protected static function getJefe($state)
+    {
+        return  Trabajador::where('id_estado', 1) // Siempre activo
+            ->where(function ($query) use ($state) {
+                $query->whereHas('cargo', function ($q) use ($state) {
+                    $q->where('id_unidad_organica', $state)
+                        ->where('orden', 1);
+                })
+                    ->orWhereHas('cargo2', function ($q) use ($state) {
+                        $q->where('id_unidad_organica', $state)
+                            ->where('orden', 1);
+                    })
+                    ->orWhereHas('cargo3', function ($q) use ($state) {
+                        $q->where('id_unidad_organica', $state)
+                            ->where('orden', 1);
+                    });
+            })
+            ->value('id_usuario');
     }
 }
