@@ -554,13 +554,16 @@ class VisitaForm
                                         $nombresCompletos = "{$t->nombres} {$t->apellidos}";
                                         $set('trabajador_cita', $nombresCompletos);
                                         $set('trabajador_autoriza', $nombresCompletos);
+                                         $set('sistema', 'PCM');
+                                    }else{
+                                        $set('sistema', null);
                                     }
 
-                                    if ($get('trabajador_id_cita') === $get('trabajador_id_autoriza')) {
-                                        $set('sistema', 'PCM');
-                                    } else {
-                                        $set('sistema', 'VISITAS');
-                                    }
+                                    // if ($get('trabajador_id_cita') === $get('trabajador_id_autoriza')) {
+                                       
+                                    // } else {
+                                        
+                                    // }
                                 } else {
                                     $set('area', null);
 
@@ -568,6 +571,7 @@ class VisitaForm
                                     $set('trabajador_cita', null);
                                     $set('trabajador_id_autoriza', null);
                                     $set('trabajador_autoriza', null);
+                                    $set('sistema', null);
                                     return;
                                 }
                             }),
@@ -640,6 +644,7 @@ class VisitaForm
                                         $set('sistema', 'VISITAS');
                                     }
                                 } else {
+                                     $set('sistema', null);
                                     $set('trabajador_autoriza', null);
                                 }
                             }),
@@ -694,6 +699,7 @@ class VisitaForm
                                         $set('sistema', 'VISITAS');
                                     }
                                 } else {
+                                     $set('sistema', null);
                                     $set('trabajador_cita', null);
                                 }
                             }),
