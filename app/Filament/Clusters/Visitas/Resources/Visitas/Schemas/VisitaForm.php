@@ -914,8 +914,8 @@ class VisitaForm
                         $set('direccion', $proveedor->direccion);
 
                         Notification::make()
-                            ->title('BD inventario')
-                            ->body('Datos de la Base de Datos inventario')
+                            ->title('BD')
+                            ->body('Datos de la Base de Datos Externa')
                             ->success()
                             ->send();
                         return;
