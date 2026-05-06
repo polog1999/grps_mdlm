@@ -19,7 +19,7 @@ class VisitasStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         // Esta es la query que ya trae los filtros de la tabla aplicados
-        $queryBase = $this->getPageTableQuery();
+        $queryBase = $this->getPageTableQuery()->where('origen', 'SISTEMA');;
     return [
     // 1. Total de Visitas: Azul (Confianza/General)
     Stat::make('Visitas Seleccionadas', (clone $queryBase)->count())

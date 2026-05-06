@@ -32,7 +32,8 @@ class VisitasStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         // 3. Usa las propiedades en tu consulta SQL
-        $query = \App\Models\VisitaHistorico::query();
+        $query = \App\Models\VisitaHistorico::query()
+        ->where('origen', 'SISTEMA');
 
         if ($this->desde) {
             $query->whereDate('fecha', '>=', $this->desde);

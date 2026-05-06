@@ -36,9 +36,9 @@ class VisitasPorFechaChart extends ChartWidget
 
         $this->dispatch('$refresh');
     }
- public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
-{
-    return new \Illuminate\Support\HtmlString('
+    public function getHeading(): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return new \Illuminate\Support\HtmlString('
         <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
             <span style="font-size: 0.95rem; font-weight: 600; color: #374151;">
                 Cantidad de Visitas por Periodo
@@ -82,9 +82,9 @@ class VisitasPorFechaChart extends ChartWidget
             </button>
         </div>
     ');
-}
+    }
 
-       public function exportar()
+    public function exportar()
     {
         // 1. Replicamos la lógica de fechas del gráfico
         $fechaInicio = $this->desde ? Carbon::parse($this->desde) : now()->subDays(60);
@@ -92,6 +92,7 @@ class VisitasPorFechaChart extends ChartWidget
         $diferenciaDias = $fechaInicio->diffInDays($fechaFin);
 
         $query = VisitaHistorico::query()
+            ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
@@ -100,13 +101,13 @@ class VisitasPorFechaChart extends ChartWidget
         if ($diferenciaDias > 90) {
             // Agrupación Mensual
             $results = $query->select(
-                DB::raw("TO_CHAR(fecha, 'YYYY-MM') as periodo"), 
+                DB::raw("TO_CHAR(fecha, 'YYYY-MM') as periodo"),
                 DB::raw('count(*) as total')
             )
-            ->groupBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"))
-            ->orderBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"), 'asc')
-            ->get();
-            
+                ->groupBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"))
+                ->orderBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"), 'asc')
+                ->get();
+
             $headerPeriodo = 'Mes (Año-Mes)';
         } else {
             // Agrupación Diaria
@@ -114,10 +115,10 @@ class VisitasPorFechaChart extends ChartWidget
                 DB::raw("fecha::date as periodo"),
                 DB::raw('count(*) as total')
             )
-            ->groupBy(DB::raw("fecha::date"))
-            ->orderBy(DB::raw("fecha::date"), 'asc')
-            ->get();
-            
+                ->groupBy(DB::raw("fecha::date"))
+                ->orderBy(DB::raw("fecha::date"), 'asc')
+                ->get();
+
             $headerPeriodo = 'Fecha';
         }
 
@@ -129,12 +130,17 @@ class VisitasPorFechaChart extends ChartWidget
         return Excel::download(new class($coleccion, $headerPeriodo) implements FromCollection, WithHeadings, ShouldAutoSize {
             private $data;
             private $header;
-            public function __construct($data, $header) { 
-                $this->data = $data; 
+            public function __construct($data, $header)
+            {
+                $this->data = $data;
                 $this->header = $header;
             }
-            public function collection() { return $this->data; }
-            public function headings(): array {
+            public function collection()
+            {
+                return $this->data;
+            }
+            public function headings(): array
+            {
                 return [$this->header, 'Total de Visitas'];
             }
         }, 'visitas_por_periodo_' . now()->format('Ymd_His') . '.xlsx');
@@ -146,10 +152,11 @@ class VisitasPorFechaChart extends ChartWidget
         // Si no hay filtro, limitamos por defecto a los últimos 60 días para evitar el error de histórico masivo
         $fechaInicio = $this->desde ? Carbon::parse($this->desde) : now()->subDays(60);
         $fechaFin = $this->hasta ? Carbon::parse($this->hasta) : now();
-        
+
         $diferenciaDias = $fechaInicio->diffInDays($fechaFin);
 
         $query = VisitaHistorico::query()
+            ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
@@ -158,14 +165,14 @@ class VisitasPorFechaChart extends ChartWidget
         // Si el rango es mayor a 90 días o estamos viendo el histórico completo
         if ($diferenciaDias > 90) {
             $results = $query->select(
-                DB::raw("TO_CHAR(fecha, 'YYYY-MM') as periodo"), 
+                DB::raw("TO_CHAR(fecha, 'YYYY-MM') as periodo"),
                 DB::raw('count(*) as total')
             )
-            ->groupBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"))
-            ->orderBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"), 'asc')
-            ->get() // Usamos get para asegurar la colección antes del pluck
-            ->pluck('total', 'periodo')
-            ->toArray();
+                ->groupBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"))
+                ->orderBy(DB::raw("TO_CHAR(fecha, 'YYYY-MM')"), 'asc')
+                ->get() // Usamos get para asegurar la colección antes del pluck
+                ->pluck('total', 'periodo')
+                ->toArray();
 
             $labels = array_keys($results);
             $values = array_values($results);
@@ -175,11 +182,11 @@ class VisitasPorFechaChart extends ChartWidget
                 DB::raw("fecha::date as periodo"),
                 DB::raw('count(*) as total')
             )
-            ->groupBy(DB::raw("fecha::date"))
-            ->orderBy(DB::raw("fecha::date"), 'asc')
-            ->get()
-            ->pluck('total', 'periodo')
-            ->toArray();
+                ->groupBy(DB::raw("fecha::date"))
+                ->orderBy(DB::raw("fecha::date"), 'asc')
+                ->get()
+                ->pluck('total', 'periodo')
+                ->toArray();
 
             $labels = [];
             $values = [];

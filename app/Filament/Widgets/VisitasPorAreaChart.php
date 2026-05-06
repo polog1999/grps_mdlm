@@ -98,6 +98,7 @@ class VisitasPorAreaChart extends ChartWidget implements HasActions
         // Consulta para obtener el Top 10 de áreas con más visitas
         $data = VisitaHistorico::query()
             ->select('area_id', DB::raw('count(*) as total')) // Usa id_unidad_organica
+            ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             // Si el usuario filtra por un área específica, el gráfico solo mostrará esa (o el ranking general si es null)
@@ -126,6 +127,7 @@ class VisitasPorAreaChart extends ChartWidget implements HasActions
         // 1. Obtenemos la data filtrada
         $data = VisitaHistorico::query()
             ->select('area_id', DB::raw('count(*) as total'))
+            ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
