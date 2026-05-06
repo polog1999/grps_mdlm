@@ -58,6 +58,7 @@ class UltimasVisitasTable extends BaseWidget
 
             ->query(
                 VisitaHistorico::query()
+                ->where('origen', 'SISTEMA')
                     ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
                     ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
                     ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
@@ -97,6 +98,7 @@ class UltimasVisitasTable extends BaseWidget
     {
         // Importante: En la exportación quitamos el limit(5) para que bajen TODOS los registros filtrados
         $data = VisitaHistorico::query()
+        ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))

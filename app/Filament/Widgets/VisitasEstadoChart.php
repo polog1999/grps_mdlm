@@ -81,6 +81,7 @@ class VisitasEstadoChart extends ChartWidget
     {
         // 1. Replicamos la consulta de conteo
         $query = VisitaHistorico::query()
+        ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
@@ -109,6 +110,7 @@ class VisitasEstadoChart extends ChartWidget
     protected function getData(): array
     {
         $query = VisitaHistorico::query()
+        ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))

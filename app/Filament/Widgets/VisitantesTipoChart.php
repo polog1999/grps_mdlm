@@ -87,6 +87,7 @@ class VisitantesTipoChart extends ChartWidget
     {
         // 1. Obtenemos los visitantes únicos del periodo
         $visitantesDelPeriodo = VisitaHistorico::query()
+        ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
@@ -102,6 +103,7 @@ class VisitantesTipoChart extends ChartWidget
         } else {
             // 2. Contamos recurrentes
             $recurrentes = VisitaHistorico::query()
+            ->where('origen', 'SISTEMA')
                 ->whereIn('numero_documento', $visitantesDelPeriodo)
                 ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
                 ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
@@ -135,6 +137,7 @@ class VisitantesTipoChart extends ChartWidget
     {
         // 1. Definimos la base de los visitantes que queremos analizar (según el filtro)
         $visitantesDelPeriodo = VisitaHistorico::query()
+        ->where('origen', 'SISTEMA')
             ->when($this->desde, fn($q) => $q->whereDate('fecha', '>=', $this->desde))
             ->when($this->hasta, fn($q) => $q->whereDate('fecha', '<=', $this->hasta))
             ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
@@ -153,6 +156,7 @@ class VisitantesTipoChart extends ChartWidget
 
         // 2. Contamos cuántos de ESOS visitantes han venido más de una vez en TODA la historia
         $recurrentes = VisitaHistorico::query()
+        ->where('origen', 'SISTEMA')
             ->whereIn('numero_documento', $visitantesDelPeriodo)
            ->when($this->area_id, fn($q) => $q->where('area_id', $this->area_id))
            ->when($this->sede_id, fn($q) => $q->where('sede_id', $this->sede_id))
