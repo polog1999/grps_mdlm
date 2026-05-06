@@ -13,6 +13,8 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use App\Models\Role;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Support\Facades\DB;
 
 class UsersTable
 {
@@ -36,6 +38,19 @@ class UsersTable
                     ->badge()
                     ->separator(',')
                     ->searchable(),
+                ToggleColumn::make('is_active')
+                    ->label('Activo')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->disabled(fn($record) => $record?->id === auth()->user()->id)
+                    ->afterStateUpdated(function ($record, $state) {
+                        // Opcional: Si lo desactivas, puedes borrar su sesión de golpe
+                        if (!$state) {
+                            DB::table('sessions')
+                                ->where('user_id', $record->id)
+                                ->delete();
+                        }
+                    }),
             ])
             ->filters([
                 \Filament\Tables\Filters\SelectFilter::make('role')
@@ -100,7 +115,6 @@ class UsersTable
                 /*
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ]),*/
-            ]);
+                ]),*/]);
     }
 }
