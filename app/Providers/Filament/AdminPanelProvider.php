@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\CustomEditProfile;
 use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -25,13 +26,15 @@ use App\Filament\Pages\Register;
 use Filament\Support\Enums\Width;
 use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Dashboard;
+use Filament\Auth\Pages\EditProfile;
+use Filament\Navigation\MenuItem;
 use Illuminate\Support\Facades\Auth;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        return $panel 
             ->default()
             ->id('admin')
             ->path('admin')
@@ -42,7 +45,8 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
             ->authPasswordBroker('users')
             ->login(Login::class)
-            ->profile()
+            ->profile(CustomEditProfile::class)
+           
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
             ->emailVerification()
