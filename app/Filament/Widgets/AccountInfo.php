@@ -9,21 +9,28 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class AccountInfo extends StatsOverviewWidget
 {
     protected function getStats(): array
-{
-    return [
-    Stat::make('Última sesión', function() {
-        $lastLogin = auth()->user()->last_login_at;
+    {
+        return [
+            Stat::make('Última sesión', function () {
+                $user = auth()->user();
+            
+            // Priorizamos last_login_at, si no existe, usamos current_login_at
+            $displayDate = $user->last_login_at ?? $user->current_login_at;
 
-        if (!$lastLogin) return 'N/A';
+            if (!$displayDate) {
+                return 'N/A';
+            }
 
-        $date = Carbon::parse($lastLogin);
+            // Aseguramos que sea un objeto Carbon
+            $date = Carbon::parse($displayDate);
 
-        // Retorna: "08/05/2024 14:30 (hace 5 minutos)"
-        return $date->format('d/m/Y H:i') . ' (' . $date->diffForHumans() . ')';
-    })
-    ->description('Tu último acceso registrado')
-    ->descriptionIcon('heroicon-m-calendar')
-    ->color('success'),
-];
-}
+            return $date->format('d/m/Y H:i') . ' (' . $date->diffForHumans() . ')';
+        })
+            ->description(fn() => auth()->user()->last_login_at 
+                ? 'Fecha de tu acceso anterior' 
+                : 'Esta es tu primera sesión')
+            ->descriptionIcon('heroicon-m-calendar')
+            ->color('success'),
+        ];
+    }
 }

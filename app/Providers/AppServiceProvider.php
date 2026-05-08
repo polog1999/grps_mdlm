@@ -27,7 +27,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(Login::class, function ($event) {
-            $event->user->update(['last_login_at' => now()]);
+            $user = $event->user;
+
+            // 1. Pasamos la que era "actual" a "última"
+            $user->last_login_at = $user->current_login_at;
+
+            // 2. Registramos la entrada de este preciso momento
+            $user->current_login_at = now();
+
+            $user->save();
         });
     }
 }
