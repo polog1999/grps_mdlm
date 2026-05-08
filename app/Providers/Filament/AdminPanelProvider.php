@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel 
+        return $panel
             ->default()
             ->id('admin')
             ->path('admin')
@@ -46,7 +46,12 @@ class AdminPanelProvider extends PanelProvider
             ->authPasswordBroker('users')
             ->login(Login::class)
             ->profile(CustomEditProfile::class)
-           
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label('Cambiar contraseña')
+                    ->icon('heroicon-s-lock-closed') // Icono de candado
+                    ->url(fn(): string => CustomEditProfile::getUrl()),
+            ])
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
             ->emailVerification()
@@ -87,8 +92,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-           ->databaseNotifications() // <--- ESTO ES VITAL
-        ->databaseNotificationsPolling('2s')
+            ->databaseNotifications() // <--- ESTO ES VITAL
+            ->databaseNotificationsPolling('2s')
 
         ; // Actualiza cada 3 segundos para ver el % real
 
