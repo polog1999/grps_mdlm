@@ -26,6 +26,7 @@ use App\Filament\Pages\Register;
 use Filament\Support\Enums\Width;
 use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Widgets\AccountInfo;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Navigation\MenuItem;
 use Illuminate\Support\Facades\Auth;
@@ -76,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                AccountInfo::class
             ])
             ->middleware([
                 EncryptCookies::class,

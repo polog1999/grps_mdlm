@@ -28,7 +28,8 @@ class User extends Authenticatable implements FilamentUser
         'trabajador_id',
         'sede',
         'nombres_completos',
-        'is_active'
+        'is_active',
+        'last_login_at'
     ];
 
     /**
