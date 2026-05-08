@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('itse.users', function (Blueprint $table) {
-            $table->timestamp('last_login_at')->nullable();
+            $table->timestamp('current_login_at')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('itse.users', function (Blueprint $table) {
-            $table->dropColumn('last_login_at');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('current_login_at');
         });
     }
 };
