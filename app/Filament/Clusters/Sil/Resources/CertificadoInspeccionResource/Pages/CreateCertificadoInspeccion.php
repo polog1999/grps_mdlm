@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Pages;
 
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\CertificadoInspeccionResource;
+use App\Services\Sil\CertificadoInspeccion\CertificadoInspeccionService;
 use App\Services\Sil\CertificadoInspeccion\CertificadoPdfGenerator;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
@@ -11,6 +12,23 @@ class CreateCertificadoInspeccion extends CreateRecord
 {
     protected static string $resource = CertificadoInspeccionResource::class;
     protected static ?string $title = 'Registro de Certificado de Inspección';
+
+
+      /**
+     * Este método se ejecuta JUSTO ANTES de crear el registro en la DB
+     */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        // 1. Calculamos el número en el último segundo posible
+        $servicio = app(CertificadoInspeccionService::class);
+        $siguiente = $servicio->obtenerSiguienteNumero();
+
+        // 2. Lo inyectamos en los datos que se van a guardar
+        $data['cin_numero'] = $siguiente;
+        // $data['cin_anio'] = now()->year;
+
+        return $data;
+    }
 
     /**
      * Hook ejecutado después de crear el registro.

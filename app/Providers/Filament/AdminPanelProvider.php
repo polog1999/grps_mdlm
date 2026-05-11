@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\CustomEditProfile;
 use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -25,6 +26,9 @@ use App\Filament\Pages\Register;
 use Filament\Support\Enums\Width;
 use App\Filament\Pages\Auth\RequestPasswordReset;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Widgets\AccountInfo;
+use Filament\Auth\Pages\EditProfile;
+use Filament\Navigation\MenuItem;
 use Illuminate\Support\Facades\Auth;
 
 class AdminPanelProvider extends PanelProvider
@@ -42,7 +46,13 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
             ->authPasswordBroker('users')
             ->login(Login::class)
-            ->profile()
+            ->profile(CustomEditProfile::class)
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label('Cambiar contraseña')
+                    ->icon('heroicon-s-lock-closed') // Icono de candado
+                    ->url(fn(): string => CustomEditProfile::getUrl()),
+            ])
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
             ->emailVerification()
@@ -68,6 +78,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                AccountInfo::class
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -83,8 +94,8 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-           ->databaseNotifications() // <--- ESTO ES VITAL
-        ->databaseNotificationsPolling('2s')
+            ->databaseNotifications() // <--- ESTO ES VITAL
+            ->databaseNotificationsPolling('2s')
 
         ; // Actualiza cada 3 segundos para ver el % real
 

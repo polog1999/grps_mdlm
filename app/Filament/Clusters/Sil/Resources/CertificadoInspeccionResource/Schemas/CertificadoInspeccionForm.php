@@ -166,21 +166,26 @@ class CertificadoInspeccionForm
                 Grid::make(2)
                     ->schema([
                         TextInput::make('cin_numero')
-                            ->label(
-                                'Número de Certificado'
-                            )
+                            ->label('Número de Certificado')
                             ->numeric()
-                            ->required()
+                            ->prefix(fn($context) => $context === 'edit' ? '#' : false)
+                            // 2. Siempre deshabilitado para que el usuario no lo manipule
                             ->disabled()
-                            ->minValue(1)
-                            ->default($siguiente)
-                            ->extraInputAttributes(fn(callable $get) => [
+                            ->dehydrated(false)
+                            ->placeholder(
+                                fn($context) => $context === 'create'
+                                    ? 'Asignado automáticamente al guardar'
+                                    : null
+                            )
+                            ->extraInputAttributes(fn($context, $get) => [
                                 'data-autofilled' => $get('cin_numero') ? '1' : '0',
-                                'style' => self::getAutofilledStyle($get, 'cin_numero'),
+                                'style' => $context === 'edit' ? self::getAutofilledStyle($get, 'cin_numero') : '',
                             ])
-                            ->prefix('#')
-                            ->helperText('Número correlativo del certificado')
-                            ->dehydrated(),
+                            ->helperText(
+                                fn($context) => $context === 'create'
+                                    ? 'El número correlativo se calculará al momento de crear el registro.'
+                                    : 'Número correlativo del certificado'
+                            ),
                         TextInput::make('cin_anio')
                             ->label('Año')
                             ->numeric()
@@ -219,8 +224,8 @@ class CertificadoInspeccionForm
                         Select::make('tie_id')
                             ->label(
                                 fn(callable $get) => $get('nir_id')
-                                ? 'Tipo de Edificación (Nivel de Riesgo: ' . $get('nir_id') . ' - ' . $get('nir_descripcion') . ')'
-                                : 'Tipo de Edificación'
+                                    ? 'Tipo de Edificación (Nivel de Riesgo: ' . $get('nir_id') . ' - ' . $get('nir_descripcion') . ')'
+                                    : 'Tipo de Edificación'
                             )
                             ->options(fn() => self::obtenerTiposEdificacion())
                             ->required()
@@ -239,8 +244,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('tie_id_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Clasificación según uso del inmueble'
+                                    ? '✓ Autocompletado'
+                                    : 'Clasificación según uso del inmueble'
                             ),
                         TextInput::make('cin_establecimiento')
                             ->label('Nombre del Establecimiento')
@@ -258,8 +263,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_establecimiento_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
+                                    ? '✓ Autocompletado'
+                                    : 'Ingrese manualmente'
                             ),
                         Hidden::make('lic_id')
                             ->dehydrated(),
@@ -294,8 +299,8 @@ class CertificadoInspeccionForm
                     ->helperText(
                         fn(callable $get) =>
                         $get('cin_ubicacion_autofilled')
-                        ? '✓ Autocompletado'
-                        : 'Ingrese manualmente'
+                            ? '✓ Autocompletado'
+                            : 'Ingrese manualmente'
                     ),
                 Grid::make(3)
                     ->schema([
@@ -370,8 +375,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_area_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
+                                    ? '✓ Autocompletado'
+                                    : 'Ingrese manualmente'
                             ),
 
                         TextInput::make('cin_capacidad')
@@ -459,8 +464,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_fecha_inicio_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
+                                    ? '✓ Autocompletado'
+                                    : 'Ingrese manualmente'
                             ),
 
                         DatePicker::make('cin_fec_fin')
@@ -522,8 +527,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_indeterminado')
-                                ? '✓ Calculado automáticamente (+2 años)'
-                                : 'Editable para licencias temporales'
+                                    ? '✓ Calculado automáticamente (+2 años)'
+                                    : 'Editable para licencias temporales'
                             ),
                     ]),
             ])
@@ -556,8 +561,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_resolucion_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Formato: #####-YYYY (1 a 5 dígitos, guion, año)'
+                                    ? '✓ Autocompletado'
+                                    : 'Formato: #####-YYYY (1 a 5 dígitos, guion, año)'
                             )
                             ->rule('regex:/^\d{1,5}-\d{4}$/')
                             ->validationMessages([
@@ -597,8 +602,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_expediente_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
+                                    ? '✓ Autocompletado'
+                                    : 'Ingrese manualmente'
                             ),
                     ]),
             ])
@@ -639,8 +644,8 @@ class CertificadoInspeccionForm
                             ->helperText(
                                 fn(callable $get) =>
                                 $get('cin_licencia_autofilled')
-                                ? '✓ Autocompletado'
-                                : 'Ingrese manualmente'
+                                    ? '✓ Autocompletado'
+                                    : 'Ingrese manualmente'
                             )
                     ]),
                 /*
@@ -689,8 +694,8 @@ class CertificadoInspeccionForm
                     ->helperText(
                         fn(callable $get) =>
                         $get('cin_giro_autofilled')
-                        ? '✓ Autocompletado'
-                        : 'Ingrese manualmente'
+                            ? '✓ Autocompletado'
+                            : 'Ingrese manualmente'
                     )
                     ->columnSpanFull(),
 
@@ -712,8 +717,8 @@ class CertificadoInspeccionForm
                     ->helperText(
                         fn(callable $get) =>
                         $get('cin_solicitante_autofilled')
-                        ? '✓ Autocompletado'
-                        : 'Ingrese manualmente'
+                            ? '✓ Autocompletado'
+                            : 'Ingrese manualmente'
                     )
                     ->columnSpanFull(),
 
@@ -858,7 +863,6 @@ class CertificadoInspeccionForm
 
             // Procesar resultado
             self::procesarResultadoBusqueda($respuesta, $set, $expediente, $licencia, $resolucion);
-
         } catch (\Throwable $e) {
             logger()->error('CertificadoInspeccionForm: Error en búsqueda', [
                 'message' => $e->getMessage(),

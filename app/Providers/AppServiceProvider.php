@@ -8,6 +8,8 @@ use Filament\Facades\Filament;
 
 use App\Models\CertificadoLicenciaFuncionamiento;
 use App\Observers\CertificadoLicenciaFuncionamientoObserver;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(Login::class, function ($event) {
+            $user = $event->user;
 
+            // 1. Pasamos la que era "actual" a "última"
+            $user->last_login_at = $user->current_login_at;
+
+            // 2. Registramos la entrada de este preciso momento
+            $user->current_login_at = now();
+
+            $user->save();
+        });
     }
 }
