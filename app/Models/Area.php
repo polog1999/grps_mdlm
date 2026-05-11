@@ -18,7 +18,9 @@ class Area extends Model
     public function area(){
         return $this->belongsTo(Area::class, 'dependencia_id','id_unidad_organica');
     }
-   
+   public function oficinas(){
+        return $this->hasMany(Oficina::class, 'id_unidad_organica','id_unidad_organica');
+    }
 
     
     // protected $primaryKey = 'id_area';
