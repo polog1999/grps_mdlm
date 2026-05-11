@@ -25,7 +25,7 @@ class AreasTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(Area::with(['oficinas', 'sede', 'area']))
+            ->query(Area::with(['oficinas', 'sede', 'area'])->where('id_uo_estado',1))
             ->columns([
 
                 // Usamos Split para la fila principal
@@ -44,27 +44,30 @@ class AreasTable
                     TextColumn::make('area.nombre')
                         ->label('Dependencia')
                         ->searchable()
-                        ->sortable(),
+                        ->sortable()
+                        ->formatStateUsing(fn($state) => "Dependencia: {$state}"),
                     TextColumn::make('sede.nombre')
                         ->searchable()
-                        ->sortable(),
+                        ->sortable()
+                         ->formatStateUsing(fn($state) => "Sede: {$state}"),
                     TextColumn::make('anexo')
                         ->searchable()
-                        ->sortable(),
-                    TextColumn::make('id_uo_estado')
-                        ->label('Estado')
-                        ->formatStateUsing(fn(int $state): string => match ($state) {
-                            1 => 'Activo',
-                            2 => 'Inactivo',
-                            default => 'Desconocido',
-                        })
-                        ->badge()
-                        ->color(fn(int $state): string => match ($state) {
-                            1 => 'success', // Verde
-                            2 => 'danger',  // Rojo
-                            default => 'gray',
-                        })
                         ->sortable()
+                         ->formatStateUsing(fn($state) => "Anexo: {$state}"),
+                    // TextColumn::make('id_uo_estado')
+                    //     ->label('Estado')
+                    //     ->formatStateUsing(fn(int $state): string => match ($state) {
+                    //         1 => 'Activo',
+                    //         2 => 'Inactivo',
+                    //         default => 'Desconocido',
+                    //     })
+                    //     ->badge()
+                    //     ->color(fn(int $state): string => match ($state) {
+                    //         1 => 'success', // Verde
+                    //         2 => 'danger',  // Rojo
+                    //         default => 'gray',
+                    //     })
+                    //     ->sortable()
                 ]),
 
                 Panel::make([
