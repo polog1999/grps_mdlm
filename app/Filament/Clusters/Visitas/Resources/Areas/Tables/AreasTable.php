@@ -76,11 +76,11 @@ class AreasTable
                         // Importante: $state aquí es la instancia de la oficina relacionada
                         ->formatStateUsing(fn($state) => "Oficina: {$state->nombre} — Anexo: " . ($state->anexo ?? 'Sin anexo')),
                 ])
-                    ->collapsible() 
-->collapsed()
+                    ->collapsible()
+                    ->collapsed()
                     // ESTA ES LA CLAVE: Solo se muestra si el conteo de oficinas es mayor a 0
                     ->visible(fn($record) => $record->oficinas()->count() > 0), // Para que aparezca cerrado por defecto
-                    
+
 
 
 
