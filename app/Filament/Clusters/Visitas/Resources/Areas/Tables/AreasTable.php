@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Visitas\Resources\Areas\Tables;
 
 use App\Models\Area;
+use App\Models\Sede;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -25,7 +26,7 @@ class AreasTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(Area::with(['oficinas', 'sede', 'area'])->where('id_uo_estado',1))
+            ->query(Area::with(['oficinas', 'sede', 'area'])->where('id_uo_estado', 1))
             ->columns([
 
                 // Usamos Split para la fila principal
@@ -49,11 +50,11 @@ class AreasTable
                     TextColumn::make('sede.nombre')
                         ->searchable()
                         ->sortable()
-                         ->formatStateUsing(fn($state) => "Sede: {$state}"),
+                        ->formatStateUsing(fn($state) => "Sede: {$state}"),
                     TextColumn::make('anexo')
                         ->searchable()
                         ->sortable()
-                         ->formatStateUsing(fn($state) => "Anexo: {$state}"),
+                        ->formatStateUsing(fn($state) => "Anexo: {$state}"),
                     // TextColumn::make('id_uo_estado')
                     //     ->label('Estado')
                     //     ->formatStateUsing(fn(int $state): string => match ($state) {
@@ -98,11 +99,34 @@ class AreasTable
             ])
             ->defaultSort('id_unidad_organica', 'asc')
             ->filters([
-                SelectFilter::make('id_uo_estado')
-                    ->options([
-                        1 => 'Activo',
-                        2 => 'Inactivo',
-                    ]),
+                SelectFilter::make('sede_id')
+                    ->label('Sede')
+                    ->searchable()
+                    ->options(fn() => Sede::pluck('nombre', 'id_sede')),
+                SelectFilter::make('id_unidad_organica')
+                    ->label('Área')
+                    ->searchable()
+                    ->options(function () {
+                        return Area::query()
+                            ->where('id_uo_estado', '1')
+                            ->get()
+                            ->mapWithKeys(function ($area) {
+                                // Combinamos nombre y abreviatura en el label
+                                return [$area->id_unidad_organica => "{$area->nombre} ({$area->abreviatura})"];
+                            });
+                    }),
+                    SelectFilter::make('dependencia_id')
+                    ->label('Dependencia')
+                    ->searchable()
+                    ->options(function () {
+                        return Area::query()
+                            ->where('id_uo_estado', '1')
+                            ->get()
+                            ->mapWithKeys(function ($area) {
+                                // Combinamos nombre y abreviatura en el label
+                                return [$area->id_unidad_organica => "{$area->nombre} ({$area->abreviatura})"];
+                            });
+                    }),
                 //     TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
                 // ])
                 // ->bulkActions([
