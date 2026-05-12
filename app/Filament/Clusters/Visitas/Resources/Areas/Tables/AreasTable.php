@@ -12,6 +12,11 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Layout\Panel;
 use Filament\Tables\Columns\Layout\Split;
@@ -19,6 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class AreasTable
@@ -26,64 +32,57 @@ class AreasTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(Area::with(['oficinas', 'sede', 'area'])->where('id_uo_estado', 1))
+            ->query(Area::with(['oficinas', 'sede'])->where('id_uo_estado', 1))
             ->columns([
+                // TextColumn::make('index')
+                //     ->label('#')
+                //     ->rowIndex() // <--- Esta es la clave en Filament v3
+                //     ->alignCenter(),
+                TextColumn::make('nombre')
+                    ->label('Nombre del Área')
+                    ->sortable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where(function ($q) use ($search) {
+                            $q->where('nombre', 'like', "%{$search}%")
+                                ->orWhere('abreviatura', 'like', "%{$search}%");
+                        });
+                    }),
+                TextColumn::make('sede.nombre')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('anexo')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable(),
+                // TextColumn::make('id_uo_estado')
+                //     ->label('Estado')
+                //     ->formatStateUsing(fn(int $state): string => match ($state) {
+                //         1 => 'Activo',
+                //         2 => 'Inactivo',
+                //         default => 'Desconocido',
+                //     })
+                //     ->badge()
+                //     ->color(fn(int $state): string => match ($state) {
+                //         1 => 'success', // Verde
+                //         2 => 'danger',  // Rojo
+                //         default => 'gray',
+                //     })
+                //     ->sortable()
 
-                // Usamos Split para la fila principal
-                Split::make([
-                    // TextColumn::make('index')
-                    //     ->label('#')
-                    //     ->rowIndex() // <--- Esta es la clave en Filament v3
-                    //     ->alignCenter(),
-                    TextColumn::make('nombre')
-                        ->searchable()
-                        ->sortable(),
-                    TextColumn::make('abreviatura')
-                        ->label('Área')
-                        ->searchable()
-                        ->sortable(),
-                    TextColumn::make('area.nombre')
-                        ->label('Dependencia')
-                        ->searchable()
-                        ->sortable()
-                        ->formatStateUsing(fn($state) => "Dependencia: {$state}"),
-                    TextColumn::make('sede.nombre')
-                        ->searchable()
-                        ->sortable()
-                        ->formatStateUsing(fn($state) => "Sede: {$state}"),
-                    TextColumn::make('anexo')
-                        ->searchable()
-                        ->sortable()
-                        ->formatStateUsing(fn($state) => "Anexo: {$state}"),
-                    // TextColumn::make('id_uo_estado')
-                    //     ->label('Estado')
-                    //     ->formatStateUsing(fn(int $state): string => match ($state) {
-                    //         1 => 'Activo',
-                    //         2 => 'Inactivo',
-                    //         default => 'Desconocido',
-                    //     })
-                    //     ->badge()
-                    //     ->color(fn(int $state): string => match ($state) {
-                    //         1 => 'success', // Verde
-                    //         2 => 'danger',  // Rojo
-                    //         default => 'gray',
-                    //     })
-                    //     ->sortable()
-                ]),
 
-                Panel::make([
-                    // Usamos la relación directamente
-                    TextColumn::make('oficinas')
-                        ->label('Detalle de Oficinas')
-                        ->listWithLineBreaks()
-                        ->bulleted()
-                        // Importante: $state aquí es la instancia de la oficina relacionada
-                        ->formatStateUsing(fn($state) => "Oficina: {$state->nombre} — Anexo: " . ($state->anexo ?? 'Sin anexo')),
-                ])
-                    ->collapsible()
-                    ->collapsed()
-                    // ESTA ES LA CLAVE: Solo se muestra si el conteo de oficinas es mayor a 0
-                    ->visible(fn($record) => $record->oficinas()->count() > 0), // Para que aparezca cerrado por defecto
+                // Panel::make([
+                //     // Usamos la relación directamente
+                //     TextColumn::make('oficinas')
+                //         ->label('Detalle de Oficinas')
+                //         ->listWithLineBreaks()
+                //         ->bulleted()
+                //         // Importante: $state aquí es la instancia de la oficina relacionada
+                //         ->formatStateUsing(fn($state) => "Oficina: {$state->nombre} — Anexo: " . ($state->anexo ?? 'Sin anexo')),
+                // ])
+                //     ->collapsible()
+                //     ->collapsed()
+                //     // ESTA ES LA CLAVE: Solo se muestra si el conteo de oficinas es mayor a 0
+                //     ->visible(fn($record) => $record->oficinas()->count() > 0), // Para que aparezca cerrado por defecto
 
 
 
@@ -115,35 +114,37 @@ class AreasTable
                                 return [$area->id_unidad_organica => "{$area->nombre} ({$area->abreviatura})"];
                             });
                     }),
-                    SelectFilter::make('dependencia_id')
-                    ->label('Dependencia')
-                    ->searchable()
-                    ->options(function () {
-                        return Area::query()
-                            ->where('id_uo_estado', '1')
-                            ->get()
-                            ->mapWithKeys(function ($area) {
-                                // Combinamos nombre y abreviatura en el label
-                                return [$area->id_unidad_organica => "{$area->nombre} ({$area->abreviatura})"];
-                            });
-                    }),
-                //     TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
-                // ])
-                // ->bulkActions([
-                //     DeleteBulkAction::make(),
-                //     RestoreBulkAction::make(),
-                //     ForceDeleteBulkAction::make(),
             ])
             ->recordActions([
-                // EditAction::make()
-                //     ->visible(fn($record) => $record->deleted_at === null && auth()->user()->hasPermissionTo('edit::visitas_area')),
-                // DeleteAction::make()
-                //     ->visible(fn($record) => $record->deleted_at === null),        // Mueve a la papelera (Soft Delete)
-                // RestoreAction::make()
-                //     ->visible(fn($record) => $record->deleted_at !== null),       // Restaura el registro
-                // ForceDeleteAction::make()
-                //     ->visible(fn($record) => $record->deleted_at !== null),  // Borra permanentemente
+                ViewAction::make()
+
+                    ->modalHeading(fn($record) => "Área: $record->nombre ($record->abreviatura)" ?? 'Oficina')
+                    ->modalWidth('4xl') // Un ancho mayor para que las 2 columnas respiren
+                    ->schema([
+
+                        RepeatableEntry::make('oficinas') // Relación HasMany
+                            ->label('Oficinas')
+                            ->schema([
+                                Section::make(fn($record) => $record->nombre ?? 'Oficina')
+                                    ->description('Haz clic para ver detalles de contacto y ubicación')
+                                    ->schema([
+                                        TextEntry::make('anexo')
+                                            ->icon('heroicon-m-phone')
+                                            ->copyable(),
+                                        TextEntry::make('ubicacion')
+                                            ->icon('heroicon-m-map-pin'),
+                                    ])
+                                    ->columns(2)
+                                    ->collapsible() // Esto permite expandir/contraer
+                                    ->collapsed(),  // Opcional: que aparezcan cerradas por defecto
+                            ])
+                            ->grid(1) // Una oficina debajo de otra
+                            ->columnSpanFull(),
+                    ])->iconButton()
+                    ->tooltip('Ver Oficinas')
+                    ->visible(fn($record) => $record->oficinas()->count() > 0), // Para que aparezca cerrado por defecto,
             ])
+
             ->toolbarActions([
                 // BulkActionGroup::make([
                 //     DeleteBulkAction::make(),
