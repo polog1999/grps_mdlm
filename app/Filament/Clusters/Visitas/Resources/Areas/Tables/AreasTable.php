@@ -99,7 +99,7 @@ class AreasTable
             ])
             ->defaultSort('id_unidad_organica', 'asc')
             ->filters([
-                SelectFilter::make('sede_id')
+                SelectFilter::make('id_sede')
                     ->label('Sede')
                     ->searchable()
                     ->options(fn() => Sede::pluck('nombre', 'id_sede')),
