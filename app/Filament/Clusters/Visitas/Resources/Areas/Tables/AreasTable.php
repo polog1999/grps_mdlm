@@ -52,8 +52,7 @@ class AreasTable
                     ->sortable(),
                 TextColumn::make('anexo')
                     ->searchable()
-                    ->sortable()
-                    ->copyable(),
+                    ->sortable(),
                 // TextColumn::make('id_uo_estado')
                 //     ->label('Estado')
                 //     ->formatStateUsing(fn(int $state): string => match ($state) {
@@ -129,8 +128,7 @@ class AreasTable
                                     ->description('Haz clic para ver detalles de contacto y ubicación')
                                     ->schema([
                                         TextEntry::make('anexo')
-                                            ->icon('heroicon-m-phone')
-                                            ->copyable(),
+                                            ->icon('heroicon-m-phone'),
                                         TextEntry::make('ubicacion')
                                             ->icon('heroicon-m-map-pin'),
                                     ])
