@@ -21,7 +21,7 @@ class TrabajadorResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $model = Trabajador::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $cluster = VisitasCluster::class;
 

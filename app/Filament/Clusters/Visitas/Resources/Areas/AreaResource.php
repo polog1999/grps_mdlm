@@ -20,7 +20,7 @@ class AreaResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $model = Area::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-group';
 
     protected static ?string $cluster = VisitasCluster::class;
 

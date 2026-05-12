@@ -23,7 +23,7 @@ class VisitaResource extends Resource
       protected static ?int $navigationSort = 1;
     protected static ?string $model = VisitaHistorico::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-left-on-rectangle';
 
     protected static ?string $navigationLabel = 'Visitas'; // <-- Cambia el nombre en el menú
     protected static ?string $pluralModelLabel = 'Visitas'; // Corrige el título principal y las migas de pan

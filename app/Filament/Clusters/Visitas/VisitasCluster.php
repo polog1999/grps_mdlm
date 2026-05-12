@@ -11,7 +11,7 @@ use UnitEnum;
 class VisitasCluster extends Cluster
 {
   
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
     // protected static string|UnitEnum|null $navigationGroup = 'Gestión de Visitas';
     
 
