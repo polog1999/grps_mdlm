@@ -792,8 +792,8 @@ class VisitaForm
                         $set('apellido_materno', $persona->apellido_materno);
                         $set('foto_url', $persona->foto_url); // Traer foto de la BD
                         Notification::make()
-                            ->title('BD local')
-                            ->body('Datos de la Base de Datos local')
+                            ->title('Autocompletado')
+                            ->body('Datos obtenidos correctamente')
                             ->success()
                             ->send();
                         return;
@@ -914,8 +914,8 @@ class VisitaForm
                         $set('direccion', $proveedor->direccion);
 
                         Notification::make()
-                            ->title('BD')
-                            ->body('Datos de la Base de Datos Externa')
+                            ->title('Autocompletado')
+                            ->body('Datos obtenidos correctamente')
                             ->success()
                             ->send();
                         return;

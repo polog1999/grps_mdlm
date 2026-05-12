@@ -15,20 +15,20 @@ class RucService
     public static function apiRuc(string $ruc)
     {
 
-        $token = 'sk_12033.5bubrAsJTdWkxxhkZACfP2FSaEE4nUDS';
-
+        $token = env('APIRUC_TOKEN');
+        $url = env('APIRUC_URL');
 
         $response = Http::withOptions([
             'verify' => false, // Equivale a 'verify' => false de Guzzle
             'connect_timeout' => 5,
         ])
             ->withHeaders([
-                'Referer' => 'https://api.decolecta.com/v1/sunat/ruc',
+                'Referer' => $url,
                 'User-Agent' => 'laravel/guzzle',
                 'Accept' => 'application/json',
             ])
             ->withToken($token) // Configura automáticamente el Bearer token
-            ->get("https://api.decolecta.com/v1/sunat/ruc?numero={$ruc}");
+            ->get("{$url}?numero={$ruc}");
 
         if ($response->successful()) {
             $data = $response->json();
@@ -44,20 +44,20 @@ class RucService
     }
     public static function apisPeruRuc(string $ruc)
     {
-        $token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InBvbG9nMTk5OUBnbWFpbC5jb20ifQ.6P29nBVsMtqIhnv2T3koQAnnocm2UzJLk4uvfouXHKA';
-
+        $token = env('APISPERURUC_TOKEN');
+        $url = env('APISPERURUC_URL');
 
         $response = Http::withOptions([
             'verify' => false, // Equivale a 'verify' => false de Guzzle
             'connect_timeout' => 5,
         ])
             ->withHeaders([
-                'Referer' => 'https://dniruc.apisperu.com/api/v1/ruc/',
+                'Referer' => $url,
                 'User-Agent' => 'laravel/guzzle',
                 'Accept' => 'application/json',
             ])
             ->withToken($token) // Configura automáticamente el Bearer token
-            ->get("https://dniruc.apisperu.com/api/v1/ruc/{$ruc}");
+            ->get("{$url}{$ruc}");
 
         if ($response->successful()) {
             $data = $response->json();
