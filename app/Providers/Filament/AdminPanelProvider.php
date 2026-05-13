@@ -39,10 +39,12 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->favicon(asset('favicon.png'))
             ->defaultThemeMode(ThemeMode::Light)
-            ->brandName('Intranet')
-            //->brandLogo(asset('images/logo.svg'))
-            ->favicon(asset('images/favicon.png'))
+            ->brandLogo(asset('Inicio_de_sesion.png'))
+            ->brandLogoHeight('7rem')
+            // Logo para el Menú Interno (Pequeño/Icono)
+            // Si no defines 'collapsedBrandLogo', usará el de arriba
             ->authGuard('web')
             ->authPasswordBroker('users')
             ->login(Login::class)
@@ -55,20 +57,20 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->topNavigation()
             ->passwordReset(RequestPasswordReset::class)
-            ->emailVerification() 
+            ->emailVerification()
             //->globalSearch(false)
             ->sidebarFullyCollapsibleOnDesktop()
-                    ->maxContentWidth(Width::Full)
+            ->maxContentWidth(Width::Full)
 
             ->colors([
                 'primary' => Color::Amber,
-                'white'=>'rgba(255, 255, 255, 1)',
+                'white' => 'rgba(255, 255, 255, 1)',
                 'danger-high' => 'rgba(231, 120, 120, 1)',
                 'danger-very-high' => 'rgba(110, 6, 6, 1)',
                 'primary' => Color::Green,
             ])
-             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
             ])
@@ -95,6 +97,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications() // <--- ESTO ES VITAL
             ->databaseNotificationsPolling('2s')
+            ->assets([
+                \Filament\Support\Assets\Css::make('custom-stylesheet', public_path('css/custom-filament.css')),
+            ])
 
         ; // Actualiza cada 3 segundos para ver el % real
 
