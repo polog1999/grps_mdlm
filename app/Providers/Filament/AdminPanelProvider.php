@@ -41,8 +41,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->favicon(asset('favicon.png'))
             ->defaultThemeMode(ThemeMode::Light)
-            ->brandName('Intranet')
-            //->brandLogo(asset('images/logo.svg'))
+            ->brandLogo(asset('Inicio_de_sesion.png'))
+            ->brandLogoHeight('7rem')
+            // Logo para el Menú Interno (Pequeño/Icono)
+            // Si no defines 'collapsedBrandLogo', usará el de arriba
             ->authGuard('web')
             ->authPasswordBroker('users')
             ->login(Login::class)
@@ -96,6 +98,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications() // <--- ESTO ES VITAL
             ->databaseNotificationsPolling('2s')
+            ->assets([
+                \Filament\Support\Assets\Css::make('custom-stylesheet', public_path('css/custom-filament.css')),
+            ])
 
         ; // Actualiza cada 3 segundos para ver el % real
 

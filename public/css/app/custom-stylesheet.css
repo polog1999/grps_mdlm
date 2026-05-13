@@ -1,0 +1,14 @@
+/* Oculta el logo solo dentro del panel (sidebar), pero lo mantiene en el login */
+/* .fi-sidebar-header .fi-logo, 
+.fi-topbar .fi-logo {
+    display: none !important;
+} */
+
+/* Asegura que el nombre (Brand Name) sea visible si ocultas el logo */
+/*  */
+/* 1. Reducir el logo en el menú lateral y barra superior */
+.fi-sidebar-header img, 
+.fi-topbar img {
+    height: 2.5rem !important; /* Tamaño discreto para el menú */
+    width: auto !important;
+}

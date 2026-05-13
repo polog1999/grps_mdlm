@@ -61,4 +61,13 @@ class Login extends BaseLogin
             'password' => $data['password'],
         ];
     }
+    public function getHeading(): string
+    {
+        return 'Bienvenido - Intranet';
+    }
+
+    public function getSubheading(): string
+    {
+        return 'Por favor, ingrese sus credenciales.';
+    }
 }
