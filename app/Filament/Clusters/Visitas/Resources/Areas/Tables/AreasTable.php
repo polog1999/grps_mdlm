@@ -22,6 +22,7 @@ class AreasTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->query(Area::with(['oficinas', 'sede'])->where('estado', 1))
             ->columns([
                 TextColumn::make('index')
                     ->label('#')
@@ -68,17 +69,54 @@ class AreasTable
             ])
             ->defaultSort('id_unidad_organica', 'asc')
             ->filters([
-                SelectFilter::make('id_uo_estado')
-                    ->options([
-                        1 => 'Activo',
-                        2 => 'Inactivo',
-                    ]),
-            //     TrashedFilter::make(), // Permite filtrar por: "Solo activos", "Solo eliminados", "Todos"
-            // ])
-            // ->bulkActions([
-            //     DeleteBulkAction::make(),
-            //     RestoreBulkAction::make(),
-            //     ForceDeleteBulkAction::make(),
+                SelectFilter::make('id_sede')
+                    ->label('Sede')
+                    ->searchable()
+                    ->options(fn() => Sede::pluck('nombre', 'id_sede')),
+                SelectFilter::make('id_unidad_organica')
+                    ->label('Área')
+                    ->searchable()
+                    ->options(function () {
+                        return Area::query()
+                            ->where('estado', '1')
+                            ->get()
+                            ->mapWithKeys(function ($area) {
+                                // Combinamos nombre y abreviatura en el label
+                                return [$area->id_unidad_organica => "{$area->nombre} ({$area->abreviatura})"];
+                            });
+                    }),
+                SelectFilter::make('id_unidad_organica')
+                    ->label('Área')
+                    ->searchable()
+                    ->options(function () {
+                        return Area::query()
+                            ->where('estado', '1')
+                            ->get()
+                            ->mapWithKeys(function ($area) {
+                                // Combinamos nombre y abreviatura en el label
+                                return [$area->id_unidad_organica => "{$area->nombre} ({$area->abreviatura})"];
+                            });
+                    }),
+                SelectFilter::make('oficina')
+                    ->label('Oficina')
+                    ->searchable()
+                    ->options(function () {
+                        // Traemos las oficinas para llenar el select
+                        return Oficina::query()
+                          
+                            ->pluck('nombre', 'id_unidad_organica'); // 'id' de la oficina
+                    })
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        // Filtramos la tabla Areas (Unidad Orgánica) buscando si tiene 
+                        // la oficina seleccionada mediante la relación
+                        return $query->whereHas('oficinas', function (Builder $q) use ($data) {
+                            $q->where('id_unidad_organica', $data['value']);
+                        });
+                    })
             ])
             ->recordActions([
                 // EditAction::make()

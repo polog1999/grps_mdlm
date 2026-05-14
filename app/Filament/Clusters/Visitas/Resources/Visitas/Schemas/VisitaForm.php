@@ -477,7 +477,7 @@ class VisitaForm
                             ->label('Área de Destino')
                             ->options(
                                 fn() => Area::query()
-                                    ->where('id_uo_estado', 1)
+                                    ->where('estado', 1)
                                     // Agrupamos el filtro de sede para no romper el id_uo_estado
                                     ->when(
                                         !auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']),
@@ -584,6 +584,7 @@ class VisitaForm
 
                                 return Oficina::query()
                                     ->where('id_unidad_organica', $areaId)
+                                    ->where('estado',1)
                                     ->get()
                                     ->mapWithKeys(function ($oficina) {
                                         // Forzamos que el label sea un string y no null

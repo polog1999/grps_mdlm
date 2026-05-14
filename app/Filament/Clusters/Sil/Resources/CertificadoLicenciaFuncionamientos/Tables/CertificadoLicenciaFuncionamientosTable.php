@@ -821,7 +821,7 @@ class CertificadoLicenciaFuncionamientosTable
                                 return;
                             }
 
-                            \App\Models\SolicitudPermiso::create([
+                            $permiso = \App\Models\SolicitudPermiso::create([
                                 'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
                                 'record_id' => $record->lic_id,
                                 'user_id' => $user->id,
@@ -835,7 +835,24 @@ class CertificadoLicenciaFuncionamientosTable
                                 ->body('Su solicitud ha sido registrada y está pendiente de aprobación.')
                                 ->success()
                                 ->send();
+                            // 1. Obtener los destinatarios (ejemplo: Rol ID 1)
+                            // Buscamos usuarios que tengan cualquiera de estos roles
+                            $recipients = \App\Models\User::role([1, 2])->get();
 
+                            Notification::make()
+                                ->title('Nueva Solicitud de Permiso')
+                                ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                ->icon('heroicon-o-document-text')
+                                ->color('warning')
+                                // AQUÍ EL BOTÓN
+                                ->actions([
+                                    Action::make('view')
+                                        ->label('Ver Solicitud')
+                                        ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.edit', $permiso->id)) // Cambia a tu ruta real
+                                        ->button()
+                                        ->markAsRead(),
+                                ])
+                                ->sendToDatabase($recipients);
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error')
@@ -1293,7 +1310,6 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
-
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
@@ -1349,7 +1365,6 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body($result['message'])
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error del Sistema')
@@ -1384,9 +1399,6 @@ class CertificadoLicenciaFuncionamientosTable
                             }
 
                             return 'Gestión de Certificado de Compatibilidad';
-
-
-
                         })
                         ->modalDescription(function ($record) {
                             $service = app(CompatibilidadCertificadoPdfService::class);
@@ -1592,7 +1604,6 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
-
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
@@ -1648,7 +1659,6 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body($result['message'])
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error del Sistema')
@@ -1737,7 +1747,6 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de duplicación ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -1809,7 +1818,6 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de transferencia ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -1881,7 +1889,6 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de cesionario ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -1954,7 +1961,6 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de rectificación ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -2167,7 +2173,6 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->body('Su solicitud de baja ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
-
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
