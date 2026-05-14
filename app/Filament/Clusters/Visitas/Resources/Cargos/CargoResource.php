@@ -20,7 +20,7 @@ class CargoResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $model = Cargo::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
 
     protected static ?string $cluster = VisitasCluster::class;
 

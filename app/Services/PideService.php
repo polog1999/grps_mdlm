@@ -15,7 +15,8 @@ class PideService
     public static function apiPeruDni(string $dni)
     {
 
-        $token = 'ec74f3f9343e5e66d30dd3eb893919f46b2808fc6761f693872834a01ea1ed4c';
+        $token = env('APIPERU_TOKEN');
+        $url = env('APIPERU_URL');
         // $numero = '46027897';
 
         $response = Http::withOptions([
@@ -23,12 +24,12 @@ class PideService
             'connect_timeout' => 5,
         ])
             ->withHeaders([
-                'Referer' => 'https://apiperu.dev/api/dni/',
+                'Referer' => $url,
                 'User-Agent' => 'laravel/guzzle',
                 'Accept' => 'application/json',
             ])
             ->withToken($token) // Configura automáticamente el Bearer token
-            ->get("https://apiperu.dev/api/dni/{$dni}");
+            ->get("{$url}{$dni}");
 
         if ($response->successful()) {
             $data = $response->json();
@@ -44,20 +45,20 @@ class PideService
     public static function apisNet(string $dni)
     {
 
-        $token = 'sk_10485.BDeLFALoYtFCqCW7g0XvEnFHDALKKhFP';
-        // $numero = '46027897';
+        $token = env('APISNET_TOKEN');
+        $url = env('APISNET_URL');
 
         $response = Http::withOptions([
             'verify' => false, // Equivale a 'verify' => false de Guzzle
             'connect_timeout' => 5,
         ])
             ->withHeaders([
-                'Referer' => 'https://api.apis.net.pe/v1/',
+                'Referer' => $url,
                 'User-Agent' => 'laravel/guzzle',
                 'Accept' => 'application/json',
             ])
             ->withToken($token) // Configura automáticamente el Bearer token
-            ->get("https://api.apis.net.pe/v1/dni?numero={$dni}");
+            ->get("{$url}dni?numero={$dni}");
 
         if ($response->successful()) {
             $data = $response->json();

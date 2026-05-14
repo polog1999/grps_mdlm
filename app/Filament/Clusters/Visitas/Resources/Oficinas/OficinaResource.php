@@ -20,7 +20,7 @@ class OficinaResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $model = Oficina::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
     protected static ?string $cluster = VisitasCluster::class;
 
