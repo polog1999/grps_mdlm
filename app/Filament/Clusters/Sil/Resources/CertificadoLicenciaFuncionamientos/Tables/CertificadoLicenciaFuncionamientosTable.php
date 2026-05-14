@@ -821,7 +821,7 @@ class CertificadoLicenciaFuncionamientosTable
                                 return;
                             }
 
-                            $permiso = \App\Models\SolicitudPermiso::create([
+                            \App\Models\SolicitudPermiso::create([
                                 'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
                                 'record_id' => $record->lic_id,
                                 'user_id' => $user->id,
@@ -837,10 +837,11 @@ class CertificadoLicenciaFuncionamientosTable
                                 ->send();
                             // 1. Obtener los destinatarios (ejemplo: Rol ID 1)
                             // Buscamos usuarios que tengan cualquiera de estos roles
-                            $recipients = \App\Models\User::role([1, 2])->get();
+                            $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                ->permission('edit::solicitud_permisos')->get();
 
                             Notification::make()
-                                ->title('Nueva Solicitud de Permiso')
+                                ->title('Nueva Solicitud de Permiso para Editar Licencia')
                                 ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
                                 ->icon('heroicon-o-document-text')
                                 ->color('warning')
@@ -848,7 +849,7 @@ class CertificadoLicenciaFuncionamientosTable
                                 ->actions([
                                     Action::make('view')
                                         ->label('Ver Solicitud')
-                                        ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.edit', $permiso->id)) // Cambia a tu ruta real
+                                        ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
                                         ->button()
                                         ->markAsRead(),
                                 ])
@@ -1310,6 +1311,23 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
+
+                                    $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                        ->permission('edit::solicitud_permisos')->get();
+                                    Notification::make()
+                                        ->title('Nueva Solicitud de Permiso para Actualizar Certificado')
+                                        ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                        ->icon('heroicon-o-document-text')
+                                        ->color('warning')
+                                        // AQUÍ EL BOTÓN
+                                        ->actions([
+                                            Action::make('view')
+                                                ->label('Ver Solicitud')
+                                                ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                                ->button()
+                                                ->markAsRead(),
+                                        ])
+                                        ->sendToDatabase($recipients);
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
@@ -1604,6 +1622,23 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->body('Su solicitud de actualización ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
+
+                                    $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                        ->permission('edit::solicitud_permisos')->get();
+                                    Notification::make()
+                                        ->title('Nueva Solicitud de Permiso para Actualizar Compatibilidad')
+                                        ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                        ->icon('heroicon-o-document-text')
+                                        ->color('warning')
+                                        // AQUÍ EL BOTÓN
+                                        ->actions([
+                                            Action::make('view')
+                                                ->label('Ver Solicitud')
+                                                ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                                ->button()
+                                                ->markAsRead(),
+                                        ])
+                                        ->sendToDatabase($recipients);
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
@@ -1747,6 +1782,23 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de duplicación ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
+
+                                $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                    ->permission('edit::solicitud_permisos')->get();
+                                Notification::make()
+                                    ->title('Nueva Solicitud de Permiso para Duplicar Licencia')
+                                    ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                    ->icon('heroicon-o-document-text')
+                                    ->color('warning')
+                                    // AQUÍ EL BOTÓN
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver Solicitud')
+                                            ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                            ->button()
+                                            ->markAsRead(),
+                                    ])
+                                    ->sendToDatabase($recipients);
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -1818,6 +1870,23 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de transferencia ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
+
+                                $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                    ->permission('edit::solicitud_permisos')->get();
+                                Notification::make()
+                                    ->title('Nueva Solicitud de Permiso para Transferir Licencia')
+                                    ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                    ->icon('heroicon-o-document-text')
+                                    ->color('warning')
+                                    // AQUÍ EL BOTÓN
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver Solicitud')
+                                            ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                            ->button()
+                                            ->markAsRead(),
+                                    ])
+                                    ->sendToDatabase($recipients);
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -1889,6 +1958,23 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de cesionario ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
+
+                                $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                    ->permission('edit::solicitud_permisos')->get();
+                                Notification::make()
+                                    ->title('Nueva Solicitud de Permiso para Cesionar Licencia')
+                                    ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                    ->icon('heroicon-o-document-text')
+                                    ->color('warning')
+                                    // AQUÍ EL BOTÓN
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver Solicitud')
+                                            ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                            ->button()
+                                            ->markAsRead(),
+                                    ])
+                                    ->sendToDatabase($recipients);
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -1961,6 +2047,23 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->body('Su solicitud de rectificación ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
+
+                                $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                    ->permission('edit::solicitud_permisos')->get();
+                                Notification::make()
+                                    ->title('Nueva Solicitud de Permiso para Rectificar Licencia')
+                                    ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                    ->icon('heroicon-o-document-text')
+                                    ->color('warning')
+                                    // AQUÍ EL BOTÓN
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver Solicitud')
+                                            ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                            ->button()
+                                            ->markAsRead(),
+                                    ])
+                                    ->sendToDatabase($recipients);
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
@@ -2173,6 +2276,23 @@ class CertificadoLicenciaFuncionamientosTable
                                         ->body('Su solicitud de baja ha sido registrada y está pendiente de aprobación.')
                                         ->success()
                                         ->send();
+
+                                    $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                        ->permission('edit::solicitud_permisos')->get();
+                                    Notification::make()
+                                        ->title('Nueva Solicitud de Permiso para Dar de Baja Licencia')
+                                        ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                        ->icon('heroicon-o-document-text')
+                                        ->color('warning')
+                                        // AQUÍ EL BOTÓN
+                                        ->actions([
+                                            Action::make('view')
+                                                ->label('Ver Solicitud')
+                                                ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                                ->button()
+                                                ->markAsRead(),
+                                        ])
+                                        ->sendToDatabase($recipients);
                                 } catch (\Exception $e) {
                                     Notification::make()
                                         ->title('Error')
