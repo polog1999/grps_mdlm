@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\LicenciasLevantamientos\Tables;
 
+use App\Models\CertificadoLicenciaFuncionamiento;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -20,6 +21,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Schemas\Components\Grid;
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\DB;
 
 class LicenciasLevantamientosTable
 {
@@ -43,12 +45,12 @@ class LicenciasLevantamientosTable
                             });
                         })
                             ->orWhereHas('licenciaCatastro.fichaUbicacionInfocat', function ($sub) use ($tableName) {
-                            $sub->whereExists(function ($existsQuery) use ($tableName) {
-                                $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
-                                    ->from($tableName) // La tabla que usa tu servicio
-                                    ->whereRaw("{$tableName}.sml = SUBSTRING(fiu_codcat, 3, 6)");
+                                $sub->whereExists(function ($existsQuery) use ($tableName) {
+                                    $existsQuery->select(\Illuminate\Support\Facades\DB::raw(1))
+                                        ->from($tableName) // La tabla que usa tu servicio
+                                        ->whereRaw("{$tableName}.sml = SUBSTRING(fiu_codcat, 3, 6)");
+                                });
                             });
-                        });
                     });
             })
             ->defaultSort('lic_filafecha', 'desc')
@@ -383,19 +385,19 @@ class LicenciasLevantamientosTable
                         //     ->placeholder('Ingrese observaciones sobre esta acción...')
                         //     ->maxLength(1000),
                         Select::make('observaciones')
-                        ->options(fn() =>
-                        [
-                            'LICENCIA ACTIVA, GIRO SIN USO' => 'LICENCIA ACTIVA, GIRO SIN USO',
-                            'LICENCIA UNICA, GIRO EN USO' => 'LICENCIA UNICA, GIRO EN USO',
-                            'LICENCIA CON GIRO EN USO' => 'LICENCIA CON GIRO EN USO',
-                            'LICENCIA EMITIDA DESPUES DEL LEVANTAMIENTO' => 'LICENCIA EMITIDA DESPUES DEL LEVANTAMIENTO',
-                            'PARA FISCALIZACION, NO CONCUERDA GIRO' => 'PARA FISCALIZACION, NO CONCUERDA GIRO',
-                            'LICENCIA EN ESTADO DE BAJA' => 'LICENCIA EN ESTADO DE BAJA',
-                            'LICENCIA EN ESTADO DE BAJA - HISTORICO' => 'LICENCIA EN ESTADO DE BAJA - HISTORICO',
-                            'LICENCIA YA NO VIGENTE, ACTIVA EN EL SISTEMA' => 'LICENCIA YA NO VIGENTE, ACTIVA EN EL SISTEMA'
-                        ])->searchable()
-                        ->required()
-    
+                            ->options(fn() =>
+                            [
+                                'LICENCIA ACTIVA, GIRO SIN USO' => 'LICENCIA ACTIVA, GIRO SIN USO',
+                                'LICENCIA UNICA, GIRO EN USO' => 'LICENCIA UNICA, GIRO EN USO',
+                                'LICENCIA CON GIRO EN USO' => 'LICENCIA CON GIRO EN USO',
+                                'LICENCIA EMITIDA DESPUES DEL LEVANTAMIENTO' => 'LICENCIA EMITIDA DESPUES DEL LEVANTAMIENTO',
+                                'PARA FISCALIZACION, NO CONCUERDA GIRO' => 'PARA FISCALIZACION, NO CONCUERDA GIRO',
+                                'LICENCIA EN ESTADO DE BAJA' => 'LICENCIA EN ESTADO DE BAJA',
+                                'LICENCIA EN ESTADO DE BAJA - HISTORICO' => 'LICENCIA EN ESTADO DE BAJA - HISTORICO',
+                                'LICENCIA YA NO VIGENTE, ACTIVA EN EL SISTEMA' => 'LICENCIA YA NO VIGENTE, ACTIVA EN EL SISTEMA'
+                            ])->searchable()
+                            ->required()
+
                     ])
                     ->fillForm(function ($record) {
                         // Pre-llenar con el estado más reciente si existe
@@ -417,6 +419,27 @@ class LicenciasLevantamientosTable
                                 'observaciones' => $data['observaciones'] ?? null,
                                 'updated_by' => auth()->id(),
                             ]);
+                            $sml = CertificadoLicenciaFuncionamiento::with(['licenciaCatastro.fichaUbicacionSyscat', 'licenciaCatastro.fichaUbicacionInfocat'])->where('licencia.licencia.lic_id', $record->lic_id)
+                                ->join('licencia.licenciacatastro', 'licencia.licencia.lic_id', '=', 'licencia.licenciacatastro.lic_id') // Ajusta tus FKs
+                                ->leftJoin('syscat.fichaubicacion', 'licencia.licenciacatastro.fiu_id_syscat', '=', 'syscat.fichaubicacion.fiu_id')
+                                ->leftJoin('infocat.fichaubicacion', 'licencia.licenciacatastro.fiu_id_infocat', '=', 'infocat.fichaubicacion.fiu_id')
+                                ->select(DB::raw("
+                                    CASE 
+                                        WHEN syscat.fichaubicacion.fiu_coduca IS NOT NULL THEN SUBSTRING(syscat.fichaubicacion.fiu_coduca, 7, 6)
+                                        WHEN infocat.fichaubicacion.fiu_codcat IS NOT NULL THEN SUBSTRING(infocat.fichaubicacion.fiu_codcat, 3, 6)
+                                        ELSE NULL 
+                                    END as sml_calculado
+                                "))
+                                ->value('sml_calculado');
+
+                            DB::connection('pgsql_finereport')->table('catastro.AE_ACCIONES')
+                                ->where('LIC_ACCION', $record->lic_numlic)
+                                ->where('SML', $sml)
+                                ->update([
+                                    'ACCION' => $data['observaciones'] ?? null,
+                                    'FEC_ACCION' => now()->format('Y-m-d'),
+                                ]);
+
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Estado actualizado')
@@ -432,6 +455,28 @@ class LicenciasLevantamientosTable
                                 'created_by' => auth()->id(),
                                 'updated_by' => auth()->id(),
                             ]);
+
+                            $sml = CertificadoLicenciaFuncionamiento::with(['licenciaCatastro.fichaUbicacionSyscat', 'licenciaCatastro.fichaUbicacionInfocat'])->where('licencia.licencia.lic_id', $record->lic_id)
+                                ->join('licencia.licenciacatastro', 'licencia.licencia.lic_id', '=', 'licencia.licenciacatastro.lic_id') // Ajusta tus FKs
+                                ->leftJoin('syscat.fichaubicacion', 'licencia.licenciacatastro.fiu_id_syscat', '=', 'syscat.fichaubicacion.fiu_id')
+                                ->leftJoin('infocat.fichaubicacion', 'licencia.licenciacatastro.fiu_id_infocat', '=', 'infocat.fichaubicacion.fiu_id')
+                                ->select(DB::raw("
+                                    CASE 
+                                        WHEN syscat.fichaubicacion.fiu_coduca IS NOT NULL THEN SUBSTRING(syscat.fichaubicacion.fiu_coduca, 7, 6)
+                                        WHEN infocat.fichaubicacion.fiu_codcat IS NOT NULL THEN SUBSTRING(infocat.fichaubicacion.fiu_codcat, 3, 6)
+                                        ELSE NULL 
+                                    END as sml_calculado
+                                "))
+                                ->value('sml_calculado');
+
+                            DB::connection('pgsql_finereport')->table('catastro.AE_ACCIONES')
+                                ->insert([
+                                    'SML' => $sml,
+                                    'ACCION' => $data['observaciones'] ?? null,
+                                    'FEC_ACCION' => now()->format('Y-m-d'),
+                                    'SEGMENTO' => 'B1',
+                                    'LIC_ACCION' =>  $record->lic_numlic
+                                ]);
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Estado registrado')
@@ -575,8 +620,7 @@ class LicenciasLevantamientosTable
             ], position: RecordActionsPosition::BeforeCells)
             //->actionsColumnLabel('Acciones')
             ->toolbarActions([
-                BulkActionGroup::make([
-                ]),
+                BulkActionGroup::make([]),
             ]);
     }
 }
