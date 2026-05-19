@@ -19,6 +19,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Schemas\Components\Grid;
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
+use Filament\Forms\Components\Select;
 
 class LicenciasLevantamientosTable
 {
@@ -376,11 +377,25 @@ class LicenciasLevantamientosTable
                         \Filament\Forms\Components\Hidden::make('id_estado_levantamiento')
                             ->default(3),
 
-                        \Filament\Forms\Components\Textarea::make('observaciones')
-                            ->label('Observaciones')
-                            ->rows(4)
-                            ->placeholder('Ingrese observaciones sobre esta acción...')
-                            ->maxLength(1000),
+                        // \Filament\Forms\Components\Textarea::make('observaciones')
+                        //     ->label('Observaciones')
+                        //     ->rows(4)
+                        //     ->placeholder('Ingrese observaciones sobre esta acción...')
+                        //     ->maxLength(1000),
+                        Select::make('observaciones')
+                        ->options(fn() =>
+                        [
+                            'LICENCIA ACTIVA, GIRO SIN USO' => 'LICENCIA ACTIVA, GIRO SIN USO',
+                            'LICENCIA UNICA, GIRO EN USO' => 'LICENCIA UNICA, GIRO EN USO',
+                            'LICENCIA CON GIRO EN USO' => 'LICENCIA CON GIRO EN USO',
+                            'LICENCIA EMITIDA DESPUES DEL LEVANTAMIENTO' => 'LICENCIA EMITIDA DESPUES DEL LEVANTAMIENTO',
+                            'PARA FISCALIZACION, NO CONCUERDA GIRO' => 'PARA FISCALIZACION, NO CONCUERDA GIRO',
+                            'LICENCIA EN ESTADO DE BAJA' => 'LICENCIA EN ESTADO DE BAJA',
+                            'LICENCIA EN ESTADO DE BAJA - HISTORICO' => 'LICENCIA EN ESTADO DE BAJA - HISTORICO',
+                            'LICENCIA YA NO VIGENTE, ACTIVA EN EL SISTEMA' => 'LICENCIA YA NO VIGENTE, ACTIVA EN EL SISTEMA'
+                        ])->searchable()
+                        ->required()
+    
                     ])
                     ->fillForm(function ($record) {
                         // Pre-llenar con el estado más reciente si existe
