@@ -475,7 +475,9 @@ class LicenciasLevantamientosTable
                                     'ACCION' => $data['observaciones'] ?? null,
                                     'FEC_ACCION' => now()->format('Y-m-d'),
                                     'SEGMENTO' => 'B1',
-                                    'LIC_ACCION' =>  $record->lic_numlic
+                                    'LIC_ACCION' =>  $record->lic_numlic,
+                                    'EST_ACCION' => 'ABIERTO',
+                                    'POS_ACCION' => 'ACCION_POSTERIOR'
                                 ]);
 
                             \Filament\Notifications\Notification::make()
