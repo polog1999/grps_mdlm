@@ -10,6 +10,7 @@ use App\Services\Sil\CertificadoInspeccion\ResolucionService;
 use App\Models\NivelRiesgo;
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\BusquedaStep;
 use App\Filament\Clusters\Sil\Resources\CertificadoInspeccionResource\Schemas\Steps\DatosCompletosStep;
+use App\Models\CertificadoInspeccion;
 use App\Services\Sil\Licencias\CertificadoLincenciaFuncionamientoService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -30,7 +31,7 @@ use Carbon\Carbon;
 use Filament\Tables\Grouping\Group;
 use Filament\Forms\Components\Hidden;
 use Illuminate\Support\HtmlString;
-
+use Illuminate\Validation\ValidationException;
 
 /**
  * Esquema del formulario para Certificado de Inspección.
@@ -815,8 +816,30 @@ class CertificadoInspeccionForm
                 ->warning()
                 ->duration(5000)
                 ->send();
-            return;
+            // return;
+            // Lanzamos la excepción apuntando a uno de los campos para detener a Filament
+        throw ValidationException::withMessages([
+            'search_resolucion' => 'Debe ingresar al menos un criterio de búsqueda.',
+        ]);
         }
+         if(!empty($expediente)){
+            $existeItse = CertificadoInspeccion::where('cin_expediente', $expediente)->where('cin_filaeliminada', false)->exists();
+            if($existeItse){
+                  Notification::make()
+                ->title('Certificado de Inspección encontrado')
+                ->body('Ya existe un Certificado con este Expediente.')
+                ->warning()
+                ->duration(5000)
+                ->send();
+            // return;
+            // Lanzamos la excepción apuntando a uno de los campos para detener a Filament
+        throw ValidationException::withMessages([
+            'search_resolucion' => 'Ya existe un Certificado con este Expediente.',
+        ]);
+            }
+         }
+
+
 
         try {
             // Si se proporcionó resolución, buscar expediente primero
