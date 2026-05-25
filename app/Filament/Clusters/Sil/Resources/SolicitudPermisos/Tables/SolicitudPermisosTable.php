@@ -34,7 +34,7 @@ class SolicitudPermisosTable
                     // Admin y Coordinador ven todos los tickets
                 } elseif ($user_role_id === 2) {
                     $query->where('module_id', 2); // Only Licencias
-                } elseif ($user_role_id === 6) {
+                } elseif (in_array($user_role_id, [6, 20])) {
                     $query->where('module_id', 1); // Only ITSE
                 } else {
                     // Otros usuarios solo ven sus propios tickets
@@ -107,8 +107,8 @@ class SolicitudPermisosTable
                         if ($user_role_id === 2) {
                             return $record->module_id === 2;
                         }
-                        // Role 6 = ITSE (only ITSE - module_id=1)
-                        if ($user_role_id === 6) {
+                        // Role 6  y 20= ITSE (only ITSE - module_id=1)
+                        if (in_array($user_role_id, [6, 20])) {
                             return $record->module_id === 1;
                         }
 
