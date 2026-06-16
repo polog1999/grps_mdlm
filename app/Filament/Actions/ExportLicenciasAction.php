@@ -376,7 +376,7 @@ class ExportLicenciasAction
                 'header' => 'FECHA EMISION',
                 'header_variations' => ['fecha emision', 'Fecha Emision', 'FECHA_EMISION', 'fecha_emision', 'EMISION'],
                 'data' => $records->map(function ($record) {
-                    return \Carbon\Carbon::parse($record->lic_filafecha)->format('d/m/Y') ?? '';
+                    return \Carbon\Carbon::parse($record->lic_fechaemision)->format('d/m/Y') ?? '';
                 })->toArray(),
                 'default_col' => 'M',
             ],
