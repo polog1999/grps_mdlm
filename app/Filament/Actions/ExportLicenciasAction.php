@@ -55,7 +55,7 @@ class ExportLicenciasAction
     /**
      * Obtiene los registros filtrados desde el Livewire
      */
-    protected static function getFilteredRecords($livewire)
+    protected static function   getFilteredRecords($livewire)
     {
         $tableFilters = $livewire->tableFilters ?? [];
         $query = CertificadoLicenciaFuncionamiento::query()->where('lic_filaeliminada', false);
@@ -110,13 +110,12 @@ class ExportLicenciasAction
                 $query->where($filter, $tableFilters[$filter]['value']);
             }
         }
-
-        // Filtro de fecha de emisión (rango)
+        // Filtro de fecha de emisión (rango) - ¡CORREGIDO Y SEGURO!
         if (isset($tableFilters['lic_fechaemision']['from']) && !empty($tableFilters['lic_fechaemision']['from'])) {
-            $query->whereDate('lic_fechaemision', '>=', $tableFilters['lic_fechaemision']['from']);
+            $query->where('lic_fechaemision', '>=', $tableFilters['lic_fechaemision']['from']);
         }
         if (isset($tableFilters['lic_fechaemision']['to']) && !empty($tableFilters['lic_fechaemision']['to'])) {
-            $query->whereDate('lic_fechaemision', '<=', $tableFilters['lic_fechaemision']['to']);
+            $query->where('lic_fechaemision', '<=', $tableFilters['lic_fechaemision']['to']);
         }
 
         // Filtro de fecha de vencimiento (rango)
@@ -127,12 +126,13 @@ class ExportLicenciasAction
             $query->whereDate('lic_fechavencimiento', '<=', $tableFilters['lic_fechavencimiento']['to']);
         }
 
-        // Filtro de fecha de fila (lic_filafecha - rango)
+
+        // Filtro de fecha de fila (lic_filafecha - rango) - ¡CORREGIDO Y SEGURO!
         if (isset($tableFilters['lic_filafecha']['desde']) && !empty($tableFilters['lic_filafecha']['desde'])) {
-            $query->whereDate('lic_filafecha', '>=', $tableFilters['lic_filafecha']['desde']);
+            $query->where('lic_filafecha', '>=', $tableFilters['lic_filafecha']['desde']);
         }
         if (isset($tableFilters['lic_filafecha']['hasta']) && !empty($tableFilters['lic_filafecha']['hasta'])) {
-            $query->whereDate('lic_filafecha', '<=', $tableFilters['lic_filafecha']['hasta']);
+            $query->where('lic_filafecha', '<=', $tableFilters['lic_filafecha']['hasta']);
         }
 
         // Filtro de código catastral (búsqueda en vista)

@@ -499,10 +499,10 @@ class CertificadoLicenciaFuncionamientosTable
                 Filter::make('lic_filafecha')
                     ->form([
                         DatePicker::make('desde')
-                            ->label('Desde')
+                            ->label('Registro desde')
                             ->placeholder('Seleccione fecha inicial')
                             ->native(false),
-                        DatePicker::make('hasta')
+                        DatePicker::make('Registro hasta')
                             ->label('Hasta')
                             ->placeholder('Seleccione fecha final')
                             ->native(false),
@@ -529,6 +529,25 @@ class CertificadoLicenciaFuncionamientosTable
                             $indicators[] = 'Hasta: ' . \Carbon\Carbon::parse($data['hasta'])->format('d/m/Y');
                         }
 
+                        return $indicators;
+                    }),
+
+                // 2. EL NUEVO FILTRO (Fecha de Emisión) - ¡AÑADE ESTE BLOQUE!
+                Filter::make('lic_fechaemision')
+                    ->form([
+                        DatePicker::make('from')->label('Emisión Desde')->placeholder('Fecha inicial')->native(false),
+                        DatePicker::make('to')->label('Emisión Hasta')->placeholder('Fecha final')->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            // Usamos 'where' directo en lugar de 'whereDate' para que sea instantáneo
+                            ->when(!empty($data['from']), fn($q) => $q->where('lic_fechaemision', '>=', $data['from']))
+                            ->when(!empty($data['to']), fn($q) => $q->where('lic_fechaemision', '<=', $data['to']));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if (!empty($data['from'])) $indicators[] = 'Emisión Desde: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                        if (!empty($data['to'])) $indicators[] = 'Emisión Hasta: ' . \Carbon\Carbon::parse($data['to'])->format('d/m/Y');
                         return $indicators;
                     }),
 
