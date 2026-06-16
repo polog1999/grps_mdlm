@@ -371,6 +371,15 @@ class ExportLicenciasAction
                 })->toArray(),
                 'default_col' => 'L',
             ],
+            // FECHA EMISION: estado de la licencia
+            [
+                'header' => 'FECHA EMISION',
+                'header_variations' => ['fecha emision', 'Fecha Emision', 'FECHA_EMISION', 'fecha_emision', 'EMISION'],
+                'data' => $records->map(function ($record) {
+                    return \Carbon\Carbon::parse($record->lic_filafecha)->format('d/m/Y') ?? '';
+                })->toArray(),
+                'default_col' => 'M',
+            ],
         ];
     }
 
