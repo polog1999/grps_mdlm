@@ -297,8 +297,8 @@
 
 <body>
 
-    <!-- Número arriba a la derecha (absoluto para no mover el resto) -->
-    <div style="position: absolute; top: 105px; right: 130px; font-size: 22px; font-weight: bold;">
+    <!-- Número arriba a la derecha (absoluto para no mover el resto) antes top: 105px; right: 130px;-->
+    <div style="position: absolute; top: 130px; right: 182px; font-size: 22px; font-weight: bold;">
         00{{$record->cin_numero}}
     </div>
 
