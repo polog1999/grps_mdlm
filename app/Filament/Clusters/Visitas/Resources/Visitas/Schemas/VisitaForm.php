@@ -26,6 +26,8 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use NunoMaduro\Collision\Adapters\Phpunit\State;
 
+use function Livewire\trigger;
+
 class VisitaForm
 {
     public static function configure(Schema $schema): Schema
@@ -479,15 +481,15 @@ class VisitaForm
                                 fn() => Area::query()
                                     ->where('estado', 1)
                                     // Agrupamos el filtro de sede para no romper el id_uo_estado
-                                    ->when(
-                                        !auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']),
-                                        function ($query) {
-                                            $query->where(function ($q) {
-                                                $q->where('id_sede', auth()->user()->sede_id)
-                                                    ->orWhere('id_unidad_organica', '1');
-                                            });
-                                        }
-                                    )
+                                    // ->when(
+                                    //     !auth()->user()->hasAnyRole(['Administrador OTIE', 'Control Interno - Supervisor']),
+                                    //     function ($query) {
+                                    //         $query->where(function ($q) {
+                                    //             $q->where('id_sede', auth()->user()->sede_id)
+                                    //                 ->orWhere('id_unidad_organica', '1');
+                                    //         });
+                                    //     }
+                                    // )
                                     ->orderBy('nombre', 'asc')
                                     ->get() // Traemos los modelos para poder manipular el nombre
                                     ->mapWithKeys(function ($area) {
@@ -499,7 +501,56 @@ class VisitaForm
                                         return [$area->id_unidad_organica => $label];
                                     })
                             )
-
+                            // === AGREGADO: BÚSQUEDA AVANZADA POR ÁREA O POR TRABAJADOR ===
+                            ->getSearchResultsUsing(function (string $search) {
+                                return Area::query()
+                                    ->where('estado', 1)
+                                    ->where(function ($query) use ($search) {
+                                        // Busca por datos de la propia Área
+                                        $query->where('nombre', 'like', "%{$search}%")
+                                            ->orWhere('abreviatura', 'like', "%{$search}%")
+                                            // O busca internamente por nombre/apellido del trabajador en esa Área
+                                            ->orWhereIn('id_unidad_organica', function ($subquery) use ($search) {
+                                                $subquery->select('id_unidad_organica')
+                                                    ->from('usuarios') // Ajusta si el nombre de tu tabla de trabajadores cambia
+                                                    ->where('id_estado', 1)
+                                                    ->where(function ($q) use ($search) {
+                                                        $q->where('nombres', 'like', "%{$search}%")
+                                                            ->orWhere('apellidos', 'like', "%{$search}%")
+                                                            ->orWhere('nro_documento', 'like', "%{$search}%");
+                                                    });
+                                            })
+                                            // También busca en la segunda unidad orgánica asignada (dt)
+                                            ->orWhereIn('id_unidad_organica', function ($subquery) use ($search) {
+                                                $subquery->select('id_unidad_organica_dt')
+                                                    ->from('usuarios')
+                                                    ->where('id_estado', 1)
+                                                    ->where(function ($q) use ($search) {
+                                                        $q->where('nombres', 'like', "%{$search}%")
+                                                            ->orWhere('apellidos', 'like', "%{$search}%")
+                                                            ->orWhere('nro_documento', 'like', "%{$search}%");
+                                                    });
+                                            })
+                                            // También busca en la tercera unidad orgánica asignada (dt2)
+                                            ->orWhereIn('id_unidad_organica', function ($subquery) use ($search) {
+                                                $subquery->select('id_unidad_organica_dt2')
+                                                    ->from('usuarios')
+                                                    ->where('id_estado', 1)
+                                                    ->where(function ($q) use ($search) {
+                                                        $q->where('nombres', 'like', "%{$search}%")
+                                                            ->orWhere('apellidos', 'like', "%{$search}%")
+                                                            ->orWhere('nro_documento',  'like', "%{$search}%");
+                                                    });
+                                            });
+                                    })
+                                    ->orderBy('nombre', 'asc')
+                                    ->get()
+                                    ->mapWithKeys(function ($area) {
+                                        $abreviatura = !empty($area->abreviatura) ? " ({$area->abreviatura})" : "";
+                                        return [$area->id_unidad_organica => "{$area->nombre}{$abreviatura}"];
+                                    });
+                            })
+                            // === FIN DEL AGREGADO ===
                             ->searchable()
                             ->live() // Crucial para que el segundo select se entere del cambio
                             ->required()
@@ -554,15 +605,15 @@ class VisitaForm
                                         $nombresCompletos = "{$t->nombres} {$t->apellidos}";
                                         $set('trabajador_cita', $nombresCompletos);
                                         $set('trabajador_autoriza', $nombresCompletos);
-                                         $set('sistema', 'PCM');
-                                    }else{
+                                        $set('sistema', 'PCM');
+                                    } else {
                                         $set('sistema', null);
                                     }
 
                                     // if ($get('trabajador_id_cita') === $get('trabajador_id_autoriza')) {
-                                       
+
                                     // } else {
-                                        
+
                                     // }
                                 } else {
                                     $set('area', null);
@@ -583,8 +634,11 @@ class VisitaForm
                                 if (!$areaId) return [];
 
                                 return Oficina::query()
-                                    ->where('id_unidad_organica', $areaId)
-                                    ->where('estado',1)
+                                    ->where(function ($query) use ($areaId) {
+                                        $query->where('id_unidad_organica', $areaId)
+                                            ->where('estado', 1);
+                                    })
+                                    ->orWhere('ofic_tr', '1')
                                     ->get()
                                     ->mapWithKeys(function ($oficina) {
                                         // Forzamos que el label sea un string y no null
@@ -594,7 +648,22 @@ class VisitaForm
                             })
                             ->searchable()
                             // ->required(fn(Get $get) => Oficina::where('id_unidad_organica', $get('area_id'))->exists())
-                            ->hidden(fn(Get $get) => !(Oficina::where('id_unidad_organica', $get('area_id'))->exists()))
+                            ->visible(function (Get $get) {
+                                $areaId = $get('area_id');
+
+                                // Si no hay área seleccionada, no se muestra
+                                if (! $areaId) {
+                                    return false;
+                                }
+
+                                // Retorna true o false si existe el registro
+                                return Oficina::where(function ($query) use ($areaId) {
+                                    $query->where('id_unidad_organica', $areaId)
+                                        ->where('estado', 1);
+                                })
+                                    ->orWhere('ofic_tr', '1')
+                                    ->exists();
+                            })
                             ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
                                     // Buscamos el nombre del área basada en el ID seleccionado
@@ -619,7 +688,7 @@ class VisitaForm
                                             ->orWhere('id_unidad_organica_dt2', $areaId);
                                     })->where('id_estado', 1)
 
-                                    ->whereNotIn('id_contratacion', [3, 8])
+                                    ->whereNotIn('id_contratacion', [8])
                                     ->get()
                                     ->mapWithKeys(function ($trabajador) {
                                         // Forzamos que el label sea un string y no null
@@ -645,7 +714,7 @@ class VisitaForm
                                         $set('sistema', 'VISITAS');
                                     }
                                 } else {
-                                     $set('sistema', null);
+                                    $set('sistema', null);
                                     $set('trabajador_autoriza', null);
                                 }
                             }),
@@ -700,7 +769,7 @@ class VisitaForm
                                         $set('sistema', 'VISITAS');
                                     }
                                 } else {
-                                     $set('sistema', null);
+                                    $set('sistema', null);
                                     $set('trabajador_cita', null);
                                 }
                             }),
