@@ -12,6 +12,7 @@ enum SolicitudPermisoTipoAccion: string implements HasLabel
     case TRANSFERIR_LICENCIA = 'TRANSFERIR_LICENCIA';
     case CESIONAR_LICENCIA = 'CESIONAR_LICENCIA';
     case RECTIFICAR_LICENCIA = 'RECTIFICAR_LICENCIA';
+    case CAMBIAR_GIRO_LICENCIA = 'CAMBIAR_GIRO_LICENCIA';
 
     case SUBIR_PDF_LICENCIA = 'SUBIR_PDF_LICENCIA';
 
@@ -32,6 +33,7 @@ enum SolicitudPermisoTipoAccion: string implements HasLabel
             self::TRANSFERIR_LICENCIA => 'Transferir Licencia',
             self::CESIONAR_LICENCIA => 'Cesionar Licencia',
             self::RECTIFICAR_LICENCIA => 'Rectificar Licencia',
+            self::CAMBIAR_GIRO_LICENCIA => 'Cambiar Giro Licencia',
             self::SUBIR_PDF_LICENCIA => 'Subir PDF de Licencia',
             self::SUBIR_PDF_COMPATIBILIDAD => 'Subir PDF de Compatibilidad',
             self::EDITAR_DATOS_ITSE => 'Editar Datos de ITSE',
