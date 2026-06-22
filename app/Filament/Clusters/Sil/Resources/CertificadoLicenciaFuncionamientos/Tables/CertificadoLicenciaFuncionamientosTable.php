@@ -2151,7 +2151,7 @@ class CertificadoLicenciaFuncionamientosTable
 
                                 Notification::make()
                                     ->title('Solicitud Enviada')
-                                    ->body('Su solicitud de rectificación ha sido registrada y está pendiente de aprobación.')
+                                    ->body('Su solicitud de cambio de giro ha sido registrada y está pendiente de aprobación.')
                                     ->success()
                                     ->send();
 
