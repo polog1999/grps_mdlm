@@ -2091,6 +2091,94 @@ class CertificadoLicenciaFuncionamientosTable
                                     ->send();
                             }
                         }),
+                    Action::make('licencia-cambiar-giro')
+                        ->label('Cambiar Giro licencia')
+                        ->icon('heroicon-o-arrow-path')
+                        ->tooltip('Cambiar Giro licencia')
+                        ->color(Color::Blue)
+                        ->visible(fn() => auth()->user()->hasPermissionTo('change_giro::certificado_licencia_funcionamiento'))
+                        ->url(function (CertificadoLicenciaFuncionamiento $record) {
+                            $user = auth()->user();
+                            $user_role_id = $user->modelHasRole?->role_id;
+
+                            $tienePermiso = ($user_role_id === 1 || $user_role_id === 2 || $user_role_id === 11) || \App\Models\SolicitudPermiso::query()
+                                ->where('record_id', $record->lic_id)
+                                ->where('user_id', $user->id)
+                                ->where('estado', \App\Enums\SolicitudPermisoEstado::APROBADO)
+                                ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::CAMBIAR_GIRO_LICENCIA)
+                                ->exists();
+
+                            return $tienePermiso ? CertificadoLicenciaFuncionamientoResource::getUrl('cambiar-giro', ['record' => $record]) : null;
+                        })
+                        ->modalHeading('Solicitar Permiso de Cambiar Giro')
+                        ->modalDescription('No tienes permisos directos para realizar esta acción. Por favor, indica el motivo para solicitar el cambio de giro.')
+                        ->modalSubmitActionLabel('Enviar Solicitud')
+                        ->form([
+                            \Filament\Forms\Components\Textarea::make('observacion')
+                                ->label('Motivo de la solicitud')
+                                ->required()
+                                ->rows(3)
+                                ->placeholder('Ingrese el motivo por el cual desea rectificar...'),
+                        ])
+                        ->action(function (CertificadoLicenciaFuncionamiento $record, array $data) {
+                            try {
+                                $user = auth()->user();
+
+                                $existe = \App\Models\SolicitudPermiso::query()
+                                    ->where('record_id', $record->lic_id)
+                                    ->where('user_id', $user->id)
+                                    ->where('estado', 'PENDIENTE')
+                                    ->where('tipo_accion', \App\Enums\SolicitudPermisoTipoAccion::CAMBIAR_GIRO_LICENCIA)
+                                    ->exists();
+
+                                if ($existe) {
+                                    Notification::make()
+                                        ->title('Solicitud pendiente')
+                                        ->body('Ya existe una solicitud pendiente de rectificación para este registro.')
+                                        ->warning()
+                                        ->send();
+                                    return;
+                                }
+
+                                \App\Models\SolicitudPermiso::create([
+                                    'module_id' => \App\Models\Module::where('filament_class', CertificadoLicenciaFuncionamientoResource::class)->value('id'),
+                                    'record_id' => $record->lic_id,
+                                    'user_id' => $user->id,
+                                    'tipo_accion' => \App\Enums\SolicitudPermisoTipoAccion::CAMBIAR_GIRO_LICENCIA,
+                                    'estado' => \App\Enums\SolicitudPermisoEstado::PENDIENTE,
+                                    'observacion' => $data['observacion'],
+                                ]);
+
+                                Notification::make()
+                                    ->title('Solicitud Enviada')
+                                    ->body('Su solicitud de rectificación ha sido registrada y está pendiente de aprobación.')
+                                    ->success()
+                                    ->send();
+
+                                $recipients = \App\Models\User::permission('view::solicitud_permisos')
+                                    ->permission('edit::solicitud_permisos')->get();
+                                Notification::make()
+                                    ->title('Nueva Solicitud de Permiso para Cambiar Giro Licencia')
+                                    ->body("El usuario " . auth()->user()->name . " ha solicitado un permiso.")
+                                    ->icon('heroicon-o-document-text')
+                                    ->color('warning')
+                                    // AQUÍ EL BOTÓN
+                                    ->actions([
+                                        Action::make('view')
+                                            ->label('Ver Solicitud')
+                                            ->url(fn() => route('filament.admin.sil.resources.solicitud-permisos.index')) // Cambia a tu ruta real
+                                            ->button()
+                                            ->markAsRead(),
+                                    ])
+                                    ->sendToDatabase($recipients);
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('Ocurrió un error al enviar la solicitud: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
 
                     Action::make('dar_de_baja')
                         ->label('Dar de baja')
