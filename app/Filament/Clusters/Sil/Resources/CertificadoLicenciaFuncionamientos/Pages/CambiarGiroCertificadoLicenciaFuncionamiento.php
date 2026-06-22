@@ -34,7 +34,7 @@ class CambiarGiroCertificadoLicenciaFuncionamiento extends EditRecord
     {
         $params = $this->getCommonLicenciaParams($data);
 
-        // Specifics for Rectify (same as Duplicate - creates new license, marks original)
+        // Specifics for Change Giros (same as Duplicate - creates new license, marks original)
         $params['lic_id_ori'] = $record->lic_id;
         $params['urbanizacion_id'] = $data['coduca'] ?? '';
 
