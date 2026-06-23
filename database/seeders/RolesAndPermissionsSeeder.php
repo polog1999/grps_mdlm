@@ -54,6 +54,17 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para Editar Ticket
             'edit::solicitud_permisos',
 
+
+            //Permisos para Anuncios
+            'view::anuncios',
+            'create::anuncios',
+            'edit::anuncios',
+            'export::anuncios',
+            'generate_report::anuncios',
+            'generate_certificate::anuncios',
+            'create_color::anuncios',
+            'create_physical_feature::anuncios',
+            
             //Permisos para acciones de CertificadoLicenciaFuncionamiento
             'create::certificado_licencia_funcionamiento', // Registrar Nueva Licencia
             'edit::certificado_licencia_funcionamiento', // Modificar licencia
