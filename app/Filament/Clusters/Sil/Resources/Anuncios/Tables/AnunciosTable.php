@@ -199,13 +199,14 @@ class AnunciosTable
                     }),
             ])
             ->recordActions([
-                EditAction::make()->iconButton(),
+                EditAction::make()->iconButton()->visible(fn() => auth()->user()->hasPermissionTo('edit::anuncios')),
                 Action::make('Generar Informe')
                     ->label('Generar Informe')
                     ->iconButton()
                     ->tooltip('Generar Informe')
                     ->color(Color::Cyan)
                     ->icon('heroicon-o-document-text')
+                    ->visible(fn() => auth()->user()->hasPermissionTo('generate_report::anuncios'))
                     ->action(function (Anuncios $record) {
                         $path = app(InformeAnuncioService::class)->generarInforme($record, $record->expediente?->n_expediente);
                         $nInforme = $record->documentos()->where('tipo_documento', 'INFORME TÉCNICO')->first()?->n_documento ?? $record->id;
@@ -220,6 +221,7 @@ class AnunciosTable
                     ->tooltip('Generar Certificado')
                     ->color(Color::Yellow)
                     ->icon('heroicon-o-envelope')
+                     ->visible(fn() => auth()->user()->hasPermissionTo('generate_certificate::anuncios'))
                     ->url(fn(Anuncios $record) => route('anuncios.certificado-pdf', ['anuncio' => $record->id]))
                     ->openUrlInNewTab(),
                 /*

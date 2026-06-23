@@ -30,14 +30,15 @@ class ListAnuncios extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
-            ExportAnunciosAction::make(),
+            CreateAction::make()->visible(fn() => auth()->user()->hasPermissionTo('create::anuncios')),
+            ExportAnunciosAction::make()->visible(fn() => auth()->user()->hasPermissionTo('export::anuncios')),
             VerDatoLicenciaAction::make(),
             VerDatoItseAction::make(),
             Action::make('create_color')
                 ->label('Color')
                 ->icon('heroicon-o-plus')
                 ->color('primary')
+                ->visible(fn() => auth()->user()->hasPermissionTo('create_color::anuncios'))
                 ->form([
                     TextInput::make('descripcion')
                         ->label('Descripción del Color')
@@ -57,6 +58,7 @@ class ListAnuncios extends ListRecords
                 ->label('Caract. Fisica')
                 ->icon('heroicon-o-plus')
                 ->color('primary')
+                ->visible(fn() => auth()->user()->hasPermissionTo('create_physical_feature::anuncios'))
                 ->form([
                     TextInput::make('descripcion')
                         ->label('Descripción de la Caracteristica Fisica')
@@ -72,8 +74,6 @@ class ListAnuncios extends ListRecords
                         ->send();
                 }),
         ];
-
-
     }
 
     public function getTabs(): array
