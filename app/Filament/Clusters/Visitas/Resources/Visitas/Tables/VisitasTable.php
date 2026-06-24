@@ -97,7 +97,7 @@ class VisitasTable
                          border: 1px solid hsl(' . $hue . ', 85%, 80%);
                          border-radius:5px;
                          padding:5px;">
-                ' .Carbon::parse($state)->format('d/m/Y') . '
+                ' . Carbon::parse($state)->format('d/m/Y') . '
             </span>
         ');
                     })
@@ -270,97 +270,97 @@ class VisitasTable
                     })->tooltip('Marcar Salida Grupal'),
                 // ViewAction::make()
                 // , // Abre un modal de solo lectura
-                ViewAction::make()
+              ViewAction::make()
+    ->color('info')
+    ->modalHeading('Detalle Completo de la Visita')
+    ->modalWidth('4xl')
+    ->form([
+        Section::make('Información del Visitante')
+            ->icon('heroicon-o-user-group')
+            ->schema([
+                Grid::make(2)
+                    ->schema([
+                        TextEntry::make('fecha')
+                            ->label('Fecha de Visita')
+                            ->icon('heroicon-o-calendar')
+                            ->date('d/m/Y')
+                            ->badge()
+                            ->color('gray')
+                            ->columnSpanFull(),
+                        TextEntry::make('tipo_documento')
+                            ->label('Tipo de Documento')
+                            ->icon('heroicon-o-document-text'),
+                        TextEntry::make('numero_documento')
+                            ->label('N° de Documento')
+                            ->icon('heroicon-o-identification')
+                            ->copyable(),
+                        TextEntry::make('nombres_completos')
+                            ->label('Visitante')
+                            ->icon('heroicon-o-user')
+                            ->weight('bold'),
+                        TextEntry::make('ruc_empresa')
+                            ->label('Empresa')
+                            ->icon('heroicon-o-building-office-2')
+                            ->badge()
+                            ->color('info')
+                            ->getStateUsing(function ($record) {
+                                $ruc = $record->ruc;
+                                $proveedor = $record->proveedor ? "{$record->proveedor}" : '';
+                                return "RUC {$ruc} - {$proveedor}";
+                            })->visible(fn($record) => $record->ruc != null),
+                    ]),
+            ])->collapsible(),
 
-                    ->modalHeading('Detalle Completo de la Visita')
-                    ->modalWidth('4xl') // Un ancho mayor para que las 2 columnas respiren
-                    ->form([
-                        Section::make('Información del Visitante')
-                            ->schema([
-                                Grid::make(2)
-                                    ->schema([
-                                        TextEntry::make('fecha')
-                                            ->label('Fecha de Visita')
-                                            ->date('d/m/Y')
-                                            ->columnSpanFull(),
-                                        TextEntry::make('tipo_documento')
-                                            ->label('Tipo de Documento'),
-                                        TextEntry::make('numero_documento')
-                                            ->label('N° de Documento'),
-                                        // Usamos nombres de columnas reales de tu BD
-                                        TextEntry::make('nombres_completos')
-                                            ->label('Visitante'),
-                                        TextEntry::make('ruc_empresa')
-                                            ->label('Empresa')
-                                            ->getStateUsing(function ($record) {
-                                                // Asumiendo que tienes relaciones 'persona' y 'proveedor'
-                                                $ruc = $record->ruc;
-                                                $proveedor = $record->proveedor ? "{$record->proveedor}" : '';
-
-                                                return "RUC {$ruc} - {$proveedor}";
-                                            })->visible(fn($record) => $record->ruc != null)
-                                        // TextEntry::make('trabajadores') // Apuntamos a la relación, no a la columna id
-                                        //     ->label('Trabajadores')
-                                        //     ->columnSpanFull()
-                                        //     ->html() // Necesario para el <br>
-                                        //     ->getStateUsing(function ($record) {
-                                        //         // Obtenemos los registros relacionados (Eager Loaded)
-                                        //         $relaciones = $record->trabajadores;
-
-                                        //         if ($relaciones->isEmpty()) {
-                                        //             return 'Sin asignar';
-                                        //         }
-
-                                        //         return $relaciones->map(function ($item) {
-                                        //             // Accedemos a la relación 'persona' que debe estar en el modelo VisitaTrabajadorRuc
-                                        //             $persona = $item->persona;
-
-                                        //             if ($persona) {
-                                        //                 return "<b>{$persona->tipoDocumento?->abreviatura}</b>&nbsp;<b>{$persona->numero_documento}</b>&nbsp;{$persona->nombres}&nbsp;{$persona->apellido_paterno}&nbsp;{$persona->apellido_materno} - <b>{$item->cargo}</b>";
-                                        //             }
-
-                                        //             return "Cargo: {$item->cargo} (Sin datos de persona)";
-                                        //         })->implode('<br>'); // Aquí generamos el salto de línea
-                                        //     })->visible(fn($record) => $record && $record->trabajadores()->exists()),
-                                    ]),
-                            ])->collapsible(),
-
-                        Section::make('Detalles de la Visita')
-                            ->schema([
-                                Grid::make(2)
-                                    ->schema([
-                                        TextEntry::make('sede.nombre')
-                                            ->label('Sede'),
-                                        TextEntry::make('area')
-                                            ->label('Área Destino'),
-                                        TextEntry::make('oficina')
-                                            ->label('Oficina Destino')
-                                            ->visible(fn($state) => $state != null),
-                                        TextEntry::make('hora_ingreso')
-                                            ->label('Hora de Ingreso'),
-                                        TextEntry::make('hora_salida')
-                                            ->label('Hora de Salida')
-                                            ->placeholder('Aún en sede'),
-                                        TextEntry::make('autorizado_por')
-                                            ->label('Autorizado por:'),
-                                        TextEntry::make('trabajador_cita')
-                                            ->label('Cita con:'),
-                                        TextEntry::make('motivo')
-                                            ->label('Motivo de la visita')
-                                            ->getStateUsing(function ($record) {
-                                                $motivo = $record->motivo;
-                                                $detalle = $record->detalle_motivo;
-
-                                                return filled($detalle)
-                                                    ? "{$motivo} - {$detalle}"
-                                                    : $motivo;
-                                            }),
-                                        TextEntry::make('sistema')
-                                            ->label('Sistema'),
-                                    ]),
-                            ])->collapsible(),
-                    ])->iconButton()
-                    ->tooltip('Ver Detalle Completo'),
+        Section::make('Detalles de la Visita')
+            ->icon('heroicon-o-clipboard-document-list')
+            ->schema([
+                Grid::make(2)
+                    ->schema([
+                        TextEntry::make('sede.nombre')
+                            ->label('Sede')
+                            ->icon('heroicon-o-map-pin'),
+                        TextEntry::make('area')
+                            ->label('Área Destino')
+                            ->icon('heroicon-o-building-office'),
+                        TextEntry::make('oficina')
+                            ->label('Oficina Destino')
+                            ->icon('heroicon-o-home')
+                            ->visible(fn($state) => $state != null),
+                        TextEntry::make('hora_ingreso')
+                            ->label('Hora de Ingreso')
+                            ->icon('heroicon-o-clock')
+                            ->badge()
+                            ->color('success'),
+                        TextEntry::make('hora_salida')
+                            ->label('Hora de Salida')
+                            ->icon('heroicon-o-arrow-left-on-rectangle')
+                            ->badge()
+                            ->color(fn($state) => $state ? 'gray' : 'warning')
+                            ->placeholder('Aún en sede'),
+                        TextEntry::make('autorizado_por')
+                            ->label('Autorizado por:')
+                            ->icon('heroicon-o-check-badge'),
+                        TextEntry::make('trabajador_cita')
+                            ->label('Cita con:')
+                            ->icon('heroicon-o-user-circle'),
+                        TextEntry::make('motivo')
+                            ->label('Motivo de la visita')
+                            ->icon('heroicon-o-chat-bubble-bottom-center-text')
+                            ->columnSpanFull()
+                            ->getStateUsing(function ($record) {
+                                $motivo = $record->motivo;
+                                $detalle = $record->detalle_motivo;
+                                return filled($detalle) ? "{$motivo} - {$detalle}" : $motivo;
+                            }),
+                        TextEntry::make('sistema')
+                            ->label('Sistema')
+                            ->icon('heroicon-o-computer-desktop')
+                            ->badge()
+                            ->color('secondary'),
+                    ]),
+            ])->collapsible(),
+    ])->iconButton()
+    ->tooltip('Ver Detalle Completo'),
             ], position: RecordActionsPosition::BeforeColumns)
             ->poll('5s')
             ->deferLoading() // Esto ayuda a que la carga inicial no bloquee el poll
