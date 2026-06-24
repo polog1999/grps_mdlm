@@ -37,6 +37,7 @@ use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
 // use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -79,8 +80,33 @@ class VisitasTable
                 //     ->label('Estado')
                 //     ->state(fn($record) => $record->hora_salida ? 'Salió' : 'En Sede')
                 //     ->color(fn($record) => $record->hora_salida ? 'gray' : 'success'),
-                TextColumn::make('fecha')->label('Fecha')->date('d/m/Y')->searchable(),
+                TextColumn::make('fecha')->label('Fecha')->searchable()
+                    ->html()
+                    ->formatStateUsing(function ($state, $record) {
+                        if (!$state || !$record->grupo_uid) return $state;
+
+                        $hash = crc32($record->grupo_uid);
+                        $hue = $hash % 360;
+
+                        // Ajustamos la saturación y luminosidad para que se vean "profesionales"
+                        // Fondo muy suave (95%), Borde suave (80%), Texto oscuro (20%)
+                        return new HtmlString('
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold"
+                  style="background-color: hsl(' . $hue . ', 85%, 92%); 
+                         color: hsl(' . $hue . ', 85%, 20%); 
+                         border: 1px solid hsl(' . $hue . ', 85%, 80%);
+                         border-radius:5px;
+                         padding:5px;">
+                ' .Carbon::parse($state)->format('d/m/Y') . '
+            </span>
+        ');
+                    })
+                    ->alignStart(),
                 // TextColumn::make('tipo_documento')->label('Tipo Documento')->searchable(),
+                // TextColumn::make('grupo_uid')
+                // ->label('Grupo')
+                // ->badge()
+                // ->color(fn ($state): string => self::getGroupColor($state)),
                 TextColumn::make('numero_documento')->label('Documento')->searchable()
                     ->getStateUsing(function ($record) {
                         // Asumiendo que tienes relaciones 'persona' y 'proveedor'
@@ -117,6 +143,7 @@ class VisitasTable
                     ->sortable()
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('motivo')
                     ->sortable()
                     ->searchable(),
@@ -225,12 +252,12 @@ class VisitasTable
                     ->label('')
                     ->icon('heroicon-m-users')
                     ->color('warning')
-                      ->button() // Estilo de botó
+                    ->button() // Estilo de botó
                     ->visible(fn($record) => $record->grupo_uid && !$record->hora_salida)
                     ->requiresConfirmation()
                     ->modalHeading('¿Marcar Salida Grupal?')
                     ->modalDescription('¿Desea registrar la salida de todas las personas que ingresaron con este grupo?')
-                    ->visible(fn($record) => $record->hora_salida === null && $record->origen !== 'MIGRACION' && Carbon::parse($record->fecha)->isToday() && Visita::where('grupo_uid',$record->grupo_uid)->count() > 1) // Solo si no ha salido
+                    ->visible(fn($record) => $record->hora_salida === null && $record->origen !== 'MIGRACION' && Carbon::parse($record->fecha)->isToday() && Visita::where('grupo_uid', $record->grupo_uid)->count() > 1) // Solo si no ha salido
 
                     ->action(function ($record) {
                         Visita::where('grupo_uid', $record->grupo_uid)
@@ -244,7 +271,7 @@ class VisitasTable
                 // ViewAction::make()
                 // , // Abre un modal de solo lectura
                 ViewAction::make()
-                
+
                     ->modalHeading('Detalle Completo de la Visita')
                     ->modalWidth('4xl') // Un ancho mayor para que las 2 columnas respiren
                     ->form([
