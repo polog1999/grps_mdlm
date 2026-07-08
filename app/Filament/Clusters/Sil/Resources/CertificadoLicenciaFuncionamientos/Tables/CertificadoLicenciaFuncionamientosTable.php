@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Cache;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
+use Filament\Forms\Components\Select;
 
 class CertificadoLicenciaFuncionamientosTable
 {
@@ -550,6 +551,12 @@ class CertificadoLicenciaFuncionamientosTable
                         if (!empty($data['to'])) $indicators[] = 'Emisión Hasta: ' . \Carbon\Carbon::parse($data['to'])->format('d/m/Y');
                         return $indicators;
                     }),
+                SelectFilter::make('lic_mype')
+                ->label('¿Mype?')
+                    ->options([
+                        '1' => 'Si',
+                        '0' => 'No',
+                    ])
 
             ], layout: FiltersLayout::Modal)
             ->filtersFormColumns(4)
