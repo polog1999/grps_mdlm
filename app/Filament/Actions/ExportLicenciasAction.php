@@ -225,6 +225,11 @@ class ExportLicenciasAction
                 $subquery->where('lig_giroespecifico', 'ILIKE', "%{$search}%");
             });
         }
+        // Filtro de MYPE
+        if (isset($tableFilters['lic_mype']['value']) && $tableFilters['lic_mype']['value'] !== '' && $tableFilters['lic_mype']['value'] !== null) {
+            // Si $value es '1' (true) filtra las que son MYPE, si es '0' (false) las que no.
+            $query->where('lic_mype', (bool) $tableFilters['lic_mype']['value']);
+        }
 
 
         return $query->orderBy('lic_fechaemision', 'desc')
