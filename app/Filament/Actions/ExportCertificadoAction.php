@@ -146,6 +146,8 @@ class ExportCertificadoAction
      */
     protected static function getExportColumns($records)
     {
+        // Instanciar el servicio una sola vez fuera del bucle para mejor rendimiento
+        $datosPersonaService = app(\App\Services\Sil\CertificadoInspeccion\DatosPersonaService::class);
         return [
             // Item: número secuencial autogenerado
             [
@@ -199,23 +201,40 @@ class ExportCertificadoAction
                 })->toArray(),
                 'default_col' => 'G',
             ],
+            // NUEVA COLUMNA: RUC (Obtenido desde el servicio externo mediante el expediente)
+            [
+                'header' => 'RUC',
+                'header_variations' => ['ruc'],
+                'data' => $records->map(function ($record) use ($datosPersonaService) {
+                    if (!$record->cin_expediente) {
+                        return '';
+                    }
+                    try {
+                        $resultado = $datosPersonaService->obtenerRucPersonaPorExpediente(trim((string) $record->cin_expediente));
+                        return $resultado->ruc ?? '';
+                    } catch (\Exception $e) {
+                        return 'Error';
+                    }
+                })->toArray(),
+                'default_col' => 'H', // Ajusta las letras por defecto de aquí en adelante si es necesario
+            ],
             [
                 'header' => 'Solicitante',
                 'header_variations' => ['solicitante'],
                 'data' => $records->pluck('cin_solicitante')->toArray(),
-                'default_col' => 'H',
+                'default_col' => 'I',
             ],
             [
                 'header' => 'Ubicación',
                 'header_variations' => ['ubicacion', 'ubicación', 'direccion', 'dirección'],
                 'data' => $records->pluck('cin_ubicacion')->toArray(),
-                'default_col' => 'I',
+                'default_col' => 'J',
             ],
             [
                 'header' => 'Giro',
                 'header_variations' => ['giro'],
                 'data' => $records->pluck('cin_giro')->toArray(),
-                'default_col' => 'J',
+                'default_col' => 'K',
             ],
             // Fecha en formato d/m/Y
             [
@@ -229,7 +248,7 @@ class ExportCertificadoAction
                         ? $record->cin_fecha->format('d/m/Y')
                         : \Carbon\Carbon::parse($record->cin_fecha)->format('d/m/Y');
                 })->toArray(),
-                'default_col' => 'K',
+                'default_col' => 'L',
             ],
             // Fecha inicio
             [
@@ -243,7 +262,7 @@ class ExportCertificadoAction
                         ? $record->cin_fec_inicio->format('d/m/Y')
                         : \Carbon\Carbon::parse($record->cin_fec_inicio)->format('d/m/Y');
                 })->toArray(),
-                'default_col' => 'L',
+                'default_col' => 'M',
             ],
             // Fecha fin
             [
@@ -257,21 +276,21 @@ class ExportCertificadoAction
                         ? $record->cin_fec_fin->format('d/m/Y')
                         : \Carbon\Carbon::parse($record->cin_fec_fin)->format('d/m/Y');
                 })->toArray(),
-                'default_col' => 'M',
+                'default_col' => 'N',
             ],
             // Capacidad
             [
                 'header' => 'Capacidad',
                 'header_variations' => ['capacidad'],
                 'data' => $records->pluck('cin_capacidad')->toArray(),
-                'default_col' => 'N',
+                'default_col' => 'O',
             ],
             // Área
             [
                 'header' => 'Área',
                 'header_variations' => ['area', 'área'],
                 'data' => $records->pluck('cin_area')->toArray(),
-                'default_col' => 'O',
+                'default_col' => 'P',
             ],
             // Agregar más columnas aquí siguiendo el mismo patrón:
             /*
