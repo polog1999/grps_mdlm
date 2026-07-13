@@ -15,6 +15,8 @@ class CreateVisita extends CreateRecord
 {
     protected static string $resource = VisitaResource::class;
     protected ?string $heading = 'Registrar Visita';
+    // ❌ Esto elimina el botón "Crear y crear otro"
+    protected static bool $canCreateAnother = false;
 
     protected function handleRecordCreation(array $data): Model
     {
