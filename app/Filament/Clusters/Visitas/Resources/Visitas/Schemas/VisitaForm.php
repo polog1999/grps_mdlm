@@ -822,7 +822,7 @@ class VisitaForm
             ->action(function ($state, Set $set, Get $get) {
                 if (!$state) return;
                 $tipoDocumento = $get('tipo_documento_id');
-                 
+
                 // 1. Validar si ya existe como TRABAJADOR
                 // $existeTrabajador = PersonaUno::where('numero_documento', $state)
                 //     ->whereHas('trabajador')
@@ -837,61 +837,55 @@ class VisitaForm
                 // }
 
                 // 2. Buscar en tabla PERSONAS (Si ya fue visitante antes)
-                // if (strlen($state) === 8) {
-                //      else {
+               
+
+                // $trabajador = Trabajador::where('dni', $state)->first();
+
+                // if ($trabajador) {
+                //     $set('persona_id', $trabajador->id_usuario);
+                //     $set('nombres', $trabajador->nombres);
+                //     $set('apellido_paterno', $trabajador->apellido_paterno);
+                //     $set('apellido_materno', $trabajador->apellido_materno);
+                //     $set('foto_url', $trabajador->foto_url); // Traer foto de la BD
                 //     Notification::make()
-                //         ->title('Alerta')
-                //         ->body('El DNI debe tener 8 dígitos')
-                //         ->warning()
+                //         ->title('BD local')
+                //         ->body('Datos de la Base de Datos local')
+                //         ->success()
                 //         ->send();
+                //     return;
                 // }
 
-                    // $trabajador = Trabajador::where('dni', $state)->first();
+                $persona = PersonaUno::where('tipo_documento_id', $tipoDocumento)->where('numero_documento', $state)->first();
 
-                    // if ($trabajador) {
-                    //     $set('persona_id', $trabajador->id_usuario);
-                    //     $set('nombres', $trabajador->nombres);
-                    //     $set('apellido_paterno', $trabajador->apellido_paterno);
-                    //     $set('apellido_materno', $trabajador->apellido_materno);
-                    //     $set('foto_url', $trabajador->foto_url); // Traer foto de la BD
-                    //     Notification::make()
-                    //         ->title('BD local')
-                    //         ->body('Datos de la Base de Datos local')
-                    //         ->success()
-                    //         ->send();
-                    //     return;
-                    // }
+                if ($persona) {
+                    $set('persona_id', $persona->id);
+                    $set('nombres', $persona->nombres);
+                    $set('apellido_paterno', $persona->apellido_paterno);
+                    $set('apellido_materno', $persona->apellido_materno);
+                    $set('foto_url', $persona->foto_url); // Traer foto de la BD
 
-                    $persona = PersonaUno::where('tipo_documento_id',$tipoDocumento)->where('numero_documento', $state)->first();
+                    Notification::make()
+                        ->title('Autocompletado')
+                        ->body('Datos obtenidos correctamente')
+                        ->success()
+                        ->send();
+                    return;
+                } else
+                    if ($tipoDocumento != 1) {
+                    Notification::make()
+                        ->title('No se encontraron datos')
+                        ->body('Llene los campos manualmente.')
+                        ->warning()
+                        ->send();
+                    return;
+                }
+                // 3. Si no existe en BD, Consultar al PIDE
+                // Supongamos que tienes un Service: PideService::consultar($dni)}
 
-                    if ($persona) {
-                        $set('persona_id', $persona->id);
-                        $set('nombres', $persona->nombres);
-                        $set('apellido_paterno', $persona->apellido_paterno);
-                        $set('apellido_materno', $persona->apellido_materno);
-                        $set('foto_url', $persona->foto_url); // Traer foto de la BD
-
-                        Notification::make()
-                            ->title('Autocompletado')
-                            ->body('Datos obtenidos correctamente')
-                            ->success()
-                            ->send();
-                        return;
-                    }else
-                    if($tipoDocumento != 1) {
-                        Notification::make()
-                            ->title('No se encontraron datos')
-                            ->body('Llene los campos manualmente.')
-                            ->warning()
-                            ->send();
-                        return;
-                    }
-                    // 3. Si no existe en BD, Consultar al PIDE
-                    // Supongamos que tienes un Service: PideService::consultar($dni)}
-
-                    //SE HABILITARA CUANDO HAYA PIDE
-                    // $datosPide = PideService::ws_reniec($state);
-                    // if ($datosPide['codResu'] === '0000') {
+                //SE HABILITARA CUANDO HAYA PIDE
+                // $datosPide = PideService::ws_reniec($state);
+                // if ($datosPide['codResu'] === '0000') {
+                if (strlen($state) === 8) {
                     if (false) {
                         $set('pide_fallo', false); // Activamos edición manual
                         $set('nombres', $datosPide['nombre']);
@@ -945,7 +939,13 @@ class VisitaForm
                             }
                         }
                     }
-                
+                } else {
+                    Notification::make()
+                        ->title('Alerta')
+                        ->body('El DNI debe tener 8 dígitos')
+                        ->warning()
+                        ->send();
+                }
             });
     }
     protected static function botonBuscarEmpresa()
