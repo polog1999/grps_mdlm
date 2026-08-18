@@ -211,7 +211,39 @@ class ExportLicenciasAction
                 });
             }
         }
+        // Filtro múltiple de giros
+        if (
+            isset($tableFilters['giro_search']['giros_seleccionar']) &&
+            !empty($tableFilters['giro_search']['giros_seleccionar'])
+        ) {
 
+            $giroIds = $tableFilters['giro_search']['giros_seleccionar'];
+
+            // Obtener las licencias que tengan AL MENOS UNO
+            // de los giros seleccionados.
+            //
+            // LicenciaGiro está en la conexión pgsql,
+            // mientras CertificadoLicenciaFuncionamiento
+            // está en pgsql_licencias.
+            $licenciaIds = \App\Models\LicenciaGiro::query()
+                ->whereIn('gir_id', $giroIds)
+                ->pluck('lic_id')
+                ->unique()
+                ->values()
+                ->toArray();
+
+            // Si no existen licencias con ninguno de esos giros,
+            // devolver cero resultados.
+            if (empty($licenciaIds)) {
+
+                $query->whereRaw('1 = 0');
+            } else {
+
+                // Filtrar la consulta principal
+                // por los lic_id encontrados.
+                $query->whereIn('lic_id', $licenciaIds);
+            }
+        }
         if (isset($tableFilters['giro']['value']) && !empty($tableFilters['giro']['value'])) {
             $giroId = $tableFilters['giro']['value'];
             $query->whereHas('giros', function ($subquery) use ($giroId) {
@@ -345,46 +377,112 @@ class ExportLicenciasAction
             // RAZON SOCIAL: razón social
             [
                 'header' => 'RAZON SOCIAL',
-                'header_variations' => ['razon social', 'Razon Social', 'RAZON_SOCIAL', 'razon_social'],
+                'header_variations' => [
+                    'razon social',
+                    'Razon Social',
+                    'RAZON_SOCIAL',
+                    'razon_social'
+                ],
                 'data' => $records->pluck('lic_razonsocial')->toArray(),
                 'default_col' => 'I',
             ],
+
+            // GIROS: todos los giros asociados a la licencia
+            [
+                'header' => 'GIROS',
+                'header_variations' => [
+                    'giros',
+                    'Giros',
+                    'GIRO',
+                    'Giro',
+                ],
+                'data' => $records->map(function ($record) {
+
+                    return $record->giros
+                        ->map(function ($licenciaGiro) {
+
+                            if (!$licenciaGiro->giro) {
+                                return null;
+                            }
+
+                            $descripcion = $licenciaGiro->giro->gir_descripcion;
+                            // $codigo = $licenciaGiro->giro->gir_girocodi;
+
+                            return "{$descripcion}";
+                        })
+                        ->filter()
+                        ->implode(', ');
+                })->toArray(),
+
+                'default_col' => 'J',
+            ],
+
             // RIESGO LICENCIA: nivel de riesgo
             [
                 'header' => 'RIESGO LICENCIA',
-                'header_variations' => ['riesgo licencia', 'Riesgo Licencia', 'RIESGO_LICENCIA', 'riesgo_licencia', 'RIESGO'],
+                'header_variations' => [
+                    'riesgo licencia',
+                    'Riesgo Licencia',
+                    'RIESGO_LICENCIA',
+                    'riesgo_licencia',
+                    'RIESGO'
+                ],
                 'data' => $records->map(function ($record) {
                     return $record->nivelRiesgo?->nir_descripcion ?? '';
                 })->toArray(),
-                'default_col' => 'J',
+                'default_col' => 'K',
             ],
+
             // TIPO LICENCIA: tipo de licencia
             [
                 'header' => 'TIPO LICENCIA',
-                'header_variations' => ['tipo licencia', 'Tipo Licencia', 'TIPO_LICENCIA', 'tipo_licencia', 'TIPO'],
+                'header_variations' => [
+                    'tipo licencia',
+                    'Tipo Licencia',
+                    'TIPO_LICENCIA',
+                    'tipo_licencia',
+                    'TIPO'
+                ],
                 'data' => $records->map(function ($record) {
                     return $record->tipoLicencia?->tli_descripcion ?? '';
                 })->toArray(),
-                'default_col' => 'K',
+                'default_col' => 'L',
             ],
+
             // ESTADO LICENCIA: estado de la licencia
             [
                 'header' => 'ESTADO LICENCIA',
-                'header_variations' => ['estado licencia', 'Estado Licencia', 'ESTADO_LICENCIA', 'estado_licencia', 'ESTADO'],
+                'header_variations' => [
+                    'estado licencia',
+                    'Estado Licencia',
+                    'ESTADO_LICENCIA',
+                    'estado_licencia',
+                    'ESTADO'
+                ],
                 'data' => $records->map(function ($record) {
                     return $record->tipoEstadoLicencia?->esl_descripcion ?? '';
                 })->toArray(),
-                'default_col' => 'L',
-            ],
-            // FECHA EMISION: estado de la licencia
-            [
-                'header' => 'FECHA EMISION',
-                'header_variations' => ['fecha emision', 'Fecha Emision', 'FECHA_EMISION', 'fecha_emision', 'EMISION'],
-                'data' => $records->map(function ($record) {
-                    return \Carbon\Carbon::parse($record->lic_fechaemision)->format('d/m/Y') ?? '';
-                })->toArray(),
                 'default_col' => 'M',
             ],
+
+            // FECHA EMISION
+            [
+                'header' => 'FECHA EMISION',
+                'header_variations' => [
+                    'fecha emision',
+                    'Fecha Emision',
+                    'FECHA_EMISION',
+                    'fecha_emision',
+                    'EMISION'
+                ],
+                'data' => $records->map(function ($record) {
+                    return $record->lic_fechaemision
+                        ? \Carbon\Carbon::parse($record->lic_fechaemision)->format('d/m/Y')
+                        : '';
+                })->toArray(),
+                'default_col' => 'N',
+            ],
+
         ];
     }
 

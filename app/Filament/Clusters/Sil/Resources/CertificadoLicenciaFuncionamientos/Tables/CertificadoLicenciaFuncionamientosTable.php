@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Cache;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\CertificadoLicenciaFuncionamientoResource;
+use App\Models\Giro;
+use App\Models\LicenciaGiro;
 use Filament\Forms\Components\Select;
 
 class CertificadoLicenciaFuncionamientosTable
@@ -292,24 +294,83 @@ class CertificadoLicenciaFuncionamientosTable
 
                 Filter::make('giro_search')
                     ->form([
-                        TextInput::make('giro_busqueda')
+                        Select::make('giros_seleccionar')
                             ->label('Giro / Actividad')
-                            ->placeholder('Ej: Restaurante...'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['giro_busqueda'],
-                            fn(Builder $query, $search): Builder => $query->whereHas('giros.giro', function (Builder $subQuery) use ($search) {
-                                $subQuery->where('gir_descripcion', 'ILIKE', "%{$search}%");
+                            ->multiple()
+                            ->searchable()
+                            ->options(function (\Livewire\Component $livewire) {
+
+                                $clasesSinFiltro = [
+                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento::class,
+                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\DuplicateCertificadoLicenciaFuncionamiento::class,
+                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CesionarioCertificadoLicenciaFuncionamiento::class,
+                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\EditCertificadoLicenciaFuncionamiento::class,
+                                ];
+
+                                $query = Giro::query();
+
+                                if (!in_array(get_class($livewire), $clasesSinFiltro)) {
+                                    $query->where('gir_usos', true);
+                                }
+
+                                return $query
+                                    ->get()
+                                    ->mapWithKeys(function ($giro) {
+                                        return [
+                                            $giro->gir_id =>
+                                            "{$giro->gir_descripcion} - {$giro->gir_girocodi}"
+                                        ];
+                                    })
+                                    ->toArray();
                             })
-                        );
+                            ->preload(),
+                    ])
+
+                    ->query(function (Builder $query, array $data): Builder {
+
+                        $giroIds = $data['giros_seleccionar'] ?? [];
+
+                        if (empty($giroIds)) {
+                            return $query;
+                        }
+
+                        /*
+         * IMPORTANTE:
+         * LicenciaGiro está en la conexión "pgsql"
+         * mientras CertificadoLicenciaFuncionamiento
+         * está en "pgsql_licencias".
+         *
+         * Por eso primero obtenemos los lic_id
+         * desde pgsql y luego filtramos la consulta
+         * principal.
+         */
+
+                        $licenciaIds = LicenciaGiro::query()
+                            ->whereIn('gir_id', $giroIds)
+                            ->pluck('lic_id')
+                            ->unique()
+                            ->values()
+                            ->toArray();
+
+                        if (empty($licenciaIds)) {
+                            return $query->whereRaw('1 = 0');
+                        }
+
+                        return $query->whereIn('lic_id', $licenciaIds);
                     })
+
                     ->indicateUsing(function (array $data): ?string {
-                        if (!$data['giro_busqueda']) {
+
+                        if (empty($data['giros_seleccionar'])) {
                             return null;
                         }
 
-                        return 'Giro: ' . $data['giro_busqueda'];
+                        $giros = Giro::query()
+                            ->whereIn('gir_id', $data['giros_seleccionar'])
+                            ->pluck('gir_descripcion')
+                            ->implode(', ');
+
+                        return 'Giros: ' . $giros;
                     }),
                 Filter::make('giro_especifico_search')
                     ->form([
@@ -552,7 +613,7 @@ class CertificadoLicenciaFuncionamientosTable
                         return $indicators;
                     }),
                 SelectFilter::make('lic_mype')
-                ->label('¿Mype?')
+                    ->label('¿Mype?')
                     ->options([
                         '1' => 'Si',
                         '0' => 'No',
