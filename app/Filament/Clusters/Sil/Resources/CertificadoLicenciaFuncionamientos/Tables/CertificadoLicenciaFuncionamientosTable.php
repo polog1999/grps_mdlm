@@ -300,18 +300,18 @@ class CertificadoLicenciaFuncionamientosTable
                             ->searchable()
                             ->options(function (\Livewire\Component $livewire) {
 
-                                $clasesSinFiltro = [
-                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento::class,
-                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\DuplicateCertificadoLicenciaFuncionamiento::class,
-                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CesionarioCertificadoLicenciaFuncionamiento::class,
-                                    \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\EditCertificadoLicenciaFuncionamiento::class,
-                                ];
+                                // $clasesSinFiltro = [
+                                //     \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\TransferirCertificadoLicenciaFuncionamiento::class,
+                                //     \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\DuplicateCertificadoLicenciaFuncionamiento::class,
+                                //     \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CesionarioCertificadoLicenciaFuncionamiento::class,
+                                //     \App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\EditCertificadoLicenciaFuncionamiento::class,
+                                // ];
 
                                 $query = Giro::query();
 
-                                if (!in_array(get_class($livewire), $clasesSinFiltro)) {
-                                    $query->where('gir_usos', true);
-                                }
+                                // if (!in_array(get_class($livewire), $clasesSinFiltro)) {
+                                //     $query->where('gir_usos', true);
+                                // }
 
                                 return $query
                                     ->get()
