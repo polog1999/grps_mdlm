@@ -197,6 +197,33 @@ class AnunciosTable
                                 }),
                             );
                     }),
+
+                Filter::make('fecha_emision')
+                    ->form([
+                        DatePicker::make('desde')
+                            ->label('Desde (Fecha Emisión)')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                        DatePicker::make('hasta')
+                            ->label('Hasta (Fecha Emisión)')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['desde'],
+                                fn(Builder $query, $date): Builder => $query->whereHas('documentos', function ($q) use ($date) {
+                                    $q->whereDate('fecha_emision', '>=', $date);
+                                }),
+                            )
+                            ->when(
+                                $data['hasta'],
+                                fn(Builder $query, $date): Builder => $query->whereHas('documentos', function ($q) use ($date) {
+                                    $q->whereDate('fecha_emision', '<=', $date);
+                                }),
+                            );
+                    }),
             ])
             ->recordActions([
                 EditAction::make()->iconButton()->visible(fn() => auth()->user()->hasPermissionTo('edit::anuncios')),
@@ -221,7 +248,7 @@ class AnunciosTable
                     ->tooltip('Generar Certificado')
                     ->color(Color::Yellow)
                     ->icon('heroicon-o-envelope')
-                     ->visible(fn() => auth()->user()->hasPermissionTo('generate_certificate::anuncios'))
+                    ->visible(fn() => auth()->user()->hasPermissionTo('generate_certificate::anuncios'))
                     ->url(fn(Anuncios $record) => route('anuncios.certificado-pdf', ['anuncio' => $record->id]))
                     ->openUrlInNewTab(),
                 /*
@@ -300,8 +327,6 @@ class AnunciosTable
                         }
                     })
             ], position: RecordActionsPosition::BeforeCells)
-            ->toolbarActions([
-
-            ]);
+            ->toolbarActions([]);
     }
 }
