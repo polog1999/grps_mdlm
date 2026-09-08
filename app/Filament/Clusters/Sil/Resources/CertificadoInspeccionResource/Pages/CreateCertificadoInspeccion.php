@@ -19,6 +19,11 @@ class CreateCertificadoInspeccion extends CreateRecord
      */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        // 1. Limpiamos los espacios en el número de expediente
+        if (!empty($data['cin_expediente'])) {
+            // Elimina espacios comunes y espacios invisibles (NBSP / Unicode)
+            $data['cin_expediente'] = trim(preg_replace('/^\p{Z}+|\p{Z}+$/u', '', $data['cin_expediente']));
+        }
         // 1. Calculamos el número en el último segundo posible
         $servicio = app(CertificadoInspeccionService::class);
         $siguiente = $servicio->obtenerSiguienteNumero();
