@@ -2,6 +2,7 @@
 
 namespace App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos;
 
+use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CambiarDenominacionCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CambiarGiroCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\CreateCertificadoLicenciaFuncionamiento;
 use App\Filament\Clusters\Sil\Resources\CertificadoLicenciaFuncionamientos\Pages\EditCertificadoLicenciaFuncionamiento;
@@ -85,6 +86,7 @@ class CertificadoLicenciaFuncionamientoResource extends Resource
             'cesionario' => CesionarioCertificadoLicenciaFuncionamiento::route('/{record}/cesionario'),
             'rectificar' => RectificarCertificadoLicenciaFuncionamiento::route('/{record}/rectificar'),
             'cambiar-giro' => CambiarGiroCertificadoLicenciaFuncionamiento::route('/{record}/cambiar-giro'),
+            'cambiar-denominacion' => CambiarDenominacionCertificadoLicenciaFuncionamiento::route('/{record}/cambiar-denominacion'),
             'view' => ViewLicencia::route('/{record}/view'),
         ];
     }
