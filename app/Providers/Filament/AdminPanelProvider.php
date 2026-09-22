@@ -99,7 +99,11 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications() // <--- ESTO ES VITAL
             ->databaseNotificationsPolling('2s')
             ->assets([
-                \Filament\Support\Assets\Css::make('custom-stylesheet', public_path('css/custom-filament.css')),
+                \Filament\Support\Assets\Css::make('custom-stylesheet', asset('css/custom-filament.css')),
+                \Filament\Support\Assets\Js::make(
+                    'custom-login-script',
+                    asset('js/custom-login.js')
+                ),
             ])
 
         ; // Actualiza cada 3 segundos para ver el % real
