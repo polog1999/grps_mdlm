@@ -49,6 +49,8 @@ class LicenciaRelacionsTable
                         'INAC' => Color::Gray,
                         'SUSTITUIDO' => Color::Amber,
                         'TRANSFERIDO' => Color::Sky,
+                        'CAMBIADO DE GIRO' => Color::Blue,
+                        'CAMBIADO DE DENOMINACIÓN' => Color::Indigo,
                         default => Color::Gray,
                     }),
 
