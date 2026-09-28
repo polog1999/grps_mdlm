@@ -215,7 +215,7 @@ class CertificadoAnuncioService
     public function bajaAnuncios(int $userId, string $anuncio_id, string $razon)
     {
         try {
-            DB::table('certificados_borrados')->insert([
+            DB::table('anuncios.anuncios_baja')->insert([
                 'user_id' => $userId,
                 'anuncio_id' => $anuncio_id,
                 'a_razon_baja' => $razon,
