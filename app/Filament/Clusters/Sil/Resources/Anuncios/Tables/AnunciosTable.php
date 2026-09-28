@@ -261,7 +261,7 @@ class AnunciosTable
                     ->tooltip('Dar de Baja')
                     ->iconButton()
                     ->color('danger')
-                    ->visible(fn() => auth()->user()->hasPermissionTo('baja::anuncio'))
+                    ->visible(fn($record) => (auth()->user()->hasPermissionTo('baja::anuncio') && $record?->estado_anuncio  === EstadoAnuncio::VIGENTE))
                     ->requiresConfirmation()
                     ->modalHeading('Dar de baja Anuncio')
                     ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> este anuncio? Esta acción no se puede revertir. Se registrará el <strong>usuario</strong> que realiza la baja y la <strong>fecha/hora</strong> de la acción.'))
