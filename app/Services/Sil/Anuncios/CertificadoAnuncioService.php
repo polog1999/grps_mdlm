@@ -3,9 +3,12 @@
 namespace App\Services\Sil\Anuncios;
 
 use App\Models\Anuncios;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Log;
 use NcJoes\OfficeConverter\OfficeConverter;
+use Ramsey\Uuid\Uuid;
+
 class CertificadoAnuncioService
 {
     /**
@@ -207,4 +210,26 @@ class CertificadoAnuncioService
             // Si el placeholder no existe en el template, lo ignoramos silenciosamente
         }
     }
+
+      //baja anuncio -> guardar en tabla anuncios_baja 
+    public function bajaAnuncios(int $userId, string $anuncio_id, string $razon)
+    {
+        try {
+            DB::table('anuncios.anuncios_baja')->insert([
+                'user_id' => $userId,
+                'anuncio_id' => $anuncio_id,
+                'a_razon_baja' => $razon,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error registrando certificado borrado', [
+                'user_id' => $userId,
+                'anuncio_id' => $anuncio_id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
 }

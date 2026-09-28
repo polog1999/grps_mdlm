@@ -3,6 +3,7 @@
 namespace App\Filament\Clusters\Sil\Resources\Anuncios\Tables;
 
 use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\Dictamen;
+use App\Filament\Clusters\Sil\Resources\Anuncios\Enums\EstadoAnuncio;
 use App\Models\Anuncios;
 use App\Services\Sil\Anuncios\InformeAnuncioService;
 use App\Services\Sil\Anuncios\CertificadoAnuncioService;
@@ -22,6 +23,8 @@ use Filament\Tables\Table;
 use Filament\Support\Colors\Color;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class AnunciosTable
 {
@@ -251,17 +254,57 @@ class AnunciosTable
                     ->visible(fn() => auth()->user()->hasPermissionTo('generate_certificate::anuncios'))
                     ->url(fn(Anuncios $record) => route('anuncios.certificado-pdf', ['anuncio' => $record->id]))
                     ->openUrlInNewTab(),
-                /*
-                Action::make('Dar de Baja')
-                    ->label('Dar de Baja')
-                    ->iconButton()
-                    ->tooltip('Dar de Baja')
-                    ->color(Color::Red)
-                    ->icon('heroicon-o-trash')
-                    ->action(function (Anuncios $record) {
 
-                    }),
-                */
+                     Action::make('dar_de_baja')
+                    ->label('Dar de Baja')
+                    ->icon('heroicon-o-archive-box-arrow-down')
+                    ->tooltip('Dar de Baja')
+                    ->iconButton()
+                    ->color('danger')
+                    ->visible(fn($record) => (auth()->user()->hasPermissionTo('baja::anuncio') && $record?->estado_anuncio  === EstadoAnuncio::VIGENTE))
+                    ->requiresConfirmation()
+                    ->modalHeading('Dar de baja Anuncio')
+                    ->modalDescription(new HtmlString('¿Está <strong>seguro</strong> que desea <strong>dar de baja</strong> este anuncio? Esta acción no se puede revertir. Se registrará el <strong>usuario</strong> que realiza la baja y la <strong>fecha/hora</strong> de la acción.'))
+                    ->form([
+                        TextInput::make('razon_baja')
+                            ->label('Razón de baja')
+                            ->required()
+                            ->placeholder('Ingrese la razón de dar de baja este anuncio')
+                            ->extraAttributes([
+                                'style' => '--tw-ring-color: #ef4444; --tw-ring-shadow: 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);'
+                            ])
+                            ->maxLength(255),
+                    ])
+                    ->modalSubmitActionLabel('Sí, dar de baja')
+                    ->modalCancelActionLabel('Cancelar')
+                    ->action(function ($record, array $data) {
+
+                        $razon = trim($data['razon_baja'] ?? '');
+
+                        if ($razon === '') {
+                            Notification::make()
+                                ->danger()
+                                ->title('Razón requerida')
+                                ->body('Debe especificar la razón de la baja antes de confirmar.')
+                                ->send();
+                            return;
+                        }
+
+                        $userId = Auth::id();
+                        $anuncio_id = $record->id;
+                        $service = app(CertificadoAnuncioService::class);
+                        $service->bajaAnuncios($userId, $anuncio_id, $razon);
+
+                        $record->estado_anuncio = EstadoAnuncio::BAJA->value;
+                        $record->save();
+                        Notification::make()
+                            ->success()
+                            ->title('Anuncio dado de baja')
+                            ->body('El anuncio ha sido dado de baja correctamente.')
+                            ->send();
+                    })
+                    ->successRedirectUrl(fn() => request()->header('Referer') ?? route('filament.admin.resources.anuncios.index')),
+                
                 Action::make('Geolocalizar')
                     ->label('Geolocalizar')
                     ->iconButton()
