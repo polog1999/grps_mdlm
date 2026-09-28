@@ -64,6 +64,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'generate_certificate::anuncios',
             'create_color::anuncios',
             'create_physical_feature::anuncios',
+            'baja::anuncio',
             
             //Permisos para acciones de CertificadoLicenciaFuncionamiento
             'create::certificado_licencia_funcionamiento', // Registrar Nueva Licencia
