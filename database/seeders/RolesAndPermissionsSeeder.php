@@ -37,6 +37,9 @@ class RolesAndPermissionsSeeder extends Seeder
             //Permisos para CertificadoBorrado
             'view::certificado_borrado',
 
+            //Permisos para AnunciosBaja
+            'view::anuncios_bajas',
+
             //Permisos para TipoLicencias
             'view::tipo_licencias',
 
